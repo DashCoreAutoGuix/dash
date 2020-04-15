@@ -4,7 +4,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test node responses to invalid network messages."""
 
-
 from test_framework.messages import (
     CBlockHeader,
     CInv,

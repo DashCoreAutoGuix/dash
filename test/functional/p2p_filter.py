@@ -116,6 +116,11 @@ class FilterTest(BitcoinTestFramework):
         with self.nodes[0].assert_debug_log(['Misbehaving']):
             filter_peer.send_and_ping(msg_filterload(data=b'\xaa', nHashFuncs=MAX_BLOOM_HASH_FUNCS+1))
 
+        # Also test the check that Bitcoin added
+        self.log.info('Check that filter with excessive hash functions (51) is rejected')
+        with self.nodes[0].assert_debug_log(['Misbehaving']):
+            filter_peer.send_and_ping(msg_filterload(data=b'\xaa', nHashFuncs=51, nTweak=0, nFlags=1))
+
         self.log.info('Check that filter with max hash functions is accepted')
         with self.nodes[0].assert_debug_log([], unexpected_msgs=['Misbehaving']):
             filter_peer.send_and_ping(msg_filterload(data=b'\xaa', nHashFuncs=MAX_BLOOM_HASH_FUNCS))
