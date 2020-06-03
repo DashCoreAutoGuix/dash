@@ -3,6 +3,18 @@
 #
 # https://github.com/google/sanitizers/wiki/ThreadSanitizerSuppressions
 
+# double locks (TODO fix)
+mutex:g_genesis_wait_mutex
+mutex:Interrupt
+mutex:CThreadInterrupt
+mutex:CConnman::Interrupt
+mutex:CConnman::WakeMessageHandler
+mutex:CConnman::ThreadOpenConnections
+mutex:CConnman::ThreadOpenAddedConnections
+mutex:CConnman::SocketHandler
+mutex:UpdateTip
+mutex:PeerLogicValidation::UpdatedBlockTip
+
 # Data races from zmq namespace
 race:zmq::*
 
@@ -12,11 +24,21 @@ race:WalletBatch::WriteHDChain
 race:BerkeleyBatch
 race:BerkeleyDatabase
 race:DatabaseBatch
-race:zmq::*
+race:CConnman::WakeMessageHandler
+race:CConnman::ThreadMessageHandler
+race:fHaveGenesis
+race:ProcessNewBlock
+race:ThreadImport
 race:bitcoin-qt
+
 # deadlock (TODO fix)
 deadlock:CChainState::ConnectTip
 deadlock:wallet_tests::CreateWallet
+deadlock:CConnman::ForNode
+deadlock:UpdateTip
+
+# WalletBatch (unidentified deadlock)
+deadlock:WalletBatch
 
 # deadlock false positive (see: https://github.com/dashpay/dash/pull/4563)
 deadlock:CChainState::ConnectTip

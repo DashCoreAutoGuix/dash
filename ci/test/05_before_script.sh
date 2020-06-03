@@ -27,7 +27,9 @@ if [ -z "$NO_DEPENDS" ]; then
   else
     SHELL_OPTS="CONFIG_SHELL="
   fi
-  CI_EXEC "$SHELL_OPTS" make "$MAKEJOBS" -C depends HOST="$HOST" "$DEP_OPTS" LOG=1
+  # Temporary workaround for https://github.com/bitcoin/bitcoin/issues/16368
+  python3 -c 'import time; [print(".") or time.sleep(500) for _ in range(4)]' &
+  ( CI_EXEC "$SHELL_OPTS" make "$MAKEJOBS" -C depends HOST="$HOST" "$DEP_OPTS" ) &> /dev/null
 fi
 if [ -n "$PREVIOUS_RELEASES_TO_DOWNLOAD" ]; then
   CI_EXEC test/get_previous_releases.py -b -t "$PREVIOUS_RELEASES_DIR" "${PREVIOUS_RELEASES_TO_DOWNLOAD}"
