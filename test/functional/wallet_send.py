@@ -9,6 +9,7 @@ from itertools import product
 
 from test_framework.authproxy import JSONRPCException
 from test_framework.descriptors import descsum_create
+from test_framework.key import ECKey
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
@@ -16,6 +17,7 @@ from test_framework.util import (
     assert_greater_than,
     assert_raises_rpc_error,
 )
+from test_framework.wallet_util import bytes_to_wif
 
 class WalletSendTest(BitcoinTestFramework):
     def set_test_params(self):
@@ -33,9 +35,9 @@ class WalletSendTest(BitcoinTestFramework):
     def test_send(self, from_wallet, to_wallet=None, amount=None, data=None,
                   arg_conf_target=None, arg_estimate_mode=None, arg_fee_rate=None,
                   conf_target=None, estimate_mode=None, fee_rate=None, add_to_wallet=None, psbt=None,
-                  inputs=None, add_inputs=None, include_unsafe=None, change_address=None, change_position=None,
-                  include_watching=None, locktime=None, lock_unspents=None, subtract_fee_from_outputs=None,
-                  expect_error=None):
+                  inputs=None, add_inputs=None, include_unsafe=None, change_address=None, change_position=None, change_type=None,
+                  include_watching=None, locktime=None, lock_unspents=None, replaceable=None, subtract_fee_from_outputs=None,
+                  expect_error=None, solving_data=None, minconf=None):
         assert (amount is None) != (data is None)
 
         from_balance_before = from_wallet.getbalances()["mine"]["trusted"]
@@ -88,6 +90,10 @@ class WalletSendTest(BitcoinTestFramework):
             options["lock_unspents"] = lock_unspents
         if subtract_fee_from_outputs is not None:
             options["subtract_fee_from_outputs"] = subtract_fee_from_outputs
+        if solving_data is not None:
+            options["solving_data"] = solving_data
+        if minconf is not None:
+            options["minconf"] = minconf
 
         if len(options.keys()) == 0:
             options = None
@@ -458,6 +464,97 @@ class WalletSendTest(BitcoinTestFramework):
         res = self.test_send(from_wallet=w5, to_wallet=w0, amount=1, include_unsafe=True)
         assert res["complete"]
 
+        self.log.info("Minconf")
+        self.nodes[1].createwallet(wallet_name="minconfw")
+        minconfw= self.nodes[1].get_wallet_rpc("minconfw")
+        self.test_send(from_wallet=w0, to_wallet=minconfw, amount=2)
+        self.generate(self.nodes[0], 3)
+        self.test_send(from_wallet=minconfw, to_wallet=w0, amount=1, minconf=4, expect_error=(-4, "Insufficient funds"))
+        self.test_send(from_wallet=minconfw, to_wallet=w0, amount=1, minconf=-4, expect_error=(-8, "Negative minconf"))
+        res = self.test_send(from_wallet=minconfw, to_wallet=w0, amount=1, minconf=3)
+        assert res["complete"]
+
+        self.log.info("External outputs")
+        eckey = ECKey()
+        eckey.generate()
+        privkey = bytes_to_wif(eckey.get_bytes())
+
+        self.nodes[1].createwallet("extsend")
+        ext_wallet = self.nodes[1].get_wallet_rpc("extsend")
+        self.nodes[1].createwallet("extfund")
+        ext_fund = self.nodes[1].get_wallet_rpc("extfund")
+
+        # Make a weird but signable script. sh(wsh(pkh())) descriptor accomplishes this
+        desc = descsum_create("sh(wsh(pkh({})))".format(privkey))
+        if self.options.descriptors:
+            res = ext_fund.importdescriptors([{"desc": desc, "timestamp": "now"}])
+        else:
+            res = ext_fund.importmulti([{"desc": desc, "timestamp": "now"}])
+        assert res[0]["success"]
+        addr = self.nodes[0].deriveaddresses(desc)[0]
+        addr_info = ext_fund.getaddressinfo(addr)
+
+        self.nodes[0].sendtoaddress(addr, 10)
+        self.nodes[0].sendtoaddress(ext_wallet.getnewaddress(), 10)
+        self.generate(self.nodes[0], 6)
+        ext_utxo = ext_fund.listunspent(addresses=[addr])[0]
+
+        # An external input without solving data should result in an error
+        self.test_send(from_wallet=ext_wallet, to_wallet=self.nodes[0], amount=15, inputs=[ext_utxo], add_inputs=True, psbt=True, include_watching=True, expect_error=(-4, "Not solvable pre-selected input COutPoint(%s, %s)" % (ext_utxo["txid"][0:10], ext_utxo["vout"])))
+
+        # But funding should work when the solving data is provided
+        res = self.test_send(from_wallet=ext_wallet, to_wallet=self.nodes[0], amount=15, inputs=[ext_utxo], add_inputs=True, psbt=True, include_watching=True, solving_data={"pubkeys": [addr_info['pubkey']], "scripts": [addr_info["embedded"]["scriptPubKey"], addr_info["embedded"]["embedded"]["scriptPubKey"]]})
+        signed = ext_wallet.walletprocesspsbt(res["psbt"])
+        signed = ext_fund.walletprocesspsbt(res["psbt"])
+        assert signed["complete"]
+        self.nodes[0].finalizepsbt(signed["psbt"])
+
+        res = self.test_send(from_wallet=ext_wallet, to_wallet=self.nodes[0], amount=15, inputs=[ext_utxo], add_inputs=True, psbt=True, include_watching=True, solving_data={"descriptors": [desc]})
+        signed = ext_wallet.walletprocesspsbt(res["psbt"])
+        signed = ext_fund.walletprocesspsbt(res["psbt"])
+        assert signed["complete"]
+        self.nodes[0].finalizepsbt(signed["psbt"])
+
+        dec = self.nodes[0].decodepsbt(signed["psbt"])
+        for i, txin in enumerate(dec["tx"]["vin"]):
+            if txin["txid"] == ext_utxo["txid"] and txin["vout"] == ext_utxo["vout"]:
+                input_idx = i
+                break
+        psbt_in = dec["inputs"][input_idx]
+        # Calculate the input weight
+        # (prevout + sequence + length of scriptSig + scriptsig + 1 byte buffer) * WITNESS_SCALE_FACTOR + num scriptWitness stack items + (length of stack item + stack item) * N stack items + 1 byte buffer
+        len_scriptsig = len(psbt_in["final_scriptSig"]["hex"]) // 2 if "final_scriptSig" in psbt_in else 0
+        len_scriptsig += len(ser_compact_size(len_scriptsig)) + 1
+        len_scriptwitness = (sum([(len(x) // 2) + len(ser_compact_size(len(x) // 2)) for x in psbt_in["final_scriptwitness"]]) + len(psbt_in["final_scriptwitness"]) + 1) if "final_scriptwitness" in psbt_in else 0
+        input_weight = ((40 + len_scriptsig) * WITNESS_SCALE_FACTOR) + len_scriptwitness
+
+        # Input weight error conditions
+        assert_raises_rpc_error(
+            -8,
+            "Input weights should be specified in inputs rather than in options.",
+            ext_wallet.send,
+            outputs={self.nodes[0].getnewaddress(): 15},
+            options={"inputs": [ext_utxo], "input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 1000}]}
+        )
+
+        # Funding should also work when input weights are provided
+        res = self.test_send(
+            from_wallet=ext_wallet,
+            to_wallet=self.nodes[0],
+            amount=15,
+            inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": input_weight}],
+            add_inputs=True,
+            psbt=True,
+            include_watching=True,
+            fee_rate=10
+        )
+        signed = ext_wallet.walletprocesspsbt(res["psbt"])
+        signed = ext_fund.walletprocesspsbt(res["psbt"])
+        assert signed["complete"]
+        tx = self.nodes[0].finalizepsbt(signed["psbt"])
+        testres = self.nodes[0].testmempoolaccept([tx["hex"]])[0]
+        assert_equal(testres["allowed"], True)
+        assert_fee_amount(testres["fees"]["base"], testres["vsize"], Decimal(0.0001))
 
 if __name__ == '__main__':
     WalletSendTest().main()
