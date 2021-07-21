@@ -12,6 +12,7 @@ $(package)_patches += qttools_src.pro
 $(package)_patches += mac-qmake.conf
 $(package)_patches += fix_qt_pkgconfig.patch
 $(package)_patches += no-xlib.patch
+$(package)_patches += support_new_android_ndks.patch
 $(package)_patches += fix_android_jni_static.patch
 $(package)_patches += dont_hardcode_pwd.patch
 $(package)_patches += qtbase-moc-ignore-gcc-macro.patch
@@ -246,6 +247,7 @@ define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/fix-macos-linker.patch && \
   patch -p1 -i $($(package)_patch_dir)/dont_hardcode_pwd.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_pkgconfig.patch && \
+  patch -p1 -i $($(package)_patch_dir)/support_new_android_ndks.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
   patch -p1 -i $($(package)_patch_dir)/no-xlib.patch && \
   patch -p1 -i $($(package)_patch_dir)/qtbase-moc-ignore-gcc-macro.patch && \
