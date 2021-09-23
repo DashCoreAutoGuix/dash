@@ -11,16 +11,30 @@ from typing import List
 from test_framework.messages import (
     CAddress,
     msg_addrv2,
-    NODE_NETWORK,
 )
-from test_framework.p2p import P2PInterface
+from test_framework.p2p import (
+    P2PInterface,
+    P2P_SERVICES,
+)
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
 
 I2P_ADDR = "c4gfnttsuwqomiygupdqqqyy5y5emnk5c73hrfvatri67prd7vyq.b32.i2p"
 ONION_ADDR = "pg6mmjiyjmcrsslvykfwnntlaru7p5svn6y2ymmju6nubxndf4pscryd.onion"
 
-ADDRS: List[CAddress] = []
+ADDRS = []
+for i in range(10):
+    addr = CAddress()
+    addr.time = int(time.time()) + i
+    addr.nServices = P2P_SERVICES
+    # Add one I2P address at an arbitrary position.
+    if i == 5:
+        addr.net = addr.NET_I2P
+        addr.ip = I2P_ADDR
+    else:
+        addr.ip = f"123.123.123.{i % 256}"
+    addr.port = 8333 + i
+    ADDRS.append(addr)
 
 
 class AddrReceiver(P2PInterface):
