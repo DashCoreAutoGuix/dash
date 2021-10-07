@@ -470,7 +470,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
         }
         // Just to calculate the marginal byte size
         int input_bytes = GetTxSpendSize(wallet, wtx, outpoint.n, false);
-        if (input_bytes <= 0) {
+        if (input_bytes == -1) {
             return std::nullopt; // Not solvable, can't estimate size for fee
         }
 
@@ -850,8 +850,8 @@ static bool CreateTransactionInternal(
 
     // Calculate the transaction fee
     int nBytes = CalculateMaximumSignedTxSize(CTransaction(txNew), &wallet, coin_control.fAllowWatchOnly);
-    if (nBytes < 0) {
-        error = _("Signing transaction failed");
+    if (nBytes == -1) {
+        error = _("Missing solving data for estimating transaction size");
         return false;
     }
 
