@@ -15,11 +15,36 @@ fi
 
 CI_EXEC mkdir -p "${DEPENDS_DIR}/SDKs" "${DEPENDS_DIR}/sdk-sources"
 
-if [ -n "$XCODE_VERSION" ] && [ ! -f "$OSX_SDK_PATH" ]; then
-  CI_EXEC curl --location --fail "${SDK_URL}/${OSX_SDK_BASENAME}" -o "$OSX_SDK_PATH"
-fi
-if [ -n "$XCODE_VERSION" ] && [ -f "$OSX_SDK_PATH" ]; then
+OSX_SDK_BASENAME="Xcode-${XCODE_VERSION}-${XCODE_BUILD_ID}-extracted-SDK-with-libcxx-headers"
+
+if [ -n "$XCODE_VERSION" ] && [ ! -d "${DEPENDS_DIR}/SDKs/${OSX_SDK_BASENAME}" ]; then
+  OSX_SDK_FILENAME="${OSX_SDK_BASENAME}.tar.gz"
+  OSX_SDK_PATH="${DEPENDS_DIR}/sdk-sources/${OSX_SDK_FILENAME}"
+  if [ ! -f "$OSX_SDK_PATH" ]; then
+    CI_EXEC curl --location --fail "${SDK_URL}/${OSX_SDK_FILENAME}" -o "$OSX_SDK_PATH"
+  fi
   CI_EXEC tar -C "${DEPENDS_DIR}/SDKs" -xf "$OSX_SDK_PATH"
+fi
+
+if [ -n "$ANDROID_HOME" ] && [ ! -d "$ANDROID_HOME" ]; then
+  ANDROID_TOOLS_PATH=${DEPENDS_DIR}/sdk-sources/android-tools.zip
+  if [ ! -f "$ANDROID_TOOLS_PATH" ]; then
+    CI_EXEC curl --location --fail "${ANDROID_TOOLS_URL}" -o "$ANDROID_TOOLS_PATH"
+  fi
+  CI_EXEC mkdir -p "${ANDROID_HOME}/cmdline-tools"
+  CI_EXEC unzip -o "$ANDROID_TOOLS_PATH" -d "${ANDROID_HOME}/cmdline-tools"
+  CI_EXEC "yes | ${ANDROID_HOME}/cmdline-tools/tools/bin/sdkmanager --install \"build-tools;${ANDROID_BUILD_TOOLS_VERSION}\" \"platform-tools\" \"platforms;android-${ANDROID_API_LEVEL}\" \"ndk;${ANDROID_NDK_VERSION}\""
+fi
+
+if [[ ${USE_MEMORY_SANITIZER} == "true" ]]; then
+  # Use BDB compiled using install_db4.sh script to work around linking issue when using BDB
+  # from depends. See https://github.com/bitcoin/bitcoin/pull/18288#discussion_r433189350 for
+  # details.
+  CI_EXEC "contrib/install_db4.sh \$(pwd) --enable-umrw CC=clang CXX=clang++ CFLAGS='${MSAN_FLAGS}' CXXFLAGS='${MSAN_AND_LIBCXX_FLAGS}'"
+fi
+
+if [[ $HOST = *-mingw32 ]]; then
+  CI_EXEC update-alternatives --set "${HOST}-g++" \$\(which "${HOST}-g++-posix"\)
 fi
 if [ -z "$NO_DEPENDS" ]; then
   if [[ $DOCKER_NAME_TAG == *centos* ]]; then
