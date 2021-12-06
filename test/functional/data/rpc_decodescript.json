@@ -13,8 +13,43 @@
         {
             "asm": "OP_RETURN 0",
             "type": "nulldata",
-            "p2sh": "93JSZ4DRLAifokPwn3C6WtnZoAVHwDa6UP",
             "desc": "raw(6a00)#ncfmkl43"
+        }
+    ],
+    [
+        "6aee",
+        {
+            "asm": "OP_RETURN OP_UNKNOWN",
+            "type": "nonstandard"
+        }
+    ],
+    [
+        "6a02ee",
+        {
+            "asm": "OP_RETURN [error]",
+            "type": "nonstandard"
+        }
+    ],
+    [
+        "02eeee",
+        {
+            "asm": "-28398",
+            "type": "nonstandard",
+            "p2sh": "2N34iiGoUUkVSPiaaTFpJjB1FR9TXQu3PGM"
+        }
+    ],
+    [
+        "ba",
+        {
+            "asm": "OP_CHECKSIGADD",
+            "type": "nonstandard"
+        }
+    ],
+    [
+        "50",
+        {
+            "asm": "OP_RESERVED",
+            "type": "nonstandard"
         }
     ]
 ]
