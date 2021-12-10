@@ -592,7 +592,8 @@ RPCHelpMan signrawtransactionwithwallet()
                     },
                 },
             },
-            {"sighashtype", RPCArg::Type::STR, RPCArg::Default{"ALL"}, "The signature hash type. Must be one of\n"
+            {"sighashtype", RPCArg::Type::STR, RPCArg::Default{"DEFAULT for Taproot, ALL otherwise"}, "The signature hash type. Must be one of\n"
+    "       \"DEFAULT\"\n"
     "       \"ALL\"\n"
     "       \"NONE\"\n"
     "       \"SINGLE\"\n"
@@ -862,7 +863,8 @@ RPCHelpMan walletprocesspsbt()
         {
             {"psbt", RPCArg::Type::STR, RPCArg::Optional::NO, "The transaction base64 string"},
             {"sign", RPCArg::Type::BOOL, RPCArg::Default{true}, "Also sign the transaction when updating (requires wallet to be unlocked)"},
-            {"sighashtype", RPCArg::Type::STR, RPCArg::Default{"ALL"}, "The signature hash type to sign with if not specified by the PSBT. Must be one of\n"
+            {"sighashtype", RPCArg::Type::STR, RPCArg::Default{"DEFAULT for Taproot, ALL otherwise"}, "The signature hash type to sign with if not specified by the PSBT. Must be one of\n"
+    "       \"DEFAULT\"\n"
     "       \"ALL\"\n"
     "       \"NONE\"\n"
     "       \"SINGLE\"\n"
