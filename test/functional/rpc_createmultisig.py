@@ -81,7 +81,10 @@ class RpcCreateMultiSigTest(BitcoinTestFramework):
             # Results should be the same as this legacy one
             legacy_addr = node0.createmultisig(2, keys)['address']
             if self.is_bdb_compiled():
-                assert_equal(legacy_addr, wmulti0.addmultisigaddress(2, keys, '')['address'])
+                result = wmulti0.addmultisigaddress(2, keys, '')
+                assert_equal(legacy_addr, result['address'])
+                # Check that warnings field exists but is empty for valid operations
+                assert 'warnings' not in result or result['warnings'] == []
 
         self.log.info('Testing sortedmulti descriptors with BIP 67 test vectors')
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data/rpc_bip67.json'), encoding='utf-8') as f:

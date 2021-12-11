@@ -210,6 +210,10 @@ RPCHelpMan addmultisigaddress()
                 {RPCResult::Type::STR, "address", "The value of the new multisig address"},
                 {RPCResult::Type::STR_HEX, "redeemScript", "The string value of the hex-encoded redemption script"},
                 {RPCResult::Type::STR, "descriptor", "The descriptor for this multisig."},
+                {RPCResult::Type::ARR, "warnings", /* optional */ true, "Any warnings resulting from the creation of this multisig",
+                {
+                    {RPCResult::Type::STR, "", ""},
+                }},
             }
         },
         RPCExamples{
@@ -256,6 +260,12 @@ RPCHelpMan addmultisigaddress()
     result.pushKV("address", EncodeDestination(dest));
     result.pushKV("redeemScript", HexStr(inner));
     result.pushKV("descriptor", descriptor->ToString());
+
+    // Dash doesn't support multiple address types, so we don't need to check for output type mismatches
+    UniValue warnings(UniValue::VARR);
+    // Add any warnings if needed in the future
+    if (warnings.size()) result.pushKV("warnings", warnings);
+
     return result;
 },
     };
