@@ -1502,17 +1502,30 @@ AX_CHECK_PREPROC_FLAG([-DBOOST_NO_CXX98_FUNCTION_BASE], [BOOST_CPPFLAGS="$BOOST_
 
 dnl Opt-in to Boost Process
 if test "$boost_process" != "no"; then
-AC_MSG_CHECKING(for Boost Process)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <boost/process.hpp>]],
- [[ boost::process::child* child = new boost::process::child; delete child; ]])],
- [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_BOOST_PROCESS],,[define if Boost::Process is available])],
- [ AC_MSG_ERROR([Boost::Process is not available!])]
-)
+  case $host in
+    *mingw*)
+      dnl Boost Process uses Boost Filesystem when targeting Windows. Also,
+      dnl since Boost 1.71.0, Process does not work with mingw-w64 without
+      dnl workarounds. See 67669ab425b52a2b6be3d2f3b3b7e3939b676a2c.
+      if test "$boost_process" = "yes"; then
+        AC_MSG_ERROR([Boost Process is not supported on Windows])
+      fi
+      boost_process="no";
+    ;;
+    *)
+      AC_MSG_CHECKING(for Boost Process)
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <boost/process.hpp>]],
+       [[ boost::process::child* child = new boost::process::child; delete child; ]])],
+       [ AC_MSG_RESULT(yes); AC_DEFINE([HAVE_BOOST_PROCESS],,[define if Boost::Process is available])],
+       [ AC_MSG_ERROR([Boost::Process is not available!])]
+      )
+    ;;
+  esac
 fi
 
   if test "$suppress_external_warnings" != "no"; then
     BOOST_CPPFLAGS=SUPPRESS_WARNINGS($BOOST_CPPFLAGS)
-fi
+  fi
 fi
 
 dnl Check for reduced exports
