@@ -1544,13 +1544,67 @@ bool CWallet::DummySignInput(CTxIn &tx_in, const CTxOut &txout, bool use_max_sig
     return true;
 }
 
+bool FillInputToWeight(CTxIn& txin, int64_t target_weight)
+{
+    assert(txin.scriptSig.empty());
+    assert(txin.scriptWitness.IsNull());
+
+    int64_t txin_weight = GetTransactionInputWeight(txin);
+
+    // Do nothing if the weight that should be added is less than the weight that already exists
+    if (target_weight < txin_weight) {
+        return false;
+    }
+    if (target_weight == txin_weight) {
+        return true;
+    }
+
+    // Subtract current txin weight, which should include empty witness stack
+    int64_t add_weight = target_weight - txin_weight;
+    assert(add_weight > 0);
+
+    // We will want to subtract the size of the Compact Size UInt that will also be serialized.
+    // However doing so when the size is near a boundary can result in a problem where it is not
+    // possible to have a stack element size and combination to exactly equal a target.
+    // To avoid this possibility, if the weight to add is less than 10 bytes greater than
+    // a boundary, the size will be split so that 2/3rds will be in one stack element, and
+    // the remaining 1/3rd in another. Using 3rds allows us to avoid additional boundaries.
+    // 10 bytes is used because that accounts for the maximum size. This does not need to be super precise.
+    if ((add_weight >= 253 && add_weight < 263)
+        || (add_weight > std::numeric_limits<uint16_t>::max() && add_weight <= std::numeric_limits<uint16_t>::max() + 10)
+        || (add_weight > std::numeric_limits<uint32_t>::max() && add_weight <= std::numeric_limits<uint32_t>::max() + 10)) {
+        int64_t first_weight = add_weight / 3;
+        add_weight -= first_weight;
+
+        first_weight -= GetSizeOfCompactSize(first_weight);
+        txin.scriptWitness.stack.emplace(txin.scriptWitness.stack.end(), first_weight, 0);
+    }
+
+    add_weight -= GetSizeOfCompactSize(add_weight);
+    txin.scriptWitness.stack.emplace(txin.scriptWitness.stack.end(), add_weight, 0);
+    assert(GetTransactionInputWeight(txin) == target_weight);
+
+    return true;
+}
+
 // Helper for producing a bunch of max-sized low-S low-R signatures (eg 71 bytes)
-bool CWallet::DummySignTx(CMutableTransaction &txNew, const std::vector<CTxOut> &txouts, bool use_max_sig) const
+bool CWallet::DummySignTx(CMutableTransaction &txNew, const std::vector<CTxOut> &txouts, const CCoinControl* coin_control) const
 {
     // Fill in dummy signatures for fee calculation.
     int nIn = 0;
     for (const auto& txout : txouts)
     {
+        CTxIn& txin = txNew.vin[nIn];
+        // If weight was provided, we cannot fill the input to that weight in Dash
+        // as we don't have witness functionality. Skip this input as the weight
+        // was already accounted for in coin selection.
+        if (coin_control && coin_control->HasInputWeight(txin.prevout)) {
+            nIn++;
+            continue;
+        }
+        // Use max sig if watch only inputs were used or if this particular input is an external input
+        // to ensure a sufficient fee is attained for the requested feerate.
+        const bool use_max_sig = coin_control && (coin_control->fAllowWatchOnly || coin_control->IsExternalSelected(txin.prevout));
         if (!DummySignInput(txNew.vin[nIn], txout, use_max_sig)) {
             return false;
         }
