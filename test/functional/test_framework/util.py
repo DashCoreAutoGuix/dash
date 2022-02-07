@@ -38,12 +38,13 @@ def assert_approx(v, vexp, vspan=0.00001):
 
 def assert_fee_amount(fee, tx_size, feerate_DASH_kvB):
     """Assert the fee is in range."""
-    feerate_DASH_vB = feerate_DASH_kvB / 1000
-    target_fee = satoshi_round(tx_size * feerate_DASH_vB)
+    assert isinstance(tx_size, int)
+    target_fee = get_fee(tx_size, feerate_DASH_kvB)
     if fee < target_fee:
         raise AssertionError("Fee of %s DASH too low! (Should be %s DASH)" % (str(fee), str(target_fee)))
     # allow the wallet's estimation to be at most 2 bytes off
-    if fee > (tx_size + 2) * feerate_DASH_vB:
+    high_fee = get_fee(tx_size + 2, feerate_DASH_kvB)
+    if fee > high_fee:
         raise AssertionError("Fee of %s DASH too high! (Should be %s DASH)" % (str(fee), str(target_fee)))
 
 
@@ -241,6 +242,24 @@ def random_bitflip(data):
     data = list(data)
     data[random.randrange(len(data))] ^= (1 << (random.randrange(8)))
     return bytes(data)
+
+
+def ceildiv(a, b):
+    """
+    Divide 2 ints and round up to next int rather than round down
+    Implementation requires python integers, which have a // operator that does floor division.
+    Other types like decimal.Decimal whose // operator truncates towards 0 will not work.
+    """
+    assert isinstance(a, int)
+    assert isinstance(b, int)
+    return -(-a // b)
+
+
+def get_fee(tx_size, feerate_dash_kvb):
+    """Calculate the fee in DASH given a feerate is DASH/kvB. Reflects CFeeRate::GetFee"""
+    feerate_duff_kvb = int(feerate_dash_kvb * Decimal(1e8)) # Fee in duff/kvb as an int to avoid float precision errors
+    target_fee_duff = ceildiv(feerate_duff_kvb * tx_size, 1000) # Round calculated fee up to nearest duff
+    return target_fee_duff / Decimal(1e8) # Return result in DASH
 
 
 def satoshi_round(amount):
