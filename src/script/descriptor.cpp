@@ -258,7 +258,8 @@ public:
     bool ToPrivateString(const SigningProvider& arg, std::string& ret) const override
     {
         CKey key;
-        if (!arg.GetKey(m_pubkey.GetID(), key)) return false;
+        arg.GetKey(m_pubkey.GetID(), key);
+        if (!key.IsValid()) return false;
         ret = EncodeSecret(key);
         return true;
     }

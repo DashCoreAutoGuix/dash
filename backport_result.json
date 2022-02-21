@@ -1,0 +1,7 @@
+{
+  "status": "success",
+  "pr_url": "https://github.com/DashCoreAutoGuix/dash/pull/312",
+  "commit_hash": "45c7008298",
+  "details": "Build succeeded, no functional tests modified, validation passed",
+  "issues": []
+}
