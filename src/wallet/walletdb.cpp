@@ -338,6 +338,7 @@ public:
     std::map<std::pair<uint256, CKeyID>, std::pair<CPubKey, std::vector<unsigned char>>> m_descriptor_crypt_keys;
     std::map<std::pair<uint256, CKeyID>, std::pair<SecureString, SecureString>> mnemonics;
     std::map<std::pair<uint256, CKeyID>, std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> crypted_mnemonics;
+    std::map<CKeyID, CHDChainInactive> m_hd_chains;
     bool tx_corrupt{false};
 
     CWalletScanState() {
@@ -528,6 +529,9 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
             ssValue >> keyMeta;
             wss.nKeyMeta++;
             pwallet->GetOrCreateLegacyScriptPubKeyMan()->LoadKeyMetadata(vchPubKey.GetID(), keyMeta);
+
+            // In Dash, CKeyMetadata doesn't have hd_seed_id and hdKeypath fields
+            // Skip the inactive HD chain extraction for now
         } else if (strType == DBKeys::WATCHMETA) {
             CScript script;
             ssKey >> script;
@@ -914,6 +918,17 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
         } else {
             ((DescriptorScriptPubKeyMan*)spk_man)->AddCryptedKey(desc_key_pair.first.second, desc_key_pair.second.first, desc_key_pair.second.second, it->second.first, it->second.second);
         }
+    }
+
+    // Load inactive HD chains into LegacyScriptPubKeyMan
+    if (pwallet->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS)) {
+        // Don't load inactive HD chains for descriptor wallets
+    } else if (pwallet->GetLegacyScriptPubKeyMan()) {
+        // In Dash, we can't extract inactive HD chains from metadata due to missing fields
+        // Skip loading inactive chains for now
+        // for (const auto& [seed_id, chain] : wss.m_hd_chains) {
+        //     spk_man->AddInactiveHDChain(chain);
+        // }
     }
 
     if (fNoncriticalErrors && result == DBErrors::LOAD_OK)

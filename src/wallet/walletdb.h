@@ -93,7 +93,6 @@ extern const std::string WALLETDESCRIPTORKEY;
 extern const std::string WATCHMETA;
 extern const std::string WATCHS;
 } // namespace DBKeys
-
 class CKeyMetadata
 {
 public:

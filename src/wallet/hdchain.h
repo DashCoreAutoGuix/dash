@@ -140,6 +140,46 @@ public:
 
     std::string GetKeyPath() const;
 };
+
+/* Simple inactive HD chain tracking structure */
+class CHDChainInactive
+{
+public:
+    uint32_t nExternalChainCounter;
+    uint32_t nInternalChainCounter;
+    CKeyID seed_id; //!< seed hash160
+    int64_t m_next_external_index{0}; // Next index in the keypool to be used. Memory only.
+    int64_t m_next_internal_index{0}; // Next index in the keypool to be used. Memory only.
+
+    static const int VERSION_HD_BASE        = 1;
+    static const int VERSION_HD_CHAIN_SPLIT = 2;
+    static const int CURRENT_VERSION        = VERSION_HD_CHAIN_SPLIT;
+    int nVersion;
+
+    CHDChainInactive() { SetNull(); }
+
+    SERIALIZE_METHODS(CHDChainInactive, obj)
+    {
+        READWRITE(obj.nVersion, obj.nExternalChainCounter, obj.seed_id);
+        if (obj.nVersion >= VERSION_HD_CHAIN_SPLIT) {
+            READWRITE(obj.nInternalChainCounter);
+        }
+    }
+
+    void SetNull()
+    {
+        nVersion = CHDChainInactive::CURRENT_VERSION;
+        nExternalChainCounter = 0;
+        nInternalChainCounter = 0;
+        seed_id.SetNull();
+    }
+
+    bool operator==(const CHDChainInactive& chain) const
+    {
+        return seed_id == chain.seed_id;
+    }
+};
+
 } // namespace wallet
 
 #endif // BITCOIN_WALLET_HDCHAIN_H

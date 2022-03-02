@@ -306,6 +306,28 @@ bool LegacyScriptPubKeyMan::GetReservedDestination(bool internal, CTxDestination
     return true;
 }
 
+bool LegacyScriptPubKeyMan::TopUpInactiveHDChain(const CKeyID seed_id, int64_t index, bool internal)
+{
+    LOCK(cs_KeyStore);
+
+    auto it = m_inactive_hd_chains.find(seed_id);
+    if (it == m_inactive_hd_chains.end()) {
+        return false;
+    }
+
+    CHDChainInactive& chain = it->second;
+
+    if (internal) {
+        chain.m_next_internal_index = std::max(chain.m_next_internal_index, index + 1);
+    } else {
+        chain.m_next_external_index = std::max(chain.m_next_external_index, index + 1);
+    }
+
+    TopUpChain(chain, 0);
+
+    return true;
+}
+
 void LegacyScriptPubKeyMan::MarkUnusedAddresses(WalletBatch &batch, const CScript& script, const std::optional<int64_t>& block_time)
 {
     LOCK(cs_KeyStore);
@@ -320,6 +342,9 @@ void LegacyScriptPubKeyMan::MarkUnusedAddresses(WalletBatch &batch, const CScrip
                 WalletLogPrintf("%s: Topping up keypool failed (locked wallet)\n", __func__);
             }
         }
+
+        // In Dash, we don't have hd_seed_id in CKeyMetadata, so we can't do the inactive chain check here
+        // This functionality would need to be implemented differently in Dash if needed
         if (block_time) {
             if (mapKeyMetadata[keyid].nCreateTime > *block_time) {
                 WalletLogPrintf("%s: Found a key which appears to be used earlier than we expected, updating metadata\n", __func__);
@@ -468,6 +493,12 @@ bool LegacyScriptPubKeyMan::AddHDChainSingle(const CHDChain& chain)
 {
     WalletBatch batch(m_storage.GetDatabase());
     return AddHDChain(batch, chain);
+}
+
+void LegacyScriptPubKeyMan::AddInactiveHDChain(const CHDChainInactive& chain)
+{
+    LOCK(cs_KeyStore);
+    m_inactive_hd_chains[chain.seed_id] = chain;
 }
 
 bool LegacyScriptPubKeyMan::GetDecryptedHDChain(CHDChain& hdChainRet) const
@@ -1422,83 +1453,151 @@ bool LegacyScriptPubKeyMan::TopUpInner(unsigned int kpSize)
     if (!CanGenerateKeys()) {
         return false;
     }
-    {
-        if (m_storage.IsLocked(true)) return false;
 
-        // Top up key pool
-        unsigned int nTargetSize;
-        if (kpSize > 0)
-            nTargetSize = kpSize;
-        else
-            nTargetSize = std::max(gArgs.GetIntArg("-keypool", DEFAULT_KEYPOOL_SIZE), (int64_t) 0);
-
-        // count amount of available keys (internal, external)
-        // make sure the keypool of external and internal keys fits the user selected target (-keypool)
-        int64_t amountExternal = setExternalKeyPool.size();
-        int64_t amountInternal = setInternalKeyPool.size();
-        int64_t missingExternal = std::max(std::max((int64_t) nTargetSize, (int64_t) 1) - amountExternal, (int64_t) 0);
-        int64_t missingInternal = std::max(std::max((int64_t) nTargetSize, (int64_t) 1) - amountInternal, (int64_t) 0);
-
-        if (!IsHDEnabled())
-        {
-            // don't create extra internal keys
-            missingInternal = 0;
-        }
-
-        const int64_t total_missing = missingInternal + missingExternal;
-        if (total_missing == 0) return true;
-
-        constexpr int64_t PROGRESS_REPORT_INTERVAL = 1; // in seconds
-        const bool should_show_progress = total_missing > 100;
-        const std::string strMsg = _("Topping up keypool…").translated;
-
-        int64_t progress_report_time = GetTime();
-        WalletLogPrintf("%s\n", strMsg);
-        if (should_show_progress) {
-            m_storage.UpdateProgress(strMsg, 0);
-        }
-
-        bool fInternal = false;
-        int64_t current_index{0};
-        WalletBatch batch(m_storage.GetDatabase());
-
-        for (current_index = 0; current_index < total_missing; ++current_index) {
-            if (current_index == missingExternal) {
-                fInternal = true;
-            }
-
-            // TODO: implement keypools for all accounts?
-            CPubKey pubkey(GenerateNewKey(batch, 0, fInternal));
-            AddKeypoolPubkeyWithDB(pubkey, fInternal, batch);
-
-            if (GetTime() >= progress_report_time + PROGRESS_REPORT_INTERVAL) {
-                const double dProgress = 100.f * current_index / total_missing;
-                const int iProgress = static_cast<int>(dProgress);
-                progress_report_time = GetTime();
-                WalletLogPrintf("Still topping up. At key %lld. Progress=%f\n", current_index, dProgress);
-                if (should_show_progress && iProgress > 0) {
-                    m_storage.UpdateProgress(strMsg, iProgress);
-                }
-            }
-        }
-        WalletLogPrintf("Keypool added %d keys, size=%u (%u internal)\n",
-                  current_index + 1, setInternalKeyPool.size() + setExternalKeyPool.size(), setInternalKeyPool.size());
-        if (should_show_progress) {
-            m_storage.UpdateProgress("", 100);
+    if (!TopUpChain(m_hd_chain, kpSize)) {
+        return false;
+    }
+    for (auto& [chain_id, chain] : m_inactive_hd_chains) {
+        if (!TopUpChain(chain, kpSize)) {
+            return false;
         }
     }
     NotifyCanGetAddressesChanged();
     return true;
 }
 
-/*
-void LegacyScriptPubKeyMan::AddKeypoolPubkey(const CPubKey& pubkey, const bool internal)
+bool LegacyScriptPubKeyMan::TopUpChain(CHDChain& chain, unsigned int kpSize)
 {
+    LOCK(cs_KeyStore);
+
+    if (m_storage.IsLocked(true)) return false;
+
+    // Top up key pool
+    unsigned int nTargetSize;
+    if (kpSize > 0) {
+        nTargetSize = kpSize;
+    } else {
+        nTargetSize = std::max(gArgs.GetIntArg("-keypool", DEFAULT_KEYPOOL_SIZE), (int64_t) 0);
+    }
+    int64_t target = std::max((int64_t) nTargetSize, (int64_t) 1);
+
+    // count amount of available keys (internal, external)
+    // make sure the keypool of external and internal keys fits the user selected target (-keypool)
+    int64_t missingExternal = std::max(target - (int64_t)setExternalKeyPool.size(), (int64_t) 0);
+    int64_t missingInternal = std::max(target - (int64_t)setInternalKeyPool.size(), (int64_t) 0);
+
+    if (!IsHDEnabled()) {
+        // don't create extra internal keys
+        missingInternal = 0;
+    }
+
+    const int64_t total_missing = missingInternal + missingExternal;
+    if (total_missing == 0) return true;
+
+    // Show progress only for the main HD chain and when adding many keys
+    const bool is_main_chain = true; // For Dash, we only call this for the main chain
+    constexpr int64_t PROGRESS_REPORT_INTERVAL = 1; // in seconds
+    const bool should_show_progress = is_main_chain && total_missing > 100;
+    const std::string strMsg = _("Topping up keypool…").translated;
+
+    int64_t progress_report_time = GetTime();
+    if (is_main_chain) {
+        WalletLogPrintf("%s\n", strMsg);
+    }
+    if (should_show_progress) {
+        m_storage.UpdateProgress(strMsg, 0);
+    }
+
+    bool internal = false;
+    int64_t current_index{0};
     WalletBatch batch(m_storage.GetDatabase());
-    AddKeypoolPubkeyWithDB(pubkey, internal, batch);
-    NotifyCanGetAddressesChanged();
+
+    for (current_index = 0; current_index < total_missing; ++current_index) {
+        if (current_index == missingExternal) {
+            internal = true;
+        }
+
+        CPubKey pubkey(GenerateNewKey(batch, 0, internal));
+        AddKeypoolPubkeyWithDB(pubkey, internal, batch);
+
+        if (should_show_progress && GetTime() >= progress_report_time + PROGRESS_REPORT_INTERVAL) {
+            const double dProgress = 100.f * current_index / total_missing;
+            const int iProgress = static_cast<int>(dProgress);
+            progress_report_time = GetTime();
+            WalletLogPrintf("Still topping up. At key %lld. Progress=%f\n", current_index, dProgress);
+            if (iProgress > 0) {
+                m_storage.UpdateProgress(strMsg, iProgress);
+            }
+        }
+    }
+
+    if (missingInternal + missingExternal > 0) {
+        WalletLogPrintf("keypool added %d keys (%d internal), size=%u (%u internal)\n", missingInternal + missingExternal, missingInternal, setInternalKeyPool.size() + setExternalKeyPool.size(), setInternalKeyPool.size());
+    }
+
+    if (should_show_progress) {
+        m_storage.UpdateProgress("", 100);
+    }
+
+    return true;
 }
-*/
+
+bool LegacyScriptPubKeyMan::TopUpChain(CHDChainInactive& chain, unsigned int kpSize)
+{
+    LOCK(cs_KeyStore);
+
+    if (m_storage.IsLocked(true)) return false;
+
+    // Top up key pool
+    unsigned int nTargetSize;
+    if (kpSize > 0) {
+        nTargetSize = kpSize;
+    } else {
+        nTargetSize = std::max(gArgs.GetIntArg("-keypool", DEFAULT_KEYPOOL_SIZE), (int64_t) 0);
+    }
+    int64_t target = std::max((int64_t) nTargetSize, (int64_t) 1);
+
+    // count amount of available keys (internal, external)
+    // make sure the keypool of external and internal keys fits the user selected target (-keypool)
+    int64_t missingExternal = std::max(target - (chain.nExternalChainCounter - chain.m_next_external_index), (int64_t) 0);
+    int64_t missingInternal = std::max(target - (chain.nInternalChainCounter - chain.m_next_internal_index), (int64_t) 0);
+
+    if (!IsHDEnabled()) {
+        // don't create extra internal keys
+        missingInternal = 0;
+    }
+
+    const int64_t total_missing = missingInternal + missingExternal;
+    if (total_missing == 0) return true;
+
+    bool internal = false;
+    WalletBatch batch(m_storage.GetDatabase());
+
+    // For inactive chains, we generate keys but don't add them to the keypool
+    // This mirrors Bitcoin's behavior where inactive chains are just tracked
+    for (int64_t i = 0; i < total_missing; ++i) {
+        if (i == missingExternal) {
+            internal = true;
+        }
+
+        // Generate keys for inactive chain (account 0 for now)
+        // In the future, this might need to track which account the inactive chain belongs to
+        GenerateNewKey(batch, 0, internal);
+
+        // Update counters
+        if (internal) {
+            chain.nInternalChainCounter++;
+        } else {
+            chain.nExternalChainCounter++;
+        }
+    }
+
+    if (missingInternal + missingExternal > 0) {
+        WalletLogPrintf("inactive seed with id %s added %d external keys, %d internal keys\n", HexStr(chain.seed_id), missingExternal, missingInternal);
+    }
+
+    return true;
+}
 
 void LegacyScriptPubKeyMan::AddKeypoolPubkeyWithDB(const CPubKey& pubkey, const bool internal, WalletBatch& batch)
 {

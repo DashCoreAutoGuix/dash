@@ -284,6 +284,7 @@ private:
 
     /* the HD chain data model (external chain counters) */
     CHDChain m_hd_chain GUARDED_BY(cs_KeyStore);
+    std::unordered_map<CKeyID, CHDChainInactive, SaltedSipHasher> m_inactive_hd_chains;
 
     /* HD derive new child key (on internal or external chain) */
     void DeriveNewChildKey(WalletBatch& batch, CKeyMetadata& metadata, CKey& secretRet, uint32_t nAccountIndex, bool fInternal /*= false*/) EXCLUSIVE_LOCKS_REQUIRED(cs_KeyStore);
@@ -314,6 +315,20 @@ private:
      */
     bool ReserveKeyFromKeyPool(int64_t& nIndex, CKeyPool& keypool, bool fRequestedInternal);
 
+    /**
+     * Like TopUp() but adds keys for inactive HD chains.
+     * Ensures that there are at least -keypool number of keys derived after the given index.
+     *
+     * @param seed_id the CKeyID for the HD seed.
+     * @param index the index to start generating keys from
+     * @param internal whether the internal chain should be used. true for internal chain, false for external chain.
+     *
+     * @return true if seed was found and keys were derived. false if unable to derive seeds
+     */
+    bool TopUpInactiveHDChain(const CKeyID seed_id, int64_t index, bool internal);
+
+    bool TopUpChain(CHDChain& chain, unsigned int size);
+    bool TopUpChain(CHDChainInactive& chain, unsigned int size);
 public:
     using ScriptPubKeyMan::ScriptPubKeyMan;
 
@@ -458,6 +473,8 @@ public:
 
     bool GetHDChain(CHDChain& hdChainRet) const;
     bool GetDecryptedHDChain(CHDChain& hdChainRet) const;
+    CHDChain& GetHDChain() { return m_hd_chain; }
+    void AddInactiveHDChain(const CHDChainInactive& chain);
 
     /* Generates a new HD chain */
     void GenerateNewHDChain(const SecureString& secureMnemonic, const SecureString& secureMnemonicPassphrase, std::optional<CKeyingMaterial> vMasterKey = std::nullopt);
