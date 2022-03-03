@@ -6,12 +6,15 @@ reset-files.bash
 *.tar.gz
 
 *.exe
+*.pdb
 src/dash
 src/dashd
 src/dash-cli
 src/dash-gui
 src/dash-node
 src/dash-tx
+src/dash-util
+src/dash-chainstate
 src/dash-wallet
 src/test/fuzz/fuzz
 src/test/test_dash
