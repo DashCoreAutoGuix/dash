@@ -66,6 +66,8 @@ task:
     fingerprint_script: cat .python-version /etc/os-release
   lint_script:
     - ./ci/lint_run_all.sh
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
 task:
   name: 'ARM [unit tests, no functional tests] [bullseye]'
   << : *GLOBAL_TASK_TEMPLATE
