@@ -21,6 +21,18 @@ fi
 if [ -n "$XCODE_VERSION" ] && [ -f "$OSX_SDK_PATH" ]; then
   CI_EXEC tar -C "${DEPENDS_DIR}/SDKs" -xf "$OSX_SDK_PATH"
 fi
+
+if [ -n "$ANDROID_HOME" ] && [ ! -d "$ANDROID_HOME" ]; then
+  ANDROID_TOOLS_PATH=${DEPENDS_DIR}/sdk-sources/android-tools.zip
+  if [ ! -f "$ANDROID_TOOLS_PATH" ]; then
+    CI_EXEC curl --location --fail "${ANDROID_TOOLS_URL}" -o "$ANDROID_TOOLS_PATH"
+  fi
+  CI_EXEC mkdir -p "${ANDROID_HOME}/cmdline-tools"
+  CI_EXEC unzip -o "$ANDROID_TOOLS_PATH" -d "${ANDROID_HOME}/cmdline-tools"
+  CI_EXEC "yes | ${ANDROID_HOME}/cmdline-tools/tools/bin/sdkmanager --install \"build-tools;${ANDROID_BUILD_TOOLS_VERSION}\" \"platform-tools\" \"platforms;android-${ANDROID_API_LEVEL}\" \"ndk;${ANDROID_NDK_VERSION}\""
+fi
+
+>>>>>>> 597ee30b5e (Merge bitcoin/bitcoin#24522: ci: remove compiled-but-unused BDB from MSAN job)
 if [ -z "$NO_DEPENDS" ]; then
   if [[ $DOCKER_NAME_TAG == *centos* ]]; then
     SHELL_OPTS="CONFIG_SHELL=/bin/dash"
