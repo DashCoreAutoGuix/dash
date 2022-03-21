@@ -170,3 +170,5 @@ test/lint/.cppcheck/*
 
 # flake8 cache location
 .cache/*
+
+/ci/scratch/
