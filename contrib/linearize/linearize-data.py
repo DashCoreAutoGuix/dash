@@ -12,6 +12,7 @@ import re
 import os
 import os.path
 import sys
+import hashlib
 import dash_hash
 import datetime
 import time
@@ -50,11 +51,8 @@ def calc_hdr_hash(blk_hdr):
     return dash_hash.getPoWHash(blk_hdr)
 
 def calc_hash_str(blk_hdr):
-    hash = calc_hdr_hash(blk_hdr)
-    hash = bufreverse(hash)
-    hash = wordreverse(hash)
-    hash_str = hash.hex()
-    return hash_str
+    blk_hdr_hash = hashlib.sha256(hashlib.sha256(blk_hdr).digest()).digest()
+    return blk_hdr_hash[::-1].hex()
 
 def get_blk_dt(blk_hdr):
     members = struct.unpack("<I", blk_hdr[68:68+4])
@@ -70,7 +68,7 @@ def get_block_hashes(settings):
     for line in f:
         line = line.rstrip()
         if settings['rev_hash_bytes'] == 'true':
-            line = hex_switchEndian(line)
+            line = bytes.fromhex(line)[::-1].hex()
         blkindex.append(line)
 
     print("Read " + str(len(blkindex)) + " hashes")

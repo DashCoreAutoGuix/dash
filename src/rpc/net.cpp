@@ -116,7 +116,6 @@ static RPCHelpMan getpeerinfo()
                     {
                         {RPCResult::Type::STR, "SERVICE_NAME", "the service name if it is recognised"}
                     }},
-<<<<<<< HEAD
                     {RPCResult::Type::STR_HEX, "verified_proregtx_hash", true /*optional*/, "Only present when the peer is a masternode and successfully "
                                                                         "authenticated via MNAUTH. In this case, this field contains the "
                                                                         "protx hash of the masternode"},
