@@ -63,6 +63,7 @@ static const std::shared_ptr<CWallet> TestLoadWallet(WalletContext& context)
         // TODO: see CreateWalletWithoutChain
         AddWallet(context, wallet);
     }
+    NotifyWalletLoaded(context, wallet);
     if (context.chain) {
         wallet->postInitProcess();
     }
