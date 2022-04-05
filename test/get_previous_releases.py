@@ -19,7 +19,6 @@ import subprocess
 import sys
 import hashlib
 
-
 SHA256_SUMS = {
     "d1f7121a7d7bdd4077709284076860389d6a0f4481a934ad9acb85cae3d7b83e":  "dashcore-20.0.1-aarch64-linux-gnu.tar.gz",
     "37375229e5ab18d7050b729fb016df24acdd72d60bc3fa074270d89030a27827":  "dashcore-20.0.1-arm-linux-gnueabihf.tar.gz",
