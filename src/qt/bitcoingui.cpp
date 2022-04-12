@@ -44,6 +44,7 @@
 #include <validation.h>
 
 #include <QAction>
+#include <QActionGroup>
 #include <QApplication>
 #include <QButtonGroup>
 #include <QComboBox>
@@ -472,7 +473,7 @@ void BitcoinGUI::createActions()
     showCoinJoinHelpAction->setStatusTip(tr("Show the %1 basic information").arg(strCoinJoinName));
 
     m_mask_values_action = new QAction(tr("&Discreet mode"), this);
-    m_mask_values_action->setShortcut(QKeySequence(tr("Ctrl+Shift+D")));
+    m_mask_values_action->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_D));
     m_mask_values_action->setStatusTip(tr("Mask the values in the Overview tab"));
     m_mask_values_action->setCheckable(true);
 
@@ -587,6 +588,9 @@ void BitcoinGUI::createActions()
         connect(m_mask_values_action, &QAction::toggled, this, &BitcoinGUI::setPrivacy);
     }
 #endif // ENABLE_WALLET
+
+    connect(new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_C), this), &QShortcut::activated, this, &BitcoinGUI::showDebugWindowActivateConsole);
+    connect(new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_D), this), &QShortcut::activated, this, &BitcoinGUI::showDebugWindow);
 }
 
 void BitcoinGUI::createMenuBar()
