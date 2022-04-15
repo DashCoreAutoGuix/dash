@@ -143,13 +143,34 @@ public:
 
     QSize minimumSizeHint() const override
     {
-        ensurePolished();
-        const QFontMetrics fm(fontMetrics());
-        int h = 0;
-        int w = GUIUtil::TextWidth(fm, BitcoinUnits::format(BitcoinUnit::DASH, BitcoinUnits::maxMoney(), false, BitcoinUnits::SeparatorStyle::ALWAYS));
-        w += 2; // cursor blinking space
-        w += GUIUtil::dashThemeActive() ? 24 : 0; // counteract padding from css
-        return QSize(w, h);
+        if(cachedMinimumSizeHint.isEmpty())
+        {
+            ensurePolished();
+
+            const QFontMetrics fm(fontMetrics());
+            int h = lineEdit()->minimumSizeHint().height();
+            int w = GUIUtil::TextWidth(fm, BitcoinUnits::format(BitcoinUnit::DASH, BitcoinUnits::maxMoney(), false, BitcoinUnits::SeparatorStyle::ALWAYS));
+            w += 2; // cursor blinking space
+
+            QStyleOptionSpinBox opt;
+            initStyleOption(&opt);
+            QSize hint(w, h);
+            QSize extra(35, 6);
+            opt.rect.setSize(hint + extra);
+            extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
+                                                    QStyle::SC_SpinBoxEditField, this).size();
+            // get closer to final result by repeating the calculation
+            opt.rect.setSize(hint + extra);
+            extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
+                                                    QStyle::SC_SpinBoxEditField, this).size();
+            hint += extra;
+            hint.setHeight(h);
+
+            opt.rect = rect();
+
+            cachedMinimumSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
+        }
+        return cachedMinimumSizeHint;
     }
 
 private:
@@ -157,6 +178,7 @@ private:
     bool m_allow_empty{true};
     CAmount m_min_amount{CAmount(0)};
     CAmount m_max_amount{BitcoinUnits::maxMoney()};
+    mutable QSize cachedMinimumSizeHint;
 
 protected:
     bool event(QEvent *event) override
