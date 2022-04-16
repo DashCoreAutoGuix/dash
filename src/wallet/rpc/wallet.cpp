@@ -492,23 +492,23 @@ static RPCHelpMan setwalletflag()
             flags += (flags == "" ? "" : ", ") + it.first;
 
     return RPCHelpMan{"setwalletflag",
-        "\nChange the state of the given wallet flag for a wallet.\n",
-        {
-            {"flag", RPCArg::Type::STR, RPCArg::Optional::NO, "The name of the flag to change. Current available flags: " + flags},
-            {"value", RPCArg::Type::BOOL, RPCArg::Default{true}, "The new state."},
-        },
-        RPCResult{
-            RPCResult::Type::OBJ, "", "",
-            {
-                {RPCResult::Type::STR, "flag_name", "The name of the flag that was modified"},
-                {RPCResult::Type::BOOL, "flag_state", "The new state of the flag"},
-                {RPCResult::Type::STR, "warnings", "Any warnings associated with the change"},
-            }
-        },
-        RPCExamples{
-            HelpExampleCli("setwalletflag", "avoid_reuse")
-      + HelpExampleRpc("setwalletflag", "\"avoid_reuse\"")
-        },
+                "\nChange the state of the given wallet flag for a wallet.\n",
+                {
+                    {"flag", RPCArg::Type::STR, RPCArg::Optional::NO, "The name of the flag to change. Current available flags: " + flags},
+                    {"value", RPCArg::Type::BOOL, RPCArg::Default{true}, "The new state."},
+                },
+                RPCResult{
+                    RPCResult::Type::OBJ, "", "",
+                    {
+                        {RPCResult::Type::STR, "flag_name", "The name of the flag that was modified"},
+                        {RPCResult::Type::BOOL, "flag_state", "The new state of the flag"},
+                        {RPCResult::Type::STR, "warnings", /*optional=*/true, "Any warnings associated with the change"},
+                    }
+                },
+                RPCExamples{
+                    HelpExampleCli("setwalletflag", "avoid_reuse")
+                  + HelpExampleRpc("setwalletflag", "\"avoid_reuse\"")
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     std::shared_ptr<CWallet> const pwallet = GetWalletForJSONRPCRequest(request);
