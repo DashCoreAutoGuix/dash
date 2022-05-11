@@ -11,10 +11,12 @@ https://www.dash.org
 For an immediately usable, binary version of the Dash Core software, see
 https://www.dash.org/downloads/.
 
-Further information about Dash Core is available in [./doc/](/doc).
+What is Dash Core?
+------------------
 
-What is Dash?
--------------
+Dash Core connects to the Dash peer-to-peer network to download and fully
+validate blocks and transactions. It also includes a wallet and graphical user
+interface, which can be optionally built.
 
 Dash is an experimental digital currency that enables instant, private
 payments to anyone, anywhere in the world. Dash uses peer-to-peer technology
@@ -22,9 +24,9 @@ to operate with no central authority: managing transactions and issuing money
 are carried out collectively by the network. Dash Core is the name of the open
 source software which enables the use of this currency.
 
-
 For more information read the original Dash whitepaper.
 
+Further information about Dash Core is available in the [doc folder](/doc).
 License
 -------
 
