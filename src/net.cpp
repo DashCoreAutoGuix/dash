@@ -3495,7 +3495,8 @@ void CConnman::ThreadOpenConnections(const std::vector<std::string> connect, CDe
         if (addrConnect.IsValid()) {
             if (fFeeler) {
                 // Add small amount of random noise before connection to avoid synchronization.
-                if (!interruptNet.sleep_for(rng.rand_uniform_duration<CThreadInterrupt::Clock>(FEELER_SLEEP_WINDOW))) {
+                int randsleep = GetRand<int>(FEELER_SLEEP_WINDOW * 1000);
+                if (!interruptNet.sleep_for(std::chrono::milliseconds(randsleep)))
                     return;
                 }
                 if (fLogIPs) {
