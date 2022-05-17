@@ -1421,6 +1421,7 @@ static void SoftForkDescPushBack(const CBlockIndex* active_chain_tip, const std:
     softforks.pushKV(DeploymentName(id), rv);
 }
 
+// used by rest.cpp:rest_chaininfo, so cannot be static
 RPCHelpMan getblockchaininfo()
 {
     return RPCHelpMan{"getblockchaininfo",
@@ -1442,35 +1443,9 @@ RPCHelpMan getblockchaininfo()
                 {RPCResult::Type::STR_HEX, "chainwork", "total amount of work in active chain, in hexadecimal"},
                 {RPCResult::Type::NUM, "size_on_disk", "the estimated size of the block and undo files on disk"},
                 {RPCResult::Type::BOOL, "pruned", "if the blocks are subject to pruning"},
-                {RPCResult::Type::NUM, "pruneheight", /* optional */ true, "lowest-height complete block stored (only present if pruning is enabled)"},
-                {RPCResult::Type::BOOL, "automatic_pruning", /* optional */ true, "whether automatic pruning is enabled (only present if pruning is enabled)"},
-                {RPCResult::Type::NUM, "prune_target_size", /* optional */ true, "the target size used by pruning (only present if automatic pruning is enabled)"},
-                {RPCResult::Type::OBJ, "softforks", "status of softforks in progress",
-                {
-                    {RPCResult::Type::STR, "type", "one of \"buried\", \"bip9\""},
-                    {RPCResult::Type::OBJ, "bip9", /* optional */ true, "status of bip9 softforks (only for \"bip9\" type)",
-                    {
-                        {RPCResult::Type::STR, "status", "one of \"defined\", \"started\", \"locked_in\", \"active\", \"failed\""},
-                        {RPCResult::Type::NUM, "bit", /* optional */ true, "the bit (0-28) in the block version field used to signal this softfork (only for \"started\" and \"locked_in\" status)"},
-                        {RPCResult::Type::NUM_TIME, "start_time", "the minimum median time past of a block at which the bit gains its meaning"},
-                        {RPCResult::Type::NUM_TIME, "timeout", "the median time past of a block at which the deployment is considered failed if not yet locked in"},
-                        {RPCResult::Type::BOOL, "ehf", "returns true for EHF activated forks"},
-                        {RPCResult::Type::NUM, "ehf_height", /* optional */ true, "the minimum height when miner's signals for the deployment matter. Below this height miner signaling cannot trigger hard fork lock-in. Not specified for non-EHF forks"},
-                        {RPCResult::Type::NUM, "since", "height of the first block to which the status applies"},
-                        {RPCResult::Type::NUM, "activation_height", "expected activation height for this softfork (only for \"locked_in\" status)"},
-                        {RPCResult::Type::NUM, "min_activation_height", "minimum height of blocks for which the rules may be enforced"},
-                        {RPCResult::Type::OBJ, "statistics", /* optional */ true, "numeric statistics about signalling for a softfork (only for \"started\" and \"locked_in\" status)",
-                        {
-                            {RPCResult::Type::NUM, "period", "the length in blocks of the signalling period"},
-                            {RPCResult::Type::NUM, "threshold", /* optional */ true, "the number of blocks with the version bit set required to activate the feature (only for \"started\" status)"},
-                            {RPCResult::Type::NUM, "elapsed", "the number of blocks elapsed since the beginning of the current period"},
-                            {RPCResult::Type::NUM, "count", "the number of blocks with the version bit set in the current period"},
-                            {RPCResult::Type::BOOL, "possible", /* optional */ true, "returns false if there are not enough blocks left in this period to pass activation threshold (only for \"started\" status)"},
-                        }},
-                    }},
-                    {RPCResult::Type::NUM, "height", /* optional */ true, "height of the first block which the rules are or will be enforced (only for \"buried\" type, or \"bip9\" type with \"active\" status)"},
-                    {RPCResult::Type::BOOL, "active", "true if the rules are enforced for the mempool and the next block"},
-                }},
+                {RPCResult::Type::NUM, "pruneheight", /*optional=*/true, "height of the last block pruned, plus one (only present if pruning is enabled)"},
+                {RPCResult::Type::BOOL, "automatic_pruning", /*optional=*/true, "whether automatic pruning is enabled (only present if pruning is enabled)"},
+                {RPCResult::Type::NUM, "prune_target_size", /*optional=*/true, "the target size used by pruning (only present if automatic pruning is enabled)"},
                 {RPCResult::Type::STR, "warnings", "any network and blockchain warnings"},
             }},
         RPCExamples{
@@ -1519,34 +1494,6 @@ RPCHelpMan getblockchaininfo()
             obj.pushKV("prune_target_size",  nPruneTarget);
         }
     }
-
-    const Consensus::Params& consensusParams = Params().GetConsensus();
-    UniValue softforks(UniValue::VOBJ);
-    for (auto deploy : { /* sorted by activation block */
-                         Consensus::DEPLOYMENT_HEIGHTINCB,
-                         Consensus::DEPLOYMENT_DERSIG,
-                         Consensus::DEPLOYMENT_CLTV,
-                         Consensus::DEPLOYMENT_BIP147,
-                         Consensus::DEPLOYMENT_CSV,
-                         Consensus::DEPLOYMENT_DIP0001,
-                         Consensus::DEPLOYMENT_DIP0003,
-                         Consensus::DEPLOYMENT_DIP0008,
-                         Consensus::DEPLOYMENT_DIP0020,
-                         Consensus::DEPLOYMENT_DIP0024,
-                         Consensus::DEPLOYMENT_BRR,
-                         Consensus::DEPLOYMENT_V19,
-                         Consensus::DEPLOYMENT_V20,
-                         Consensus::DEPLOYMENT_MN_RR,
-                         Consensus::DEPLOYMENT_WITHDRAWALS,
-                        }) {
-        SoftForkDescPushBack(&tip, softforks, consensusParams, deploy);
-    }
-    for (auto ehf_deploy : { /* sorted by activation block */
-                             Consensus::DEPLOYMENT_V23,
-                             Consensus::DEPLOYMENT_TESTDUMMY }) {
-        SoftForkDescPushBack(&tip, ehfSignals, softforks, consensusParams, ehf_deploy);
-    }
-    obj.pushKV("softforks", softforks);
 
     obj.pushKV("warnings", GetWarnings(false).original);
     return obj;
