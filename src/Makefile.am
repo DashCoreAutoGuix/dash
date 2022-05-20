@@ -256,6 +256,7 @@ BITCOIN_CORE_H = \
   instantsend/lock.h \
   instantsend/net_instantsend.h \
   instantsend/signing.h \
+  kernel/chainstatemanager_opts.h \
   kernel/coinstats.h \
   key.h \
   key_io.h \

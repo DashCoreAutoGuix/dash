@@ -34,6 +34,7 @@
 #include <streams.h>
 #include <test/util/index.h>
 #include <test/util/net.h>
+#include <timedata.h>
 #include <txdb.h>
 #include <util/strencodings.h>
 #include <util/string.h>
@@ -269,7 +270,11 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
 
     m_cache_sizes = CalculateCacheSizes(m_args);
 
-    m_node.chainman = std::make_unique<ChainstateManager>();
+    const ChainstateManager::Options chainman_opts{
+        Params(),
+        GetAdjustedTime,
+    };
+    m_node.chainman = std::make_unique<ChainstateManager>(chainman_opts);
     m_node.chainman->m_blockman.m_block_tree_db = std::make_unique<CBlockTreeDB>(m_cache_sizes.block_tree_db, true);
 
     m_node.mn_sync = std::make_unique<CMasternodeSync>(*m_node.connman, *m_node.netfulfilledman);
