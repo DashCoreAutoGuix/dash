@@ -42,6 +42,15 @@ Performance Improvements
 
 - Improved the performance of deterministic masternode list management, significantly speeding up RPC calls such as `protx diff` (dash#6581).
 
+- The `deprecatedrpc=exclude_coinbase` configuration option has been removed.
+  The `receivedby` RPCs (`listreceivedbyaddress`, `listreceivedbylabel`,
+  `getreceivedbyaddress` and `getreceivedbylabel`) now always return results
+  accounting for received coins from coinbase outputs, without an option to
+  change that behaviour. Excluding coinbases was previously deprecated in 23.0.
+  (#25171)
+
+Changes to wallet related RPCs can be found in the Wallet section below.
+
 Coinjoin Tests Stability
 ------------------------
 
