@@ -15,13 +15,16 @@
 
 namespace wallet {
 
-static void AddCoin(const CAmount& value, int n_input, int n_input_bytes, int locktime, std::vector<COutput>& coins)
+static void AddCoin(const CAmount& value, int n_input, int n_input_bytes, int locktime, std::vector<COutput>& coins, CFeeRate fee_rate)
 {
     CMutableTransaction tx;
     tx.vout.resize(n_input + 1);
     tx.vout[n_input].nValue = value;
     tx.nLockTime = locktime; // all transactions get different hashes
     coins.emplace_back(COutPoint(tx.GetHash(), n_input), tx.vout.at(n_input), /*depth=*/0, n_input_bytes, /*spendable=*/true, /*solvable=*/true, /*safe=*/true, /*time=*/0, /*from_me=*/true);
+    // Set effective_value and fee manually since Dash's COutput constructor doesn't take fee_rate
+    coins.back().fee = fee_rate.GetFee(n_input_bytes);
+    coins.back().effective_value = value - coins.back().fee;
 }
 
 // Randomly distribute coins to instances of OutputGroup
@@ -71,7 +74,7 @@ FUZZ_TARGET(coinselection)
         if (total_balance + amount >= MAX_MONEY) {
             break;
         }
-        AddCoin(amount, n_input, n_input_bytes, ++next_locktime, utxo_pool);
+        AddCoin(amount, n_input, n_input_bytes, ++next_locktime, utxo_pool, coin_params.m_effective_feerate);
         total_balance += amount;
     }
 
