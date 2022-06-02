@@ -30,17 +30,47 @@
 QString TransactionDesc::FormatTxStatus(const interfaces::WalletTxStatus& status, bool inMempool)
 {
     int depth = status.depth_in_main_chain;
-    if (depth < 0) return tr("conflicted");
+    if (depth < 0) {
+        /*: Text explaining the current status of a transaction, shown in the
+            status field of the details window for this transaction. This status
+            represents an unconfirmed transaction that conflicts with a confirmed
+            transaction. */
+        return tr("conflicted with a transaction with %1 confirmations").arg(-depth);
+    }
 
     QString strTxStatus;
     bool fChainLocked = status.is_chainlocked;
 
     if (depth == 0) {
-        const QString abandoned{status.is_abandoned ? QLatin1String(", ") + tr("abandoned") : QString()};
-        strTxStatus = tr("0/unconfirmed, %1").arg((inMempool ? tr("in memory pool") : tr("not in memory pool"))) + abandoned;
+        QString s;
+        if (inMempool) {
+            /*: Text explaining the current status of a transaction, shown in the
+                status field of the details window for this transaction. This status
+                represents an unconfirmed transaction that is in the memory pool. */
+            s = tr("0/unconfirmed, in memory pool");
+        } else {
+            /*: Text explaining the current status of a transaction, shown in the
+                status field of the details window for this transaction. This status
+                represents an unconfirmed transaction that is not in the memory pool. */
+            s = tr("0/unconfirmed, not in memory pool");
+        }
+        if (status.is_abandoned) {
+            /*: Text explaining the current status of a transaction, shown in the
+                status field of the details window for this transaction. This
+                status represents an abandoned transaction. */
+            s += QLatin1String(", ") + tr("abandoned");
+        }
+        strTxStatus = s;
     } else if (!fChainLocked && depth < 6) {
+        /*: Text explaining the current status of a transaction, shown in the
+            status field of the details window for this transaction. This
+            status represents a transaction confirmed in at least one block,
+            but less than 6 blocks. */
         strTxStatus = tr("%1/unconfirmed").arg(depth);
     } else {
+        /*: Text explaining the current status of a transaction, shown in the
+            status field of the details window for this transaction. This status
+            represents a transaction confirmed in 6 or more blocks. */
         strTxStatus = tr("%1 confirmations").arg(depth);
         if (fChainLocked) {
             strTxStatus += QLatin1String(", ") + tr("locked via ChainLocks");
