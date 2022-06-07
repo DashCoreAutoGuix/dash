@@ -15,22 +15,10 @@ from subprocess import run
 
 exit_code = 0
 mod_path = Path(__file__).parent
-lints = glob(f"{mod_path}/lint-*")
-if which("parallel") and which("column"):
-    logfile = "parallel_out.log"
-    command = ["parallel", "--jobs", "100%", "--will-cite", "--joblog", logfile, ":::"] + lints
-    result = run(command)
+for lint in glob(f"{mod_path}/lint-*.py"):
+    result = run([lint])
     if result.returncode != 0:
-        print(f"^---- failure generated")
-        exit_code = result.returncode
-    result = run(["column", "-t", logfile])
-    if os_path.isfile(logfile):
-        remove(logfile)
-else:
-    for lint in lints:
-        result = run([lint])
-        if result.returncode != 0:
-            print(f"^---- failure generated from {lint.split('/')[-1]}")
-            exit_code |= result.returncode
+        print(f"^---- failure generated from {lint.split('/')[-1]}")
+        exit_code |= result.returncode
 
 exit(exit_code)
