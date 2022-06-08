@@ -32,7 +32,12 @@ the same executable will result in errors.
 
 ### Building BerkeleyDB
 
-BerkeleyDB is only necessary for the wallet functionality. To skip this, pass
+#### Wallet Dependencies
+
+It is not necessary to build wallet functionality to run either `dashd` or `dash-qt`.
+
+###### Legacy Wallet Support
+BerkeleyDB is required for wallet functionality. To skip this, pass
 `--disable-wallet` to `./configure` and skip to the next section.
 
 It is recommended to use Berkeley DB 4.8. You cannot use the BerkeleyDB library
