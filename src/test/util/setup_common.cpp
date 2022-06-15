@@ -428,6 +428,19 @@ void TestChainSetup::mineBlocks(int num_blocks)
     }
 }
 
+CBlock TestChain100Setup::CreateBlock(
+    const std::vector<CMutableTransaction>& txns,
+    const CScript& scriptPubKey,
+    CChainState& chainstate)
+{
+    CBlock block = BlockAssembler{chainstate, nullptr}.CreateNewBlock(scriptPubKey)->block;
+
+    Assert(block.vtx.size() == 1);
+    for (const CMutableTransaction& tx : txns) {
+        block.vtx.push_back(MakeTransactionRef(tx));
+    }
+}
+
 CBlock TestChainSetup::CreateAndProcessBlock(
     const std::vector<CMutableTransaction>& txns,
     const CScript& scriptPubKey,
