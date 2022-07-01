@@ -1148,6 +1148,7 @@ static RPCHelpMan gettxoutsetinfo()
                 HelpExampleCli("gettxoutsetinfo", R"("none")") +
                 HelpExampleCli("gettxoutsetinfo", R"("none" 1000)") +
                 HelpExampleCli("gettxoutsetinfo", R"("none" '"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09"')") +
+                HelpExampleCli("-named gettxoutsetinfo", R"(hash_type='muhash' use_index='false')") +
                 HelpExampleRpc("gettxoutsetinfo", "") +
                 HelpExampleRpc("gettxoutsetinfo", R"("none")") +
                 HelpExampleRpc("gettxoutsetinfo", R"("none", 1000)") +
@@ -1183,6 +1184,10 @@ static RPCHelpMan gettxoutsetinfo()
 
         if (stats.m_hash_type == CoinStatsHashType::HASH_SERIALIZED) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "hash_serialized_2 hash type cannot be queried for a specific block");
+        }
+
+        if (!stats.index_requested) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot set use_index to false when querying for a specific block");
         }
 
         pindex = ParseHashOrHeight(request.params[1], chainman);
