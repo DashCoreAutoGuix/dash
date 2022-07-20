@@ -80,6 +80,8 @@
 
 using node::BlockAssembler;
 using node::CalculateCacheSizes;
+using node::ChainstateLoadOptions;
+using node::ChainstateLoadStatus;
 using node::DashChainstateSetup;
 using node::DashChainstateSetupClose;
 using node::DEFAULT_ADDRESSINDEX;
@@ -303,51 +305,50 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
     // instead of unit tests, but for now we need these here.
     RegisterAllCoreRPCCommands(tableRPC);
 
-    auto maybe_load_error = LoadChainstate(fReindex.load(),
-                                           *Assert(m_node.chainman.get()),
-                                           *Assert(m_node.govman.get()),
-                                           *Assert(m_node.mn_metaman.get()),
-                                           *Assert(m_node.mn_sync.get()),
-                                           *Assert(m_node.sporkman.get()),
-                                           m_node.mn_activeman,
-                                           m_node.chain_helper,
-                                           m_node.cpoolman,
-                                           m_node.dmnman,
-                                           m_node.evodb,
-                                           m_node.mnhf_manager,
-                                           m_node.llmq_ctx,
-                                           Assert(m_node.mempool.get()),
-                                           Assert(m_node.args)->GetDataDirNet(),
-                                           fPruneMode,
-                                           m_args.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX),
-                                           !m_args.GetBoolArg("-disablegovernance", !DEFAULT_GOVERNANCE_ENABLE),
-                                           m_args.GetBoolArg("-spentindex", DEFAULT_SPENTINDEX),
-                                           m_args.GetBoolArg("-timestampindex", DEFAULT_TIMESTAMPINDEX),
-                                           m_args.GetBoolArg("-txindex", DEFAULT_TXINDEX),
-                                           chainparams.GetConsensus(),
-                                           chainparams.NetworkIDString(),
-                                           m_args.GetBoolArg("-reindex-chainstate", false),
-                                           m_cache_sizes.block_tree_db,
-                                           m_cache_sizes.coins_db,
-                                           m_cache_sizes.coins,
-                                           /*block_tree_db_in_memory=*/true,
-                                           /*coins_db_in_memory=*/true,
-                                           /*dash_dbs_in_memory=*/true);
-    assert(!maybe_load_error.has_value());
+    node::ChainstateLoadOptions options;
+    options.mempool = Assert(m_node.mempool.get());
+    options.block_tree_db_in_memory = true;
+    options.coins_db_in_memory = true;
+    options.reindex = node::fReindex;
+    options.reindex_chainstate = m_args.GetBoolArg("-reindex-chainstate", false);
+    options.prune = node::fPruneMode;
+    options.check_blocks = m_args.GetIntArg("-checkblocks", DEFAULT_CHECKBLOCKS);
+    options.check_level = m_args.GetIntArg("-checklevel", DEFAULT_CHECKLEVEL);
+    auto [status, error] = LoadChainstate(*Assert(m_node.chainman.get()),
+                                          m_cache_sizes,
+                                          options,
+                                          *Assert(m_node.govman.get()),
+                                          *Assert(m_node.mn_metaman.get()),
+                                          *Assert(m_node.mn_sync.get()),
+                                          *Assert(m_node.sporkman.get()),
+                                          m_node.mn_activeman,
+                                          m_node.chain_helper,
+                                          m_node.cpoolman,
+                                          m_node.dmnman,
+                                          m_node.evodb,
+                                          m_node.mnhf_manager,
+                                          m_node.llmq_ctx,
+                                          Assert(m_node.args)->GetDataDirNet(),
+                                          m_args.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX),
+                                          !m_args.GetBoolArg("-disablegovernance", !DEFAULT_GOVERNANCE_ENABLE),
+                                          m_args.GetBoolArg("-spentindex", DEFAULT_SPENTINDEX),
+                                          m_args.GetBoolArg("-timestampindex", DEFAULT_TIMESTAMPINDEX),
+                                          m_args.GetBoolArg("-txindex", DEFAULT_TXINDEX),
+                                          chainparams.GetConsensus(),
+                                          chainparams.NetworkIDString(),
+                                          /*dash_dbs_in_memory=*/true);
+    assert(status == node::ChainstateLoadStatus::SUCCESS);
 
-    auto maybe_verify_error = VerifyLoadedChainstate(
+    std::tie(status, error) = VerifyLoadedChainstate(
         *Assert(m_node.chainman),
         *Assert(m_node.evodb.get()),
-        fReindex.load(),
-        m_args.GetBoolArg("-reindex-chainstate", false),
+        options,
         chainparams.GetConsensus(),
-        m_args.GetIntArg("-checkblocks", DEFAULT_CHECKBLOCKS),
-        m_args.GetIntArg("-checklevel", DEFAULT_CHECKLEVEL),
         /*get_unix_time_seconds=*/static_cast<int64_t(*)()>(GetTime),
         [](bool bls_state) {
             LogPrintf("%s: bls_legacy_scheme=%d\n", __func__, bls_state);
         });
-    assert(!maybe_verify_error.has_value());
+    assert(status == node::ChainstateLoadStatus::SUCCESS);
 
     m_node.dstxman = std::make_unique<CDSTXManager>();
 #ifdef ENABLE_WALLET
