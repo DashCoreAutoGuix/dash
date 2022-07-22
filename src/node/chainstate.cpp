@@ -8,6 +8,14 @@
 #include <consensus/params.h>
 #include <deploymentstatus.h>
 #include <node/blockstorage.h>
+#include <node/caches.h>
+#include <sync.h>
+#include <threadsafety.h>
+#include <tinyformat.h>
+#include <txdb.h>
+#include <uint256.h>
+#include <util/time.h>
+#include <util/translation.h>
 #include <validation.h>
 
 #include <evo/chainhelper.h>
