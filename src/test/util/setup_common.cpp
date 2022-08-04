@@ -4,6 +4,8 @@
 
 #include <test/util/setup_common.h>
 
+#include <kernel/validation_cache_sizes.h>
+
 #include <addrman.h>
 #include <banman.h>
 #include <chainparams.h>
@@ -23,6 +25,7 @@
 #include <node/blockstorage.h>
 #include <node/chainstate.h>
 #include <node/miner.h>
+#include <node/validation_cache_args.h>
 #include <policy/fees.h>
 #include <pow.h>
 #include <rpc/blockchain.h>
@@ -78,6 +81,8 @@
 #include <memory>
 #include <stdexcept>
 
+using kernel::ValidationCacheSizes;
+using node::ApplyArgsManOptions;
 using node::BlockAssembler;
 using node::CalculateCacheSizes;
 using node::DashChainstateSetup;
@@ -187,8 +192,11 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     BLSInit();
     SetupEnvironment();
     SetupNetworking();
-    InitSignatureCache();
-    InitScriptExecutionCache();
+
+    ValidationCacheSizes validation_cache_sizes{};
+    ApplyArgsManOptions(*m_node.args, validation_cache_sizes);
+    Assert(InitSignatureCache(validation_cache_sizes.signature_cache_bytes));
+    Assert(InitScriptExecutionCache(validation_cache_sizes.script_execution_cache_bytes));
 
     m_node.chain = interfaces::MakeChain(m_node);
     m_node.netgroupman = std::make_unique<NetGroupManager>(/*asmap=*/std::vector<bool>());
