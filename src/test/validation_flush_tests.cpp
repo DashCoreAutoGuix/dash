@@ -5,7 +5,6 @@
 #include <evo/evodb.h>
 #include <sync.h>
 #include <test/util/setup_common.h>
-#include <txmempool.h>
 #include <validation.h>
 
 #include <boost/test/unit_test.hpp>
@@ -19,11 +18,7 @@ BOOST_FIXTURE_TEST_SUITE(validation_flush_tests, ChainTestingSetup)
 //!
 BOOST_AUTO_TEST_CASE(getcoinscachesizestate)
 {
-    CTxMemPool mempool;
-    BlockManager blockman{};
-    CChainState chainstate(&mempool, blockman, *Assert(m_node.chainman), *m_node.evodb, m_node.chain_helper);
-    chainstate.InitCoinsDB(/*cache_size_bytes=*/1 << 10, /*in_memory=*/true, /*should_wipe=*/false);
-    WITH_LOCK(::cs_main, chainstate.InitCoinsCache(1 << 10));
+    CChainState& chainstate{m_node.chainman->ActiveChainstate()};
 
     constexpr bool is_64_bit = sizeof(void*) == 8;
 
