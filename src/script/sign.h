@@ -86,11 +86,6 @@ bool SignSignature(const SigningProvider &provider, const CTransaction& txFrom, 
 SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn, const CTxOut& txout);
 void UpdateInput(CTxIn& input, const SignatureData& data);
 
-/* Check whether we know how to sign for an output like this, assuming we
- * have all private keys. While this function does not need private keys, the passed
- * provider is used to look up public keys and redeemscripts by hash.
- * Solvability is unrelated to whether we consider this output to be ours. */
-bool IsSolvable(const SigningProvider& provider, const CScript& script);
 
 /** Sign the CMutableTransaction */
 bool SignTransaction(CMutableTransaction& mtx, const SigningProvider* provider, const std::map<COutPoint, Coin>& coins, int sighash, std::map<int, bilingual_str>& input_errors);
