@@ -159,6 +159,8 @@ void TestGUI(interfaces::Node& node)
     sendCoinsDialog.setModel(&walletModel);
     transactionView.setModel(&walletModel);
 
+    // Update walletModel cached balance which will trigger an update for the 'labelBalance' QLabel.
+    walletModel.pollBalanceChanged();
     {
         // Check balance in send dialog
         QLabel* balanceLabel = sendCoinsDialog.findChild<QLabel*>("labelBalance");
@@ -184,6 +186,7 @@ void TestGUI(interfaces::Node& node)
     OverviewPage overviewPage;
     overviewPage.setClientModel(&clientModel);
     overviewPage.setWalletModel(&walletModel);
+    walletModel.pollBalanceChanged(); // Manual balance polling update
     QLabel* balanceLabel = overviewPage.findChild<QLabel*>("labelBalance");
     QString balanceText = balanceLabel->text().trimmed();
     BitcoinUnit unit = walletModel.getOptionsModel()->getDisplayUnit();
