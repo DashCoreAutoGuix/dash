@@ -64,7 +64,12 @@ private Q_SLOTS:
 
 private:
     Ui::Intro *ui;
+<<<<<<< HEAD
     QThread *thread;
+=======
+    bool m_prune_checkbox_is_default{true};
+    QThread* thread{nullptr};
+>>>>>>> bee0ffbecf (GUI/Intro: Never change the prune checkbox after the user has touched it)
     QMutex mutex;
     bool signalled;
     QString pathToCheck;
