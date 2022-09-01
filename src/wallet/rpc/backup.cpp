@@ -2026,51 +2026,99 @@ RPCHelpMan listdescriptors()
 
     LOCK(wallet->cs_wallet);
 
-    UniValue descriptors(UniValue::VARR);
     const auto active_spk_mans = wallet->GetActiveScriptPubKeyMans();
+
+    struct WalletDescInfo {
+        std::string descriptor;
+        uint64_t creation_time;
+        bool active;
+        std::optional<bool> internal;
+        std::optional<std::pair<int64_t,int64_t>> range;
+        int64_t next_index;
+        // Dash-specific fields
+        SecureString mnemonic;
+        SecureString mnemonic_passphrase;
+        bool is_coinjoin;
+    };
+
+    std::vector<WalletDescInfo> wallet_descriptors;
     for (const auto& spk_man : wallet->GetAllScriptPubKeyMans()) {
         const auto desc_spk_man = dynamic_cast<DescriptorScriptPubKeyMan*>(spk_man);
         if (!desc_spk_man) {
             throw JSONRPCError(RPC_WALLET_ERROR, "Unexpected ScriptPubKey manager type.");
         }
-        UniValue spk(UniValue::VOBJ);
         LOCK(desc_spk_man->cs_desc_man);
         const auto& wallet_descriptor = desc_spk_man->GetWalletDescriptor();
         std::string descriptor;
-
         if (!desc_spk_man->GetDescriptorString(descriptor, priv)) {
             throw JSONRPCError(RPC_WALLET_ERROR, "Can't get descriptor string.");
         }
-        if (priv) {
-            SecureString mnemonic;
-            SecureString mnemonic_passphrase;
-            if (desc_spk_man->GetMnemonicString(mnemonic, mnemonic_passphrase) && !mnemonic.empty()) {
-                spk.pushKV("mnemonic", mnemonic);
-                spk.pushKV("mnemonicpassphrase", mnemonic_passphrase);
-            }
-        }
-        spk.pushKV("desc", descriptor);
-        spk.pushKV("timestamp", wallet_descriptor.creation_time);
+        const bool is_range = wallet_descriptor.descriptor->IsRange();
         const bool active = active_spk_mans.count(desc_spk_man) != 0;
-        spk.pushKV("active", active);
         const auto& type = wallet_descriptor.descriptor->GetOutputType();
+
+        // Compute internal status (Dash uses different method than Bitcoin)
+        std::optional<bool> internal_status;
         if (active && type != std::nullopt) {
-            spk.pushKV("internal", wallet->GetScriptPubKeyMan(true) == desc_spk_man);
+            internal_status = wallet->GetScriptPubKeyMan(true) == desc_spk_man;
         }
+
+        // Dash-specific: check for CoinJoin descriptor
+        bool is_cj = false;
         if (type != std::nullopt) {
             std::string match = strprintf("/%d'/%s'/4'/0'", BIP32_PURPOSE_FEATURE, Params().ExtCoinType());
-            bool is_cj = descriptor.find(match) != std::string::npos;
-            if (is_cj) {
-                spk.pushKV("coinjoin", is_cj);
-            }
+            is_cj = descriptor.find(match) != std::string::npos;
         }
-        if (wallet_descriptor.descriptor->IsRange()) {
+
+        // Dash-specific: get mnemonic if private
+        SecureString mnemonic;
+        SecureString mnemonic_passphrase;
+        if (priv) {
+            desc_spk_man->GetMnemonicString(mnemonic, mnemonic_passphrase);
+        }
+
+        wallet_descriptors.push_back({
+            descriptor,
+            wallet_descriptor.creation_time,
+            active,
+            internal_status,
+            is_range ? std::optional(std::make_pair(wallet_descriptor.range_start, wallet_descriptor.range_end)) : std::nullopt,
+            wallet_descriptor.next_index,
+            mnemonic,
+            mnemonic_passphrase,
+            is_cj
+        });
+    }
+
+    std::sort(wallet_descriptors.begin(), wallet_descriptors.end(), [](const auto& a, const auto& b) {
+        return a.descriptor < b.descriptor;
+    });
+
+    UniValue descriptors(UniValue::VARR);
+    for (const WalletDescInfo& info : wallet_descriptors) {
+        UniValue spk(UniValue::VOBJ);
+        // Dash-specific: output mnemonic first if present
+        if (!info.mnemonic.empty()) {
+            spk.pushKV("mnemonic", info.mnemonic);
+            spk.pushKV("mnemonicpassphrase", info.mnemonic_passphrase);
+        }
+        spk.pushKV("desc", info.descriptor);
+        spk.pushKV("timestamp", info.creation_time);
+        spk.pushKV("active", info.active);
+        if (info.internal.has_value()) {
+            spk.pushKV("internal", info.internal.value());
+        }
+        // Dash-specific: output coinjoin status if true
+        if (info.is_coinjoin) {
+            spk.pushKV("coinjoin", info.is_coinjoin);
+        }
+        if (info.range.has_value()) {
             UniValue range(UniValue::VARR);
-            range.push_back(wallet_descriptor.range_start);
-            range.push_back(wallet_descriptor.range_end - 1);
+            range.push_back(info.range->first);
+            range.push_back(info.range->second - 1);
             spk.pushKV("range", range);
-            spk.pushKV("next", wallet_descriptor.next_index);
-            spk.pushKV("next_index", wallet_descriptor.next_index);
+            spk.pushKV("next", info.next_index);
+            spk.pushKV("next_index", info.next_index);  // Dash-specific: duplicate field
         }
         descriptors.push_back(spk);
     }
