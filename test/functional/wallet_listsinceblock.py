@@ -41,6 +41,8 @@ class ListSinceBlockTest(BitcoinTestFramework):
         self.test_double_send()
         self.double_spends_filtered()
         self.test_targetconfirmations()
+        if self.options.descriptors:
+            self.test_desc()
 
     def test_no_blockhash(self):
         self.log.info("Test no blockhash")
