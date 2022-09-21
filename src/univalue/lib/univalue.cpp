@@ -218,6 +218,14 @@ const UniValue& UniValue::operator[](size_t index) const
     return values.at(index);
 }
 
+void UniValue::checkType(const VType& expected) const
+{
+    if (typ != expected) {
+        throw type_error{"JSON value of type " + std::string{uvTypeName(typ)} + " is not of expected type " +
+                                 std::string{uvTypeName(expected)}};
+    }
+}
+
 const char *uvTypeName(UniValue::VType t)
 {
     switch (t) {

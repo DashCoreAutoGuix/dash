@@ -18,6 +18,11 @@ class UniValue {
 public:
     enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };
 
+    class type_error : public std::runtime_error
+    {
+        using std::runtime_error::runtime_error;
+    };
+
     UniValue() { typ = VNULL; }
     UniValue(UniValue::VType initialType, const std::string& initialStr = "") {
         typ = initialType;
@@ -71,6 +76,8 @@ public:
     const UniValue& operator[](const std::string& key) const;
     const UniValue& operator[](size_t index) const;
     bool exists(const std::string& key) const { size_t i; return findKey(key, i); }
+
+    void checkType(const VType& expected) const;
 
     bool isNull() const { return (typ == VNULL); }
     bool isTrue() const { return (typ == VBOOL) && (val == "1"); }
