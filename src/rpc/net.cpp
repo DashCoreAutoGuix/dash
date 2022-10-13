@@ -122,7 +122,7 @@ static RPCHelpMan getpeerinfo()
                     {RPCResult::Type::STR_HEX, "verified_pubkey_hash", true /*optional*/, "Only present when the peer is a masternode and successfully "
                                                                         "authenticated via MNAUTH. In this case, this field contains the "
                                                                         "hash of the masternode's operator public key"},
-                    {RPCResult::Type::BOOL, "relaytxes", "Whether peer has asked us to relay transactions to it"},
+                    {RPCResult::Type::BOOL, "relaytxes", /*optional=*/true, "Whether we relay transactions to this peer"},
                     {RPCResult::Type::NUM_TIME, "lastsend", "The " + UNIX_EPOCH_TIME + " of the last send"},
                     {RPCResult::Type::NUM_TIME, "lastrecv", "The " + UNIX_EPOCH_TIME + " of the last receive"},
                     {RPCResult::Type::NUM_TIME, "last_transaction", "The " + UNIX_EPOCH_TIME + " of the last valid transaction received from this peer"},
@@ -131,9 +131,9 @@ static RPCHelpMan getpeerinfo()
                     {RPCResult::Type::NUM, "bytesrecv", "The total bytes received"},
                     {RPCResult::Type::NUM_TIME, "conntime", "The " + UNIX_EPOCH_TIME + " of the connection"},
                     {RPCResult::Type::NUM, "timeoffset", "The time offset in seconds"},
-                    {RPCResult::Type::NUM, "pingtime", /* optional */ true, "ping time (if available)"},
-                    {RPCResult::Type::NUM, "minping", /* optional */ true, "minimum observed ping time (if any at all)"},
-                    {RPCResult::Type::NUM, "pingwait", /* optional */ true, "ping wait (if non-zero)"},
+                    {RPCResult::Type::NUM, "pingtime", /*optional=*/true, "The last ping time in milliseconds (ms), if any"},
+                    {RPCResult::Type::NUM, "minping", /*optional=*/true, "The minimum observed ping time in milliseconds (ms), if any"},
+                    {RPCResult::Type::NUM, "pingwait", /*optional=*/true, "The duration in milliseconds (ms) of an outstanding ping (if non-zero)"},
                     {RPCResult::Type::NUM, "version", "The peer version, such as 70001"},
                     {RPCResult::Type::STR, "subver", "The string version"},
                     {RPCResult::Type::BOOL, "inbound", "Inbound (true) or Outbound (false)"},
@@ -215,6 +215,9 @@ static RPCHelpMan getpeerinfo()
         if (!stats.verifiedPubKeyHash.IsNull()) {
             obj.pushKV("verified_pubkey_hash", stats.verifiedPubKeyHash.ToString());
         }
+        if (fStateStats) {
+            obj.pushKV("relaytxes", statestats.m_relay_txs);
+        }
         obj.pushKV("lastsend", count_seconds(stats.m_last_send));
         obj.pushKV("lastrecv", count_seconds(stats.m_last_recv));
         obj.pushKV("last_transaction", count_seconds(stats.m_last_tx_time));
@@ -254,7 +257,6 @@ static RPCHelpMan getpeerinfo()
                 heights.push_back(height);
             }
             obj.pushKV("inflight", heights);
-            obj.pushKV("relaytxes", statestats.m_relay_txs);
             obj.pushKV("addr_relay_enabled", statestats.m_addr_relay_enabled);
             obj.pushKV("addr_processed", statestats.m_addr_processed);
             obj.pushKV("addr_rate_limited", statestats.m_addr_rate_limited);
