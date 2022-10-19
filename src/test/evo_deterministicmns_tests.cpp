@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <test/util/setup_common.h>
+#include <test/util/txmempool.h>
 
 #include <base58.h>
 #include <chainparams.h>

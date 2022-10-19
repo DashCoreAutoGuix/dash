@@ -5,7 +5,7 @@
 LIBTEST_UTIL=libtest_util.a
 
 EXTRA_LIBRARIES += \
-    $(LIBTEST_UTIL)
+  $(LIBTEST_UTIL)
 
 TEST_UTIL_H = \
     test/util/blockfilter.h \
@@ -19,6 +19,7 @@ TEST_UTIL_H = \
     test/util/setup_common.h \
     test/util/str.h \
     test/util/transaction_utils.h \
+    test/util/txmempool.h \
     test/util/wallet.h \
     test/util/validation.h \
     test/util/xoroshiro128plusplus.h
@@ -35,6 +36,7 @@ libtest_util_a_SOURCES = \
   test/util/setup_common.cpp \
   test/util/str.cpp \
   test/util/transaction_utils.cpp \
+  test/util/txmempool.cpp \
   test/util/validation.cpp \
   test/util/wallet.cpp \
   $(TEST_UTIL_H)
