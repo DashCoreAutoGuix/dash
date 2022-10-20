@@ -20,6 +20,8 @@
 
 static const char* DEFAULT_BENCH_FILTER = ".*";
 static constexpr int64_t DEFAULT_MIN_TIME_MS{10};
+/** Priority level default value, run "all" priority levels */
+static const std::string DEFAULT_PRIORITY{"all"};
 
 static void SetupBenchArgs(ArgsManager& argsman)
 {
@@ -31,6 +33,9 @@ static void SetupBenchArgs(ArgsManager& argsman)
     argsman.AddArg("-min_time=<milliseconds>", strprintf("Minimum runtime per benchmark, in milliseconds (default: %d)", DEFAULT_MIN_TIME_MS), ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
     argsman.AddArg("-output_csv=<output.csv>", "Generate CSV file with the most important benchmark results", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-output_json=<output.json>", "Generate JSON file with all benchmark results", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-sanity-check", "Run benchmarks for only one iteration", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-priority-level=<l1,l2,l3>", strprintf("Run benchmarks of one or multiple priority level(s) (%s), default: '%s'",
+                                                           benchmark::ListPriorities(), DEFAULT_PRIORITY), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
 
 // parses a comma separated list like "10,20,30,50"
@@ -44,6 +49,14 @@ static std::vector<double> parseAsymptote(const std::string& str) {
         ss >> c;
     }
     return numbers;
+}
+
+static uint8_t parsePriorityLevel(const std::string& str) {
+    uint8_t levels{0};
+    for (const auto& level: SplitString(str, ',')) {
+        levels |= benchmark::StringToPriority(level);
+    }
+    return levels;
 }
 
 int main(int argc, char** argv)
@@ -107,15 +120,22 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    benchmark::Args args;
-    args.asymptote = parseAsymptote(argsman.GetArg("-asymptote", ""));
-    args.is_list_only = argsman.GetBoolArg("-list", false);
-    args.min_time = std::chrono::milliseconds(argsman.GetIntArg("-min_time", DEFAULT_MIN_TIME_MS));
-    args.output_csv = argsman.GetPathArg("-output_csv");
-    args.output_json = argsman.GetPathArg("-output_json");
-    args.regex_filter = argsman.GetArg("-filter", DEFAULT_BENCH_FILTER);
+    try {
+        benchmark::Args args;
+        args.asymptote = parseAsymptote(argsman.GetArg("-asymptote", ""));
+        args.is_list_only = argsman.GetBoolArg("-list", false);
+        args.min_time = std::chrono::milliseconds(argsman.GetIntArg("-min_time", DEFAULT_MIN_TIME_MS));
+        args.output_csv = argsman.GetPathArg("-output_csv");
+        args.output_json = argsman.GetPathArg("-output_json");
+        args.regex_filter = argsman.GetArg("-filter", DEFAULT_BENCH_FILTER);
+        args.sanity_check = argsman.GetBoolArg("-sanity-check", false);
+        args.priority = parsePriorityLevel(argsman.GetArg("-priority-level", DEFAULT_PRIORITY));
 
-    benchmark::BenchRunner::RunAll(args);
+        benchmark::BenchRunner::RunAll(args);
 
-    return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
+    } catch (const std::exception& e) {
+        tfm::format(std::cerr, "Error: %s\n", e.what());
+        return EXIT_FAILURE;
+    }
 }

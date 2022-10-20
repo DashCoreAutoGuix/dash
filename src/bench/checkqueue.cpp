@@ -71,4 +71,4 @@ static void CCheckQueueSpeedPrevectorJob(benchmark::Bench& bench)
     queue.StopWorkerThreads();
     ECC_Stop();
 }
-BENCHMARK(CCheckQueueSpeedPrevectorJob);
+BENCHMARK(CCheckQueueSpeedPrevectorJob, benchmark::PriorityLevel::HIGH);

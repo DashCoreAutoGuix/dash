@@ -290,36 +290,36 @@ static void MuHashPrecompute(benchmark::Bench& bench)
     });
 }
 
-BENCHMARK(HASH_1MB_DSHA256);
-BENCHMARK(HASH_1MB_RIPEMD160);
-BENCHMARK(HASH_1MB_SHA1);
-BENCHMARK(HASH_1MB_SHA256);
-BENCHMARK(HASH_1MB_SHA512);
-BENCHMARK(HASH_1MB_SHA3_256);
-BENCHMARK(HASH_1MB_X11);
+BENCHMARK(HASH_1MB_DSHA256, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_RIPEMD160, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_SHA1, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_SHA256, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_SHA512, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_SHA3_256, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_1MB_X11, benchmark::PriorityLevel::HIGH);
 
-BENCHMARK(HASH_DSHA256_0032b_single);
-BENCHMARK(HASH_DSHA256_0080b_single);
-BENCHMARK(HASH_DSHA256_0128b_single);
-BENCHMARK(HASH_DSHA256_0512b_single);
-BENCHMARK(HASH_DSHA256_1024b_single);
-BENCHMARK(HASH_DSHA256_2048b_single);
-BENCHMARK(HASH_X11_0032b_single);
-BENCHMARK(HASH_X11_0080b_single);
-BENCHMARK(HASH_X11_0128b_single);
-BENCHMARK(HASH_X11_0512b_single);
-BENCHMARK(HASH_X11_1024b_single);
-BENCHMARK(HASH_X11_2048b_single);
+BENCHMARK(HASH_DSHA256_0032b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_DSHA256_0080b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_DSHA256_0128b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_DSHA256_0512b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_DSHA256_1024b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_DSHA256_2048b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_0032b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_0080b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_0128b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_0512b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_1024b_single, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_X11_2048b_single, benchmark::PriorityLevel::HIGH);
 
-BENCHMARK(HASH_SHA256_32b);
-BENCHMARK(HASH_SipHash_32b);
+BENCHMARK(HASH_SHA256_32b, benchmark::PriorityLevel::HIGH);
+BENCHMARK(HASH_SipHash_32b, benchmark::PriorityLevel::HIGH);
 
-BENCHMARK(HASH_SHA256D64_1024);
+BENCHMARK(HASH_SHA256D64_1024, benchmark::PriorityLevel::HIGH);
 
-BENCHMARK(FastRandom_32bit);
-BENCHMARK(FastRandom_1bit);
+BENCHMARK(FastRandom_32bit, benchmark::PriorityLevel::HIGH);
+BENCHMARK(FastRandom_1bit, benchmark::PriorityLevel::HIGH);
 
-BENCHMARK(MuHash);
-BENCHMARK(MuHashMul);
-BENCHMARK(MuHashDiv);
-BENCHMARK(MuHashPrecompute);
+BENCHMARK(MuHash, benchmark::PriorityLevel::HIGH);
+BENCHMARK(MuHashMul, benchmark::PriorityLevel::HIGH);
+BENCHMARK(MuHashDiv, benchmark::PriorityLevel::HIGH);
+BENCHMARK(MuHashPrecompute, benchmark::PriorityLevel::HIGH);
