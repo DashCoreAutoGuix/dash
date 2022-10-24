@@ -21,6 +21,7 @@
 #include <util/string.h>
 #include <util/system.h>
 #include <util/strencodings.h>
+#include <util/time.h>
 #include <util/ui_change_type.h>
 #include <validationinterface.h>
 #include <wallet/coincontrol.h>
@@ -269,7 +270,8 @@ private:
     //! the current wallet version: clients below this version are not able to load the wallet
     int nWalletVersion GUARDED_BY(cs_wallet){FEATURE_BASE};
 
-    int64_t nNextResend = 0;
+    /** The next scheduled rebroadcast of wallet transactions. */
+    NodeClock::time_point nNextResend{};
     /** Whether this wallet will submit newly created transactions to the node's mempool and
      * prompt rebroadcasts (see ResendWalletTransactions()). */
     bool fBroadcastTransactions = false;
@@ -400,6 +402,8 @@ private:
      * notifications about new blocks and transactions.
      */
     static bool AttachChain(const std::shared_ptr<CWallet>& wallet, interfaces::Chain& chain, bilingual_str& error, std::vector<bilingual_str>& warnings);
+
+    static NodeClock::time_point GetDefaultNextResend();
 
 public:
     /**

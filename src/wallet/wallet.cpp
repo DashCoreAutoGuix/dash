@@ -1846,6 +1846,8 @@ std::set<uint256> CWallet::GetTxConflicts(const CWalletTx& wtx) const
     return result;
 }
 
+NodeClock::time_point CWallet::GetDefaultNextResend() { return FastRandomContext{}.rand_uniform_delay(NodeClock::now() + 12h, 24h); }
+
 // Rebroadcast transactions from the wallet. We do this on a random timer
 // to slightly obfuscate which transactions come from our wallet.
 //
@@ -1863,10 +1865,10 @@ void CWallet::ResendWalletTransactions()
 
     // Do this infrequently and randomly to avoid giving away
     // that these are our transactions.
-    if (GetTime() < nNextResend || !fBroadcastTransactions) return;
-    bool fFirst = (nNextResend == 0);
-    // resend 1-3 hours from now, ~2 hours on average.
-    nNextResend = GetTime() + (1 * 60 * 60) + GetRand(2 * 60 * 60);
+    if (NodeClock::now() < nNextResend || !fBroadcastTransactions) return;
+    bool fFirst = (nNextResend == NodeClock::time_point{});
+    // resend 12-24 hours from now, ~18 hours on average.
+    nNextResend = GetDefaultNextResend();
     if (fFirst) return;
 
     int submitted_tx_count = 0;
