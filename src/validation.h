@@ -14,6 +14,7 @@
 #include <arith_uint256.h>
 #include <attributes.h>
 #include <chain.h>
+#include <chainparams.h>
 #include <consensus/amount.h>
 #include <fs.h>
 #include <node/blockstorage.h>
@@ -112,24 +113,10 @@ extern Mutex g_best_block_mutex;
 extern std::condition_variable g_best_block_cv;
 /** Used to notify getblocktemplate RPC of new tips. */
 extern uint256 g_best_block;
-/** Whether there are dedicated script-checking threads running.
- * False indicates all script checking is done on the main threadMessageHandler thread.
- */
-extern bool g_parallel_script_checks;
 extern bool fRequireStandard;
-extern bool fCheckBlockIndex;
-extern bool fCheckpointsEnabled;
-/** If the tip is older than this (in seconds), the node is considered to be in initial block download. */
-extern int64_t nMaxTipAge;
 
 extern bool fLargeWorkForkFound;
 extern bool fLargeWorkInvalidChainFound;
-
-/** Block hash whose ancestors we will assume to have valid scripts without checking them. */
-extern uint256 hashAssumeValid;
-
-/** Minimum work we will assume exists on some valid chain. */
-extern arith_uint256 nMinimumChainWork;
 
 /** Documentation for argument 'checklevel'. */
 extern const std::vector<std::string> CHECKLEVEL_DOC;
@@ -726,7 +713,7 @@ public:
     /**
      * Make various assertions about the state of the block index.
      *
-     * By default this only executes fully when using the Regtest chain; see: fCheckBlockIndex.
+     * By default this only executes fully when using the Regtest chain; see: m_options.check_block_index.
      */
     void CheckBlockIndex();
 
@@ -886,6 +873,45 @@ private:
     friend CChainState;
 
 public:
+    /**
+     * An options struct for `ChainstateManager`, more ergonomically referred to as
+     * `ChainstateManager::Options` due to the using-declaration below.
+     */
+    struct Options {
+        const CChainParams& chainparams;
+        const std::function<NodeClock::time_point()> adjusted_time_callback{nullptr};
+        std::optional<bool> check_block_index{};
+        bool checkpoints_enabled{DEFAULT_CHECKPOINTS_ENABLED};
+        //! If set, it will override the minimum work we will assume exists on some valid chain.
+        std::optional<arith_uint256> minimum_chain_work;
+        //! If set, it will override the block hash whose ancestors we will assume to have valid scripts without checking them.
+        std::optional<uint256> assumed_valid_block;
+        //! If the tip is older than this, the node is considered to be in initial block download.
+        std::chrono::seconds max_tip_age{DEFAULT_MAX_TIP_AGE};
+    };
+
+    explicit ChainstateManager(Options options);
+
+    const CChainParams& GetParams() const { return m_options.chainparams; }
+    const Consensus::Params& GetConsensus() const { return m_options.chainparams.GetConsensus(); }
+    bool ShouldCheckBlockIndex() const { return *Assert(m_options.check_block_index); }
+    const arith_uint256& MinimumChainWork() const { return *Assert(m_options.minimum_chain_work); }
+    const uint256& AssumedValidBlock() const { return *Assert(m_options.assumed_valid_block); }
+
+    /**
+     * Alias for ::cs_main.
+     * Should be used in new code to make it easier to make ::cs_main a member
+     * of this class.
+     * Generally, methods of this class should be annotated to require this
+     * mutex. This will make calling code more verbose, but also help to:
+     * - Clarify that the method will acquire a mutex that heavily affects
+     *   overall performance.
+     * - Force call sites to think how long they need to acquire the mutex to
+     *   get consistent results.
+     */
+    RecursiveMutex& GetMutex() const LOCK_RETURNED(::cs_main) { return ::cs_main; }
+
+    const Options m_options;
     std::thread m_load_block;
     //! A single BlockManager instance is shared across each constructed
     //! chainstate to avoid duplicating block metadata.
@@ -1033,6 +1059,9 @@ public:
     //! Check to see if caches are out of balance and if so, call
     //! ResizeCoinsCaches() as needed.
     void MaybeRebalanceCaches() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Reset chainstates
+    void ResetChainstates();
 
     ~ChainstateManager();
 };

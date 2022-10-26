@@ -40,6 +40,7 @@
 #include <util/translation.h>
 #include <util/url.h>
 #include <util/vector.h>
+#include <timedata.h>
 #include <validation.h>
 #include <validationinterface.h>
 #include <walletinitinterface.h>
@@ -176,7 +177,6 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
                                                m_node.args->GetIntArg("-checkaddrman", 0));
     m_node.connman = std::make_unique<CConnman>(0x1337, 0x1337, *m_node.addrman, *m_node.netgroupman); // Deterministic randomness for tests.
 
-    fCheckBlockIndex = true;
     m_node.evodb = std::make_unique<CEvoDB>(1 << 20, true, true);
     m_node.mnhf_manager = std::make_unique<CMNHFManager>(*m_node.evodb);
     m_node.cpoolman = std::make_unique<CCreditPoolManager>(*m_node.evodb);
@@ -219,7 +219,12 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
 
     m_cache_sizes = CalculateCacheSizes(m_args);
 
-    m_node.chainman = std::make_unique<ChainstateManager>();
+    const ChainstateManager::Options chainman_opts{
+        .chainparams = Params(),
+        .adjusted_time_callback = []() { return NodeClock::time_point{std::chrono::seconds{GetAdjustedTime()}}; },
+        .check_block_index = true,
+    };
+    m_node.chainman = std::make_unique<ChainstateManager>(chainman_opts);
     m_node.chainman->m_blockman.m_block_tree_db = std::make_unique<CBlockTreeDB>(m_cache_sizes.block_tree_db, true);
 
     m_node.mn_metaman = std::make_unique<CMasternodeMetaMan>();
@@ -228,10 +233,9 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
     m_node.mn_sync = std::make_unique<CMasternodeSync>(*m_node.connman, *m_node.netfulfilledman);
     m_node.govman = std::make_unique<CGovernanceManager>(*m_node.mn_metaman, *m_node.netfulfilledman, *m_node.chainman, m_node.dmnman, *m_node.mn_sync);
 
-    // Start script-checking threads. Set g_parallel_script_checks to true so they are used.
+    // Start script-checking threads.
     constexpr int script_check_threads = 2;
     StartScriptCheckWorkerThreads(script_check_threads);
-    g_parallel_script_checks = true;
 }
 
 ChainTestingSetup::~ChainTestingSetup()

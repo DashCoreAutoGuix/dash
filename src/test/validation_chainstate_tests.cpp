@@ -11,6 +11,7 @@
 #include <rpc/blockchain.h>
 #include <test/util/chainstate.h>
 #include <test/util/setup_common.h>
+#include <timedata.h>
 #include <uint256.h>
 #include <validation.h>
 
@@ -24,7 +25,11 @@ BOOST_FIXTURE_TEST_SUITE(validation_chainstate_tests, TestingSetup)
 //!
 BOOST_AUTO_TEST_CASE(validation_chainstate_resize_caches)
 {
-    ChainstateManager manager;
+    const ChainstateManager::Options chainman_opts{
+        .chainparams = Params(),
+        .adjusted_time_callback = []() { return NodeClock::time_point{std::chrono::seconds{GetAdjustedTime()}}; },
+    };
+    ChainstateManager manager(chainman_opts);
     WITH_LOCK(::cs_main, manager.m_blockman.m_block_tree_db = std::make_unique<CBlockTreeDB>(1 << 20, true));
     CTxMemPool& mempool = *Assert(m_node.mempool);
 

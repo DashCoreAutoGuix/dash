@@ -214,7 +214,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     entry.nFee = 11;
     entry.nHeight = 11;
 
-    fCheckpointsEnabled = false;
+    // TODO: Update to use ChainstateManager options when checkpoint testing is needed
+    // fCheckpointsEnabled = false;
 
     // Simple block creation, nothing special yet:
     BOOST_CHECK(pemptyblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));
@@ -546,7 +547,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     LOCK2(cs_main, m_node.mempool->cs);
     TestPackageSelection(chainparams, scriptPubKey, txFirst);
 
-    fCheckpointsEnabled = true;
+    // TODO: Update to use ChainstateManager options when checkpoint testing is needed
+    // fCheckpointsEnabled = true;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,12 +1,17 @@
 // Copyright (c) 2021 The Bitcoin Core developers
+// Copyright (c) 2025 The Dash Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <node/chainstate.h>
 
+#include <arith_uint256.h>
+#include <chain.h>
 #include <chainparamsbase.h>
+#include <coins.h>
 #include <consensus/params.h>
 #include <deploymentstatus.h>
+#include <logging.h>
 #include <node/blockstorage.h>
 #include <validation.h>
 
@@ -16,6 +21,13 @@
 #include <evo/evodb.h>
 #include <evo/mnhftx.h>
 #include <llmq/context.h>
+
+#include <algorithm>
+#include <atomic>
+#include <cassert>
+#include <limits>
+#include <memory>
+#include <vector>
 
 std::optional<ChainstateLoadingError> LoadChainstate(bool fReset,
                                                      ChainstateManager& chainman,
@@ -51,6 +63,21 @@ std::optional<ChainstateLoadingError> LoadChainstate(bool fReset,
     auto is_coinsview_empty = [&](CChainState* chainstate) EXCLUSIVE_LOCKS_REQUIRED(::cs_main) {
         return fReset || fReindexChainState || chainstate->CoinsTip().GetBestBlock().IsNull();
     };
+
+    if (!chainman.AssumedValidBlock().IsNull()) {
+        LogPrintf("Assuming ancestors of block %s have valid signatures.\n", chainman.AssumedValidBlock().GetHex());
+    } else {
+        LogPrintf("Validating signatures for all blocks.\n");
+    }
+    LogPrintf("Setting nMinimumChainWork=%s\n", chainman.MinimumChainWork().GetHex());
+    if (chainman.MinimumChainWork() < UintToArith256(chainman.GetConsensus().nMinimumChainWork)) {
+        LogPrintf("Warning: nMinimumChainWork set below default value of %s\n", chainman.GetConsensus().nMinimumChainWork.GetHex());
+    }
+    if (nPruneTarget == std::numeric_limits<uint64_t>::max()) {
+        LogPrintf("Block pruning enabled.  Use RPC call pruneblockchain(height) to manually prune block and undo files.\n");
+    } else if (nPruneTarget) {
+        LogPrintf("Prune configured to target %u MiB on disk for block and undo files.\n", nPruneTarget / 1024 / 1024);
+    }
 
     LOCK(cs_main);
 
