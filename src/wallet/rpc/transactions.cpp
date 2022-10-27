@@ -457,8 +457,7 @@ RPCHelpMan listtransactions()
                 {RPCResult::Type::OBJ, "", "", Cat(Cat<std::vector<RPCResult>>(
                     {
                         {RPCResult::Type::BOOL, "involvesWatchonly", /*optional=*/true, "Only returns true if imported addresses were involved in transaction"},
-                        {RPCResult::Type::STR, "address", "The Dash address of the transaction. Not present for\n"
-                              "move transactions (category = move)."},
+                        {RPCResult::Type::STR, "address", /*optional=*/true, "The Dash address of the transaction (not returned if the output does not have an address, e.g. OP_RETURN null data)."},
                         {RPCResult::Type::STR, "category", "The transaction category.\n"
                             "\"send\"                  Transactions sent.\n"
                             "\"coinjoin\"              Transactions sent using CoinJoin funds.\n"
@@ -572,7 +571,7 @@ RPCHelpMan listsinceblock()
                     {RPCResult::Type::OBJ, "", "", Cat(Cat<std::vector<RPCResult>>(
                     {
                         {RPCResult::Type::BOOL, "involvesWatchonly", /*optional=*/true, "Only returns true if imported addresses were involved in transaction"},
-                        {RPCResult::Type::STR, "address", "The Dash address of the transaction."},
+                        {RPCResult::Type::STR, "address", /*optional=*/true, "The Dash address of the transaction (not returned if the output does not have an address, e.g. OP_RETURN null data)."},
                         {RPCResult::Type::STR, "category", "The transaction category.\n"
                             "\"send\"                  Transactions sent.\n"
                             "\"coinjoin\"              Transactions sent using CoinJoin funds.\n"
