@@ -43,14 +43,14 @@ static bool validNumStr(const std::string& s)
     return (tt == JTOK_NUMBER);
 }
 
-bool UniValue::setNumStr(const std::string& val_)
+bool UniValue::setNumStr(std::string str)
 {
-    if (!validNumStr(val_))
+    if (!validNumStr(str))
         return false;
 
     clear();
     typ = VNUM;
-    val = val_;
+    val = std::move(str);
     return true;
 }
 
@@ -83,11 +83,11 @@ bool UniValue::setFloat(double val_)
     return ret;
 }
 
-bool UniValue::setStr(const std::string& val_)
+bool UniValue::setStr(std::string str)
 {
     clear();
     typ = VSTR;
-    val = val_;
+    val = std::move(str);
     return true;
 }
 

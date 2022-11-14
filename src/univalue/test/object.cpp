@@ -3,12 +3,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include <stdint.h>
-#include <vector>
-#include <string>
-#include <map>
 #include <cassert>
+#include <cstdint>
+#include <map>
+#include <memory>
 #include <stdexcept>
+#include <stdint.h>
+#include <string>
+#include <string_view>
+#include <vector>
 #include <univalue.h>
 
 #define BOOST_FIXTURE_TEST_SUITE(a, b)
@@ -145,6 +148,14 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     BOOST_CHECK(v.setStr("zum"));
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+
+    {
+        std::string_view sv{"ab\0c", 4};
+        UniValue j{sv};
+        BOOST_CHECK(j.isStr());
+        BOOST_CHECK_EQUAL(j.getValStr(), sv);
+        BOOST_CHECK_EQUAL(j.write(), "\"ab\\u0000c\"");
+    }
 
     BOOST_CHECK(v.setFloat(-1.01));
     BOOST_CHECK(v.isNum());
