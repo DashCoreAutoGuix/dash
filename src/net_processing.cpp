@@ -32,6 +32,7 @@
 #include <timedata.h>
 #include <tinyformat.h>
 #include <txmempool.h>
+#include <txmempool_entry.h>
 #include <txorphanage.h>
 #include <util/check.h>
 #include <util/strencodings.h>
