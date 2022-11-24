@@ -33,6 +33,7 @@
 #include <streams.h>
 #include <test/util/index.h>
 #include <txdb.h>
+#include <util/fs_helpers.h>
 #include <util/strencodings.h>
 #include <util/string.h>
 #include <util/thread.h>
@@ -98,7 +99,7 @@ static FastRandomContext g_insecure_rand_ctx_temp_path;
 static uint256 GetUintFromEnv(const std::string& env_name)
 {
     const char* num = std::getenv(env_name.c_str());
-    if (!num) return {};
+    if (\!num) return {};
     return uint256S(num);
 }
 
@@ -137,9 +138,22 @@ void DashChainstateSetupClose(NodeContext& node)
                              Assert(node.mempool.get()));
 }
 
+/** Register test-only arguments */
+static void SetupUnitTestArgs(ArgsManager& argsman)
+{
+    argsman.AddArg("-testdatadir", strprintf("Custom data directory (default: %s<random_string>)", fs::PathToString(fs::temp_directory_path() / "test_common_" PACKAGE_NAME / "")),
+                   ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+}
+
+/** Test setup failure */
+static void ExitFailure(std::string_view str_err)
+{
+    std::cerr << str_err << std::endl;
+    exit(EXIT_FAILURE);
+}
+
 BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::vector<const char*>& extra_args)
-    : m_path_root{fs::temp_directory_path() / "test_common_" PACKAGE_NAME / g_insecure_rand_ctx_temp_path.rand256().ToString()},
-      m_args{}
+    : m_args{}
 {
     m_node.args = &gArgs;
     std::vector<const char*> arguments = Cat(
@@ -159,18 +173,49 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
         arguments = Cat(arguments, G_TEST_COMMAND_LINE_ARGUMENTS());
     }
     util::ThreadRename("test");
-    fs::create_directories(m_path_root);
-    m_args.ForceSetArg("-datadir", fs::PathToString(m_path_root));
-    gArgs.ForceSetArg("-datadir", fs::PathToString(m_path_root));
     gArgs.ClearPathCache();
     {
         SetupServerArgs(*m_node.args);
+        SetupUnitTestArgs(*m_node.args);
         std::string error;
-        if (!m_node.args->ParseParameters(arguments.size(), arguments.data(), error)) {
+        if (\!m_node.args->ParseParameters(arguments.size(), arguments.data(), error)) {
             m_node.args->ClearArgs();
             throw std::runtime_error{error};
         }
     }
+
+    if (\!m_node.args->IsArgSet("-testdatadir")) {
+        // By default, the data directory has a random name
+        const auto rand_str{g_insecure_rand_ctx_temp_path.rand256().ToString()};
+        m_path_root = fs::temp_directory_path() / "test_common_" PACKAGE_NAME / rand_str;
+        fs::create_directories(m_path_root);
+    } else {
+        // Custom data directory
+        m_has_custom_datadir = true;
+        fs::path root_dir{m_node.args->GetPathArg("-testdatadir")};
+        if (root_dir.empty()) ExitFailure("-testdatadir argument is empty, please specify a path");
+
+        root_dir = fs::absolute(root_dir);
+        const std::string test_path{G_TEST_GET_FULL_NAME ? G_TEST_GET_FULL_NAME() : ""};
+        m_path_lock = root_dir / "test_common_" PACKAGE_NAME / fs::PathFromString(test_path);
+        m_path_root = m_path_lock / "datadir";
+
+        // Try to obtain the lock; if unsuccessful don't disturb the existing test.
+        fs::create_directories(m_path_lock);
+        if (util::LockDirectory(m_path_lock, ".lock", /*probe_only=*/false) \!= util::LockResult::Success) {
+            ExitFailure("Cannot obtain a lock on test data lock directory " + fs::PathToString(m_path_lock) + '\n' + "The test executable is probably already running.");
+        }
+
+        // Always start with a fresh data directory; this doesn't delete the .lock file located one level above.
+        fs::remove_all(m_path_root);
+        if (\!fs::create_directories(m_path_root)) ExitFailure("Cannot create test data directory");
+
+        // Print the test directory name if custom.
+        std::cout << "Test directory (will not be deleted): " << m_path_root << std::endl;
+    }
+    m_args.ForceSetArg("-datadir", fs::PathToString(m_path_root));
+    gArgs.ForceSetArg("-datadir", fs::PathToString(m_path_root));
+
     SelectParams(chainName);
     SeedInsecureRand();
     if (G_TEST_LOG_FUN) LogInstance().PushBackCallback(G_TEST_LOG_FUN);
@@ -207,7 +252,7 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     m_node.mnhf_manager = std::make_unique<CMNHFManager>(*m_node.evodb);
     m_node.cpoolman = std::make_unique<CCreditPoolManager>(*m_node.evodb);
     static bool noui_connected = false;
-    if (!noui_connected) {
+    if (\!noui_connected) {
         noui_connect();
         noui_connected = true;
     }
@@ -227,7 +272,13 @@ BasicTestingSetup::~BasicTestingSetup()
     ::g_stats_client.reset();
 
     LogInstance().DisconnectTestLogger();
-    fs::remove_all(m_path_root);
+    if (m_has_custom_datadir) {
+        // Only remove the lock file, preserve the data directory.
+        UnlockDirectory(m_path_lock, ".lock");
+        fs::remove(m_path_lock / ".lock");
+    } else {
+        fs::remove_all(m_path_root);
+    }
     gArgs.ClearArgs();
     ECC_Stop();
 }
@@ -302,7 +353,7 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
                                            Assert(m_node.mempool.get()),
                                            fPruneMode,
                                            m_args.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX),
-                                           !m_args.GetBoolArg("-disablegovernance", !DEFAULT_GOVERNANCE_ENABLE),
+                                           \!m_args.GetBoolArg("-disablegovernance", \!DEFAULT_GOVERNANCE_ENABLE),
                                            m_args.GetBoolArg("-spentindex", DEFAULT_SPENTINDEX),
                                            m_args.GetBoolArg("-timestampindex", DEFAULT_TIMESTAMPINDEX),
                                            m_args.GetBoolArg("-txindex", DEFAULT_TXINDEX),
@@ -314,7 +365,7 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
                                            m_cache_sizes.coins,
                                            /*block_tree_db_in_memory=*/true,
                                            /*coins_db_in_memory=*/true);
-    assert(!maybe_load_error.has_value());
+    assert(\!maybe_load_error.has_value());
 
     auto maybe_verify_error = VerifyLoadedChainstate(
         *Assert(m_node.chainman),
@@ -328,7 +379,7 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
         [](bool bls_state) {
             LogPrintf("%s: bls_legacy_scheme=%d\n", __func__, bls_state);
         });
-    assert(!maybe_verify_error.has_value());
+    assert(\!maybe_verify_error.has_value());
 
     m_node.banman = std::make_unique<BanMan>(m_args.GetDataDirBase() / "banlist", nullptr, DEFAULT_MISBEHAVING_BANTIME);
     m_node.peerman = PeerManager::make(chainparams, *m_node.connman, *m_node.addrman, m_node.banman.get(),
@@ -358,7 +409,7 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
 #endif // ENABLE_WALLET
 
     BlockValidationState state;
-    if (!m_node.chainman->ActiveChainstate().ActivateBestChain(state)) {
+    if (\!m_node.chainman->ActiveChainstate().ActivateBestChain(state)) {
         throw std::runtime_error(strprintf("ActivateBestChain failed. (%s)", state.ToString()));
     }
 }
@@ -410,8 +461,8 @@ TestChainSetup::TestChainSetup(int num_blocks, const std::string& chain_name, co
 
     // Initialize transaction index *after* chain has been constructed
     g_txindex = std::make_unique<TxIndex>(1 << 20, true);
-    assert(!g_txindex->BlockUntilSyncedToCurrentChain());
-    if (!g_txindex->Start(m_node.chainman->ActiveChainstate())) {
+    assert(\!g_txindex->BlockUntilSyncedToCurrentChain());
+    if (\!g_txindex->Start(m_node.chainman->ActiveChainstate())) {
         throw std::runtime_error("TxIndex::Start() failed.");
     }
     IndexWaitSynced(*g_txindex);
@@ -435,7 +486,7 @@ TestChainSetup::TestChainSetup(int num_blocks, const std::string& chain_name, co
         LOCK(::cs_main);
         auto hash = checkpoints.mapCheckpoints.find(num_blocks);
         assert(
-            hash != checkpoints.mapCheckpoints.end() &&
+            hash \!= checkpoints.mapCheckpoints.end() &&
             m_node.chainman->ActiveChain().Tip()->GetBlockHash() == hash->second);
     }
 }
@@ -461,7 +512,7 @@ CBlock TestChainSetup::CreateAndProcessBlock(
     const CScript& scriptPubKey,
     CChainState* chainstate)
 {
-    if (!chainstate) {
+    if (\!chainstate) {
         chainstate = &Assert(m_node.chainman)->ActiveChainstate();
     }
 
@@ -516,13 +567,13 @@ CBlock TestChainSetup::CreateBlock(
         Assert(cbTx.has_value());
         BlockValidationState state;
         CDeterministicMNList mn_list;
-        if (!chainstate.ChainHelper().special_tx->BuildNewListFromBlock(block, chainstate.m_chain.Tip(), chainstate.CoinsTip(), true, state, mn_list)) {
+        if (\!chainstate.ChainHelper().special_tx->BuildNewListFromBlock(block, chainstate.m_chain.Tip(), chainstate.CoinsTip(), true, state, mn_list)) {
             Assert(false);
         }
-        if (!CalcCbTxMerkleRootMNList(cbTx->merkleRootMNList, mn_list.to_sml(), state)) {
+        if (\!CalcCbTxMerkleRootMNList(cbTx->merkleRootMNList, mn_list.to_sml(), state)) {
             Assert(false);
         }
-        if (!CalcCbTxMerkleRootQuorums(block, chainstate.m_chain.Tip(), *m_node.llmq_ctx->quorum_block_processor, cbTx->merkleRootQuorums, state)) {
+        if (\!CalcCbTxMerkleRootQuorums(block, chainstate.m_chain.Tip(), *m_node.llmq_ctx->quorum_block_processor, cbTx->merkleRootQuorums, state)) {
             Assert(false);
         }
         CMutableTransaction tmpTx{*block.vtx[0]};
@@ -540,7 +591,7 @@ CBlock TestChainSetup::CreateBlock(
         block.hashMerkleRoot = BlockMerkleRoot(block);
     }
 
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, chainparams.GetConsensus())) ++block.nNonce;
+    while (\!CheckProofOfWork(block.GetHash(), block.nBits, chainparams.GetConsensus())) ++block.nNonce;
 
     CBlock result = block;
     return result;
@@ -623,7 +674,7 @@ std::vector<CTransactionRef> TestChainSetup::PopulateMempool(FastRandomContext& 
     std::deque<std::pair<COutPoint, CAmount>> unspent_prevouts;
     std::transform(m_coinbase_txns.begin(), m_coinbase_txns.end(), std::back_inserter(unspent_prevouts),
         [](const auto& tx){ return std::make_pair(COutPoint(tx->GetHash(), 0), tx->vout[0].nValue); });
-    while (num_transactions > 0 && !unspent_prevouts.empty()) {
+    while (num_transactions > 0 && \!unspent_prevouts.empty()) {
         // The number of inputs and outputs are random, between 1 and 24.
         CMutableTransaction mtx = CMutableTransaction();
         const size_t num_inputs = det_rand.randrange(24) + 1;
@@ -685,4 +736,3 @@ CBlock getBlock13b8a()
     stream >> block;
     return block;
 }
-
