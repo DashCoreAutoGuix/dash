@@ -4,6 +4,7 @@
 
 #include <bip324.h>
 #include <chainparams.h>
+#include <key.h>
 #include <span.h>
 #include <test/fuzz/FuzzedDataProvider.h>
 #include <test/fuzz/fuzz.h>
@@ -12,6 +13,7 @@
 
 #include <cstdint>
 #include <vector>
+
 
 void initialize_bip324()
 {

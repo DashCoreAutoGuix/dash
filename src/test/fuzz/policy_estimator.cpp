@@ -15,6 +15,17 @@
 #include <string>
 #include <vector>
 
+// Simple implementation of ConsumeTxMemPoolEntry for Dash
+static CTxMemPoolEntry ConsumeTxMemPoolEntry(FuzzedDataProvider& fuzzed_data_provider, const CTransaction& tx) noexcept
+{
+    const CAmount fee = ConsumeMoney(fuzzed_data_provider, /*max=*/std::numeric_limits<CAmount>::max() / CAmount{100'000});
+    const int64_t time = fuzzed_data_provider.ConsumeIntegral<int64_t>();
+    const unsigned int entry_height = fuzzed_data_provider.ConsumeIntegral<unsigned int>();
+    const bool spends_coinbase = fuzzed_data_provider.ConsumeBool();
+    const unsigned int sig_op_cost = fuzzed_data_provider.ConsumeIntegralInRange<unsigned int>(0, 80000); // MAX_BLOCK_SIGOPS_COST
+    return CTxMemPoolEntry{MakeTransactionRef(tx), fee, time, entry_height, spends_coinbase, sig_op_cost, {}};
+}
+
 void initialize_policy_estimator()
 {
     static const auto testing_setup = MakeNoLogFileContext<>();
