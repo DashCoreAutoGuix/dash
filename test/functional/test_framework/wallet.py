@@ -25,7 +25,6 @@ from test_framework.messages import (
     CTransaction,
     CTxIn,
     CTxOut,
-    tx_from_hex,
 )
 from test_framework.script import (
     CScript,
@@ -228,6 +227,37 @@ class MiniWallet:
         self.scan_tx(from_node.decoderawtransaction(tx_hex))
         return txid
 
+    def create_self_transfer_chain(self, *, chain_length):
+        """
+        Create a "chain" of chain_length transactions. The nth transaction in
+        the chain is a child of the n-1th transaction and parent of the n+1th transaction.
+
+        Returns a dic  {"chain_hex": chain_hex, "chain_txns" : chain_txns}
+
+        "chain_hex" is a list representing the chain's transactions in hexadecimal.
+        "chain_txns" is a list representing the chain's transactions in the CTransaction object.
+        """
+        chaintip_utxo = self.get_utxo()
+        chain_hex = []
+        chain_txns = []
+
+        for _ in range(chain_length):
+            tx = self.create_self_transfer(utxo_to_spend=chaintip_utxo)
+            chaintip_utxo = tx["new_utxo"]
+            chain_hex.append(tx["hex"])
+            chain_txns.append(tx["tx"])
+
+        return {"chain_hex": chain_hex, "chain_txns" : chain_txns}
+
+    def send_self_transfer_chain(self, *, from_node, chain_length, utxo_to_spend=None):
+        """Create and send a "chain" of chain_length transactions. The nth transaction in
+        the chain is a child of the n-1th transaction and parent of the n+1th transaction.
+        Returns the chaintip (nth) utxo
+        """
+        chaintip_utxo = utxo_to_spend or self.get_utxo()
+        for _ in range(chain_length):
+            chaintip_utxo = self.send_self_transfer(utxo_to_spend=chaintip_utxo, from_node=from_node)["new_utxo"]
+        return chaintip_utxo
 
 def getnewdestination(address_type='legacy'):
     """Generate a random destination of the specified type and return the
@@ -256,75 +286,3 @@ def address_to_scriptpubkey(address):
     # TODO: also support other address formats
     else:
         assert False
-
-
-def make_chain(node, address, privkeys, parent_txid, parent_value, n=0, parent_locking_script=None, fee=DEFAULT_FEE):
-    """Build a transaction that spends parent_txid.vout[n] and produces one output with
-    amount = parent_value with a fee deducted.
-    Return tuple (CTransaction object, raw hex, nValue, scriptPubKey of the output created).
-    """
-    inputs = [{"txid": parent_txid, "vout": n}]
-    my_value = parent_value - fee
-    outputs = {address : my_value}
-    rawtx = node.createrawtransaction(inputs, outputs)
-    prevtxs = [{
-        "txid": parent_txid,
-        "vout": n,
-        "scriptPubKey": parent_locking_script,
-        "amount": parent_value,
-    }] if parent_locking_script else None
-    signedtx = node.signrawtransactionwithkey(hexstring=rawtx, privkeys=privkeys, prevtxs=prevtxs)
-    assert signedtx["complete"]
-    tx = tx_from_hex(signedtx["hex"])
-    return (tx, signedtx["hex"], my_value, tx.vout[0].scriptPubKey.hex())
-
-def create_child_with_parents(node, address, privkeys, parents_tx, values, locking_scripts, fee=DEFAULT_FEE):
-    """Creates a transaction that spends the first output of each parent in parents_tx."""
-    num_parents = len(parents_tx)
-    total_value = sum(values)
-    inputs = [{"txid": tx.rehash(), "vout": 0} for tx in parents_tx]
-    outputs = {address : total_value - fee}
-    rawtx_child = node.createrawtransaction(inputs, outputs)
-    prevtxs = []
-    for i in range(num_parents):
-        prevtxs.append({"txid": parents_tx[i].rehash(), "vout": 0, "scriptPubKey": locking_scripts[i], "amount": values[i]})
-    signedtx_child = node.signrawtransactionwithkey(hexstring=rawtx_child, privkeys=privkeys, prevtxs=prevtxs)
-    assert signedtx_child["complete"]
-    return signedtx_child["hex"]
-
-def create_raw_chain(node, first_coin, address, privkeys, chain_length=25):
-    """Helper function: create a "chain" of chain_length transactions. The nth transaction in the
-    chain is a child of the n-1th transaction and parent of the n+1th transaction.
-    """
-    parent_locking_script = None
-    txid = first_coin["txid"]
-    chain_hex = []
-    chain_txns = []
-    value = first_coin["amount"]
-
-    for _ in range(chain_length):
-        (tx, txhex, value, parent_locking_script) = make_chain(node, address, privkeys, txid, value, 0, parent_locking_script)
-        txid = tx.rehash()
-        chain_hex.append(txhex)
-        chain_txns.append(tx)
-
-    return (chain_hex, chain_txns)
-
-def bulk_transaction(tx, node, target_weight, privkeys, prevtxs=None):
-    """Pad a transaction with extra outputs until it reaches a target weight (or higher).
-    returns CTransaction object
-    """
-    tx_heavy = deepcopy(tx)
-    assert_greater_than_or_equal(target_weight, tx_heavy.get_weight())
-    while tx_heavy.get_weight() < target_weight:
-        random_spk = "6a4d0200"  # OP_RETURN OP_PUSH2 512 bytes
-        for _ in range(512*2):
-            random_spk += choice("0123456789ABCDEF")
-        tx_heavy.vout.append(CTxOut(0, bytes.fromhex(random_spk)))
-    # Re-sign the transaction
-    if privkeys:
-        signed = node.signrawtransactionwithkey(tx_heavy.serialize().hex(), privkeys, prevtxs)
-        return tx_from_hex(signed["hex"])
-    # OP_TRUE
-    tx_heavy.vin[0].scriptSig = CScript([CScript([OP_TRUE])])
-    return tx_heavy
