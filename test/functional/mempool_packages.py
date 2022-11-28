@@ -25,6 +25,9 @@ MAX_DESCENDANTS_CUSTOM = 10
 assert MAX_DESCENDANTS_CUSTOM >= MAX_ANCESTORS_CUSTOM
 
 class MempoolPackagesTest(BitcoinTestFramework):
+    def add_options(self, parser):
+        self.add_wallet_options(parser)
+
     def set_test_params(self):
         self.num_nodes = 2
         self.extra_args = [

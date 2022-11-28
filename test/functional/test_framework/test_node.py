@@ -110,6 +110,8 @@ class TestNode():
         ]
         if self.mocktime != 0:
             self.args.append(f"-mocktime={mocktime}")
+        if self.descriptors is None:
+            self.args.append("-disablewallet")
 
         if use_valgrind:
             default_suppressions_file = os.path.join(

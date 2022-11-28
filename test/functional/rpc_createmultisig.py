@@ -19,13 +19,13 @@ from test_framework.util import (
 from test_framework.wallet_util import bytes_to_wif
 
 class RpcCreateMultiSigTest(BitcoinTestFramework):
+    def add_options(self, parser):
+        self.add_wallet_options(parser)
+
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
         self.supports_cli = False
-
-    def skip_test_if_missing_module(self):
-        self.skip_if_no_wallet()
 
     def get_keys(self):
         self.pub = []
@@ -41,7 +41,9 @@ class RpcCreateMultiSigTest(BitcoinTestFramework):
     def run_test(self):
         node0, node1, node2 = self.nodes
 
-        self.check_addmultisigaddress_errors()
+        if self.is_bdb_compiled():
+            self.import_deterministic_coinbase_privkeys()
+            self.check_addmultisigaddress_errors()
 
         self.log.info('Generating blocks ...')
         self.generate(node0, 149)
