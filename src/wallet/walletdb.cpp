@@ -67,6 +67,22 @@ const std::string WALLETDESCRIPTORCKEY{"walletdescriptorckey"};
 const std::string WALLETDESCRIPTORKEY{"walletdescriptorkey"};
 const std::string WATCHMETA{"watchmeta"};
 const std::string WATCHS{"watchs"};
+
+// Keys in this set pertain only to the legacy wallet (LegacyScriptPubKeyMan) and are removed during migration from legacy to descriptors.
+const std::unordered_set<std::string> LEGACY_TYPES{
+    CRYPTED_KEY,
+    CSCRIPT,
+    DEFAULTKEY,
+    HDCHAIN,
+    HDPUBKEY,
+    KEYMETA,
+    KEY,
+    MASTER_KEY,
+    OLD_KEY,
+    POOL,
+    WATCHMETA,
+    WATCHS
+};
 } // namespace DBKeys
 
 //
@@ -337,6 +353,8 @@ public:
     std::map<std::pair<uint256, CKeyID>, CKey> m_descriptor_keys;
     std::map<std::pair<uint256, CKeyID>, std::pair<CPubKey, std::vector<unsigned char>>> m_descriptor_crypt_keys;
     bool tx_corrupt{false};
+    bool descriptor_unknown{false};
+    bool unexpected_legacy_entry{false};
 
     CWalletScanState() {
     }
@@ -354,6 +372,11 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
         // If we have a filter, check if this matches the filter
         if (filter_fn && !filter_fn(strType)) {
             return true;
+        }
+        // Legacy entries in descriptor wallets are not allowed, abort immediately
+        if (pwallet->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS) && DBKeys::LEGACY_TYPES.count(strType) > 0) {
+            wss.unexpected_legacy_entry = true;
+            return false;
         }
         if (strType == DBKeys::NAME) {
             std::string strAddress;
@@ -815,6 +838,12 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
             std::string strType, strErr;
             if (!ReadKeyValue(pwallet, ssKey, ssValue, wss, strType, strErr))
             {
+                if (wss.unexpected_legacy_entry) {
+                    strErr = strprintf("Error: Unexpected legacy entry found in descriptor wallet %s. ", pwallet->GetName());
+                    strErr += "The wallet might have been tampered with or created with malicious intent.";
+                    pwallet->WalletLogPrintf("%s\n", strErr);
+                    return DBErrors::UNEXPECTED_LEGACY_ENTRY;
+                }
                 // losing keys is considered a catastrophic error, anything else
                 // we assume the user can live with:
                 if (IsKeyType(strType) || strType == DBKeys::DEFAULTKEY) {

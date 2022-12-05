@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 struct CBlockLocator;
@@ -54,7 +55,10 @@ enum class DBErrors
     NONCRITICAL_ERROR,
     TOO_NEW,
     LOAD_FAIL,
-    NEED_REWRITE
+    NEED_REWRITE,
+    NEED_RESCAN,
+    UNKNOWN_DESCRIPTOR,
+    UNEXPECTED_LEGACY_ENTRY
 };
 
 namespace DBKeys {
@@ -92,6 +96,9 @@ extern const std::string WALLETDESCRIPTORCKEY;
 extern const std::string WALLETDESCRIPTORKEY;
 extern const std::string WATCHMETA;
 extern const std::string WATCHS;
+
+// Keys in this set pertain only to the legacy wallet (LegacyScriptPubKeyMan) and are removed during migration from legacy to descriptors.
+extern const std::unordered_set<std::string> LEGACY_TYPES;
 } // namespace DBKeys
 
 class CKeyMetadata
