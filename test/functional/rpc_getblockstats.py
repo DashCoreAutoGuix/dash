@@ -42,11 +42,13 @@ class GetblockstatsTest(BitcoinTestFramework):
         return [self.nodes[0].getblockstats(hash_or_height=self.start_height + i) for i in range(self.max_stat_pos+1)]
 
     def generate_test_data(self, filename):
-        self.nodes[0].setmocktime(self.mocktime)
-        self.generate(self.nodes[0], COINBASE_MATURITY + 1)
+        mocktime = 1525107225
+        self.nodes[0].setmocktime(mocktime)
         self.nodes[0].createwallet(wallet_name='test')
         privkey = self.nodes[0].get_deterministic_priv_key().key
         self.nodes[0].importprivkey(privkey)
+
+        self.generate(self.nodes[0], COINBASE_MATURITY + 1)
 
         address = self.nodes[0].get_deterministic_priv_key().address
         self.nodes[0].sendtoaddress(address=address, amount=10, subtractfeefromamount=True)

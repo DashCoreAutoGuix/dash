@@ -798,11 +798,8 @@ static CBlockUndo GetUndoChecked(BlockManager& blockman, const CBlockIndex* pblo
     // The Genesis block does not have undo data
     if (pblockindex->nHeight == 0) return blockUndo;
 
-    {
-        LOCK(cs_main);
-        if (blockman.IsBlockPruned(pblockindex)) {
-            throw JSONRPCError(RPC_MISC_ERROR, "Undo data not available (pruned data)");
-        }
+    if (blockman.IsBlockPruned(pblockindex)) {
+        throw JSONRPCError(RPC_MISC_ERROR, "Undo data not available (pruned data)");
     }
 
     if (!UndoReadFromDisk(blockUndo, pblockindex)) {
@@ -1999,26 +1996,26 @@ static RPCHelpMan getblockstats()
                     {RPCResult::Type::NUM, "75th_percentile_feerate", "The 75th percentile feerate"},
                     {RPCResult::Type::NUM, "90th_percentile_feerate", "The 90th percentile feerate"},
                 }},
-                {RPCResult::Type::NUM, "height", /* optional */ true, "The height of the block"},
-                {RPCResult::Type::NUM, "ins", /* optional */ true, "The number of inputs (excluding coinbase)"},
-                {RPCResult::Type::NUM, "maxfee", /* optional */ true, "Maximum fee in the block"},
-                {RPCResult::Type::NUM, "maxfeerate", /* optional */ true, "Maximum feerate (in duffs per virtual byte)"},
-                {RPCResult::Type::NUM, "maxtxsize", /* optional */ true, "Maximum transaction size"},
-                {RPCResult::Type::NUM, "medianfee", /* optional */ true, "Truncated median fee in the block"},
-                {RPCResult::Type::NUM, "mediantime", /* optional */ true, "The block median time past"},
-                {RPCResult::Type::NUM, "mediantxsize", /* optional */ true, "Truncated median transaction size"},
-                {RPCResult::Type::NUM, "minfee", /* optional */ true, "Minimum fee in the block"},
-                {RPCResult::Type::NUM, "minfeerate", /* optional */ true, "Minimum feerate (in duffs per virtual byte)"},
-                {RPCResult::Type::NUM, "mintxsize", /* optional */ true, "Minimum transaction size"},
-                {RPCResult::Type::NUM, "outs", /* optional */ true, "The number of outputs"},
-                {RPCResult::Type::NUM, "subsidy", /* optional */ true, "The block subsidy"},
-                {RPCResult::Type::NUM, "time", /* optional */ true, "The block time"},
-                {RPCResult::Type::NUM, "total_out", /* optional */ true, "Total amount in all outputs (excluding coinbase and thus reward [ie subsidy + totalfee])"},
-                {RPCResult::Type::NUM, "total_size", /* optional */ true, "Total size of all non-coinbase transactions"},
-                {RPCResult::Type::NUM, "totalfee", /* optional */ true, "The fee total"},
-                {RPCResult::Type::NUM, "txs", /* optional */ true, "The number of transactions (including coinbase)"},
-                {RPCResult::Type::NUM, "utxo_increase", /* optional */ true, "The increase/decrease in the number of unspent outputs  (not discounting op_return and similar)"},
-                {RPCResult::Type::NUM, "utxo_size_inc", /* optional */ true, "The increase/decrease in size for the utxo index (not discounting op_return and similar)"},
+                {RPCResult::Type::NUM, "height", /*optional=*/true, "The height of the block"},
+                {RPCResult::Type::NUM, "ins", /*optional=*/true, "The number of inputs (excluding coinbase)"},
+                {RPCResult::Type::NUM, "maxfee", /*optional=*/true, "Maximum fee in the block"},
+                {RPCResult::Type::NUM, "maxfeerate", /*optional=*/true, "Maximum feerate (in duffs per virtual byte)"},
+                {RPCResult::Type::NUM, "maxtxsize", /*optional=*/true, "Maximum transaction size"},
+                {RPCResult::Type::NUM, "medianfee", /*optional=*/true, "Truncated median fee in the block"},
+                {RPCResult::Type::NUM, "mediantime", /*optional=*/true, "The block median time past"},
+                {RPCResult::Type::NUM, "mediantxsize", /*optional=*/true, "Truncated median transaction size"},
+                {RPCResult::Type::NUM, "minfee", /*optional=*/true, "Minimum fee in the block"},
+                {RPCResult::Type::NUM, "minfeerate", /*optional=*/true, "Minimum feerate (in duffs per virtual byte)"},
+                {RPCResult::Type::NUM, "mintxsize", /*optional=*/true, "Minimum transaction size"},
+                {RPCResult::Type::NUM, "outs", /*optional=*/true, "The number of outputs"},
+                {RPCResult::Type::NUM, "subsidy", /*optional=*/true, "The block subsidy"},
+                {RPCResult::Type::NUM, "time", /*optional=*/true, "The block time"},
+                {RPCResult::Type::NUM, "total_out", /*optional=*/true, "Total amount in all outputs (excluding coinbase and thus reward [ie subsidy + totalfee])"},
+                {RPCResult::Type::NUM, "total_size", /*optional=*/true, "Total size of all non-coinbase transactions"},
+                {RPCResult::Type::NUM, "totalfee", /*optional=*/true, "The fee total"},
+                {RPCResult::Type::NUM, "txs", /*optional=*/true, "The number of transactions (including coinbase)"},
+                {RPCResult::Type::NUM, "utxo_increase", /*optional=*/true, "The increase/decrease in the number of unspent outputs (not discounting op_return and similar)"},
+                {RPCResult::Type::NUM, "utxo_size_inc", /*optional=*/true, "The increase/decrease in size for the utxo index (not discounting op_return and similar)"},
                 {RPCResult::Type::NUM, "utxo_increase_actual", /*optional=*/true, "The increase/decrease in the number of unspent outputs, not counting unspendables"},
                 {RPCResult::Type::NUM, "utxo_size_inc_actual", /*optional=*/true, "The increase/decrease in size for the utxo index, not counting unspendables"},
             }},
