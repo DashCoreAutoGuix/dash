@@ -85,7 +85,7 @@ static void add_coin(CoinsResult& available_coins, CWallet& wallet, const CAmoun
     assert(ret.second);
     CWalletTx& wtx = (*ret.first).second;
     const auto& txout = wtx.tx->vout.at(nInput);
-    available_coins.legacy.emplace_back(COutPoint(wtx.GetHash(), nInput), txout, nAge, CalculateMaximumSignedInputSize(txout, &wallet, /*coin_control=*/nullptr), /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, wtx.GetTxTime(), fIsFromMe, feerate);
+    available_coins.Add(OutputType::LEGACY, {COutPoint(wtx.GetHash(), nInput), txout, nAge, CalculateMaximumSignedInputSize(txout, &wallet, /*coin_control=*/nullptr), /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, wtx.GetTxTime(), fIsFromMe, feerate});
 }
 
 /** Check if SelectionResult a is equivalent to SelectionResult b.
@@ -959,6 +959,46 @@ BOOST_AUTO_TEST_CASE(minimum_inputs_test)
     // Should consume only the first two coins (9 + 16) >= 25 and account correctly
     BOOST_CHECK_EQUAL(result->GetInputSet().size(), 2);
     BOOST_CHECK_EQUAL(result->GetSelectedValue(), 25 * COIN);
+}
+
+BOOST_FIXTURE_TEST_CASE(wallet_coinsresult_test, BasicTestingSetup)
+{
+    // Test case to verify CoinsResult object sanity.
+    CoinsResult available_coins;
+    {
+        std::unique_ptr<CWallet> dummyWallet = std::make_unique<CWallet>(m_node.chain.get(), "dummy", m_args, CreateMockWalletDatabase());
+        BOOST_CHECK_EQUAL(dummyWallet->LoadWallet(), DBErrors::LOAD_OK);
+        LOCK(dummyWallet->cs_wallet);
+        dummyWallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+        dummyWallet->SetupDescriptorScriptPubKeyMans();
+
+        // Add some coins to 'available_coins'
+        for (int i=0; i<10; i++) {
+            add_coin(available_coins, *dummyWallet, 1 * COIN);
+        }
+    }
+
+    {
+        // First test case, check that 'CoinsResult::Erase' function works as expected.
+        // By trying to erase two elements from the 'available_coins' object.
+        std::unordered_set<COutPoint, SaltedOutpointHasher> outs_to_remove;
+        const auto& coins = available_coins.all();
+        for (int i = 0; i < 2; i++) {
+            outs_to_remove.emplace(coins[i].outpoint);
+        }
+        available_coins.Erase(outs_to_remove);
+
+        // Check that the elements were actually removed.
+        const auto& updated_coins = available_coins.all();
+        for (const auto& out: outs_to_remove) {
+            auto it = std::find_if(updated_coins.begin(), updated_coins.end(), [&out](const COutput &coin) {
+                return coin.outpoint == out;
+            });
+            BOOST_CHECK(it == updated_coins.end());
+        }
+        // And verify that no extra element were removed
+        BOOST_CHECK_EQUAL(available_coins.Size(), 8);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

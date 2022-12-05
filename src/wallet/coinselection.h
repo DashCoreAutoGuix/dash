@@ -110,6 +110,8 @@ public:
         assert(effective_value.has_value());
         return effective_value.value();
     }
+
+    bool HasEffectiveValue() const { return effective_value.has_value(); }
 };
 
 /** Parameters for one iteration of Coin Selection. */
@@ -303,6 +305,14 @@ public:
     /** Calculates and stores the waste for this selection via GetSelectionWaste */
     void ComputeAndSetWaste(CAmount change_cost);
     [[nodiscard]] CAmount GetWaste() const;
+
+    /**
+     * Combines the @param[in] other selection result into 'this' selection result.
+     *
+     * Important note:
+     * There must be no shared 'COutput' among the two selection results being combined.
+     */
+    void Merge(const SelectionResult& other);
 
     /** Get m_selected_inputs */
     const std::set<COutput>& GetInputSet() const;
