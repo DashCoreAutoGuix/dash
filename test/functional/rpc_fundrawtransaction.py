@@ -99,6 +99,9 @@ class RawTransactionsTest(BitcoinTestFramework):
         self.generate(self.nodes[2], 1)
         self.generate(self.nodes[0], 121)
 
+        self.test_add_inputs_default_value()
+        self.test_preset_inputs_selection()
+        self.test_weight_calculation()
         self.test_change_position()
         self.test_simple()
         self.test_simple_two_coins()
@@ -937,6 +940,316 @@ class RawTransactionsTest(BitcoinTestFramework):
         fundedtx = self.nodes[0].fundrawtransaction(rawtx, {'subtractFeeFromOutputs': [0]})
         signedtx = self.nodes[0].signrawtransactionwithwallet(fundedtx['hex'])
         self.nodes[0].sendrawtransaction(signedtx['hex'])
+
+    def test_transaction_too_large(self):
+        self.log.info("Test fundrawtx where BnB solution would result in a too large transaction, but Knapsack would not")
+        self.nodes[0].createwallet("large")
+        wallet = self.nodes[0].get_wallet_rpc(self.default_wallet_name)
+        recipient = self.nodes[0].get_wallet_rpc("large")
+        outputs = {}
+        rawtx = recipient.createrawtransaction([], {wallet.getnewaddress(): 147.99899260})
+
+        # Make 1500 0.1 BTC outputs. The amount that we target for funding is in
+        # the BnB range when these outputs are used.  However if these outputs
+        # are selected, the transaction will end up being too large, so it
+        # shouldn't use BnB and instead fall back to Knapsack but that behavior
+        # is not implemented yet. For now we just check that we get an error.
+        for _ in range(1500):
+            outputs[recipient.getnewaddress()] = 0.1
+        wallet.sendmany("", outputs)
+        self.generate(self.nodes[0], 10)
+        assert_raises_rpc_error(-4, "Transaction too large", recipient.fundrawtransaction, rawtx)
+        self.nodes[0].unloadwallet("large")
+
+    def test_external_inputs(self):
+        self.log.info("Test funding with external inputs")
+
+        eckey = ECKey()
+        eckey.generate()
+        privkey = bytes_to_wif(eckey.get_bytes())
+
+        self.nodes[2].createwallet("extfund")
+        wallet = self.nodes[2].get_wallet_rpc("extfund")
+
+        # Make a weird but signable script. sh(pkh()) descriptor accomplishes this
+        desc = descsum_create("sh(pkh({}))".format(privkey))
+        if self.options.descriptors:
+            res = self.nodes[0].importdescriptors([{"desc": desc, "timestamp": "now"}])
+        else:
+            res = self.nodes[0].importmulti([{"desc": desc, "timestamp": "now"}])
+        assert res[0]["success"]
+        addr = self.nodes[0].deriveaddresses(desc)[0]
+        addr_info = self.nodes[0].getaddressinfo(addr)
+
+        self.nodes[0].sendtoaddress(addr, 10)
+        self.nodes[0].sendtoaddress(wallet.getnewaddress(), 10)
+        self.generate(self.nodes[0], 6)
+        ext_utxo = self.nodes[0].listunspent(addresses=[addr])[0]
+
+        # An external input without solving data should result in an error
+        raw_tx = wallet.createrawtransaction([ext_utxo], {self.nodes[0].getnewaddress(): ext_utxo["amount"] / 2})
+        assert_raises_rpc_error(-4, "Not solvable pre-selected input COutPoint(%s, %s)" % (ext_utxo["txid"][0:10], ext_utxo["vout"]), wallet.fundrawtransaction, raw_tx)
+
+        # Error conditions
+        assert_raises_rpc_error(-5, "'not a pubkey' is not hex", wallet.fundrawtransaction, raw_tx, {"solving_data": {"pubkeys":["not a pubkey"]}})
+        assert_raises_rpc_error(-5, "'01234567890a0b0c0d0e0f' is not a valid public key", wallet.fundrawtransaction, raw_tx, {"solving_data": {"pubkeys":["01234567890a0b0c0d0e0f"]}})
+        assert_raises_rpc_error(-5, "'not a script' is not hex", wallet.fundrawtransaction, raw_tx, {"solving_data": {"scripts":["not a script"]}})
+        assert_raises_rpc_error(-8, "Unable to parse descriptor 'not a descriptor'", wallet.fundrawtransaction, raw_tx, {"solving_data": {"descriptors":["not a descriptor"]}})
+        assert_raises_rpc_error(-8, "Invalid parameter, missing vout key", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"]}]})
+        assert_raises_rpc_error(-8, "Invalid parameter, vout cannot be negative", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": -1}]})
+        assert_raises_rpc_error(-8, "Invalid parameter, missing weight key", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"]}]})
+        assert_raises_rpc_error(-8, "Invalid parameter, weight cannot be less than 165", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 164}]})
+        assert_raises_rpc_error(-8, "Invalid parameter, weight cannot be less than 165", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": -1}]})
+        assert_raises_rpc_error(-8, "Invalid parameter, weight cannot be greater than", wallet.fundrawtransaction, raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 400001}]})
+
+        # But funding should work when the solving data is provided
+        funded_tx = wallet.fundrawtransaction(raw_tx, {"solving_data": {"pubkeys": [addr_info['pubkey']], "scripts": [addr_info["embedded"]["scriptPubKey"]]}})
+        signed_tx = wallet.signrawtransactionwithwallet(funded_tx['hex'])
+        assert not signed_tx['complete']
+        signed_tx = self.nodes[0].signrawtransactionwithwallet(signed_tx['hex'])
+        assert signed_tx['complete']
+
+        funded_tx = wallet.fundrawtransaction(raw_tx, {"solving_data": {"descriptors": [desc]}})
+        signed_tx1 = wallet.signrawtransactionwithwallet(funded_tx['hex'])
+        assert not signed_tx1['complete']
+        signed_tx2 = self.nodes[0].signrawtransactionwithwallet(signed_tx1['hex'])
+        assert signed_tx2['complete']
+
+        unsigned_weight = self.nodes[0].decoderawtransaction(signed_tx1["hex"])["weight"]
+        signed_weight = self.nodes[0].decoderawtransaction(signed_tx2["hex"])["weight"]
+        # Input's weight is difference between weight of signed and unsigned,
+        # and the weight of stuff that didn't change (prevout, sequence, 1 byte of scriptSig)
+        input_weight = signed_weight - unsigned_weight + (41 * 4)
+        low_input_weight = input_weight // 2
+        high_input_weight = input_weight * 2
+
+        # Funding should also work if the input weight is provided
+        funded_tx = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": input_weight}]})
+        signed_tx = wallet.signrawtransactionwithwallet(funded_tx["hex"])
+        signed_tx = self.nodes[0].signrawtransactionwithwallet(signed_tx["hex"])
+        assert_equal(self.nodes[0].testmempoolaccept([signed_tx["hex"]])[0]["allowed"], True)
+        assert_equal(signed_tx["complete"], True)
+        # Reducing the weight should have a lower fee
+        funded_tx2 = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": low_input_weight}]})
+        assert_greater_than(funded_tx["fee"], funded_tx2["fee"])
+        # Increasing the weight should have a higher fee
+        funded_tx2 = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}]})
+        assert_greater_than(funded_tx2["fee"], funded_tx["fee"])
+        # The provided weight should override the calculated weight when solving data is provided
+        funded_tx3 = wallet.fundrawtransaction(raw_tx, {"solving_data": {"descriptors": [desc]}, "input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}]})
+        assert_equal(funded_tx2["fee"], funded_tx3["fee"])
+        # The feerate should be met
+        funded_tx4 = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}], "fee_rate": 10})
+        input_add_weight = high_input_weight - (41 * 4)
+        tx4_weight = wallet.decoderawtransaction(funded_tx4["hex"])["weight"] + input_add_weight
+        tx4_vsize = int(ceil(tx4_weight / 4))
+        assert_fee_amount(funded_tx4["fee"], tx4_vsize, Decimal(0.0001))
+
+        # Funding with weight at csuint boundaries should not cause problems
+        funded_tx = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 255}]})
+        funded_tx = wallet.fundrawtransaction(raw_tx, {"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 65539}]})
+
+        self.nodes[2].unloadwallet("extfund")
+
+    def test_add_inputs_default_value(self):
+        self.log.info("Test 'add_inputs' default value")
+
+        # Create and fund the wallet with 5 BTC
+        self.nodes[2].createwallet("test_preset_inputs")
+        wallet = self.nodes[2].get_wallet_rpc("test_preset_inputs")
+        addr1 = wallet.getnewaddress(address_type="bech32")
+        self.nodes[0].sendtoaddress(addr1, 5)
+        self.generate(self.nodes[0], 1)
+
+        # Covered cases:
+        # 1. Default add_inputs value with no preset inputs (add_inputs=true):
+        #       Expect: automatically add coins from the wallet to the tx.
+        # 2. Default add_inputs value with preset inputs (add_inputs=false):
+        #       Expect: disallow automatic coin selection.
+        # 3. Explicit add_inputs=true and preset inputs (with preset inputs not-covering the target amount).
+        #       Expect: include inputs from the wallet.
+        # 4. Explicit add_inputs=true and preset inputs (with preset inputs covering the target amount).
+        #       Expect: only preset inputs are used.
+        # 5. Explicit add_inputs=true, no preset inputs (same as (1) but with an explicit set):
+        #       Expect: include inputs from the wallet.
+        # 6. Explicit add_inputs=false, no preset inputs:
+        #       Expect: failure as we did not provide inputs and the process cannot automatically select coins.
+
+        # Case (1), 'send' command
+        # 'add_inputs' value is true unless "inputs" are specified, in such case, add_inputs=false.
+        # So, the wallet will automatically select coins and create the transaction if only the outputs are provided.
+        tx = wallet.send(outputs=[{addr1: 3}])
+        assert tx["complete"]
+
+        # Case (2), 'send' command
+        # Select an input manually, which doesn't cover the entire output amount and
+        # verify that the dynamically set 'add_inputs=false' value works.
+
+        # Fund wallet with 2 outputs, 5 BTC each.
+        addr2 = wallet.getnewaddress(address_type="bech32")
+        source_tx = self.nodes[0].send(outputs=[{addr1: 5}, {addr2: 5}], options={"change_position": 0})
+        self.generate(self.nodes[0], 1)
+
+        # Select only one input.
+        options = {
+            "inputs": [
+                {
+                    "txid": source_tx["txid"],
+                    "vout": 1  # change position was hardcoded to index 0
+                }
+            ]
+        }
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.send, outputs=[{addr1: 8}], options=options)
+
+        # Case (3), Explicit add_inputs=true and preset inputs (with preset inputs not-covering the target amount)
+        options["add_inputs"] = True
+        options["add_to_wallet"] = False
+        tx = wallet.send(outputs=[{addr1: 8}], options=options)
+        assert tx["complete"]
+
+        # Case (4), Explicit add_inputs=true and preset inputs (with preset inputs covering the target amount)
+        options["inputs"].append({
+            "txid": source_tx["txid"],
+            "vout": 2  # change position was hardcoded to index 0
+        })
+        tx = wallet.send(outputs=[{addr1: 8}], options=options)
+        assert tx["complete"]
+        # Check that only the preset inputs were added to the tx
+        decoded_psbt_inputs = self.nodes[0].decodepsbt(tx["psbt"])['tx']['vin']
+        assert_equal(len(decoded_psbt_inputs), 2)
+        for input in decoded_psbt_inputs:
+            assert_equal(input["txid"], source_tx["txid"])
+
+        # Case (5), assert that inputs are added to the tx by explicitly setting add_inputs=true
+        options = {"add_inputs": True, "add_to_wallet": True}
+        tx = wallet.send(outputs=[{addr1: 8}], options=options)
+        assert tx["complete"]
+
+        # 6. Explicit add_inputs=false, no preset inputs:
+        options = {"add_inputs": False}
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.send, outputs=[{addr1: 3}], options=options)
+
+        ################################################
+
+        # Case (1), 'walletcreatefundedpsbt' command
+        # Default add_inputs value with no preset inputs (add_inputs=true)
+        inputs = []
+        outputs = {self.nodes[1].getnewaddress(): 8}
+        assert "psbt" in wallet.walletcreatefundedpsbt(inputs=inputs, outputs=outputs)
+
+        # Case (2), 'walletcreatefundedpsbt' command
+        # Default add_inputs value with preset inputs (add_inputs=false).
+        inputs = [{
+            "txid": source_tx["txid"],
+            "vout": 1  # change position was hardcoded to index 0
+        }]
+        outputs = {self.nodes[1].getnewaddress(): 8}
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.walletcreatefundedpsbt, inputs=inputs, outputs=outputs)
+
+        # Case (3), Explicit add_inputs=true and preset inputs (with preset inputs not-covering the target amount)
+        options["add_inputs"] = True
+        assert "psbt" in wallet.walletcreatefundedpsbt(outputs=[{addr1: 8}], inputs=inputs, options=options)
+
+        # Case (4), Explicit add_inputs=true and preset inputs (with preset inputs covering the target amount)
+        inputs.append({
+            "txid": source_tx["txid"],
+            "vout": 2  # change position was hardcoded to index 0
+        })
+        psbt_tx = wallet.walletcreatefundedpsbt(outputs=[{addr1: 8}], inputs=inputs, options=options)
+        # Check that only the preset inputs were added to the tx
+        decoded_psbt_inputs = self.nodes[0].decodepsbt(psbt_tx["psbt"])['tx']['vin']
+        assert_equal(len(decoded_psbt_inputs), 2)
+        for input in decoded_psbt_inputs:
+            assert_equal(input["txid"], source_tx["txid"])
+
+        # Case (5), 'walletcreatefundedpsbt' command
+        # Explicit add_inputs=true, no preset inputs
+        options = {
+            "add_inputs": True
+        }
+        assert "psbt" in wallet.walletcreatefundedpsbt(inputs=[], outputs=outputs, options=options)
+
+        # Case (6). Explicit add_inputs=false, no preset inputs:
+        options = {"add_inputs": False}
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.walletcreatefundedpsbt, inputs=[], outputs=outputs, options=options)
+
+        self.nodes[2].unloadwallet("test_preset_inputs")
+
+    def test_preset_inputs_selection(self):
+        self.log.info('Test wallet preset inputs are not double-counted or reused in coin selection')
+
+        # Create and fund the wallet with 4 UTXO of 5 BTC each (20 BTC total)
+        self.nodes[2].createwallet("test_preset_inputs_selection")
+        wallet = self.nodes[2].get_wallet_rpc("test_preset_inputs_selection")
+        outputs = {}
+        for _ in range(4):
+            outputs[wallet.getnewaddress(address_type="bech32")] = 5
+        self.nodes[0].sendmany("", outputs)
+        self.generate(self.nodes[0], 1)
+
+        # Select the preset inputs
+        coins = wallet.listunspent()
+        preset_inputs = [coins[0], coins[1], coins[2]]
+
+        # Now let's create the tx creation options
+        options = {
+            "inputs": preset_inputs,
+            "add_inputs": True,  # automatically add coins from the wallet to fulfill the target
+            "subtract_fee_from_outputs": [0],  # deduct fee from first output
+            "add_to_wallet": False
+        }
+
+        # Attempt to send 29 BTC from a wallet that only has 20 BTC. The wallet should exclude
+        # the preset inputs from the pool of available coins, realize that there is not enough
+        # money to fund the 29 BTC payment, and fail with "Insufficient funds".
+        #
+        # Even with SFFO, the wallet can only afford to send 20 BTC.
+        # If the wallet does not properly exclude preset inputs from the pool of available coins
+        # prior to coin selection, it may create a transaction that does not fund the full payment
+        # amount or, through SFFO, incorrectly reduce the recipient's amount by the difference
+        # between the original target and the wrongly counted inputs (in this case 9 BTC)
+        # so that the recipient's amount is no longer equal to the user's selected target of 29 BTC.
+
+        # First case, use 'subtract_fee_from_outputs = true'
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.send, outputs=[{wallet.getnewaddress(address_type="bech32"): 29}], options=options)
+
+        # Second case, don't use 'subtract_fee_from_outputs'
+        del options["subtract_fee_from_outputs"]
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.send, outputs=[{wallet.getnewaddress(address_type="bech32"): 29}], options=options)
+
+        self.nodes[2].unloadwallet("test_preset_inputs_selection")
+
+    def test_weight_calculation(self):
+        self.log.info("Test weight calculation with external inputs")
+
+        self.nodes[2].createwallet("test_weight_calculation")
+        wallet = self.nodes[2].get_wallet_rpc("test_weight_calculation")
+
+        addr = wallet.getnewaddress(address_type="bech32")
+        ext_addr = self.nodes[0].getnewaddress(address_type="bech32")
+        txid = self.nodes[0].send([{addr: 5}, {ext_addr: 5}])["txid"]
+        vout = find_vout_for_address(self.nodes[0], txid, addr)
+        ext_vout = find_vout_for_address(self.nodes[0], txid, ext_addr)
+
+        self.nodes[0].sendtoaddress(wallet.getnewaddress(address_type="bech32"), 5)
+        self.generate(self.nodes[0], 1)
+
+        rawtx = wallet.createrawtransaction([{'txid': txid, 'vout': vout}], [{self.nodes[0].getnewaddress(address_type="bech32"): 8}])
+        fundedtx = wallet.fundrawtransaction(rawtx, {'fee_rate': 10, "change_type": "bech32"})
+        # with 71-byte signatures we should expect following tx size
+        # tx overhead (10) + 2 inputs (41 each) + 2 p2wpkh (31 each) + (segwit marker and flag (2) + 2 p2wpkh 71 byte sig witnesses (107 each)) / witness scaling factor (4)
+        tx_size = ceil(10 + 41*2 + 31*2 + (2 + 107*2)/4)
+        assert_equal(fundedtx['fee'] * COIN, tx_size * 10)
+
+        # Using the other output should have 72 byte sigs
+        rawtx = wallet.createrawtransaction([{'txid': txid, 'vout': ext_vout}], [{self.nodes[0].getnewaddress(): 13}])
+        ext_desc = self.nodes[0].getaddressinfo(ext_addr)["desc"]
+        fundedtx = wallet.fundrawtransaction(rawtx, {'fee_rate': 10, "change_type": "bech32", "solving_data": {"descriptors": [ext_desc]}})
+        # tx overhead (10) + 3 inputs (41 each) + 2 p2wpkh(31 each) + (segwit marker and flag (2) + 2 p2wpkh 71 bytes sig witnesses (107 each) + p2wpkh 72 byte sig witness (108)) / witness scaling factor (4)
+        tx_size = ceil(10 + 41*3 + 31*2 + (2 + 107*2 + 108)/4)
+        assert_equal(fundedtx['fee'] * COIN, tx_size * 10)
+
+        self.nodes[2].unloadwallet("test_weight_calculation")
 
     def test_include_unsafe(self):
         self.log.info("Test fundrawtxn with unsafe inputs")

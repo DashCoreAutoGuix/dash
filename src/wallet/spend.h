@@ -31,6 +31,59 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
  */
 void AvailableCoins(const CWallet& wallet, std::vector<COutput>& vCoins, const CCoinControl* coinControl = nullptr, const CAmount& nMinimumAmount = 1, const CAmount& nMaximumAmount = MAX_MONEY, const CAmount& nMinimumSumAmount = MAX_MONEY, const uint64_t nMaximumCount = 0) EXCLUSIVE_LOCKS_REQUIRED(wallet.cs_wallet);
 
+struct CoinsResult {
+    std::map<OutputType, std::vector<COutput>> coins;
+
+    /** Concatenate and return all COutputs as one vector */
+    std::vector<COutput> All() const;
+
+    /** The following methods are provided so that CoinsResult can mimic a vector,
+     * i.e., methods can work with individual OutputType vectors or on the entire object */
+    size_t Size() const;
+    void Clear();
+    void Erase(const std::unordered_set<COutPoint, SaltedOutpointHasher>& coins_to_remove);
+    void Shuffle(FastRandomContext& rng_fast);
+    void Add(OutputType type, const COutput& out);
+
+    CAmount GetTotalAmount() { return total_amount; }
+    std::optional<CAmount> GetEffectiveTotalAmount() {return total_effective_amount; }
+
+private:
+    /** Sum of all available coins raw value */
+    CAmount total_amount{0};
+    /** Sum of all available coins effective value (each output value minus fees required to spend it) */
+    std::optional<CAmount> total_effective_amount{0};
+};
+
+struct CoinFilterParams {
+    // Outputs below the minimum amount will not get selected
+    CAmount min_amount{1};
+    // Outputs above the maximum amount will not get selected
+    CAmount max_amount{MAX_MONEY};
+    // Return outputs until the minimum sum amount is covered
+    CAmount min_sum_amount{MAX_MONEY};
+    // Maximum number of outputs that can be returned
+    uint64_t max_count{0};
+    // By default, return only spendable outputs
+    bool only_spendable{true};
+    // By default, do not include immature coinbase outputs
+    bool include_immature_coinbase{false};
+};
+
+/**
+ * Populate the CoinsResult struct with vectors of available COutputs, organized by OutputType.
+ */
+CoinsResult AvailableCoins(const CWallet& wallet,
+                           const CCoinControl* coinControl = nullptr,
+                           std::optional<CFeeRate> feerate = std::nullopt,
+                           const CoinFilterParams& params = {}) EXCLUSIVE_LOCKS_REQUIRED(wallet.cs_wallet);
+
+/**
+ * Wrapper function for AvailableCoins which skips the `feerate` and `CoinFilterParams::only_spendable` parameters. Use this function
+ * to list all available coins (e.g. listunspent RPC) while not intending to fund a transaction.
+ */
+CoinsResult AvailableCoinsListUnspent(const CWallet& wallet, const CCoinControl* coinControl = nullptr, CoinFilterParams params = {}) EXCLUSIVE_LOCKS_REQUIRED(wallet.cs_wallet);
+
 CAmount GetAvailableBalance(const CWallet& wallet, const CCoinControl* coinControl = nullptr);
 
 /**

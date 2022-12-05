@@ -67,6 +67,67 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
     return CalculateMaximumSignedTxSize(tx, wallet, txouts, use_max_sig);
 }
 
+size_t CoinsResult::Size() const
+{
+    size_t size{0};
+    for (const auto& it : coins) {
+        size += it.second.size();
+    }
+    return size;
+}
+
+std::vector<COutput> CoinsResult::All() const
+{
+    std::vector<COutput> all;
+    all.reserve(coins.size());
+    for (const auto& it : coins) {
+        all.insert(all.end(), it.second.begin(), it.second.end());
+    }
+    return all;
+}
+
+void CoinsResult::Clear() {
+    coins.clear();
+}
+
+void CoinsResult::Erase(const std::unordered_set<COutPoint, SaltedOutpointHasher>& coins_to_remove)
+{
+    for (auto& [type, vec] : coins) {
+        auto remove_it = std::remove_if(vec.begin(), vec.end(), [&](const COutput& coin) {
+            // remove it if it's on the set
+            if (coins_to_remove.count(coin.outpoint) == 0) return false;
+
+            // update cached amounts
+            total_amount -= coin.txout.nValue;
+            if (total_effective_amount.has_value()) {
+                total_effective_amount = *total_effective_amount - coin.GetEffectiveValue();
+            }
+            return true;
+        });
+        vec.erase(remove_it, vec.end());
+    }
+}
+
+void CoinsResult::Shuffle(FastRandomContext& rng_fast)
+{
+    for (auto& it : coins) {
+        ::Shuffle(it.second.begin(), it.second.end(), rng_fast);
+    }
+}
+
+void CoinsResult::Add(OutputType type, const COutput& out)
+{
+    coins[type].emplace_back(out);
+    total_amount += out.txout.nValue;
+    if (out.HasEffectiveValue()) {
+        total_effective_amount = total_effective_amount.has_value() ?
+                *total_effective_amount + out.GetEffectiveValue() : out.GetEffectiveValue();
+    }
+}
+
+
+
+// Legacy version of AvailableCoins for compatibility
 void AvailableCoins(const CWallet& wallet, std::vector<COutput>& vCoins, const CCoinControl* coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t nMaximumCount)
 {
     AssertLockHeld(wallet.cs_wallet);
@@ -195,10 +256,166 @@ void AvailableCoins(const CWallet& wallet, std::vector<COutput>& vCoins, const C
     }
 }
 
+CoinsResult AvailableCoins(const CWallet& wallet,
+                           const CCoinControl* coinControl,
+                           std::optional<CFeeRate> feerate,
+                           const CoinFilterParams& params)
+{
+    AssertLockHeld(wallet.cs_wallet);
+
+    CoinsResult result;
+    CoinType nCoinType = coinControl ? coinControl->nCoinType : CoinType::ALL_COINS;
+
+    // Either the WALLET_FLAG_AVOID_REUSE flag is not set (in which case we always allow), or we default to avoiding, and only in the case where
+    // a coin control object is provided, and has the avoid address reuse flag set to false, do we allow already used addresses
+    bool allow_used_addresses = !wallet.IsWalletFlagSet(WALLET_FLAG_AVOID_REUSE) || (coinControl && !coinControl->m_avoid_address_reuse);
+    const int min_depth = {coinControl ? coinControl->m_min_depth : DEFAULT_MIN_DEPTH};
+    const int max_depth = {coinControl ? coinControl->m_max_depth : DEFAULT_MAX_DEPTH};
+    const bool only_safe = {coinControl ? !coinControl->m_include_unsafe_inputs : true};
+    std::set<uint256> trusted_parents;
+    for (const auto* pwtx : wallet.GetSpendableTXs()) {
+        const uint256& wtxid = pwtx->GetHash();
+        const CWalletTx& wtx = *pwtx;
+
+        if (wallet.IsTxImmatureCoinBase(wtx))
+            continue;
+
+        int nDepth = wallet.GetTxDepthInMainChain(wtx);
+
+        // We should not consider coins which aren't at least in our mempool
+        // It's possible for these to be conflicted via ancestors which we may never be able to detect
+        if (nDepth == 0 && !wtx.InMempool())
+            continue;
+
+        bool safeTx = CachedTxIsTrusted(wallet, wtx, trusted_parents);
+
+        // We should not consider coins from transactions that are replacing
+        // other transactions.
+        //
+        // Example: There is a transaction A which is replaced by bumpfee
+        // transaction B. In this case, we want to prevent creation of
+        // a transaction B' which spends an output of B.
+        //
+        // Reason: If transaction A were initially broadcast, conflicting with
+        // transaction B, transaction B' should be valid, spending an output of
+        // transaction B. However, if transaction A were not broadcast (or not
+        // yet broadcast), transaction B' is spending an output of a
+        // transaction which is not yet confirmed. This is not allowed.
+        //
+        // It might be possible to relax this restriction: if all unconfirmed
+        // ancestors of B are descendants of A, and if A is not in the mempool,
+        // then B' is safe to create. This does not require mempool traversal,
+        // and can instead be performed using wtx.mapValue["replaces_txid"].
+        if (nDepth == 0 && wtx.mapValue.count("replaces_txid")) {
+            safeTx = false;
+        }
+
+        if (only_safe && !safeTx) {
+            continue;
+        }
+
+        if (nDepth < min_depth || nDepth > max_depth) {
+            continue;
+        }
+
+        bool tx_from_me = CachedTxIsFromMe(wallet, wtx, ISMINE_ALL);
+
+        for (unsigned int i = 0; i < wtx.tx->vout.size(); i++) {
+            // Check for CoinJoin coin types
+            bool found = false;
+            switch (nCoinType) {
+                case CoinType::ONLY_FULLY_MIXED: {
+                    found = CoinJoin::IsDenominatedAmount(wtx.tx->vout[i].nValue) &&
+                            wallet.IsFullyMixed(COutPoint(wtxid, i));
+                    break;
+                }
+                case CoinType::ONLY_READY_TO_MIX: {
+                    found = CoinJoin::IsDenominatedAmount(wtx.tx->vout[i].nValue) &&
+                            !wallet.IsFullyMixed(COutPoint(wtxid, i));
+                    break;
+                }
+                case CoinType::ONLY_MASTERNODE_COLLATERAL: {
+                    found = false; // TODO: Need proper implementation for Dash
+                    break;
+                }
+                case CoinType::ONLY_COINJOIN_COLLATERAL: {
+                    found = CoinJoin::IsCollateralAmount(wtx.tx->vout[i].nValue);
+                    break;
+                }
+                case CoinType::ALL_COINS: {
+                    found = true;
+                    break;
+                }
+                case CoinType::ONLY_NONDENOMINATED: {
+                    found = !CoinJoin::IsCollateralAmount(wtx.tx->vout[i].nValue) &&
+                            !CoinJoin::IsDenominatedAmount(wtx.tx->vout[i].nValue);
+                            // TODO: Add masternode collateral check
+                    break;
+                }
+            }
+            if (!found) continue;
+
+            const CTxOut& output = wtx.tx->vout[i];
+            const COutPoint outpoint(wtxid, i);
+
+            if (output.nValue < params.min_amount || output.nValue > params.max_amount)
+                continue;
+
+            if (coinControl && coinControl->HasSelected() && !coinControl->fAllowOtherInputs && !coinControl->IsSelected(outpoint))
+                continue;
+
+            if (wallet.IsLockedCoin(outpoint.hash, outpoint.n))
+                continue;
+
+            if (wallet.IsSpent(outpoint.hash, outpoint.n))
+                continue;
+
+            isminetype mine = wallet.IsMine(output);
+
+            if (mine == ISMINE_NO) {
+                continue;
+            }
+
+            if (!allow_used_addresses && wallet.IsSpentKey(outpoint.hash, outpoint.n)) {
+                continue;
+            }
+
+            std::unique_ptr<SigningProvider> provider = wallet.GetSolvingProvider(output.scriptPubKey);
+
+            bool solvable = provider ? IsSolvable(*provider, output.scriptPubKey) : false;
+            bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && (coinControl && coinControl->fAllowWatchOnly && solvable));
+            int input_bytes = GetTxSpendSize(wallet, wtx, i, (coinControl && coinControl->fAllowWatchOnly));
+
+            // For Dash, all outputs are LEGACY type
+            result.Add(OutputType::LEGACY,
+                       COutput(outpoint, output, nDepth, input_bytes, spendable, solvable, safeTx, wtx.GetTxTime(), tx_from_me, feerate));
+
+            // Checks the sum amount of all UTXO's.
+            if (params.min_sum_amount != MAX_MONEY) {
+                if (result.GetTotalAmount() >= params.min_sum_amount) {
+                    return result;
+                }
+            }
+
+            // Checks the maximum number of UTXO's.
+            if (params.max_count > 0 && result.Size() >= params.max_count) {
+                return result;
+            }
+        }
+    }
+
+    return result;
+}
+
+CoinsResult AvailableCoinsListUnspent(const CWallet& wallet, const CCoinControl* coinControl, CoinFilterParams params)
+{
+    params.only_spendable = false;
+    return AvailableCoins(wallet, coinControl, /*feerate=*/std::nullopt, params);
+}
+
 CAmount GetAvailableBalance(const CWallet& wallet, const CCoinControl* coinControl)
 {
     LOCK(wallet.cs_wallet);
-
     CAmount balance = 0;
     std::vector<COutput> vCoins;
     AvailableCoins(wallet, vCoins, coinControl);

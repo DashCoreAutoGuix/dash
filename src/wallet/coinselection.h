@@ -79,11 +79,56 @@ public:
         effective_value(txout.nValue)
     {}
 
+    COutput(const COutPoint& outpoint, const CTxOut& txout, int depth, int input_bytes, bool spendable, bool solvable, bool safe, int64_t time, bool from_me, const std::optional<CFeeRate> feerate)
+        : outpoint(outpoint),
+        txout(txout),
+        depth(depth),
+        input_bytes(input_bytes),
+        spendable(spendable),
+        solvable(solvable),
+        safe(safe),
+        time(time),
+        from_me(from_me)
+    {
+        if (feerate) {
+            fee = input_bytes < 0 ? 0 : feerate.value().GetFee(input_bytes);
+            effective_value = txout.nValue - fee;
+        } else {
+            effective_value = txout.nValue;
+        }
+    }
+
+    COutput(const COutPoint& outpoint, const CTxOut& txout, int depth, int input_bytes, bool spendable, bool solvable, bool safe, int64_t time, bool from_me, const CAmount _fee)
+        : outpoint(outpoint),
+        txout(txout),
+        depth(depth),
+        input_bytes(input_bytes),
+        spendable(spendable),
+        solvable(solvable),
+        safe(safe),
+        time(time),
+        from_me(from_me),
+        effective_value(txout.nValue - _fee),
+        fee(_fee)
+    {}
+
     std::string ToString() const;
 
     bool operator<(const COutput& rhs) const {
         return outpoint < rhs.outpoint;
     }
+
+    CAmount GetFee() const
+    {
+        return fee;
+    }
+
+    CAmount GetEffectiveValue() const
+    {
+        return effective_value;
+    }
+
+    bool HasEffectiveValue() const { return true; }
 };
 
 /** Parameters for one iteration of Coin Selection. */
@@ -258,9 +303,9 @@ private:
 
 public:
     /** The target the algorithm selected for. Note that this may not be equal to the recipient amount as it can include non-input fees */
-    const CAmount m_target;
+    CAmount m_target;
     /** The algorithm used to produce this result */
-    const SelectionAlgorithm m_algo;
+    SelectionAlgorithm m_algo;
 
     explicit SelectionResult(const CAmount target, SelectionAlgorithm algo)
         : m_target(target), m_algo(algo) {}
@@ -273,11 +318,19 @@ public:
     void Clear();
 
     void AddInput(const OutputGroup& group);
+    void AddInputs(const std::set<COutput>& inputs, bool subtract_fee_outputs);
 
     /** Calculates and stores the waste for this selection via GetSelectionWaste */
     void ComputeAndSetWaste(CAmount change_cost);
     [[nodiscard]] CAmount GetWaste() const;
 
+    /**
+     * Combines the @param[in] other selection result into 'this' selection result.
+     *
+     * Important note:
+     * There must be no shared 'COutput' among the two selection results being combined.
+     */
+    void Merge(const SelectionResult& other);
     /** Get m_selected_inputs */
     const std::set<COutput>& GetInputSet() const;
     /** Get the vector of COutputs that will be used to fill in a CTransaction's vin */

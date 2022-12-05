@@ -93,6 +93,29 @@ static void add_coin(std::vector<COutput>& coins, CWallet& wallet, const CAmount
     coins.emplace_back(COutPoint(wtx.GetHash(), nInput), wtx.tx->vout.at(nInput), nAge, GetTxSpendSize(wallet, wtx, nInput), /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, wtx.GetTxTime(), fIsFromMe);
 }
 
+static void add_coin(CoinsResult& available_coins, CWallet& wallet, const CAmount& nValue, CFeeRate feerate = CFeeRate(0), int nAge = 6*24, bool fIsFromMe = false, int nInput=0, bool spendable = false)
+{
+    CMutableTransaction tx;
+    tx.nLockTime = nextLockTime++;        // so all transactions get different hashes
+    tx.vout.resize(nInput + 1);
+    tx.vout[nInput].nValue = nValue;
+    if (spendable) {
+        CTxDestination dest;
+        bilingual_str error;
+        const bool destination_ok = wallet.GetNewDestination("", dest, error);
+        assert(destination_ok);
+        tx.vout[nInput].scriptPubKey = GetScriptForDestination(dest);
+    }
+    uint256 txid = tx.GetHash();
+
+    LOCK(wallet.cs_wallet);
+    auto ret = wallet.mapWallet.emplace(std::piecewise_construct, std::forward_as_tuple(txid), std::forward_as_tuple(MakeTransactionRef(std::move(tx)), TxStateInactive{}));
+    assert(ret.second);
+    CWalletTx& wtx = (*ret.first).second;
+    const auto& txout = wtx.tx->vout.at(nInput);
+    available_coins.Add(OutputType::LEGACY, {COutPoint(wtx.GetHash(), nInput), txout, nAge, CalculateMaximumSignedInputSize(txout, &wallet), /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, wtx.GetTxTime(), fIsFromMe, feerate});
+}
+
 /** Check if SelectionResult a is equivalent to SelectionResult b.
  * Equivalent means same input values, but maybe different inputs (i.e. same value, different prevout) */
 static bool EquivalentResult(const SelectionResult& a, const SelectionResult& b)
@@ -869,6 +892,134 @@ BOOST_AUTO_TEST_CASE(waste_test)
     add_coin(1 * COIN, 1, selection, fee, fee + large_fee_diff);
     add_coin(2 * COIN, 2, selection, fee, fee + large_fee_diff);
     BOOST_CHECK_EQUAL(target_waste2, GetSelectionWaste(selection, change_cost, target));
+}
+
+BOOST_AUTO_TEST_CASE(effective_value_test)
+{
+    const int input_bytes = 148;
+    const CFeeRate feerate(1000);
+    const CAmount nValue = 10000;
+    const int nInput = 0;
+
+    CMutableTransaction tx;
+    tx.vout.resize(1);
+    tx.vout[nInput].nValue = nValue;
+
+    // standard case, pass feerate in constructor
+    COutput output1(COutPoint(tx.GetHash(), nInput), tx.vout.at(nInput), /*depth=*/ 1, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, feerate);
+    const CAmount expected_ev1 = 9852; // 10000 - 148
+    BOOST_CHECK_EQUAL(output1.GetEffectiveValue(), expected_ev1);
+
+    // input bytes unknown (input_bytes = -1), pass feerate in constructor
+    COutput output2(COutPoint(tx.GetHash(), nInput), tx.vout.at(nInput), /*depth=*/ 1, /*input_bytes=*/ -1, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, feerate);
+    BOOST_CHECK_EQUAL(output2.GetEffectiveValue(), nValue); // The effective value should be equal to the absolute value if input_bytes is -1
+
+    // negative effective value, pass feerate in constructor
+    COutput output3(COutPoint(tx.GetHash(), nInput), tx.vout.at(nInput), /*depth=*/ 1, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, CFeeRate(100000));
+    const CAmount expected_ev3 = -4800; // 10000 - 14800
+    BOOST_CHECK_EQUAL(output3.GetEffectiveValue(), expected_ev3);
+
+    // standard case, pass fees in constructor
+    const CAmount fees = 148;
+    COutput output4(COutPoint(tx.GetHash(), nInput), tx.vout.at(nInput), /*depth=*/ 1, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, fees);
+    BOOST_CHECK_EQUAL(output4.GetEffectiveValue(), expected_ev1);
+
+    // input bytes unknown (input_bytes = -1), pass fees in constructor
+    COutput output5(COutPoint(tx.GetHash(), nInput), tx.vout.at(nInput), /*depth=*/ 1, /*input_bytes=*/ -1, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, /*fees=*/ 0);
+    BOOST_CHECK_EQUAL(output5.GetEffectiveValue(), nValue); // The effective value should be equal to the absolute value if input_bytes is -1
+}
+
+// TODO: This test uses Bitcoin-specific features (m_allow_other_inputs, SetInputWeight, SelectExternal, FetchSelectedInputs)
+// that are not available in Dash. It tests preset input handling which would need to be adapted for Dash's codebase.
+/*
+BOOST_AUTO_TEST_CASE(SelectCoins_effective_value_test)
+{
+    // Test that the effective value is used to check whether preset inputs provide sufficient funds when subtract_fee_outputs is not used.
+    // This test creates a coin whose value is higher than the target but whose effective value is lower than the target.
+    // The coin is selected using coin control, with m_allow_other_inputs = false. SelectCoins should fail due to insufficient funds.
+
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), m_node.coinjoin_loader.get(), "", m_args, CreateMockWalletDatabase());
+    wallet->LoadWallet();
+    LOCK(wallet->cs_wallet);
+    wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+    wallet->SetupDescriptorScriptPubKeyMans();
+
+    CoinsResult available_coins;
+    {
+        std::unique_ptr<CWallet> dummyWallet = std::make_unique<CWallet>(m_node.chain.get(), m_node.coinjoin_loader.get(), "dummy", m_args, CreateMockWalletDatabase());
+        dummyWallet->LoadWallet();
+        LOCK(dummyWallet->cs_wallet);
+        dummyWallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+        dummyWallet->SetupDescriptorScriptPubKeyMans();
+
+        add_coin(available_coins, *dummyWallet, 100000); // 0.001 BTC
+    }
+
+    CAmount target{99900}; // 0.000999 BTC
+
+    FastRandomContext rand;
+    CoinSelectionParams cs_params{
+        rand,
+        // change_output_size=34,
+        // change_spend_size=148,
+        // min_change_target=1000,
+        // effective_feerate=CFeeRate(3000),
+        // long_term_feerate=CFeeRate(1000),
+        // discard_feerate=CFeeRate(1000),
+        // tx_noinputs_size=0,
+        // avoid_partial=false,
+    };
+    CCoinControl cc;
+    cc.m_allow_other_inputs = false;
+    COutput output = available_coins.All().at(0);
+    cc.SetInputWeight(output.outpoint, 148);
+    cc.SelectExternal(output.outpoint, output.txout);
+
+    const auto preset_inputs = *Assert(FetchSelectedInputs(*wallet, cc, cs_params));
+    available_coins.Erase({available_coins.coins[OutputType::LEGACY].begin()->outpoint});
+
+    const auto result = SelectCoins(*wallet, available_coins, preset_inputs, target, cc, cs_params);
+    BOOST_CHECK(!result);
+}
+*/
+BOOST_FIXTURE_TEST_CASE(wallet_coinsresult_test, BasicTestingSetup)
+{
+    // Test case to verify CoinsResult object sanity.
+    CoinsResult available_coins;
+    {
+        std::unique_ptr<CWallet> dummyWallet = std::make_unique<CWallet>(m_node.chain.get(), m_node.coinjoin_loader.get(), "dummy", m_args, CreateMockWalletDatabase());
+        BOOST_CHECK_EQUAL(dummyWallet->LoadWallet(), DBErrors::LOAD_OK);
+        LOCK(dummyWallet->cs_wallet);
+        dummyWallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+        dummyWallet->SetupDescriptorScriptPubKeyMans();
+
+        // Add some coins to 'available_coins'
+        for (int i=0; i<10; i++) {
+            add_coin(available_coins, *dummyWallet, 1 * COIN);
+        }
+    }
+
+    {
+        // First test case, check that 'CoinsResult::Erase' function works as expected.
+        // By trying to erase two elements from the 'available_coins' object.
+        std::unordered_set<COutPoint, SaltedOutpointHasher> outs_to_remove;
+        const auto& coins = available_coins.All();
+        for (int i = 0; i < 2; i++) {
+            outs_to_remove.emplace(coins[i].outpoint);
+        }
+        available_coins.Erase(outs_to_remove);
+
+        // Check that the elements were actually removed.
+        const auto& updated_coins = available_coins.All();
+        for (const auto& out: outs_to_remove) {
+            auto it = std::find_if(updated_coins.begin(), updated_coins.end(), [&out](const COutput &coin) {
+                return coin.outpoint == out;
+            });
+            BOOST_CHECK(it == updated_coins.end());
+        }
+        // And verify that no extra element were removed
+        BOOST_CHECK_EQUAL(available_coins.Size(), 8);
+    }
 }
 } // namespace wallet
 
