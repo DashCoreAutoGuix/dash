@@ -14,14 +14,20 @@
 
 #include <stdexcept>
 
+std::string StrFormatInternalBug(const char* msg, const char* file, int line, const char* func);
+
 class NonFatalCheckError : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
 
+std::string StrFormatInternalBug(const char* msg, const char* file, int line, const char* func);
+
 #define format_internal_error(msg, file, line, func, report)                                    \
     strprintf("Internal bug detected: \"%s\"\n%s:%d (%s)\nPlease report this issue here: %s\n", \
               msg, file, line, func, report)
+
+#define STR_INTERNAL_BUG(msg) StrFormatInternalBug((msg), __FILE__, __LINE__, __func__)
 
 /** Helper for CHECK_NONFATAL() */
 template <typename T>
