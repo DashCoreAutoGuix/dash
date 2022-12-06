@@ -6,6 +6,7 @@
 #define BITCOIN_WALLET_COINSELECTION_H
 
 #include <consensus/amount.h>
+#include <consensus/consensus.h>
 #include <policy/feerate.h>
 #include <primitives/transaction.h>
 #include <random.h>
@@ -189,6 +190,8 @@ struct OutputGroup
     /** Indicate that we are subtracting the fee from outputs.
      * When true, the value that is used for coin selection is the UTXO's real value rather than effective value */
     bool m_subtract_fee_outputs{false};
+    /** Total weight of the UTXOs in this group. */
+    int m_weight{0};
 
     OutputGroup() {}
     OutputGroup(const CoinSelectionParams& params) :
@@ -255,6 +258,8 @@ private:
     bool m_use_effective{false};
     /** The computed waste */
     std::optional<CAmount> m_waste;
+    /** Total weight of the selected inputs */
+    int m_weight{0};
 
 public:
     /** The target the algorithm selected for. Note that this may not be equal to the recipient amount as it can include non-input fees */
@@ -284,6 +289,31 @@ public:
     std::vector<COutput> GetShuffledInputVector() const;
 
     bool operator<(SelectionResult other) const;
+
+    /** Get the amount for the change output after paying needed fees.
+     *
+     * The change amount is not 100% precise due to discrepancies in fee calculation.
+     * The final change amount (if any) should be corrected after calculating the final tx fees.
+     * When there is a discrepancy, most of the time the final change would be slightly bigger than estimated.
+     *
+     * Following are the possible factors of discrepancy:
+     *  + non-input fees always include segwit flags
+     *  + input fee estimation always include segwit stack size
+     *  + input fees are rounded individually and not collectively, which leads to small rounding errors
+     *  - input counter size is always assumed to be 1vbyte
+     *
+     * @param[in]  min_viable_change  Minimum amount for change output, if change would be less then we forgo change
+     * @param[in]  change_fee         Fees to include change output in the tx
+     * @returns Amount for change output, 0 when there is no change.
+     *
+     */
+    CAmount GetChange(const CAmount min_viable_change, const CAmount change_fee) const;
+
+    CAmount GetTarget() const { return m_target; }
+
+    SelectionAlgorithm GetAlgo() const { return m_algo; }
+
+    int GetWeight() const { return m_weight; }
 };
 
 std::optional<SelectionResult> SelectCoinsBnB(std::vector<OutputGroup>& utxo_pool, const CAmount& selection_target, const CAmount& cost_of_change);
