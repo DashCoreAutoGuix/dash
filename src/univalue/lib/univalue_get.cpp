@@ -92,7 +92,7 @@ bool UniValue::get_bool() const
 {
     if (typ != VBOOL)
         throw std::runtime_error("JSON value is not a boolean as expected");
-    return getBool();
+    return isTrue();
 }
 
 const std::string& UniValue::get_str() const

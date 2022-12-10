@@ -170,13 +170,13 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), false);
     BOOST_CHECK_EQUAL(v.isFalse(), true);
-    BOOST_CHECK_EQUAL(v.getBool(), false);
+    BOOST_CHECK_EQUAL(v.get_bool(), false);
 
     BOOST_CHECK(v.setBool(true));
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), true);
     BOOST_CHECK_EQUAL(v.isFalse(), false);
-    BOOST_CHECK_EQUAL(v.getBool(), true);
+    BOOST_CHECK_EQUAL(v.get_bool(), true);
 
     BOOST_CHECK(!v.setNumStr("zombocom"));
 
