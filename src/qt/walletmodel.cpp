@@ -603,3 +603,20 @@ uint256 WalletModel::getLastBlockProcessed() const
 {
     return m_client_model ? m_client_model->getBestBlockHash() : uint256{};
 }
+
+CAmount WalletModel::getAvailableBalance(const CCoinControl* control)
+{
+    // No selected coins, return the cached balance
+    if (!control || !control->HasSelected()) {
+        const interfaces::WalletBalances& balances = getCachedBalance();
+        CAmount available_balance = balances.balance;
+        // if wallet private keys are disabled, this is a watch-only wallet
+        // so, let's include the watch-only balance.
+        if (balances.have_watch_only && m_wallet->privateKeysDisabled()) {
+            available_balance += balances.watch_only_balance;
+        }
+        return available_balance;
+    }
+    // Fetch balance from the wallet, taking into account the selected coins
+    return wallet().getAvailableBalance(*control);
+}
