@@ -84,6 +84,22 @@ static void RescanWallet(CWallet& wallet, const WalletRescanReserver& reserver, 
     }
 }
 
+static void EnsureBlockDataFromTime(const CWallet& wallet, int64_t timestamp)
+{
+    auto& chain{wallet.chain()};
+    if (!chain.havePruned()) {
+        return;
+    }
+
+    int height{0};
+    const bool found{chain.findFirstBlockWithTimeAndHeight(timestamp - TIMESTAMP_WINDOW, 0, FoundBlock().height(height))};
+
+    uint256 tip_hash{WITH_LOCK(wallet.cs_wallet, return wallet.GetLastBlockHash())};
+    if (found && !chain.hasBlocks(tip_hash, height)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, strprintf("Pruned blocks from height %d required to import keys. Use RPC call getblockchaininfo to determine your pruned height.", height));
+    }
+}
+
 RPCHelpMan importprivkey()
 {
     return RPCHelpMan{"importprivkey",
@@ -511,14 +527,6 @@ RPCHelpMan importwallet()
 
     EnsureLegacyScriptPubKeyMan(*pwallet, true);
 
-    if (pwallet->chain().havePruned()) {
-        // Exit early and print an error.
-        // If a block is pruned after this check, we will import the key(s),
-        // but fail the rescan with a generic error.
-        throw JSONRPCError(RPC_WALLET_ERROR, "Importing wallets is disabled when blocks are pruned");
-    }
-
-    WalletBatch batch(pwallet->GetDatabase());
     WalletRescanReserver reserver(*pwallet);
     if (!reserver.reserve()) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Wallet is currently rescanning. Abort existing rescan or wait.");
@@ -573,15 +581,18 @@ RPCHelpMan importwallet()
                         fLabel = true;
                     }
                 }
+                nTimeBegin = std::min(nTimeBegin, nTime);
                 keys.push_back(std::make_tuple(key, nTime, fLabel, strLabel));
             } else if(IsHex(vstr[0])) {
                 std::vector<unsigned char> vData(ParseHex(vstr[0]));
                 CScript script = CScript(vData.begin(), vData.end());
                 int64_t birth_time = ParseISO8601DateTime(vstr[1]);
+                if (birth_time > 0) nTimeBegin = std::min(nTimeBegin, birth_time);
                 scripts.push_back(std::pair<CScript, int64_t>(script, birth_time));
             }
         }
         file.close();
+        EnsureBlockDataFromTime(*pwallet, nTimeBegin);
         // We now know whether we are importing private keys, so we can error if private keys are disabled
         if (keys.size() > 0 && pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS)) {
             pwallet->chain().showProgress("", 100, false); // hide progress dialog in GUI
@@ -605,32 +616,31 @@ RPCHelpMan importwallet()
 
                 CPubKey pubkey = key.GetPubKey();
                 CHECK_NONFATAL(key.VerifyPubKey(pubkey));
-                PKHash pkhash = PKHash(pubkey);
                 CKeyID keyid = pubkey.GetID();
-                pwallet->WalletLogPrintf("Importing %s...\n", EncodeDestination(pkhash));
+
+                pwallet->WalletLogPrintf("Importing %s...\n", EncodeDestination(PKHash(keyid)));
+
                 if (!pwallet->ImportPrivKeys({{keyid, key}}, time)) {
-                    pwallet->WalletLogPrintf("Error importing key for %s\n", EncodeDestination(pkhash));
+                    pwallet->WalletLogPrintf("Error importing key for %s\n", EncodeDestination(PKHash(keyid)));
                     fGood = false;
                     continue;
                 }
-                if (has_label)
-                    pwallet->SetAddressBook(pkhash, label, "receive");
 
-                nTimeBegin = std::min(nTimeBegin, time);
+                if (has_label)
+                    pwallet->SetAddressBook(PKHash(keyid), label, "receive");
                 progress++;
             }
             for (const auto& script_pair : scripts) {
                 pwallet->chain().showProgress("", std::max(50, std::min(75, (int)((progress / total) * 100) + 50)), false);
                 const CScript& script = script_pair.first;
                 int64_t time = script_pair.second;
+
                 if (!pwallet->ImportScripts({script}, time)) {
                     pwallet->WalletLogPrintf("Error importing script %s\n", HexStr(script));
                     fGood = false;
                     continue;
                 }
-                if (time > 0) {
-                    nTimeBegin = std::min(nTimeBegin, time);
-                }
+
                 progress++;
             }
             pwallet->chain().showProgress("", 100, false); // hide progress dialog in GUI
