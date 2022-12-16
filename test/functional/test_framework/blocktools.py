@@ -48,6 +48,7 @@ COINBASE_MATURITY = 100
 NORMAL_GBT_REQUEST_PARAMS = {"rules": []} # type: ignore[var-annotated]
 
 VERSIONBITS_LAST_OLD_BLOCK_VERSION = 4
+MIN_BLOCKS_TO_KEEP = 288
 
 def create_block(hashprev=None, coinbase=None, ntime=None, *, version=None, tmpl=None, txlist=None, dip4_activated=False, v20_activated=False):
     """Create a block (with regtest difficulty)."""
@@ -175,8 +176,8 @@ def script_BIP34_coinbase_height(height):
     return CScript([CScriptNum(height)])
 
 
-def create_coinbase(height, pubkey=None, dip4_activated=False, v20_activated=False, nValue=500):
-    """Create a coinbase transaction, assuming no miner fees.
+def create_coinbase(height, pubkey=None, *, script_pubkey=None, extra_output_script=None, fees=0, nValue=500, dip4_activated=False, v20_activated=False):
+    """Create a coinbase transaction.
 
     If pubkey is passed in, the coinbase output will be a P2PK output;
     otherwise an anyone-can-spend output."""
@@ -189,9 +190,16 @@ def create_coinbase(height, pubkey=None, dip4_activated=False, v20_activated=Fal
         coinbaseoutput.nValue >>= halvings
     if (pubkey is not None):
         coinbaseoutput.scriptPubKey = key_to_p2pk_script(pubkey)
+    elif script_pubkey is not None:
+        coinbaseoutput.scriptPubKey = script_pubkey
     else:
         coinbaseoutput.scriptPubKey = CScript([OP_TRUE])
     coinbase.vout = [coinbaseoutput]
+    if extra_output_script is not None:
+        coinbaseoutput2 = CTxOut()
+        coinbaseoutput2.nValue = fees
+        coinbaseoutput2.scriptPubKey = extra_output_script
+        coinbase.vout.append(coinbaseoutput2)
     if dip4_activated:
         coinbase.nVersion = 3
         coinbase.nType = 5
