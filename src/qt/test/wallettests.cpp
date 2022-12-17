@@ -169,29 +169,19 @@ void VerifyUseAvailableBalance(SendCoinsDialog& sendCoinsDialog, const WalletMod
     QVERIFY(send_entry->getValue().amount == sum_selected_coins);
 }
 
-//! Simple qt wallet tests.
-//
-// Test widgets can be debugged interactively calling show() on them and
-// manually running the event loop, e.g.:
-//
-//     sendCoinsDialog.show();
-//     QEventLoop().exec();
-//
-// This also requires overriding the default minimal Qt platform:
-//
-//     QT_QPA_PLATFORM=xcb     src/qt/test/test_dash-qt  # Linux
-//     QT_QPA_PLATFORM=windows src/qt/test/test_dash-qt  # Windows
-//     QT_QPA_PLATFORM=cocoa   src/qt/test/test_dash-qt  # macOS
-void TestGUI(interfaces::Node& node)
+void SyncUpWallet(const std::shared_ptr<CWallet>& wallet, interfaces::Node& node)
 {
-    // Set up wallet and chain with 105 blocks (5 mature blocks for spending).
-    TestChain100Setup test;
-    for (int i = 0; i < 5; ++i) {
-        test.CreateAndProcessBlock({}, GetScriptForRawPubKey(test.coinbaseKey.GetPubKey()));
-    }
-    node.setContext(&test.m_node);
-    WalletContext& context = *node.walletLoader().context();
-    const std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(node.context()->chain.get(), node.context()->coinjoin_loader.get(), "", gArgs, CreateMockWalletDatabase());
+    WalletRescanReserver reserver(*wallet);
+    reserver.reserve();
+    CWallet::ScanResult result = wallet->ScanForWalletTransactions(Params().GetConsensus().hashGenesisBlock, /*start_height=*/0, /*max_height=*/{}, reserver, /*fUpdate=*/true, /*save_progress=*/false);
+    QCOMPARE(result.status, CWallet::ScanResult::SUCCESS);
+    QCOMPARE(result.last_scanned_block, node.context()->chainman->ActiveChain().Tip()->GetBlockHash());
+    QVERIFY(result.last_failed_block.IsNull());
+}
+
+std::shared_ptr<CWallet> SetupDescriptorsWallet(interfaces::Node& node, TestChain100Setup& test, WalletContext& context)
+{
+    std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(node.context()->chain.get(), node.context()->coinjoin_loader.get(), "", gArgs, CreateMockWalletDatabase());
     AddWallet(context, wallet);
     wallet->LoadWallet();
     wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -210,16 +200,27 @@ void TestGUI(interfaces::Node& node)
         wallet->SetAddressBook(dest, "", "receive");
         wallet->SetLastBlockProcessed(105, node.context()->chainman->ActiveChain().Tip()->GetBlockHash());
     }
-    {
-        WalletRescanReserver reserver(*wallet);
-        reserver.reserve();
-        CWallet::ScanResult result = wallet->ScanForWalletTransactions(Params().GetConsensus().hashGenesisBlock, /*start_height=*/0, /*max_height=*/{}, reserver, /*fUpdate=*/true, /*save_progress=*/false);
-        QCOMPARE(result.status, CWallet::ScanResult::SUCCESS);
-        QCOMPARE(result.last_scanned_block, node.context()->chainman->ActiveChain().Tip()->GetBlockHash());
-        QVERIFY(result.last_failed_block.IsNull());
-    }
+    SyncUpWallet(wallet, node);
     wallet->SetBroadcastTransactions(true);
+    return wallet;
+}
 
+//! Simple qt wallet tests.
+//
+// Test widgets can be debugged interactively calling show() on them and
+// manually running the event loop, e.g.:
+//
+//     sendCoinsDialog.show();
+//     QEventLoop().exec();
+//
+// This also requires overriding the default minimal Qt platform:
+//
+//     QT_QPA_PLATFORM=xcb     src/qt/test/test_dash-qt  # Linux
+//     QT_QPA_PLATFORM=windows src/qt/test/test_dash-qt  # Windows
+//     QT_QPA_PLATFORM=cocoa   src/qt/test/test_dash-qt  # macOS
+void TestGUI(interfaces::Node& node, const std::shared_ptr<CWallet>& wallet)
+{
+    WalletContext& context = *node.walletLoader().context();
     // Create widgets for sending coins and listing transactions.
     SendCoinsDialog sendCoinsDialog;
     TransactionView transactionView;
@@ -346,6 +347,21 @@ void TestGUI(interfaces::Node& node)
 
     // Check removal from wallet
     QCOMPARE(walletModel.wallet().getAddressReceiveRequests().size(), size_t{0});
+}
+
+void TestGUI(interfaces::Node& node)
+{
+    // Set up wallet and chain with 105 blocks (5 mature blocks for spending).
+    TestChain100Setup test;
+    for (int i = 0; i < 5; ++i) {
+        test.CreateAndProcessBlock({}, GetScriptForRawPubKey(test.coinbaseKey.GetPubKey()));
+    }
+    node.setContext(&test.m_node);
+    WalletContext& context = *node.walletLoader().context();
+
+    // "Full" GUI tests, use descriptor wallet
+    const std::shared_ptr<CWallet>& desc_wallet = SetupDescriptorsWallet(node, test, context);
+    TestGUI(node, desc_wallet);
 }
 
 } // namespace
