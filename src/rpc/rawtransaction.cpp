@@ -128,6 +128,17 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, const  CTxMemPool
     entry.pushKV("chainlock", chainLock);
 }
 
+static std::vector<RPCResult> ScriptPubKeyDoc() {
+    return
+         {
+             {RPCResult::Type::STR, "asm", "Disassembly of the public key script"},
+             {RPCResult::Type::STR, "desc", "Inferred descriptor for the output"},
+             {RPCResult::Type::STR_HEX, "hex", "The raw public key script bytes, hex-encoded"},
+             {RPCResult::Type::STR, "address", /*optional=*/true, "The Dash address (only if a well-defined address exists)"},
+             {RPCResult::Type::STR, "type", "The type (one of: " + GetAllOutputTypes() + ")"},
+         };
+}
+
 static std::vector<RPCArg> CreateTxDoc()
 {
     return {
@@ -215,14 +226,7 @@ static RPCHelpMan getrawtransaction()
                                 {
                                     {RPCResult::Type::NUM, "value", "The value in " + CURRENCY_UNIT},
                                     {RPCResult::Type::NUM, "n", "index"},
-                                    {RPCResult::Type::OBJ, "scriptPubKey", "",
-                                    {
-                                        {RPCResult::Type::STR, "asm", "the asm"},
-                                        {RPCResult::Type::STR, "desc", "Inferred descriptor for the output"},
-                                        {RPCResult::Type::STR, "hex", "the hex"},
-                                        {RPCResult::Type::STR, "type", "The type, eg 'pubkeyhash'"},
-                                        {RPCResult::Type::STR, "address", /* optional */ true, "The Dash address (only if a well-defined address exists)"},
-                                    }},
+                                    {RPCResult::Type::OBJ, "scriptPubKey", "", ScriptPubKeyDoc()},
                                 }},
                             }},
                             {RPCResult::Type::NUM, "extraPayloadSize", true /*optional*/, "Size of DIP2 extra payload. Only present if it's a special TX"},
