@@ -36,12 +36,25 @@ from test_framework.script import (
     OP_0,
     OP_CHECKSIG,
     OP_TRUE,
+    OP_DIV,
+    OP_INVERT,
+    OP_LEFT,
+    OP_LSHIFT,
+    OP_MOD,
+    OP_MUL,
+    OP_OR,
+    OP_RETURN,
+    OP_RIGHT,
+    OP_RSHIFT,
+    OP_SUBSTR,
+    OP_XOR,
 )
 from test_framework.script_util import (
+    MIN_PADDING,
+    MIN_STANDARD_TX_SIZE,
     script_to_p2sh_script,
 )
 basic_p2sh = script_to_p2sh_script(CScript([OP_0]))
-
 
 class BadTxTemplate:
     """Allows simple construction of a certain kind of invalid tx. Base class to be subclassed."""
@@ -103,7 +116,9 @@ class SizeTooSmall(BadTxTemplate):
     def get_tx(self):
         tx = CTransaction()
         tx.vin.append(self.valid_txin)
-        tx.vout.append(CTxOut(0, CScript([OP_TRUE])))
+        tx.vout.append(CTxOut(0, CScript([OP_RETURN] + ([OP_0] * (MIN_PADDING - 2)))))
+        assert len(tx.serialize_without_witness()) == 64
+        assert MIN_STANDARD_TX_SIZE - 1 == 64
         tx.calc_sha256()
         return tx
 
