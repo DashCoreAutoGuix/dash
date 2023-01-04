@@ -398,8 +398,7 @@ std::shared_ptr<CWallet> RestoreWallet(WalletContext& context, const fs::path& b
     auto wallet = LoadWallet(context, wallet_name, load_on_start, options, status, error, warnings);
 
     if (!wallet) {
-        fs::remove(wallet_file);
-        fs::remove(wallet_path);
+        fs::remove_all(wallet_path);
     }
 
     return wallet;
