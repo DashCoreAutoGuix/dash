@@ -99,11 +99,6 @@ Follow the relevant Guix README.md sections:
 
 _Note: we ship releases for only some supported HOSTs so consider providing limited `HOSTS` variable or run `./contrib/containers/guix/scripts/guix-start` instead of `./contrib/guix/guix-build` when building binaries for quicker builds that exclude the supported but not shipped HOSTs_
 
-### Verify other builders' signatures to your own. (Optional)
-
-Add other builders keys to your gpg keyring, and/or refresh keys: See `../dash/contrib/builder-keys/README.md`.
-
-Follow the relevant Guix README.md sections:
 - [Verifying build output attestations](/contrib/guix/README.md#verifying-build-output-attestations)
 
 ### Next steps:
@@ -173,7 +168,13 @@ Non-codesigners: wait for Windows/macOS detached signatures:
 Create (and optionally verify) the codesigned outputs:
 - [Codesigning](/contrib/guix/README.md#codesigning)
 
-Commit your signature for the signed macOS/Windows binaries:
+- [Codesigning build outputs](/contrib/guix/README.md#codesigning-build-outputs)
+
+### Verify other builders' signatures to your own (optional)
+
+- [Verifying build output attestations](/contrib/guix/README.md#verifying-build-output-attestations)
+
+### Commit your codesigned signature to guix.sigs (for the signed macOS/Windows binaries)
 
 ```sh
 pushd ./guix.sigs
