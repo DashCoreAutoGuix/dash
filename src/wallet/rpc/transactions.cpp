@@ -497,10 +497,10 @@ RPCHelpMan listtransactions()
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    const std::string* filter_label = nullptr;
+    std::optional<std::string> filter_label;
     if (!request.params[0].isNull() && request.params[0].get_str() != "*") {
-        filter_label = &request.params[0].get_str();
-        if (filter_label->empty()) {
+        filter_label.emplace(LabelFromValue(request.params[0]));
+        if (filter_label.value().empty()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Label argument must be a valid label name or \"*\".");
         }
     }
