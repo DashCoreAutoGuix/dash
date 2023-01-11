@@ -9,7 +9,6 @@
 #include <evo/evodb.h>
 #include <key_io.h>
 #include <node/context.h>
-#include <node/miner.h>
 #include <pow.h>
 #include <script/standard.h>
 #include <spork.h>
@@ -76,11 +75,12 @@ CTxIn MineBlock(const NodeContext& node, const CScript& coinbase_scriptPubKey)
     return CTxIn{block->vtx[0]->GetHash(), 0};
 }
 
-std::shared_ptr<CBlock> PrepareBlock(const NodeContext& node, const CScript& coinbase_scriptPubKey)
+std::shared_ptr<CBlock> PrepareBlock(const NodeContext& node, const CScript& coinbase_scriptPubKey,
+                                     const BlockAssembler::Options& assembler_options)
 {
     assert(node.mempool);
     auto block = std::make_shared<CBlock>(
-        BlockAssembler{node.chainman->ActiveChainstate(), node, Assert(node.mempool.get()), Params()}
+        BlockAssembler{node.chainman->ActiveChainstate(), node, Assert(node.mempool.get()), Params(), assembler_options}
             .CreateNewBlock(coinbase_scriptPubKey)
             ->block);
 
@@ -88,4 +88,10 @@ std::shared_ptr<CBlock> PrepareBlock(const NodeContext& node, const CScript& coi
     block->hashMerkleRoot = BlockMerkleRoot(*block);
 
     return block;
+}
+std::shared_ptr<CBlock> PrepareBlock(const NodeContext& node, const CScript& coinbase_scriptPubKey)
+{
+    BlockAssembler::Options assembler_options;
+    ApplyArgsManOptions(*node.args, assembler_options);
+    return PrepareBlock(node, coinbase_scriptPubKey, assembler_options);
 }
