@@ -7,6 +7,7 @@ from decimal import Decimal
 from itertools import product
 
 from test_framework.blocktools import COINBASE_MATURITY
+from test_framework.descriptors import descsum_create
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_array_result,
@@ -743,6 +744,77 @@ class WalletTest(BitcoinTestFramework):
         txid_feeReason_four = self.nodes[2].sendmany(dummy='', amounts={address: 5}, verbose=False)
         assert_equal(self.nodes[2].gettransaction(txid_feeReason_four)['txid'], txid_feeReason_four)
 
+        if self.options.descriptors:
+            self.log.info("Testing 'listunspent' outputs the parent descriptor(s) of coins")
+            # Create two multisig descriptors, and send a UTxO each.
+            multi_a = descsum_create("wsh(multi(1,tpubD6NzVbkrYhZ4YBNjUo96Jxd1u4XKWgnoc7LsA1jz3Yc2NiDbhtfBhaBtemB73n9V5vtJHwU6FVXwggTbeoJWQ1rzdz8ysDuQkpnaHyvnvzR/*,tpubD6NzVbkrYhZ4YHdDGMAYGaWxMSC1B6tPRTHuU5t3BcfcS3nrF523iFm5waFd1pP3ZvJt4Jr8XmCmsTBNx5suhcSgtzpGjGMASR3tau1hJz4/*))")
+            multi_b = descsum_create("wsh(multi(1,tpubD6NzVbkrYhZ4YHdDGMAYGaWxMSC1B6tPRTHuU5t3BcfcS3nrF523iFm5waFd1pP3ZvJt4Jr8XmCmsTBNx5suhcSgtzpGjGMASR3tau1hJz4/*,tpubD6NzVbkrYhZ4Y2RLiuEzNQkntjmsLpPYDm3LTRBYynUQtDtpzeUKAcb9sYthSFL3YR74cdFgF5mW8yKxv2W2CWuZDFR2dUpE5PF9kbrVXNZ/*))")
+            addr_a = self.nodes[0].deriveaddresses(multi_a, 0)[0]
+            addr_b = self.nodes[0].deriveaddresses(multi_b, 0)[0]
+            txid_a = self.nodes[0].sendtoaddress(addr_a, 0.01)
+            txid_b = self.nodes[0].sendtoaddress(addr_b, 0.01)
+            self.generate(self.nodes[0], 1, sync_fun=self.no_op)
+            # Now import the descriptors, make sure we can identify on which descriptor each coin was received.
+            self.nodes[0].createwallet(wallet_name="wo", descriptors=True, disable_private_keys=True)
+            wo_wallet = self.nodes[0].get_wallet_rpc("wo")
+            wo_wallet.importdescriptors([
+                {
+                    "desc": multi_a,
+                    "active": False,
+                    "timestamp": "now",
+                },
+                {
+                    "desc": multi_b,
+                    "active": False,
+                    "timestamp": "now",
+                },
+            ])
+            coins = wo_wallet.listunspent(minconf=0)
+            assert_equal(len(coins), 2)
+            coin_a = next(c for c in coins if c["txid"] == txid_a)
+            assert_equal(coin_a["parent_descs"][0], multi_a)
+            coin_b = next(c for c in coins if c["txid"] == txid_b)
+            assert_equal(coin_b["parent_descs"][0], multi_b)
+            self.nodes[0].unloadwallet("wo")
+
+        self.log.info("Test -spendzeroconfchange")
+        self.restart_node(0, ["-spendzeroconfchange=0"])
+
+        # create new wallet and fund it with a confirmed UTXO
+        self.nodes[0].createwallet(wallet_name="zeroconf", load_on_startup=True)
+        zeroconf_wallet = self.nodes[0].get_wallet_rpc("zeroconf")
+        default_wallet = self.nodes[0].get_wallet_rpc(self.default_wallet_name)
+        default_wallet.sendtoaddress(zeroconf_wallet.getnewaddress(), Decimal('1.0'))
+        self.generate(self.nodes[0], 1, sync_fun=self.no_op)
+        utxos = zeroconf_wallet.listunspent(minconf=0)
+        assert_equal(len(utxos), 1)
+        assert_equal(utxos[0]['confirmations'], 1)
+
+        # spend confirmed UTXO to ourselves
+        zeroconf_wallet.sendall(recipients=[zeroconf_wallet.getnewaddress()])
+        utxos = zeroconf_wallet.listunspent(minconf=0)
+        assert_equal(len(utxos), 1)
+        assert_equal(utxos[0]['confirmations'], 0)
+        # accounts for untrusted pending balance
+        bal = zeroconf_wallet.getbalances()
+        assert_equal(bal['mine']['trusted'], 0)
+        assert_equal(bal['mine']['untrusted_pending'], utxos[0]['amount'])
+
+        # spending an unconfirmed UTXO sent to ourselves should fail
+        assert_raises_rpc_error(-6, "Insufficient funds", zeroconf_wallet.sendtoaddress, zeroconf_wallet.getnewaddress(), Decimal('0.5'))
+
+        # check that it works again with -spendzeroconfchange set (=default)
+        self.restart_node(0, ["-spendzeroconfchange=1"])
+        zeroconf_wallet = self.nodes[0].get_wallet_rpc("zeroconf")
+        utxos = zeroconf_wallet.listunspent(minconf=0)
+        assert_equal(len(utxos), 1)
+        assert_equal(utxos[0]['confirmations'], 0)
+        # accounts for trusted balance
+        bal = zeroconf_wallet.getbalances()
+        assert_equal(bal['mine']['trusted'], utxos[0]['amount'])
+        assert_equal(bal['mine']['untrusted_pending'], 0)
+
+        zeroconf_wallet.sendtoaddress(zeroconf_wallet.getnewaddress(), Decimal('0.5'))
 
 if __name__ == '__main__':
     WalletTest().main()
