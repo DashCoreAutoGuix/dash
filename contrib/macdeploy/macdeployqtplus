@@ -185,7 +185,7 @@ def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
     objdump = os.getenv("OBJDUMP", "objdump")
     if verbose:
         print(f"Inspecting with {objdump}: {binaryPath}")
-    output = run([objdump, "--macho", "--dylibs-used", binaryPath], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    output = run([objdump, "--macho", "--dylibs-used", binaryPath], stdout=PIPE, stderr=PIPE, text=True)
     if output.returncode != 0:
         sys.stderr.write(output.stderr)
         sys.stderr.flush()
@@ -499,6 +499,35 @@ if platform.system() == "Darwin":
 
 if config.zip is not None:
     shutil.make_archive('{}'.format(appname), format='zip', root_dir='dist', base_dir='Dash-Qt.app')
+
+    print("+ Preparing .dmg disk image +")
+
+    if verbose:
+        print("Determining size of \"dist\"...")
+    size = 0
+    for path, dirs, files in os.walk("dist"):
+        for file in files:
+            size += os.path.getsize(os.path.join(path, file))
+    size += int(size * 0.15)
+
+    if verbose:
+        print("Creating temp image for modification...")
+
+    tempname: str = appname + ".temp.dmg"
+
+    run(["hdiutil", "create", tempname, "-srcfolder", "dist", "-format", "UDRW", "-size", str(size), "-volname", appname], check=True, text=True)
+
+    if verbose:
+        print("Attaching temp image...")
+    output = run(["hdiutil", "attach", tempname, "-readwrite"], check=True, text=True, stdout=PIPE).stdout
+
+    print("+ Finalizing .dmg disk image +")
+
+    run(["hdiutil", "detach", f"/Volumes/{appname}"], text=True)
+
+    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", appname, "-imagekey", "zlib-level=9"], check=True, text=True)
+
+    os.unlink(tempname)
 
 # ------------------------------------------------
 
