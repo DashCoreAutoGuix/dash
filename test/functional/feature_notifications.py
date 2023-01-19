@@ -28,6 +28,9 @@ def notify_outputname(walletname, txid):
 class NotificationsTest(DashTestFramework):
     def set_test_params(self):
         self.set_dash_test_params(6, 4)
+        # The experimental syscall sandbox feature (-sandbox) is not compatible with -alertnotify,
+        # -blocknotify, -walletnotify or -shutdownnotify (which all invoke execve).
+        self.disable_syscall_sandbox = True
 
     def setup_network(self):
         self.wallet = ''.join(chr(i) for i in range(FILE_CHAR_START, FILE_CHAR_END) if chr(i) not in FILE_CHARS_DISALLOWED)
@@ -36,11 +39,14 @@ class NotificationsTest(DashTestFramework):
         self.walletnotify_dir = os.path.join(self.options.tmpdir, "walletnotify")
         self.chainlocknotify_dir = os.path.join(self.options.tmpdir, "chainlocknotify")
         self.instantsendnotify_dir = os.path.join(self.options.tmpdir, "instantsendnotify")
+        self.shutdownnotify_dir = os.path.join(self.options.tmpdir, "shutdownnotify")
+        self.shutdownnotify_file = os.path.join(self.shutdownnotify_dir, "shutdownnotify.txt")
         os.mkdir(self.alertnotify_dir)
         os.mkdir(self.blocknotify_dir)
         os.mkdir(self.walletnotify_dir)
         os.mkdir(self.chainlocknotify_dir)
         os.mkdir(self.instantsendnotify_dir)
+        os.mkdir(self.shutdownnotify_dir)
 
         # -alertnotify and -blocknotify on node0, walletnotify on node1
         # -chainlocknotify on node0, -instantsendnotify on node1
@@ -48,6 +54,7 @@ class NotificationsTest(DashTestFramework):
             f"-alertnotify=echo > {os.path.join(self.alertnotify_dir, '%s')}",
             f"-blocknotify=echo > {os.path.join(self.blocknotify_dir, '%s')}",
             f"-chainlocknotify=echo > {os.path.join(self.chainlocknotify_dir, '%s')}",
+            f"-shutdownnotify=echo > {self.shutdownnotify_file}",
         ], [
             "-rescan",
             f"-walletnotify=echo %h_%b > {os.path.join(self.walletnotify_dir, notify_outputname('%w', '%s'))}",
@@ -142,6 +149,10 @@ class NotificationsTest(DashTestFramework):
             assert_equal(sorted(txids_rpc), sorted(os.listdir(self.instantsendnotify_dir)))
 
         # TODO: add test for `-alertnotify` large fork notifications
+
+        self.log.info("test -shutdownnotify")
+        self.stop_nodes()
+        self.wait_until(lambda: os.path.isfile(self.shutdownnotify_file), timeout=10)
 
     def expect_wallet_notify(self, tx_details):
         self.wait_until(lambda: len(os.listdir(self.walletnotify_dir)) >= len(tx_details), timeout=10)
