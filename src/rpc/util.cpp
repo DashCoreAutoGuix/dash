@@ -3,7 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparamsbase.h>
+#include <clientversion.h>
 #include <consensus/amount.h>
+
+static constexpr bool DEFAULT_RPC_DOC_CHECK{false};
 #include <key_io.h>
 #include <outputtype.h>
 #include <pubkey.h>
@@ -538,7 +541,30 @@ UniValue RPCHelpMan::HandleRequest(const JSONRPCRequest& request) const
     if (request.mode == JSONRPCRequest::GET_HELP || !IsValidNumArgs(request.params.size())) {
         throw std::runtime_error(ToString());
     }
-    return m_fun(*this, request);
+    UniValue ret = m_fun(*this, request);
+    if (gArgs.GetBoolArg("-rpcdoccheck", DEFAULT_RPC_DOC_CHECK)) {
+        UniValue mismatch{UniValue::VARR};
+        for (const auto& res : m_results.m_results) {
+            UniValue match{res.MatchesType(ret)};
+            if (match.isTrue()) {
+                mismatch.setNull();
+                break;
+            }
+            mismatch.push_back(match);
+        }
+        if (!mismatch.isNull()) {
+            std::string explain{
+                mismatch.empty() ? "no possible results defined" :
+                mismatch.size() == 1 ? mismatch[0].write(4) :
+                mismatch.write(4)};
+            throw std::runtime_error{
+                strprintf("Internal bug detected: RPC call \"%s\" returned incorrect type:\n%s\n%s %s\nPlease report this issue here: %s\n",
+                          m_name, explain,
+                          PACKAGE_NAME, FormatFullVersion(),
+                          PACKAGE_BUGREPORT)};
+        }
+    }
+    return ret;
 }
 
 bool RPCHelpMan::IsValidNumArgs(size_t num_args) const
@@ -815,40 +841,102 @@ void RPCResult::ToSections(Sections& sections, const OuterType outer_type, const
     NONFATAL_UNREACHABLE();
 }
 
-bool RPCResult::MatchesType(const UniValue& result) const
+static const std::optional<UniValue::VType> ExpectedType(RPCResult::Type type)
 {
-    switch (m_type) {
-    case Type::ELISION: {
-        return false;
-    }
+    using Type = RPCResult::Type;
+    switch (type) {
+    case Type::ELISION:
     case Type::ANY: {
-        return true;
+        return std::nullopt;
     }
     case Type::NONE: {
-        return UniValue::VNULL == result.getType();
+        return UniValue::VNULL;
     }
     case Type::STR:
     case Type::STR_HEX: {
-        return UniValue::VSTR == result.getType();
+        return UniValue::VSTR;
     }
     case Type::NUM:
     case Type::STR_AMOUNT:
     case Type::NUM_TIME: {
-        return UniValue::VNUM == result.getType();
+        return UniValue::VNUM;
     }
     case Type::BOOL: {
-        return UniValue::VBOOL == result.getType();
+        return UniValue::VBOOL;
     }
     case Type::ARR_FIXED:
     case Type::ARR: {
-        return UniValue::VARR == result.getType();
+        return UniValue::VARR;
     }
     case Type::OBJ_DYN:
     case Type::OBJ: {
-        return UniValue::VOBJ == result.getType();
+        return UniValue::VOBJ;
     }
     } // no default case, so the compiler can warn about missing cases
     NONFATAL_UNREACHABLE();
+}
+
+UniValue RPCResult::MatchesType(const UniValue& result) const
+{
+    const auto exp_type = ExpectedType(m_type);
+    if (!exp_type) return true; // can be any type, so nothing to check
+
+    if (*exp_type != result.getType()) {
+        return strprintf("returned type is %s, but declared as %s in doc", uvTypeName(result.getType()), uvTypeName(*exp_type));
+    }
+
+    if (UniValue::VARR == result.getType()) {
+        UniValue errors(UniValue::VOBJ);
+        for (size_t i{0}; i < result.get_array().size(); ++i) {
+            // If there are more results than documented, re-use the last doc_inner.
+            const RPCResult& doc_inner{m_inner.at(std::min(m_inner.size() - 1, i))};
+            UniValue match{doc_inner.MatchesType(result.get_array()[i])};
+            if (!match.isTrue()) errors.pushKV(strprintf("%d", i), match);
+        }
+        if (errors.empty()) return true; // empty result array is valid
+        return errors;
+    }
+
+    if (UniValue::VOBJ == result.getType()) {
+        if (!m_inner.empty() && m_inner.at(0).m_type == Type::ELISION) return true;
+        UniValue errors(UniValue::VOBJ);
+        if (m_type == Type::OBJ_DYN) {
+            const RPCResult& doc_inner{m_inner.at(0)}; // Assume all types are the same, randomly pick the first
+            for (size_t i{0}; i < result.get_obj().size(); ++i) {
+                UniValue match{doc_inner.MatchesType(result.get_obj()[i])};
+                if (!match.isTrue()) errors.pushKV(result.getKeys()[i], match);
+            }
+            if (errors.empty()) return true; // empty result obj is valid
+            return errors;
+        }
+        std::set<std::string> doc_keys;
+        for (const auto& doc_entry : m_inner) {
+            doc_keys.insert(doc_entry.m_key_name);
+        }
+        std::map<std::string, UniValue> result_obj;
+        result.getObjMap(result_obj);
+        for (const auto& result_entry : result_obj) {
+            if (doc_keys.find(result_entry.first) == doc_keys.end()) {
+                errors.pushKV(result_entry.first, "key returned that was not in doc");
+            }
+        }
+
+        for (const auto& doc_entry : m_inner) {
+            const auto result_it{result_obj.find(doc_entry.m_key_name)};
+            if (result_it == result_obj.end()) {
+                if (!doc_entry.m_optional) {
+                    errors.pushKV(doc_entry.m_key_name, "key missing, despite not being optional in doc");
+                }
+                continue;
+            }
+            UniValue match{doc_entry.MatchesType(result_it->second)};
+            if (!match.isTrue()) errors.pushKV(doc_entry.m_key_name, match);
+        }
+        if (errors.empty()) return true;
+        return errors;
+    }
+
+    return true;
 }
 
 void RPCResult::CheckInnerDoc() const
