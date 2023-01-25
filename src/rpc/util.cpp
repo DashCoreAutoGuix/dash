@@ -41,7 +41,10 @@ void RPCTypeCheck(const UniValue& params,
 
         const UniValue& v = params[i];
         if (!(fAllowNull && v.isNull())) {
-            RPCTypeCheckArgument(v, t);
+            if (!t.typeAny && v.type() != t.type) {
+                throw JSONRPCError(RPC_TYPE_ERROR,
+                                   strprintf("JSON value of type %s is not of expected type %s", uvTypeName(v.type()), uvTypeName(t.type)));
+            }
         }
         i++;
     }
@@ -538,7 +541,41 @@ UniValue RPCHelpMan::HandleRequest(const JSONRPCRequest& request) const
     if (request.mode == JSONRPCRequest::GET_HELP || !IsValidNumArgs(request.params.size())) {
         throw std::runtime_error(ToString());
     }
-    return m_fun(*this, request);
+    UniValue arg_mismatch{UniValue::VOBJ};
+    for (size_t i{0}; i < m_args.size(); ++i) {
+        const auto& arg{m_args.at(i)};
+        UniValue match{arg.MatchesType(request.params[i])};
+        if (!match.isTrue()) {
+            arg_mismatch.pushKV(strprintf("Position %s (%s)", i + 1, arg.m_names), std::move(match));
+        }
+    }
+    if (!arg_mismatch.empty()) {
+        throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Wrong type passed:\n%s", arg_mismatch.write(4)));
+    }
+    UniValue ret = m_fun(*this, request);
+    if (gArgs.GetBoolArg("-rpcdoccheck", false)) {
+        UniValue mismatch{UniValue::VARR};
+        for (const auto& res : m_results.m_results) {
+            UniValue match{res.MatchesType(ret)};
+            if (match.isTrue()) {
+                mismatch.setNull();
+                break;
+            }
+            mismatch.push_back(match);
+        }
+        if (!mismatch.isNull()) {
+            std::string explain{
+                mismatch.empty() ? "no possible results defined" :
+                mismatch.size() == 1 ? mismatch[0].write(4) :
+                mismatch.write(4)};
+            throw std::runtime_error{
+                strprintf("Internal bug detected: RPC call \"%s\" returned incorrect type:\n%s\n%s %s\nPlease report this issue here: %s\n",
+                          m_name, explain,
+                          PACKAGE_NAME, FormatFullVersion(),
+                          PACKAGE_BUGREPORT)};
+        }
+    }
+    return ret;
 }
 
 bool RPCHelpMan::IsValidNumArgs(size_t num_args) const
@@ -630,6 +667,51 @@ UniValue RPCHelpMan::GetArgMap() const
         }
     }
     return arr;
+}
+
+static std::optional<UniValue::VType> ExpectedType(RPCArg::Type type)
+{
+    using Type = RPCArg::Type;
+    switch (type) {
+    case Type::STR_HEX:
+    case Type::STR: {
+        return UniValue::VSTR;
+    }
+    case Type::NUM: {
+        return UniValue::VNUM;
+    }
+    case Type::AMOUNT: {
+        // VNUM or VSTR, checked inside AmountFromValue()
+        return std::nullopt;
+    }
+    case Type::RANGE: {
+        // VNUM or VARR, checked inside ParseRange()
+        return std::nullopt;
+    }
+    case Type::BOOL: {
+        return UniValue::VBOOL;
+    }
+    case Type::OBJ:
+    case Type::OBJ_USER_KEYS: {
+        return UniValue::VOBJ;
+    }
+    case Type::ARR: {
+        return UniValue::VARR;
+    }
+    } // no default case, so the compiler can warn about missing cases
+    NONFATAL_UNREACHABLE();
+}
+
+UniValue RPCArg::MatchesType(const UniValue& request) const
+{
+    if (IsOptional() && request.isNull()) return true;
+    const auto exp_type{ExpectedType(m_type)};
+    if (!exp_type) return true; // nothing to check
+
+    if (*exp_type != request.getType()) {
+        return strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.getType()), uvTypeName(*exp_type));
+    }
+    return true;
 }
 
 std::string RPCArg::GetFirstName() const
@@ -815,40 +897,48 @@ void RPCResult::ToSections(Sections& sections, const OuterType outer_type, const
     NONFATAL_UNREACHABLE();
 }
 
-bool RPCResult::MatchesType(const UniValue& result) const
+static std::optional<UniValue::VType> ExpectedType(RPCResult::Type type)
 {
-    switch (m_type) {
+    using Type = RPCResult::Type;
+    switch (type) {
     case Type::ELISION: {
-        return false;
+        return std::nullopt;
     }
     case Type::ANY: {
-        return true;
+        return std::nullopt;
     }
     case Type::NONE: {
-        return UniValue::VNULL == result.getType();
+        return UniValue::VNULL;
     }
     case Type::STR:
     case Type::STR_HEX: {
-        return UniValue::VSTR == result.getType();
+        return UniValue::VSTR;
     }
     case Type::NUM:
     case Type::STR_AMOUNT:
     case Type::NUM_TIME: {
-        return UniValue::VNUM == result.getType();
+        return UniValue::VNUM;
     }
     case Type::BOOL: {
-        return UniValue::VBOOL == result.getType();
+        return UniValue::VBOOL;
     }
     case Type::ARR_FIXED:
     case Type::ARR: {
-        return UniValue::VARR == result.getType();
+        return UniValue::VARR;
     }
     case Type::OBJ_DYN:
     case Type::OBJ: {
-        return UniValue::VOBJ == result.getType();
+        return UniValue::VOBJ;
     }
     } // no default case, so the compiler can warn about missing cases
     NONFATAL_UNREACHABLE();
+}
+
+bool RPCResult::MatchesType(const UniValue& result) const
+{
+    const auto exp_type{ExpectedType(m_type)};
+    if (!exp_type) return true; // nothing to check
+    return *exp_type == result.getType();
 }
 
 void RPCResult::CheckInnerDoc() const
