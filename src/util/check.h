@@ -14,6 +14,7 @@
 #include <tinyformat.h>
 
 #include <stdexcept>
+#include <string_view>
 
 class NonFatalCheckError : public std::runtime_error
 {
@@ -56,7 +57,7 @@ T&& inline_check_non_fatal(LIFETIMEBOUND T&& val, const char* file, int line, co
 #endif
 
 /** Helper for Assert() */
-void assertion_fail(const char* file, int line, const char* func, const char* assertion);
+void assertion_fail(std::string_view file, int line, std::string_view func, std::string_view assertion);
 
 /** Helper for Assert()/Assume() */
 template <bool IS_ASSERT, typename T>

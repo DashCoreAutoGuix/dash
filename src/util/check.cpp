@@ -6,7 +6,11 @@
 
 #include <tinyformat.h>
 
-void assertion_fail(const char* file, int line, const char* func, const char* assertion)
+#include <cstdio>
+#include <cstdlib>
+#include <string_view>
+
+void assertion_fail(std::string_view file, int line, std::string_view func, std::string_view assertion)
 {
     auto str = strprintf("%s:%s %s: Assertion `%s' failed.\n", file, line, func, assertion);
     fwrite(str.data(), 1, str.size(), stderr);
