@@ -7,6 +7,7 @@
 #include <clientversion.h>
 #include <core_io.h>
 #include <fs.h>
+#include <hash.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
 #include <merkleblock.h>
@@ -16,6 +17,7 @@
 #include <script/script.h>
 #include <script/standard.h>
 #include <sync.h>
+#include <uint256.h>
 #include <util/bip32.h>
 #include <util/system.h>
 #include <util/time.h>
