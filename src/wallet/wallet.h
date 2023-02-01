@@ -1064,9 +1064,9 @@ class WalletRescanReserver
 {
 private:
     CWallet& m_wallet;
-    bool m_could_reserve;
+    bool m_could_reserve{false};
 public:
-    explicit WalletRescanReserver(CWallet& w) : m_wallet(w), m_could_reserve(false) {}
+    explicit WalletRescanReserver(CWallet& w) : m_wallet(w) {}
 
     bool reserve()
     {

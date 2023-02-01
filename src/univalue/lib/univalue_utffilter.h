@@ -9,8 +9,8 @@
 class JSONUTF8StringFilter
 {
 public:
-    explicit JSONUTF8StringFilter(std::string &s):
-        str(s), is_valid(true), codepoint(0), state(0), surpair(0)
+    explicit JSONUTF8StringFilter(std::string& s)
+        : str(s)
     {
     }
     // Write single 8-bit char (may be part of UTF-8 sequence)
@@ -76,11 +76,13 @@ public:
     }
 private:
     std::string &str;
-    bool is_valid;
+    bool is_valid{true};
     // Current UTF-8 decoding state
-    unsigned int codepoint;
-    int state; // Top bit to be filled in for next UTF-8 byte, or 0
-    // Keep track of this state to handle the following section of RFC4627:
+    unsigned int codepoint{0};
+    int state{0}; // Top bit to be filled in for next UTF-8 byte, or 0
+
+    // Keep track of the following state to handle the following section of
+    // RFC4627:
     //
     //    To escape an extended character that is not in the Basic Multilingual
     //    Plane, the character is represented as a twelve-character sequence,
@@ -89,7 +91,7 @@ private:
     //    "\uD834\uDD1E".
     //
     //  Two subsequent \u.... may have to be replaced with one actual codepoint.
-    unsigned int surpair; // First of UTF-16 surrogate pair
+    unsigned int surpair{0}; // First half of open UTF-16 surrogate pair, or 0
 
     void append_codepoint(unsigned int codepoint_)
     {
