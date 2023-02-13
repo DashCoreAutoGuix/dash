@@ -39,7 +39,7 @@ You can find installation instructions in the `build-*.md` file for your platfor
 | Dependency | Version used | Minimum required | Runtime |
 | --- | --- | --- | --- |
 | [libnatpmp](https://github.com/miniupnp/libnatpmp/) | commit [07004b9...](https://github.com/miniupnp/libnatpmp/tree/07004b97cf691774efebe70404cf22201e4d330d) | | No |
-| [MiniUPnPc](https://miniupnp.tuxfamily.org/) | 2.2.2 | 1.9 | No |
+| [MiniUPnPc](https://miniupnp.tuxfamily.org/) | 2.2.2 | 2.1 | No |
 
 ### Notifications
 | Dependency | Version used | Minimum required | Runtime |
