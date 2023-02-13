@@ -39,13 +39,16 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   # the name isn't important, so long as we use the same UID
   LOCAL_USER=nonroot
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
+  docker volume create "${CONTAINER_NAME}_ccache" || true
+  docker volume create "${CONTAINER_NAME}_depends" || true
+  docker volume create "${CONTAINER_NAME}_previous_releases" || true
 
   # shellcheck disable=SC2086
   DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
-                  --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
-                  --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
-                  --mount type=bind,src=$PREVIOUS_RELEASES_DIR,dst=$PREVIOUS_RELEASES_DIR \
+                  --mount "type=volume,src=${CONTAINER_NAME}_ccache,dst=$CCACHE_DIR" \
+                  --mount "type=volume,src=${CONTAINER_NAME}_depends,dst=$DEPENDS_DIR" \
+                  --mount "type=volume,src=${CONTAINER_NAME}_previous_releases,dst=$PREVIOUS_RELEASES_DIR" \
                   -w $BASE_ROOT_DIR \
                   --env-file /tmp/env \
                   --name $CONTAINER_NAME \
