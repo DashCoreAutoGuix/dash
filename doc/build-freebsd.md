@@ -34,10 +34,29 @@ pkg install gmp
 It is not necessary to build wallet functionality to run dashd or the GUI. To enable legacy wallets, you must install `db5`. To enable [descriptor wallets](https://github.com/dashpay/dash/blob/master/doc/descriptors.md), `sqlite3` is required. Skip `db5` if you intend to *exclusively* use descriptor wallets
 
 ###### Legacy Wallet Support
-`db5` is required to enable support for legacy wallets. Skip if you don't intend to use legacy wallets
+BerkeleyDB is only required if legacy wallet support is required.
 
-```bash
-pkg install db5
+It is required to use Berkeley DB 4.8. You **cannot** use the BerkeleyDB library
+from ports. However, you can build DB 4.8 yourself [using depends](/depends).
+
+```
+gmake -C depends NO_BOOST=1 NO_LIBEVENT=1 NO_QT=1 NO_SQLITE=1 NO_NATPMP=1 NO_UPNP=1 NO_ZMQ=1 NO_USDT=1
+```
+
+When the build is complete, the Berkeley DB installation location will be displayed:
+
+```
+to: /path/to/dash/depends/x86_64-unknown-freebsd[release-number]
+```
+
+Finally, set `BDB_PREFIX` to this path according to your shell:
+
+```
+csh: setenv BDB_PREFIX [path displayed above]
+```
+
+```
+sh/bash: export BDB_PREFIX=[path displayed above]
 ```
 
 ###### Descriptor Wallet Support
@@ -85,13 +104,22 @@ pkg install python3 databases/py-sqlite3
 ### 1. Configuration
 
 There are many ways to configure Dash Core, here are a few common examples:
-##### Wallet (BDB + SQlite) Support, No GUI:
-This explicitly enables legacy wallet support and disables the GUI. If `sqlite3` is installed, then descriptor wallet support will be built.
+
+##### Descriptor Wallet and GUI:
+This explicitly enables the GUI and disables legacy wallet support, assuming `sqlite` and `qt` are installed.
 ```bash
 ./autogen.sh
-./configure --with-gui=no --with-incompatible-bdb \
-    BDB_LIBS="-ldb_cxx-5" \
-    BDB_CFLAGS="-I/usr/local/include/db5" \
+./configure --without-bdb --with-gui=yes MAKE=gmake
+```
+
+##### Descriptor & Legacy Wallet. No GUI:
+This enables support for both wallet types and disables the GUI, assuming
+`sqlite3` and `db4` are both installed.
+```bash
+./autogen.sh
+./configure --with-gui=no \
+    BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" \
+    BDB_CFLAGS="-I${BDB_PREFIX}/include" \
     MAKE=gmake
 ```
 
