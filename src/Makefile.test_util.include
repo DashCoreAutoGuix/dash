@@ -10,12 +10,14 @@ EXTRA_LIBRARIES += \
 TEST_UTIL_H = \
     test/util/blockfilter.h \
     test/util/chainstate.h \
+    test/util/coins.h \
     test/util/json.h \
     test/util/index.h \
     test/util/logging.h \
     test/util/mining.h \
     test/util/net.h \
     test/util/poolresourcetester.h \
+    test/util/random.h \
     test/util/script.h \
     test/util/setup_common.h \
     test/util/str.h \
@@ -28,6 +30,7 @@ libtest_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BOOST_CPPFLAGS)
 libtest_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libtest_util_a_SOURCES = \
   test/util/blockfilter.cpp \
+  test/util/coins.cpp \
   test/util/index.cpp \
   test/util/json.cpp \
   test/util/logging.cpp \
@@ -38,5 +41,12 @@ libtest_util_a_SOURCES = \
   test/util/str.cpp \
   test/util/transaction_utils.cpp \
   test/util/validation.cpp \
+  test/util/chainstate.cpp \
   test/util/wallet.cpp \
   $(TEST_UTIL_H)
+
+# if ENABLE_WALLET
+# libtest_util_a_SOURCES += wallet/test/util.cpp
+# endif # ENABLE_WALLET
+
+libtest_util_a_SOURCES += $(LIBTEST_UTIL_HDRS)

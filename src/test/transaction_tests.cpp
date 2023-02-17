@@ -5,6 +5,7 @@
 #include <test/data/tx_invalid.json.h>
 #include <test/data/tx_valid.json.h>
 #include <test/util/setup_common.h>
+#include <test/util/random.h>
 
 #include <checkqueue.h>
 #include <clientversion.h>
@@ -19,6 +20,7 @@
 #include <script/signingprovider.h>
 #include <streams.h>
 #include <test/util/json.h>
+#include <test/util/random.h>
 #include <test/util/transaction_utils.h>
 #include <util/strencodings.h>
 #include <util/string.h>

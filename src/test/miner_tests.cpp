@@ -16,7 +16,6 @@
 #include <policy/policy.h>
 #include <pow.h>
 #include <script/standard.h>
-#include <spork.h>
 #include <uint256.h>
 #include <util/strencodings.h>
 #include <util/system.h>
@@ -25,6 +24,7 @@
 #include <versionbits.h>
 
 #include <test/util/setup_common.h>
+#include <test/util/random.h>
 
 #include <memory>
 
