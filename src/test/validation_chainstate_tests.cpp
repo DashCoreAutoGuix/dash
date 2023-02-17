@@ -3,13 +3,15 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 //
 #include <chainparams.h>
-#include <consensus/validation.h>
-#include <evo/evodb.h>
-#include <index/txindex.h>
-#include <random.h>
+#include <llmq/context.h>
+#include <node/context.h>
+#include <node/miner.h>
+#include <node/utxo_snapshot.h>
 #include <sync.h>
 #include <rpc/blockchain.h>
 #include <test/util/chainstate.h>
+#include <test/util/coins.h>
+#include <test/util/random.h>
 #include <test/util/setup_common.h>
 #include <uint256.h>
 #include <validation.h>
@@ -28,19 +30,6 @@ BOOST_AUTO_TEST_CASE(validation_chainstate_resize_caches)
     WITH_LOCK(::cs_main, manager.m_blockman.m_block_tree_db = std::make_unique<CBlockTreeDB>(1 << 20, true));
     CTxMemPool& mempool = *Assert(m_node.mempool);
 
-    //! Create and add a Coin with DynamicMemoryUsage of 80 bytes to the given view.
-    auto add_coin = [](CCoinsViewCache& coins_view) -> COutPoint {
-        Coin newcoin;
-        uint256 txid = InsecureRand256();
-        COutPoint outp{txid, 0};
-        newcoin.nHeight = 1;
-        newcoin.out.nValue = InsecureRand32();
-        newcoin.out.scriptPubKey.assign(uint32_t{56}, 1);
-        coins_view.AddCoin(outp, std::move(newcoin), false);
-
-        return outp;
-    };
-
     CChainState& c1 = WITH_LOCK(cs_main, return manager.InitializeChainstate(&mempool, *m_node.evodb, m_node.chain_helper));
     c1.InitCoinsDB(
         /*cache_size_bytes=*/1 << 23, /*in_memory=*/true, /*should_wipe=*/false);
@@ -50,10 +39,10 @@ BOOST_AUTO_TEST_CASE(validation_chainstate_resize_caches)
     // Add a coin to the in-memory cache, upsize once, then downsize.
     {
         LOCK(::cs_main);
-        auto outpoint = add_coin(c1.CoinsTip());
+        const auto outpoint = AddTestCoin(c1.CoinsTip());
 
         // Set a meaningless bestblock value in the coinsview cache - otherwise we won't
-        // flush during ResizecoinsCaches() and will subsequently hit an assertion.
+        // flush during ResizeCoinsCaches() and will subsequently hit an assertion.
         c1.CoinsTip().SetBestBlock(InsecureRand256());
 
         BOOST_CHECK(c1.CoinsTip().HaveCoinInCache(outpoint));
@@ -95,7 +84,7 @@ BOOST_FIXTURE_TEST_CASE(chainstate_update_tip, TestChain100Setup)
     BOOST_REQUIRE(CreateAndActivateUTXOSnapshot(m_node, m_path_root));
 
     // Ensure our active chain is the snapshot chainstate.
-    BOOST_CHECK(WITH_LOCK(::cs_main, return chainman.IsSnapshotActive()));
+    BOOST_CHECK(chainman.IsSnapshotActive());
 
     curr_tip = ::g_best_block;
 
@@ -118,31 +107,23 @@ BOOST_FIXTURE_TEST_CASE(chainstate_update_tip, TestChain100Setup)
         assert(false);
     }()};
 
-    // Create a block to append to the validation chain.
+    // Append a block to the background chain.
     std::vector<CMutableTransaction> noTxns;
     CScript scriptPubKey = CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
-    CBlock validation_block = this->CreateBlock(noTxns, scriptPubKey, background_cs);
-    auto pblock = std::make_shared<const CBlock>(validation_block);
+    CBlock newblock = CreateBlock(noTxns, scriptPubKey, background_cs);
+    std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>(newblock);
     BlockValidationState state;
     CBlockIndex* pindex = nullptr;
-    const CChainParams& chainparams = Params();
-    bool newblock = false;
-
-    // TODO: much of this is inlined from ProcessNewBlock(); just reuse PNB()
-    // once it is changed to support multiple chainstates.
     {
-        LOCK(::cs_main);
-        bool checked = CheckBlock(*pblock, state, chainparams.GetConsensus());
-        BOOST_CHECK(checked);
-        bool accepted = background_cs.AcceptBlock(
-            pblock, state, &pindex, true, nullptr, &newblock);
-        BOOST_CHECK(accepted);
+        LOCK(cs_main);
+        BOOST_CHECK(background_cs.AcceptBlock(pblock, state, &pindex, true, nullptr, nullptr));
     }
+
     // UpdateTip is called here
     bool block_added = background_cs.ActivateBestChain(state, pblock);
 
     // Ensure tip is as expected
-    BOOST_CHECK_EQUAL(background_cs.m_chain.Tip()->GetBlockHash(), validation_block.GetHash());
+    BOOST_CHECK_EQUAL(background_cs.m_chain.Tip()->GetBlockHash(), pindex->GetBlockHash());
 
     // g_best_block should be unchanged after adding a block to the background
     // validation chain.

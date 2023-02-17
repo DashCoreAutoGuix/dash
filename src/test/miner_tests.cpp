@@ -17,6 +17,7 @@
 #include <pow.h>
 #include <script/standard.h>
 #include <spork.h>
+#include <test/util/random.h>
 #include <uint256.h>
 #include <util/strencodings.h>
 #include <util/system.h>
