@@ -1381,6 +1381,17 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         if (!args.GetBoolArg("-listen", DEFAULT_LISTEN) && Params().RequireRoutableExternalIP()) {
             return InitError(Untranslated("Masternode must accept connections from outside, set -listen=1"));
         }
+    }
+
+    // Also report errors from parsing before daemonization
+    {
+        ChainstateManager::Options chainman_opts_dummy{
+            .chainparams = chainparams,
+            .datadir = args.GetDataDirNet(),
+        };
+        if (const auto error{ApplyArgsManOptions(args, chainman_opts_dummy)}) {
+            return InitError(*error);
+        }
         if (!args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
             return InitError(Untranslated("Masternode must have transaction index enabled, set -txindex=1"));
         }
@@ -1913,6 +1924,13 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     fReindex = args.GetBoolArg("-reindex", false);
     bool fReindexChainState = args.GetBoolArg("-reindex-chainstate", false);
+
+    ChainstateManager::Options chainman_opts{
+        .chainparams = chainparams,
+        .datadir = args.GetDataDirNet(),
+        .adjusted_time_callback = GetAdjustedTime,
+    };
+    Assert(!ApplyArgsManOptions(args, chainman_opts)); // no error can happen, already checked in AppInitParameterInteraction
 
     // cache size calculations
     CacheSizes cache_sizes = CalculateCacheSizes(args, g_enabled_filter_types.size());

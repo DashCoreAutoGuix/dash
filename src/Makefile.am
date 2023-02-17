@@ -279,9 +279,11 @@ BITCOIN_CORE_H = \
   node/caches.h \
   node/chainstate.h \
   node/coin.h \
+  node/coins_view_args.h \
   node/coinstats.h \
   node/connection_types.h \
   node/context.h \
+  node/database_args.h \
   node/eviction.h \
   node/miner.h \
   node/minisketchwrapper.h \
@@ -527,9 +529,11 @@ libbitcoin_node_a_SOURCES = \
   node/caches.cpp \
   node/chainstate.cpp \
   node/coin.cpp \
+  node/coins_view_args.cpp \
   node/coinstats.cpp \
   node/connection_types.cpp \
   node/context.cpp \
+  node/database_args.cpp \
   node/eviction.cpp \
   node/interfaces.cpp \
   node/miner.cpp \

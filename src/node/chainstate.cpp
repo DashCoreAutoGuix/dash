@@ -70,7 +70,12 @@ std::optional<ChainstateLoadingError> LoadChainstate(bool fReset,
     // new CBlockTreeDB tries to delete the existing file, which
     // fails if it's still open from the previous loop. Close it first:
     pblocktree.reset();
-    pblocktree.reset(new CBlockTreeDB(nBlockTreeDBCache, block_tree_db_in_memory, fReset));
+    pblocktree = std::make_unique<CBlockTreeDB>(DBParams{
+        .path = chainman.m_options.datadir / "blocks" / "index",
+        .cache_bytes = static_cast<size_t>(cache_sizes.block_tree_db),
+        .memory_only = options.block_tree_db_in_memory,
+        .wipe_data = options.reindex,
+        .options = chainman.m_options.block_tree_db});
 
     DashChainstateSetup(chainman, govman, mn_metaman, mn_sync, sporkman, mn_activeman, chain_helper, cpoolman,
                         dmnman, evodb, mnhf_manager, llmq_ctx, mempool, fReset, fReindexChainState,

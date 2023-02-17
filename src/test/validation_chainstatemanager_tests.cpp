@@ -321,6 +321,17 @@ BOOST_FIXTURE_TEST_CASE(chainstatemanager_activate_snapshot, TestChain100Setup)
                     coins_missing_from_background++;
                 }
             }
+            chainman.ResetChainstates();
+            BOOST_CHECK_EQUAL(chainman.GetAll().size(), 0);
+            const ChainstateManager::Options chainman_opts{
+                .chainparams = ::Params(),
+                .datadir = m_args.GetDataDirNet(),
+                .adjusted_time_callback = GetAdjustedTime,
+            };
+            // For robustness, ensure the old manager is destroyed before creating a
+            // new one.
+            m_node.chainman.reset();
+            m_node.chainman.reset(new ChainstateManager(chainman_opts));
         }
 
         BOOST_CHECK_EQUAL(coins_in_active, initial_total_coins + new_coins);
