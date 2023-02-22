@@ -5,6 +5,8 @@
 #ifndef BITCOIN_NODE_CHAINSTATE_H
 #define BITCOIN_NODE_CHAINSTATE_H
 
+#include <validation.h>
+
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -30,6 +32,38 @@ struct Params;
 }
 
 namespace node {
+
+struct CacheSizes;
+
+struct ChainstateLoadOptions {
+    CTxMemPool* mempool{nullptr};
+    bool block_tree_db_in_memory{false};
+    bool coins_db_in_memory{false};
+    bool reindex{false};
+    bool reindex_chainstate{false};
+    bool prune{false};
+    bool require_full_verification{true};
+    int64_t check_blocks{DEFAULT_CHECKBLOCKS};
+    int64_t check_level{DEFAULT_CHECKLEVEL};
+    std::function<bool()> check_interrupt;
+    std::function<void()> coins_error_cb;
+};
+
+//! Chainstate load status. Simple applications can just check for the success
+//! case, and treat other cases as errors. More complex applications may want to
+//! try reindexing in the generic failure case, and pass an interrupt callback
+//! and exit cleanly in the interrupted case.
+enum class ChainstateLoadStatus {
+    SUCCESS,
+    FAILURE,
+    FAILURE_INCOMPATIBLE_DB,
+    FAILURE_INSUFFICIENT_DBCACHE,
+    INTERRUPTED,
+};
+
+//! Chainstate load status code and optional error string.
+using ChainstateLoadResult = std::tuple<ChainstateLoadStatus, bilingual_str>;
+
 enum class ChainstateLoadingError {
     ERROR_LOADING_BLOCK_DB,
     ERROR_BAD_GENESIS_BLOCK,
@@ -48,7 +82,6 @@ enum class ChainstateLoadingError {
     ERROR_UPGRADING_SIGNALS_DB,
     SHUTDOWN_PROBED,
 };
-
 /** This sequence can have 4 types of outcomes:
  *
  *  1. Success
@@ -146,7 +179,8 @@ std::optional<ChainstateLoadVerifyError> VerifyLoadedChainstate(ChainstateManage
                                                                 int check_blocks,
                                                                 int check_level,
                                                                 std::function<int64_t()> get_unix_time_seconds,
-                                                                std::function<void(bool)> notify_bls_state = nullptr);
+                                                                std::function<void(bool)> notify_bls_state,
+                                                                const ChainstateLoadOptions& options);
 } // namespace node
 
 #endif // BITCOIN_NODE_CHAINSTATE_H

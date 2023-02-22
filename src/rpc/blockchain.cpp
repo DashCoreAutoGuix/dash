@@ -1344,11 +1344,11 @@ static RPCHelpMan verifychain()
             {"nblocks", RPCArg::Type::NUM, RPCArg::DefaultHint{strprintf("%d, 0=all", DEFAULT_CHECKBLOCKS)}, "The number of blocks to check."},
         },
         RPCResult{
-            RPCResult::Type::BOOL, "", "Verified or not"},
+            RPCResult::Type::BOOL, "", "Verification finished successfully. If false, check debug.log for reason."},
         RPCExamples{
             HelpExampleCli("verifychain", "")
     + HelpExampleRpc("verifychain", "")
-        },
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     const int check_level{request.params[0].isNull() ? DEFAULT_CHECKLEVEL : request.params[0].get_int()};
@@ -1361,7 +1361,7 @@ static RPCHelpMan verifychain()
 
     CChainState& active_chainstate = chainman.ActiveChainstate();
     return CVerifyDB().VerifyDB(
-        active_chainstate, Params().GetConsensus(), active_chainstate.CoinsTip(), *CHECK_NONFATAL(node.evodb), check_level, check_depth);
+        active_chainstate, Params().GetConsensus(), active_chainstate.CoinsTip(), *CHECK_NONFATAL(node.evodb), check_level, check_depth) == VerifyDBResult::SUCCESS;
 },
     };
 }

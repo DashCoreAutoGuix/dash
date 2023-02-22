@@ -2062,6 +2062,8 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                     LogPrintfCategory(BCLog::PRUNE, "pruned datadir may not have more than %d blocks; only checking available blocks\n",
                                       MIN_BLOCKS_TO_KEEP);
                 }
+                node::ChainstateLoadOptions options;
+                options.require_full_verification = args.IsArgSet("-checkblocks") || args.IsArgSet("-checklevel");
                 maybe_verify_error = VerifyLoadedChainstate(chainman,
                                                             *Assert(node.evodb.get()),
                                                             fReset,
@@ -2072,7 +2074,8 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                                                             /*get_unix_time_seconds=*/static_cast<int64_t(*)()>(GetTime),
                                                             [](bool bls_state) {
                                                                 LogPrintf("%s: bls_legacy_scheme=%d\n", __func__, bls_state);
-                                                            });
+                                                            },
+                                                            options);
             } catch (const std::exception& e) {
                 LogPrintf("%s\n", e.what());
                 maybe_verify_error = ChainstateLoadVerifyError::ERROR_GENERIC_FAILURE;

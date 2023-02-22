@@ -262,7 +262,8 @@ std::optional<ChainstateLoadVerifyError> VerifyLoadedChainstate(ChainstateManage
                                                                 int check_blocks,
                                                                 int check_level,
                                                                 std::function<int64_t()> get_unix_time_seconds,
-                                                                std::function<void(bool)> notify_bls_state)
+                                                                std::function<void(bool)> notify_bls_state,
+                                                                const ChainstateLoadOptions& options)
 {
     auto is_coinsview_empty = [&](CChainState* chainstate) EXCLUSIVE_LOCKS_REQUIRED(::cs_main) {
         return fReset || fReindexChainState || chainstate->CoinsTip().GetBestBlock().IsNull();
@@ -282,13 +283,25 @@ std::optional<ChainstateLoadVerifyError> VerifyLoadedChainstate(ChainstateManage
                 if (notify_bls_state) notify_bls_state(bls::bls_legacy_scheme.load());
             }
 
-            if (!CVerifyDB().VerifyDB(
+            VerifyDBResult result = CVerifyDB().VerifyDB(
                     *chainstate, consensus_params, chainstate->CoinsDB(),
                     evodb,
                     check_level,
-                    check_blocks)) {
+                    check_blocks);
+            switch (result) {
+            case VerifyDBResult::SUCCESS:
+                break;
+            case VerifyDBResult::INTERRUPTED:
+            case VerifyDBResult::SKIPPED_MISSING_BLOCKS:
+                break;
+            case VerifyDBResult::CORRUPTED_BLOCK_DB:
                 return ChainstateLoadVerifyError::ERROR_CORRUPTED_BLOCK_DB;
-            }
+            case VerifyDBResult::SKIPPED_L3_CHECKS:
+                if (options.require_full_verification) {
+                    return ChainstateLoadVerifyError::ERROR_CORRUPTED_BLOCK_DB;
+                }
+                break;
+            } // no default case, so the compiler can warn about missing cases
 
             // VerifyDB() disconnects blocks which might result in us switching back to legacy.
             // Make sure we use the right scheme.
