@@ -10,6 +10,7 @@
 
 #include <chainparams.h>
 #include <clientversion.h>
+#include <common/init.h>
 #include <compat/compat.h>
 #include <init.h>
 #include <interfaces/chain.h>
@@ -158,17 +159,8 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
 #endif
     try
     {
-        if (!CheckDataDirOption()) {
-            return InitError(Untranslated(strprintf("Specified data directory \"%s\" does not exist.\n", args.GetArg("-datadir", ""))));
-        }
-        if (!args.ReadConfigFiles(error, true)) {
-            return InitError(Untranslated(strprintf("Error reading configuration file: %s\n", error)));
-        }
-        // Check for -chain, -testnet or -regtest parameter (Params() calls are only valid after this clause)
-        try {
-            SelectParams(args.GetChainName());
-        } catch (const std::exception& e) {
-            return InitError(Untranslated(strprintf("%s\n", e.what())));
+        if (auto error = common::InitConfig(args)) {
+            return InitError(error->message, error->details);
         }
 
         // Error out when loose non-argument tokens are encountered on command line
@@ -176,11 +168,6 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
             if (!IsSwitchChar(argv[i][0])) {
                 return InitError(Untranslated(strprintf("Command line contains unexpected token '%s', see dashd -h for a list of options.\n", argv[i])));
             }
-        }
-
-        if (!gArgs.InitSettings(error)) {
-            InitError(Untranslated(error));
-            return false;
         }
 
         // -server defaults to true for dashd but not for the GUI so do this here

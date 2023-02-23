@@ -528,25 +528,7 @@ bool ArgsManager::IsArgSet(const std::string& strArg) const
     return !GetSetting(strArg).isNull();
 }
 
-bool ArgsManager::InitSettings(std::string& error)
-{
-    if (!GetSettingsPath()) {
-        return true; // Do nothing if settings file disabled.
-    }
-
-    std::vector<std::string> errors;
-    if (!ReadSettingsFile(&errors)) {
-        error = strprintf("Failed loading settings file:\n%s\n", MakeUnorderedList(errors));
-        return false;
-    }
-    if (!WriteSettingsFile(&errors)) {
-        error = strprintf("Failed saving settings file:\n%s\n", MakeUnorderedList(errors));
-        return false;
-    }
-    return true;
-}
-
-bool ArgsManager::GetSettingsPath(fs::path* filepath, bool temp) const
+bool ArgsManager::GetSettingsPath(fs::path* filepath, bool temp, bool backup) const
 {
     fs::path settings = GetPathArg("-settings", BITCOIN_SETTINGS_FILENAME);
     if (settings.empty()) {

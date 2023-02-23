@@ -164,6 +164,7 @@ BITCOIN_CORE_H = \
   coinjoin/util.h \
   coins.h \
   common/bloom.h \
+  common/init.h \
   compat/assumptions.h \
   compat/byteswap.h \
   compat/compat.h \
@@ -811,6 +812,7 @@ libbitcoin_common_a_SOURCES = \
   chainparams.cpp \
   coins.cpp \
   common/bloom.cpp \
+  common/init.cpp \
   compressor.cpp \
   core_read.cpp \
   core_write.cpp \
