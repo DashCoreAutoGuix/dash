@@ -30,6 +30,7 @@ enum class TransactionError {
     PSBT_MISMATCH,
     SIGHASH_MISMATCH,
     MAX_FEE_EXCEEDED,
+    MAX_BURN_EXCEEDED,
 };
 
 bilingual_str TransactionErrorString(const TransactionError error);
