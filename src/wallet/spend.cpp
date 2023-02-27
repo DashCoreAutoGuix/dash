@@ -28,11 +28,11 @@ using interfaces::FoundBlock;
 namespace wallet {
 static constexpr size_t OUTPUT_GROUP_MAX_ENTRIES{100};
 
-int CalculateMaximumSignedInputSize(const CTxOut& txout, const COutPoint outpoint, const SigningProvider* provider, const CCoinControl* coin_control)
+int CalculateMaximumSignedInputSize(const CTxOut& txout, const COutPoint outpoint, const SigningProvider* provider, bool can_grind_r, const CCoinControl* coin_control)
 {
     CMutableTransaction txn;
     txn.vin.push_back(CTxIn(outpoint));
-    if (!provider || !DummySignInput(*provider, txn.vin[0], txout, coin_control)) {
+    if (!provider || !DummySignInput(*provider, txn.vin[0], txout, can_grind_r, coin_control)) {
         return -1;
     }
     return ::GetSerializeSize(txn.vin[0], PROTOCOL_VERSION);
@@ -41,7 +41,7 @@ int CalculateMaximumSignedInputSize(const CTxOut& txout, const COutPoint outpoin
 int CalculateMaximumSignedInputSize(const CTxOut& txout, const CWallet* wallet, const CCoinControl* coin_control)
 {
     const std::unique_ptr<SigningProvider> provider = wallet->GetSolvingProvider(txout.scriptPubKey);
-    return CalculateMaximumSignedInputSize(txout, COutPoint(), provider.get(), coin_control);
+    return CalculateMaximumSignedInputSize(txout, COutPoint(), provider.get(), wallet->CanGrindR(), coin_control);
 }
 
 // txouts needs to be in the order of tx.vin
@@ -97,6 +97,7 @@ CoinsResult AvailableCoins(const CWallet& wallet,
     const int min_depth = {coinControl ? coinControl->m_min_depth : DEFAULT_MIN_DEPTH};
     const int max_depth = {coinControl ? coinControl->m_max_depth : DEFAULT_MAX_DEPTH};
     const bool only_safe = {coinControl ? !coinControl->m_include_unsafe_inputs : true};
+    const bool can_grind_r = wallet.CanGrindR();
 
     std::set<uint256> trusted_parents;
     for (const auto* pwtx : wallet.GetSpendableTXs()) {
@@ -186,7 +187,7 @@ CoinsResult AvailableCoins(const CWallet& wallet,
 
             std::unique_ptr<SigningProvider> provider = wallet.GetSolvingProvider(output.scriptPubKey);
 
-            int input_bytes = CalculateMaximumSignedInputSize(output, COutPoint(), provider.get(), coinControl);
+            int input_bytes = CalculateMaximumSignedInputSize(output, COutPoint(), provider.get(), can_grind_r, coinControl);
             // Because CalculateMaximumSignedInputSize just uses ProduceSignature and makes a dummy signature,
             // it is safe to assume that this input is solvable if input_bytes is greater -1.
             bool solvable = input_bytes > -1;
@@ -452,6 +453,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
 
     std::vector<COutPoint> vPresetInputs;
     coin_control.ListSelected(vPresetInputs);
+    const bool can_grind_r = wallet.CanGrindR();
     for (const COutPoint& outpoint : vPresetInputs) {
         int input_bytes = -1;
         CTxOut txout;
@@ -468,7 +470,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
             if (!coin_control.GetExternalOutput(outpoint, txout)) {
                 return std::nullopt;
             }
-            input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, &coin_control);
+            input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, can_grind_r, &coin_control);
         }
         if (nCoinType == CoinType::ONLY_FULLY_MIXED) {
             // Make sure to include mixed preset inputs only,
@@ -755,7 +757,7 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
     coin_selection_params.change_output_size = GetSerializeSize(change_prototype_txout);
 
     // Get size of spending the change output
-    int change_spend_size = CalculateMaximumSignedInputSize(change_prototype_txout, &wallet);
+    int change_spend_size = CalculateMaximumSignedInputSize(change_prototype_txout, &wallet, /*coin_control=*/nullptr);
     // If the wallet doesn't know how to sign change output, assume p2sh-p2pkh
     // as lower-bound to allow BnB to do it's thing
     if (change_spend_size == -1) {
