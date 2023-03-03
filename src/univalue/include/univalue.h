@@ -10,6 +10,8 @@
 #include <string.h>
 
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 #include <map>
 #include <cassert>
@@ -151,9 +153,7 @@ public:
 
     bool read(const char *raw, size_t len);
     bool read(const char *raw) { return read(raw, strlen(raw)); }
-    bool read(const std::string& rawStr) {
-        return read(rawStr.data(), rawStr.size());
-    }
+    bool read(std::string_view raw) { return read(raw.data(), raw.size()); }
 
 private:
     UniValue::VType typ;
