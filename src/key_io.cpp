@@ -60,8 +60,15 @@ CTxDestination DecodeDestination(const std::string& str, const CChainParams& par
             return ScriptHash(hash);
         }
 
-        // Set potential error message.
-        error_str = "Invalid prefix for Base58-encoded address";
+        // If the prefix of data matches either the script or pubkey prefix, the length must have been wrong
+        if ((data.size() >= script_prefix.size() &&
+                std::equal(script_prefix.begin(), script_prefix.end(), data.begin())) ||
+            (data.size() >= pubkey_prefix.size() &&
+                std::equal(pubkey_prefix.begin(), pubkey_prefix.end(), data.begin()))) {
+            error_str = "Invalid length for Base58 address (P2PKH or P2SH)";
+        } else {
+            error_str = "Invalid or unsupported Base58-encoded address.";
+        }
     }
     // Set error message if address can't be interpreted as Base58.
     if (error_str.empty()) error_str = "Invalid address format";

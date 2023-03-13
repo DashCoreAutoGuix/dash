@@ -28,7 +28,7 @@ class InvalidAddressErrorMessageTest(BitcoinTestFramework):
         # Base58
         info = node.validateaddress(BASE58_INVALID_PREFIX)
         assert not info['isvalid']
-        assert_equal(info['error'], 'Invalid prefix for Base58-encoded address')
+        assert_equal(info['error'], 'Invalid or unsupported Base58-encoded address.')
 
         info = node.validateaddress(BASE58_VALID)
         assert info['isvalid']
@@ -42,7 +42,7 @@ class InvalidAddressErrorMessageTest(BitcoinTestFramework):
     def test_getaddressinfo(self):
         node = self.nodes[0]
 
-        assert_raises_rpc_error(-5, "Invalid prefix for Base58-encoded address", node.getaddressinfo, BASE58_INVALID_PREFIX)
+        assert_raises_rpc_error(-5, "Invalid or unsupported Base58-encoded address.", node.getaddressinfo, BASE58_INVALID_PREFIX)
         assert_raises_rpc_error(-5, "Invalid address format", node.getaddressinfo, INVALID_ADDRESS)
 
     def run_test(self):
