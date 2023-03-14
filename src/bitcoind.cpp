@@ -19,6 +19,7 @@
 #include <noui.h>
 #include <shutdown.h>
 #include <util/check.h>
+#include <util/exception.h>
 #include <util/syserror.h>
 #include <util/system.h>
 #include <util/strencodings.h>

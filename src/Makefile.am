@@ -355,6 +355,7 @@ BITCOIN_CORE_H = \
   util/enumerate.h \
   util/epochguard.h \
   util/error.h \
+  util/exception.h \
   util/expected.h \
   util/fastrange.h \
   util/fees.h \
@@ -875,6 +876,7 @@ libbitcoin_util_a_SOURCES = \
   util/check.cpp \
   util/edge.cpp \
   util/error.cpp \
+  util/exception.cpp \
   util/fees.cpp \
   util/hasher.cpp \
   util/getuniquepath.cpp \

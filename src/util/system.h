@@ -25,7 +25,6 @@
 #include <util/settings.h>
 #include <util/time.h>
 
-#include <exception>
 #include <map>
 #include <optional>
 #include <set>
@@ -50,15 +49,6 @@ extern const char * const BITCOIN_SETTINGS_FILENAME;
 
 void SetupEnvironment();
 bool SetupNetworking();
-
-template<typename... Args>
-bool error(const char* fmt, const Args&... args)
-{
-    LogPrintf("ERROR: %s\n", SafeStringFormat(fmt, args...));
-    return false;
-}
-
-void PrintExceptionContinue(const std::exception_ptr pex, const char* pszExceptionOrigin);
 
 /**
  * Ensure file contents are fully committed to disk, using a platform-specific
