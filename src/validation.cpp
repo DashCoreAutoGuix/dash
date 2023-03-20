@@ -987,6 +987,27 @@ bool MemPoolAccept::Finalize(const ATMPArgs& args, Workspace& ws)
 
     std::unique_ptr<CTxMemPoolEntry>& entry = ws.m_entry;
 
+    // Remove conflicting transactions from the mempool
+    for (CTxMemPool::txiter it : ws.m_all_conflicting)
+    {
+        LogPrint(BCLog::MEMPOOL, "replacing tx %s with %s for %s additional fees, %d delta bytes\n",
+                it->GetTx().GetHash().ToString(),
+                hash.ToString(),
+                FormatMoney(ws.m_modified_fees - ws.m_conflicting_fees),
+                (int)entry->GetTxSize() - (int)ws.m_conflicting_size);
+        TRACE7(mempool, replaced,
+                it->GetTx().GetHash().data(),
+                it->GetTxSize(),
+                it->GetFee(),
+                std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(it->GetTime()).count(),
+                hash.data(),
+                entry->GetTxSize(),
+                entry->GetFee()
+        );
+        ws.m_replaced_transactions.push_back(it->GetSharedTx());
+    }
+    m_pool.RemoveStaged(ws.m_all_conflicting, false, MemPoolRemovalReason::REPLACED);
+
     // This transaction should only count for fee estimation if:
     // - it's not being re-added during a reorg which bypasses typical mempool fee limits
     // - the node is not behind
@@ -1319,6 +1340,10 @@ MempoolAcceptResult AcceptToMemoryPool(CChainState& active_chainstate, const CTr
 
         for (const COutPoint& hashTx : coins_to_uncache)
             active_chainstate.CoinsTip().Uncache(hashTx);
+        TRACE2(mempool, rejected,
+                tx->GetHash().data(),
+                result.m_state.GetRejectReason().c_str()
+        );
     }
     // After we've (potentially) uncached entries, ensure our coins cache is still within its size limits
     BlockValidationState state_dummy;
