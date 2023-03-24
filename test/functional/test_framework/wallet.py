@@ -15,6 +15,7 @@ from typing import (
 )
 from test_framework.address import (
     base58_to_byte,
+    bech32_to_bytes,
     key_to_p2pkh,
     ADDRESS_BCRT1_P2SH_OP_TRUE,
 )
@@ -39,6 +40,7 @@ from test_framework.script_util import (
     key_to_p2pk_script,
     key_to_p2pkh_script,
     keyhash_to_p2pkh_script,
+    program_to_witness_script,
     scripthash_to_p2sh_script,
 )
 from test_framework.util import (
@@ -333,6 +335,9 @@ def getnewdestination(address_type='legacy'):
 
 def address_to_scriptpubkey(address):
     """Converts a given address to the corresponding output script (scriptPubKey)."""
+    version, payload = bech32_to_bytes(address)
+    if version is not None:
+        return program_to_witness_script(version, payload) # testnet segwit scriptpubkey
     payload, version = base58_to_byte(address)
     if version == 140:  # testnet pubkey hash
         return keyhash_to_p2pkh_script(payload)
