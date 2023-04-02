@@ -340,11 +340,6 @@ struct Peer {
         LOCK(m_tx_relay_mutex);
         return m_can_tx_relay ? m_tx_relay.get() : nullptr;
     };
-    const TxRelay* GetTxRelay() const LOCKS_EXCLUDED(m_tx_relay_mutex)
-    {
-        LOCK(m_tx_relay_mutex);
-        return m_can_tx_relay ? m_tx_relay.get() : nullptr;
-    };
 
     /** A vector of addresses to send to the peer, limited to MAX_ADDR_TO_SEND. */
     std::vector<CAddress> m_addrs_to_send GUARDED_BY(NetEventsInterface::g_msgproc_mutex);
@@ -816,6 +811,197 @@ private:
 
     std::atomic<std::chrono::microseconds> m_next_inv_to_inbounds{0us};
 
+    /** Number of nodes with fSyncStarted. */
+    int nSyncStarted GUARDED_BY(cs_main) = 0;
+
+    /** Hash of the last block we received via INV */
+    uint256 m_last_block_inv_triggering_headers_sync GUARDED_BY(g_msgproc_mutex){};
+
+    /**
+     * Sources of received blocks, saved to be able punish them when processing
+     * happens afterwards.
+     * Set mapBlockSource[hash].second to false if the node should not be
+     * punished if the block is invalid.
+     */
+    std::map<uint256, std::pair<NodeId, bool>> mapBlockSource GUARDED_BY(cs_main);
+
+    /** Number of peers with wtxid relay. */
+    std::atomic<int> m_wtxid_relay_peers{0};
+
+    /** Number of outbound peers with m_chain_sync.m_protect. */
+    int m_outbound_peers_with_protect_from_disconnect GUARDED_BY(cs_main) = 0;
+
+    /** Number of preferable block download peers. */
+    int m_num_preferred_download_peers GUARDED_BY(cs_main){0};
+
+    /** Stalling timeout for blocks in IBD */
+    std::atomic<std::chrono::seconds> m_block_stalling_timeout{BLOCK_STALLING_TIMEOUT_DEFAULT};
+
+    bool AlreadyHaveTx(const GenTxid& gtxid)
+        EXCLUSIVE_LOCKS_REQUIRED(cs_main, !m_recent_confirmed_transactions_mutex);
+
+    /**
+     * Filter for transactions that were recently rejected by the mempool.
+     * These are not rerequested until the chain tip changes, at which point
+     * the entire filter is reset.
+     *
+     * Without this filter we'd be re-requesting txs from each of our peers,
+     * increasing bandwidth consumption considerably. For instance, with 100
+     * peers, half of which relay a tx we don't accept, that might be a 50x
+     * bandwidth increase. A flooding attacker attempting to roll-over the
+     * filter using minimum-sized, 60byte, transactions might manage to send
+     * 1000/sec if we have fast peers, so we pick 120,000 to give our peers a
+     * two minute window to send invs to us.
+     *
+     * Decreasing the false positive rate is fairly cheap, so we pick one in a
+     * million to make it highly unlikely for users to have issues with this
+     * filter.
+     *
+     * We typically only add wtxids to this filter. For non-segwit
+     * transactions, the txid == wtxid, so this only prevents us from
+     * re-downloading non-segwit transactions when communicating with
+     * non-wtxidrelay peers -- which is important for avoiding malleation
+     * attacks that could otherwise interfere with transaction relay from
+     * non-wtxidrelay peers. For communicating with wtxidrelay peers, having
+     * the reject filter store wtxids is exactly what we want to avoid
+     * redownload of a rejected transaction.
+     *
+     * In cases where we can tell that a segwit transaction will fail
+     * validation no matter the witness, we may add the txid of such
+     * transaction to the filter as well. This can be helpful when
+     * communicating with txid-relay peers or if we were to otherwise fetch a
+     * transaction via txid (eg in our orphan handling).
+     *
+     * Memory used: 1.3 MB
+     */
+    CRollingBloomFilter m_recent_rejects GUARDED_BY(::cs_main){120'000, 0.000'001};
+    uint256 hashRecentRejectsChainTip GUARDED_BY(cs_main);
+
+    /*
+     * Filter for transactions that have been recently confirmed.
+     * We use this to avoid requesting transactions that have already been
+     * confirnmed.
+     *
+     * Blocks don't typically have more than 4000 transactions, so this should
+     * be at least six blocks (~1 hr) worth of transactions that we can store,
+     * inserting both a txid and wtxid for every observed transaction.
+     * If the number of transactions appearing in a block goes up, or if we are
+     * seeing getdata requests more than an hour after initial announcement, we
+     * can increase this number.
+     * The false positive rate of 1/1M should come out to less than 1
+     * transaction per day that would be inadvertently ignored (which is the
+     * same probability that we have in the reject filter).
+     */
+    Mutex m_recent_confirmed_transactions_mutex;
+    CRollingBloomFilter m_recent_confirmed_transactions GUARDED_BY(m_recent_confirmed_transactions_mutex){48'000, 0.000'001};
+
+    /**
+     * For sending `inv`s to inbound peers, we use a single (exponentially
+     * distributed) timer for all peers. If we used a separate timer for each
+     * peer, a spy node could make multiple inbound connections to us to
+     * accurately determine when we received the transaction (and potentially
+     * determine the transaction's origin). */
+    std::chrono::microseconds NextInvToInbounds(std::chrono::microseconds now,
+                                                std::chrono::seconds average_interval);
+
+
+    // All of the following cache a recent block, and are protected by m_most_recent_block_mutex
+    Mutex m_most_recent_block_mutex;
+    std::shared_ptr<const CBlock> m_most_recent_block GUARDED_BY(m_most_recent_block_mutex);
+    std::shared_ptr<const CBlockHeaderAndShortTxIDs> m_most_recent_compact_block GUARDED_BY(m_most_recent_block_mutex);
+    uint256 m_most_recent_block_hash GUARDED_BY(m_most_recent_block_mutex);
+
+    // Data about the low-work headers synchronization, aggregated from all peers' HeadersSyncStates.
+    /** Mutex guarding the other m_headers_presync_* variables. */
+    Mutex m_headers_presync_mutex;
+    /** A type to represent statistics about a peer's low-work headers sync.
+     *
+     * - The first field is the total verified amount of work in that synchronization.
+     * - The second is:
+     *   - nullopt: the sync is in REDOWNLOAD phase (phase 2).
+     *   - {height, timestamp}: the sync has the specified tip height and block timestamp (phase 1).
+     */
+    using HeadersPresyncStats = std::pair<arith_uint256, std::optional<std::pair<int64_t, uint32_t>>>;
+    /** Statistics for all peers in low-work headers sync. */
+    std::map<NodeId, HeadersPresyncStats> m_headers_presync_stats GUARDED_BY(m_headers_presync_mutex) {};
+    /** The peer with the most-work entry in m_headers_presync_stats. */
+    NodeId m_headers_presync_bestpeer GUARDED_BY(m_headers_presync_mutex) {-1};
+    /** The m_headers_presync_stats improved, and needs signalling. */
+    std::atomic_bool m_headers_presync_should_signal{false};
+
+    /** Height of the highest block announced using BIP 152 high-bandwidth mode. */
+    int m_highest_fast_announce GUARDED_BY(::cs_main){0};
+
+    /** Have we requested this block from a peer */
+    bool IsBlockRequested(const uint256& hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    /** Remove this block from our tracked requested blocks. Called if:
+     *  - the block has been received from a peer
+     *  - the request for the block has timed out
+     */
+    void RemoveBlockRequest(const uint256& hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    /* Mark a block as in flight
+     * Returns false, still setting pit, if the block was already in flight from the same peer
+     * pit will only be valid as long as the same cs_main lock is being held
+     */
+    bool BlockRequested(NodeId nodeid, const CBlockIndex& block, std::list<QueuedBlock>::iterator** pit = nullptr) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    bool TipMayBeStale() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    /** Update pindexLastCommonBlock and add not-in-flight missing successors to vBlocks, until it has
+     *  at most count entries.
+     */
+    void FindNextBlocksToDownload(const Peer& peer, unsigned int count, std::vector<const CBlockIndex*>& vBlocks, NodeId& nodeStaller) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    std::map<uint256, std::pair<NodeId, std::list<QueuedBlock>::iterator> > mapBlocksInFlight GUARDED_BY(cs_main);
+
+    /** When our tip was last updated. */
+    std::atomic<std::chrono::seconds> m_last_tip_update{0s};
+
+    /** Determine whether or not a peer can request a transaction, and return it (or nullptr if not found or not allowed). */
+    CTransactionRef FindTxForGetData(const Peer::TxRelay& tx_relay, const GenTxid& gtxid, const std::chrono::seconds mempool_req, const std::chrono::seconds now)
+        EXCLUSIVE_LOCKS_REQUIRED(NetEventsInterface::g_msgproc_mutex);
+
+    void ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic<bool>& interruptMsgProc)
+        EXCLUSIVE_LOCKS_REQUIRED(!m_most_recent_block_mutex, peer.m_getdata_requests_mutex, NetEventsInterface::g_msgproc_mutex)
+        LOCKS_EXCLUDED(::cs_main);
+
+    /** Process a new block. Perform any post-processing housekeeping */
+    void ProcessBlock(CNode& node, const std::shared_ptr<const CBlock>& block, bool force_processing, bool min_pow_checked);
+
+    /** Relay map (txid or wtxid -> CTransactionRef) */
+    typedef std::map<uint256, CTransactionRef> MapRelay;
+    MapRelay mapRelay GUARDED_BY(NetEventsInterface::g_msgproc_mutex);
+    /** Expiration-time ordered list of (expire time, relay map entry) pairs. */
+    std::deque<std::pair<std::chrono::microseconds, MapRelay::iterator>> g_relay_expiration GUARDED_BY(NetEventsInterface::g_msgproc_mutex);
+
+    /**
+     * When a peer sends us a valid block, instruct it to announce blocks to us
+     * using CMPCTBLOCK if possible by adding its nodeid to the end of
+     * lNodesAnnouncingHeaderAndIDs, and keeping that list under a certain size by
+     * removing the first element if necessary.
+     */
+    void MaybeSetPeerAsAnnouncingHeaderAndIDs(NodeId nodeid) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    /** Stack of nodes which we have set to announce using compact blocks */
+    std::list<NodeId> lNodesAnnouncingHeaderAndIDs GUARDED_BY(cs_main);
+
+    /** Number of peers from which we're downloading blocks. */
+    int m_peers_downloading_from GUARDED_BY(cs_main) = 0;
+
+    /** Storage for orphan information */
+    TxOrphanage m_orphanage;
+
+    void AddToCompactExtraTransactions(const CTransactionRef& tx) EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex);
+
+    /** Orphan/conflicted/etc transactions that are kept for compact block reconstruction.
+     *  The last -blockreconstructionextratxn/DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN of
+     *  these are kept in a ring buffer */
+    std::vector<std::pair<uint256, CTransactionRef>> vExtraTxnForCompact GUARDED_BY(g_msgproc_mutex);
+    /** Offset into vExtraTxnForCompact to insert the next tx */
+    size_t vExtraTxnForCompactIt GUARDED_BY(g_msgproc_mutex) = 0;
+
     /** Check whether the last unknown block a peer advertised is not yet known. */
     void ProcessBlockAvailability(NodeId nodeid) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
     /** Update tracking information about which blocks a peer is assumed to have. */
@@ -1010,7 +1196,8 @@ private:
     std::atomic<std::chrono::seconds> m_last_tip_update{0s};
 
     /** Determine whether or not a peer can request a transaction, and return it (or nullptr if not found or not allowed). */
-    CTransactionRef FindTxForGetData(const CNode* peer, const uint256& txid, const std::chrono::seconds mempool_req, const std::chrono::seconds now) LOCKS_EXCLUDED(cs_main);
+    CTransactionRef FindTxForGetData(const Peer::TxRelay& tx_relay, const GenTxid& gtxid, const std::chrono::seconds mempool_req, const std::chrono::seconds now)
+        EXCLUSIVE_LOCKS_REQUIRED(NetEventsInterface::g_msgproc_mutex);
 
     void ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic<bool>& interruptMsgProc) EXCLUSIVE_LOCKS_REQUIRED(peer.m_getdata_requests_mutex) LOCKS_EXCLUDED(::cs_main);
 
@@ -2660,10 +2847,9 @@ void PeerManagerImpl::ProcessGetBlockData(CNode& pfrom, Peer& peer, const CInv& 
     }
 }
 
-//! Determine whether or not a peer can request a transaction, and return it (or nullptr if not found or not allowed).
-CTransactionRef PeerManagerImpl::FindTxForGetData(const CNode* peer, const uint256& txid, const std::chrono::seconds mempool_req, const std::chrono::seconds now)
+CTransactionRef PeerManagerImpl::FindTxForGetData(const Peer::TxRelay& tx_relay, const GenTxid& gtxid, const std::chrono::seconds mempool_req, const std::chrono::seconds now)
 {
-    auto txinfo = m_mempool.info(txid);
+    auto txinfo = m_mempool.info(gtxid);
     if (txinfo.tx) {
         // If a TX could have been INVed in reply to a MEMPOOL request,
         // or is older than UNCONDITIONAL_RELAY_DELAY, permit the request
@@ -2673,17 +2859,13 @@ CTransactionRef PeerManagerImpl::FindTxForGetData(const CNode* peer, const uint2
         }
     }
 
-    {
-        LOCK(cs_main);
-
-        // Otherwise, the transaction must have been announced recently.
-        if (State(peer->GetId())->m_recently_announced_invs.contains(txid)) {
-            // If it was, it can be relayed from either the mempool...
-            if (txinfo.tx) return std::move(txinfo.tx);
-            // ... or the relay pool.
-            auto mi = mapRelay.find(txid);
-            if (mi != mapRelay.end()) return mi->second;
-        }
+    // Otherwise, the transaction must have been announced recently.
+    if (tx_relay.m_recently_announced_invs.contains(gtxid.GetHash())) {
+        // If it was, it can be relayed from either the mempool...
+        if (txinfo.tx) return std::move(txinfo.tx);
+        // ... or the relay pool.
+        auto mi = mapRelay.find(gtxid.GetHash());
+        if (mi != mapRelay.end()) return mi->second;
     }
 
     return {};
@@ -2731,7 +2913,7 @@ void PeerManagerImpl::ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic
 
         bool push = false;
         if (inv.IsGenTxMsg()) {
-            CTransactionRef tx = FindTxForGetData(&pfrom, inv.hash, mempool_req, now);
+            CTransactionRef tx = FindTxForGetData(*tx_relay, ToGenTxid(inv), mempool_req, now);
             if (tx) {
                 CCoinJoinBroadcastTx dstx;
                 if (inv.IsMsgDstx()) {
