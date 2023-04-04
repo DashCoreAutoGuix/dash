@@ -6,6 +6,7 @@
 import os
 import struct
 import tempfile
+from time import sleep
 
 from test_framework.address import ADDRESS_BCRT1_UNSPENDABLE, ADDRESS_BCRT1_P2SH_OP_TRUE
 from test_framework.blocktools import create_block, create_coinbase
@@ -20,8 +21,10 @@ from test_framework.util import (
     assert_raises_rpc_error,
     p2p_port,
 )
+from test_framework.wallet import (
+    MiniWallet,
+)
 from test_framework.netutil import test_ipv6_local, test_unix_socket
-from time import sleep
 
 # Test may be skipped and not have zmq installed
 try:
@@ -209,8 +212,9 @@ class ZMQTest (BitcoinTestFramework):
             txid = hashtx.receive()
 
             # Should receive the coinbase raw transaction.
-            hex = rawtx.receive()
-            assert_equal(hash256_reversed(hex), txid)
+            tx = tx_from_hex(rawtx.receive().hex())
+            tx.calc_sha256()
+            assert_equal(tx.hash, txid.hex())
 
             # Should receive the generated raw block.
             block = rawblock.receive()
