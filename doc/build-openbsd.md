@@ -1,6 +1,6 @@
 OpenBSD build guide
 ======================
-(updated for OpenBSD 6.7)
+**Updated for OpenBSD [7.3](https://www.openbsd.org/73.html)**
 
 This guide describes how to build dashd, dash-qt, and command-line utilities on OpenBSD.
 
