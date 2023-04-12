@@ -177,29 +177,11 @@ class CreateWalletTest(BitcoinTestFramework):
         self.log.info('Using a passphrase with private keys disabled returns error')
         assert_raises_rpc_error(-4, 'Passphrase provided but private keys are disabled. A passphrase is only used to encrypt private keys, so cannot be used for wallets with private keys disabled.', self.nodes[0].createwallet, wallet_name='w9', disable_private_keys=True, passphrase='thisisapassphrase')
 
-<<<<<<< HEAD
-=======
-        if self.is_bdb_compiled():
-            self.log.info("Test legacy wallet deprecation")
-            result = self.nodes[0].createwallet(wallet_name="legacy_w0", descriptors=False, passphrase=None)
-            assert_equal(result, {
-                "name": "legacy_w0",
-                "warning": LEGACY_WALLET_MSG,
-                "warnings": [LEGACY_WALLET_MSG],
-            })
-            result = self.nodes[0].createwallet(wallet_name="legacy_w1", descriptors=False, passphrase="")
-            assert_equal(result, {
-                "name": "legacy_w1",
-                "warning": f"{EMPTY_PASSPHRASE_MSG}\n{LEGACY_WALLET_MSG}",
-                "warnings": [EMPTY_PASSPHRASE_MSG, LEGACY_WALLET_MSG],
-            })
-
         self.log.info('Test "warning" field deprecation, i.e. not returned without -deprecatedrpc=walletwarningfield')
         self.restart_node(0, extra_args=[])
         result = self.nodes[0].createwallet(wallet_name="w7_again", disable_private_keys=False, blank=False, passphrase="")
         assert "warning" not in result
 
 
->>>>>>> 6a167325f0 (Merge bitcoin/bitcoin#27279: Add "warnings", deprecate "warning" in {create,load,unload,restore}wallet)
 if __name__ == '__main__':
     CreateWalletTest().main()
