@@ -1,6 +1,6 @@
 OpenBSD build guide
 ======================
-(updated for OpenBSD 6.7)
+**Updated for OpenBSD [7.3](https://www.openbsd.org/73.html)**
 
 This guide describes how to build dashd, dash-qt, and command-line utilities on OpenBSD.
 
@@ -62,6 +62,10 @@ export AUTOMAKE_VERSION=1.15 # replace this with the automake version that you i
 ```
 Make sure `BDB_PREFIX` is set to the appropriate path from the above steps.
 
+### 1. Configuration
+
+There are many ways to configure Dash Core, here are a few common examples:
+
 To configure with wallet:
 ```bash
 ./configure --with-gui=no CC=cc CXX=c++ \
@@ -108,4 +112,3 @@ If your user is in the `staff` group the limit can be raised with:
 The change will only affect the current shell and processes spawned by it. To
 make the change system-wide, change `datasize-cur` and `datasize-max` in
 `/etc/login.conf`, and reboot.
-
