@@ -257,6 +257,7 @@ RPCHelpMan addmultisigaddress()
     result.pushKV("address", EncodeDestination(dest));
     result.pushKV("redeemScript", HexStr(inner));
     result.pushKV("descriptor", descriptor->ToString());
+    
     return result;
 },
     };
