@@ -78,6 +78,22 @@ public:
     mutable bool found = false;
 };
 
+//! Block data sent with blockConnected, blockDisconnected notifications.
+struct BlockInfo {
+    const uint256& hash;
+    const uint256* prev_hash = nullptr;
+    int height = -1;
+    int file_number = -1;
+    unsigned data_pos = 0;
+    const CBlock* data = nullptr;
+    const CBlockUndo* undo_data = nullptr;
+    // The maximum time in the chain up to and including this block.
+    // A timestamp that can only move forward.
+    unsigned int chain_time_max{0};
+
+    BlockInfo(const uint256& hash LIFETIMEBOUND) : hash(hash) {}
+};
+
 //! Interface giving clients (wallet processes, maybe other analysis tools in
 //! the future) ability to access to the chain state, receive notifications,
 //! estimate fees, and submit transactions.
