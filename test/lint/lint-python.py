@@ -15,9 +15,13 @@ import sys
 
 DEPS = ['flake8', 'lief', 'mypy', 'pyzmq']
 MYPY_CACHE_DIR = f"{os.getenv('BASE_ROOT_DIR', '')}/test/.mypy_cache"
-FILES_ARGS = ['git', 'ls-files', '--','test/functional/*.py', 'contrib/devtools/*.py', ':(exclude)contrib/devtools/github-merge.py']
-EXCLUDE_DIRS = ['src/dashbls/',
-                'src/immer/']
+
+# All .py files, except those in src/ (to exclude subtrees there)
+FLAKE_FILES_ARGS = ['git', 'ls-files', '*.py', ':!:src/*.py']
+
+# Only .py files in test/functional and contrib/devtools have type annotations
+# enforced.
+MYPY_FILES_ARGS = ['git', 'ls-files', 'test/functional/*.py', 'contrib/devtools/*.py']
 
 ENABLED = (
     'E101,'  # indentation contains mixed spaces and tabs
@@ -109,10 +113,7 @@ def main():
     if len(sys.argv) > 1:
         flake8_files = sys.argv[1:]
     else:
-        files_args = ['git', 'ls-files', '--', '*.py']
-        for dir in EXCLUDE_DIRS:
-            files_args += [f':(exclude){dir}']
-        flake8_files = subprocess.check_output(files_args).decode("utf-8").splitlines()
+        flake8_files = subprocess.check_output(FLAKE_FILES_ARGS).decode("utf-8").splitlines()
 
     flake8_args = ['flake8', '--ignore=B,C,E,F,I,N,W', f'--select={ENABLED}'] + flake8_files
     flake8_env = os.environ.copy()
@@ -123,7 +124,7 @@ def main():
     except subprocess.CalledProcessError:
         exit(1)
 
-    mypy_files = subprocess.check_output(FILES_ARGS).decode("utf-8").splitlines()
+    mypy_files = subprocess.check_output(MYPY_FILES_ARGS).decode("utf-8").splitlines()
     mypy_args = ['mypy', '--ignore-missing-imports', '--show-error-codes'] + mypy_files
 
     try:
