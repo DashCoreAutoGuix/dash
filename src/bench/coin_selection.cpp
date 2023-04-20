@@ -5,11 +5,16 @@
 #include <bench/bench.h>
 #include <interfaces/chain.h>
 #include <node/context.h>
+#include <policy/policy.h>
 #include <wallet/coinselection.h>
 #include <wallet/spend.h>
 #include <wallet/wallet.h>
 
 #include <set>
+
+// Dash doesn't use SegWit, but we use these constants for weight-based calculations
+static constexpr int WITNESS_SCALE_FACTOR = 4;
+static constexpr int MAX_STANDARD_TX_WEIGHT = MAX_STANDARD_TX_SIZE * WITNESS_SCALE_FACTOR;
 
 using node::NodeContext;
 using wallet::CHANGE_LOWER;
@@ -111,7 +116,7 @@ static void BnBExhaustion(benchmark::Bench& bench)
     bench.run([&] {
         // Benchmark
         CAmount target = make_hard_case(17, utxo_pool);
-        SelectCoinsBnB(utxo_pool, target, 0); // Should exhaust
+        SelectCoinsBnB(utxo_pool, target, 0, MAX_STANDARD_TX_WEIGHT); // Should exhaust
 
         // Cleanup
         utxo_pool.clear();

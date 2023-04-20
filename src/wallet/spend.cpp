@@ -28,6 +28,19 @@ using interfaces::FoundBlock;
 namespace wallet {
 static constexpr size_t OUTPUT_GROUP_MAX_ENTRIES{100};
 
+// Dash doesn't use SegWit, but we use these constants for weight-based calculations
+// to maintain compatibility with Bitcoin's coin selection logic
+static constexpr int WITNESS_SCALE_FACTOR = 4;
+// MAX_STANDARD_TX_WEIGHT is MAX_STANDARD_TX_SIZE * WITNESS_SCALE_FACTOR in Bitcoin
+// Since Dash doesn't use SegWit, weight equals size, so we use MAX_STANDARD_TX_SIZE directly
+static constexpr int MAX_STANDARD_TX_WEIGHT = MAX_STANDARD_TX_SIZE * WITNESS_SCALE_FACTOR;
+
+// Helper to check if a Result contains an error message
+template<typename T>
+bool HasErrorMsg(const util::Result<T>& result) {
+    return !result && !util::ErrorString(result).empty();
+}
+
 int CalculateMaximumSignedInputSize(const CTxOut& txout, const COutPoint outpoint, const SigningProvider* provider, const CCoinControl* coin_control)
 {
     CMutableTransaction txn;
@@ -466,13 +479,27 @@ std::optional<SelectionResult> ChooseSelectionResult(const CWallet& wallet, cons
 {
     // Vector of results. We will choose the best one based on waste.
     std::vector<SelectionResult> results;
+    std::vector<util::Result<SelectionResult>> errors;
+    auto append_error = [&] (const util::Result<SelectionResult>& result) {
+        // If any specific error message appears here, then something different from a simple "no selection found" happened.
+        // Let's save it, so it can be retrieved to the user if no other selection algorithm succeeded.
+        if (HasErrorMsg(result)) {
+            errors.emplace_back(result);
+        }
+    };
+
+    // Maximum allowed weight
+    int max_inputs_weight = MAX_STANDARD_TX_WEIGHT - (coin_selection_params.tx_noinputs_size * WITNESS_SCALE_FACTOR);
 
     // Note that unlike KnapsackSolver, we do not include the fee for creating a change output as BnB will not create a change output.
     std::vector<OutputGroup> positive_groups = GroupOutputs(wallet, available_coins, coin_selection_params, eligibility_filter, true /* positive_only */);
     positive_groups.clear(); // Cleared to skip BnB and SRD as they're unaware of mixed coins
-    if (auto bnb_result{SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change)}) {
+    if (auto bnb_result{SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change, max_inputs_weight)}) {
         results.push_back(*bnb_result);
-    }
+    } else append_error(bnb_result);
+
+    // As Knapsack and SRD can create change, also deduce change weight.
+    max_inputs_weight -= (coin_selection_params.change_output_size * WITNESS_SCALE_FACTOR);
 
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
     std::vector<OutputGroup> all_groups = GroupOutputs(wallet, available_coins, coin_selection_params, eligibility_filter, false /* positive_only */);
@@ -484,31 +511,30 @@ std::optional<SelectionResult> ChooseSelectionResult(const CWallet& wallet, cons
         target_with_change += coin_selection_params.m_change_fee;
     }
     if (auto knapsack_result{KnapsackSolver(all_groups, target_with_change, coin_selection_params.m_min_change_target,
-                                            coin_selection_params.rng_fast, nCoinType == CoinType::ONLY_FULLY_MIXED,
+                                            coin_selection_params.rng_fast, max_inputs_weight, nCoinType == CoinType::ONLY_FULLY_MIXED,
                                             wallet.m_default_max_tx_fee)}) {
         knapsack_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
         results.push_back(*knapsack_result);
-    }
+    } else append_error(knapsack_result);
 
     // Include change for SRD as we want to avoid making really small change if the selection just
     // barely meets the target. Just use the lower bound change target instead of the randomly
     // generated one, since SRD will result in a random change amount anyway; avoid making the
     // target needlessly large.
     const CAmount srd_target = target_with_change + CHANGE_LOWER;
-    if (auto srd_result{SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.rng_fast)}) {
+    if (auto srd_result{SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.rng_fast, max_inputs_weight)}) {
         srd_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
         results.push_back(*srd_result);
-    }
+    } else append_error(srd_result);
 
-    if (results.size() == 0) {
+    if (results.empty()) {
         // No solution found
         return std::nullopt;
     }
 
     // Choose the result with the least waste
     // If the waste is the same, choose the one which spends more inputs.
-    auto& best_result = *std::min_element(results.begin(), results.end());
-    return best_result;
+    return *std::min_element(results.begin(), results.end());
 }
 
 std::optional<SelectionResult> SelectCoins(const CWallet& wallet, CoinsResult& available_coins, const CAmount& nTargetValue, const CCoinControl& coin_control, const CoinSelectionParams& coin_selection_params)

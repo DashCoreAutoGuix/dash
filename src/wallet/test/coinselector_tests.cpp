@@ -15,12 +15,18 @@
 #include <wallet/spend.h>
 #include <wallet/test/wallet_test_fixture.h>
 #include <wallet/wallet.h>
+#include <policy/policy.h>
 
 #include <algorithm>
 #include <boost/test/unit_test.hpp>
 #include <random>
 
 namespace wallet {
+
+// Dash doesn't use SegWit, but we use these constants for weight-based calculations
+static constexpr int WITNESS_SCALE_FACTOR = 4;
+static constexpr int MAX_STANDARD_TX_WEIGHT = MAX_STANDARD_TX_SIZE * WITNESS_SCALE_FACTOR;
+
 BOOST_FIXTURE_TEST_SUITE(coinselector_tests, WalletTestingSetup)
 
 // how many times to run all the tests to have a chance to catch errors that only show up with particular random shuffles
@@ -140,9 +146,25 @@ inline std::vector<OutputGroup>& GroupCoins(const std::vector<COutput>& availabl
     return static_groups;
 }
 
+// Helper wrapper for tests - converts util::Result to std::optional and provides max_weight
 inline std::optional<SelectionResult> KnapsackSolver(std::vector<OutputGroup>& groups, const CAmount& nTargetValue, CAmount change_target, FastRandomContext& rng)
 {
-    return KnapsackSolver(groups, nTargetValue, change_target, rng, /*fFullyMixedOnly=*/false, /*maxTxFee=*/DEFAULT_TRANSACTION_MAXFEE);
+    auto res = wallet::KnapsackSolver(groups, nTargetValue, change_target, rng, MAX_STANDARD_TX_WEIGHT, /*fFullyMixedOnly=*/false, /*maxTxFee=*/DEFAULT_TRANSACTION_MAXFEE);
+    return res ? std::optional<SelectionResult>(*res) : std::nullopt;
+}
+
+// Helper wrapper for BnB tests
+inline std::optional<SelectionResult> SelectCoinsBnB(std::vector<OutputGroup>& utxo_pool, const CAmount& selection_target, const CAmount& cost_of_change)
+{
+    auto res = wallet::SelectCoinsBnB(utxo_pool, selection_target, cost_of_change, MAX_STANDARD_TX_WEIGHT);
+    return res ? std::optional<SelectionResult>(*res) : std::nullopt;
+}
+
+// Helper wrapper for SRD tests
+inline std::optional<SelectionResult> SelectCoinsSRD(const std::vector<OutputGroup>& utxo_pool, CAmount target_value, FastRandomContext& rng)
+{
+    auto res = wallet::SelectCoinsSRD(utxo_pool, target_value, rng, MAX_STANDARD_TX_WEIGHT);
+    return res ? std::optional<SelectionResult>(*res) : std::nullopt;
 }
 
 inline std::vector<OutputGroup>& KnapsackGroupOutputs(const std::vector<COutput>& available_coins, CWallet& wallet, const CoinEligibilityFilter& filter)
