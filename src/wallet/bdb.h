@@ -169,31 +169,13 @@ public:
 class BerkeleyBatch : public DatabaseBatch
 {
 public:
-    /** RAII class that automatically cleanses its data on destruction */
-    class SafeDbt final
-    {
-        Dbt m_dbt;
-
-    public:
-        // construct Dbt with internally-managed data
-        SafeDbt();
-        // construct Dbt with provided data
-        SafeDbt(void* data, size_t size);
-        ~SafeDbt();
-
-        // delegate to Dbt
-        const void* get_data() const;
-        uint32_t get_size() const;
-
-        // conversion operator to access the underlying Dbt
-        operator Dbt*();
-    };
 
 private:
     bool ReadKey(CDataStream&& key, CDataStream& value) override;
     bool WriteKey(CDataStream&& key, CDataStream&& value, bool overwrite = true) override;
     bool EraseKey(CDataStream&& key) override;
     bool HasKey(CDataStream&& key) override;
+    bool ErasePrefix(Span<const std::byte> prefix) override;
 
 protected:
     Db* pdb;
@@ -221,6 +203,7 @@ public:
     bool TxnBegin() override;
     bool TxnCommit() override;
     bool TxnAbort() override;
+    DbTxn* txn() const { return activeTxn; }
 };
 
 std::string BerkeleyDatabaseVersion();

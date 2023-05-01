@@ -816,6 +816,29 @@ bool BerkeleyBatch::HasKey(CDataStream&& key)
     return ret == 0;
 }
 
+bool BerkeleyBatch::ErasePrefix(Span<const std::byte> prefix)
+{
+    if (!TxnBegin()) return false;
+    if (!StartCursor()) {
+        TxnAbort();
+        return false;
+    }
+
+    // const_cast is safe below even though prefix_key is an in/out parameter,
+    // because we are not using the DB_DBT_USERMEM flag, so BDB will allocate
+    // and return a different output data pointer
+    Dbt prefix_key{const_cast<std::byte*>(prefix.data()), static_cast<uint32_t>(prefix.size())}, prefix_value{};
+    int ret{m_cursor->get(&prefix_key, &prefix_value, DB_SET_RANGE)};
+    for (int flag{DB_CURRENT}; ret == 0; flag = DB_NEXT) {
+        SafeDbt key, value;
+        ret = m_cursor->get(key, value, flag);
+        if (ret != 0 || key.get_size() < prefix.size() || memcmp(key.get_data(), prefix.data(), prefix.size()) != 0) break;
+        ret = m_cursor->del(0);
+    }
+    CloseCursor();
+    return TxnCommit() && (ret == 0 || ret == DB_NOTFOUND);
+}
+
 void BerkeleyDatabase::AddRef()
 {
     LOCK(cs_db);
