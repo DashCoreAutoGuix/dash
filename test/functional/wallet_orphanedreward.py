@@ -50,7 +50,10 @@ class OrphanedBlockRewardTest(BitcoinTestFramework):
         # lines succeed, and probably should not be needed; see
         # https://github.com/bitcoin/bitcoin/issues/14148.
         self.nodes[1].abandontransaction(txid)
-        assert_equal(self.nodes[1].getbalances()["mine"], {
+        balances = self.nodes[1].getbalances()
+        if "lastprocessedblock" in balances:
+            del balances["lastprocessedblock"]
+        assert_equal(balances["mine"], {
           "trusted": Decimal('10.00000000'),
           "untrusted_pending": Decimal('0.00000000'),
           "immature": Decimal('0.00000000'),
