@@ -12,4 +12,55 @@ CCoinControl::CCoinControl(CoinType coinType)
 {
     m_avoid_partial_spends = gArgs.GetBoolArg("-avoidpartialspends", DEFAULT_AVOIDPARTIALSPENDS);
 }
+
+bool CCoinControl::HasSelected() const
+{
+    return !m_selected_inputs.empty();
+}
+
+bool CCoinControl::IsSelected(const COutPoint& output) const
+{
+    return m_selected_inputs.count(output) > 0;
+}
+
+bool CCoinControl::IsExternalSelected(const COutPoint& output) const
+{
+    return m_external_txouts.count(output) > 0;
+}
+
+std::optional<CTxOut> CCoinControl::GetExternalOutput(const COutPoint& outpoint) const
+{
+    const auto ext_it = m_external_txouts.find(outpoint);
+    if (ext_it == m_external_txouts.end()) {
+        return std::nullopt;
+    }
+
+    return std::make_optional(ext_it->second);
+}
+
+void CCoinControl::Select(const COutPoint& output)
+{
+    m_selected_inputs.insert(output);
+}
+
+void CCoinControl::SelectExternal(const COutPoint& outpoint, const CTxOut& txout)
+{
+    m_selected_inputs.insert(outpoint);
+    m_external_txouts.emplace(outpoint, txout);
+}
+
+void CCoinControl::UnSelect(const COutPoint& output)
+{
+    m_selected_inputs.erase(output);
+}
+
+void CCoinControl::UnSelectAll()
+{
+    m_selected_inputs.clear();
+}
+
+std::vector<COutPoint> CCoinControl::ListSelected() const
+{
+    return {m_selected_inputs.begin(), m_selected_inputs.end()};
+}
 } // namespace wallet
