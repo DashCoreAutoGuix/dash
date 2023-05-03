@@ -65,11 +65,11 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
             assert(input.prevout.n < mi->second.tx->vout.size());
             txouts.emplace_back(mi->second.tx->vout.at(input.prevout.n));
         } else if (coin_control) {
-            CTxOut txout;
-            if (!coin_control->GetExternalOutput(input.prevout, txout)) {
+            const auto& txout{coin_control->GetExternalOutput(input.prevout)};
+            if (!txout) {
                 return -1;
             }
-            txouts.emplace_back(txout);
+            txouts.emplace_back(*txout);
         } else {
             return -1;
         }
