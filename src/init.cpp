@@ -1368,6 +1368,23 @@ bool AppInitParameterInteraction(const ArgsManager& args)
         }
     }
 
+    // Also report errors from parsing before daemonization
+    {
+        ChainstateManager::Options chainman_opts_dummy{
+            .chainparams = chainparams,
+            .datadir = args.GetDataDirNet(),
+        };
+        if (const auto error{ApplyArgsManOptions(args, chainman_opts_dummy)}) {
+            return InitError(*error);
+        }
+        node::BlockManager::Options blockman_opts_dummy{
+            .chainparams = chainman_opts_dummy.chainparams,
+        };
+        if (const auto error{ApplyArgsManOptions(args, blockman_opts_dummy)}) {
+            return InitError(*error);
+        }
+    }
+
     try {
         const bool fRecoveryEnabled{llmq::QuorumDataRecoveryEnabled()};
         const bool fQuorumVvecRequestsEnabled{llmq::GetEnabledQuorumVvecSyncEntries().size() > 0};
@@ -1915,6 +1932,18 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     fReindex = args.GetBoolArg("-reindex", false);
     bool fReindexChainState = args.GetBoolArg("-reindex-chainstate", false);
 
+    ChainstateManager::Options chainman_opts{
+        .chainparams = chainparams,
+        .datadir = args.GetDataDirNet(),
+        .adjusted_time_callback = GetAdjustedTime,
+    };
+    Assert(!ApplyArgsManOptions(args, chainman_opts)); // no error can happen, already checked in AppInitParameterInteraction
+
+    node::BlockManager::Options blockman_opts{
+        .chainparams = chainman_opts.chainparams,
+    };
+    Assert(!ApplyArgsManOptions(args, blockman_opts)); // no error can happen, already checked in AppInitParameterInteraction
+
     // cache size calculations
     CacheSizes cache_sizes = CalculateCacheSizes(args, g_enabled_filter_types.size());
 
@@ -1940,7 +1969,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     for (bool fLoaded = false; !fLoaded && !ShutdownRequested();) {
         node.mempool = std::make_unique<CTxMemPool>(node.fee_estimator.get(), mempool_check_ratio);
 
-        node.chainman = std::make_unique<ChainstateManager>();
+        node.chainman = std::make_unique<ChainstateManager>(chainman_opts, blockman_opts);
         ChainstateManager& chainman = *node.chainman;
 
         /**

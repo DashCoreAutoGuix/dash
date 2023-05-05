@@ -246,7 +246,16 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
 
     m_cache_sizes = CalculateCacheSizes(m_args);
 
-    m_node.chainman = std::make_unique<ChainstateManager>();
+    const ChainstateManager::Options chainman_opts{
+        .chainparams = chainparams,
+        .datadir = m_args.GetDataDirNet(),
+        .adjusted_time_callback = GetAdjustedTime,
+        .check_block_index = true,
+    };
+    node::BlockManager::Options blockman_opts{
+        .chainparams = chainman_opts.chainparams,
+    };
+    m_node.chainman = std::make_unique<ChainstateManager>(chainman_opts, blockman_opts);
     m_node.chainman->m_blockman.m_block_tree_db = std::make_unique<CBlockTreeDB>(m_cache_sizes.block_tree_db, true);
 
     m_node.mn_metaman = std::make_unique<CMasternodeMetaMan>();
