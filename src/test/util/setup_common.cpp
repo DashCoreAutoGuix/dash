@@ -278,16 +278,14 @@ ChainTestingSetup::~ChainTestingSetup()
     m_node.chainman.reset();
 }
 
-TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const char*>& extra_args)
-    : ChainTestingSetup(chainName, extra_args)
+void ChainTestingSetup::LoadVerifyActivateChainstate()
 {
     const CChainParams& chainparams = Params();
-    // Ideally we'd move all the RPC tests to the functional testing framework
-    // instead of unit tests, but for now we need these here.
-    RegisterAllCoreRPCCommands(tableRPC);
-
+    auto& chainman{*Assert(m_node.chainman)};
+    
+    // Use Dash's LoadChainstate with all required parameters
     auto maybe_load_error = LoadChainstate(fReindex.load(),
-                                           *Assert(m_node.chainman.get()),
+                                           chainman,
                                            *Assert(m_node.govman.get()),
                                            *Assert(m_node.mn_metaman.get()),
                                            *Assert(m_node.mn_sync.get()),
@@ -309,26 +307,35 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
                                            chainparams.GetConsensus(),
                                            chainparams.NetworkIDString(),
                                            m_args.GetBoolArg("-reindex-chainstate", false),
-                                           m_cache_sizes.block_tree_db,
-                                           m_cache_sizes.coins_db,
-                                           m_cache_sizes.coins,
-                                           /*block_tree_db_in_memory=*/true,
-                                           /*coins_db_in_memory=*/true);
+                                           m_args.GetIntArg("-checklevel", DEFAULT_CHECKLEVEL),
+                                           m_args.GetIntArg("-checkblocks", DEFAULT_CHECKBLOCKS),
+                                           m_args.GetIntArg("-prune", 0),
+                                           m_coins_db_in_memory,
+                                           m_block_tree_db_in_memory,
+                                           m_cache_sizes);
     assert(!maybe_load_error.has_value());
 
-    auto maybe_verify_error = VerifyLoadedChainstate(
-        *Assert(m_node.chainman),
-        *Assert(m_node.evodb.get()),
-        fReindex.load(),
-        m_args.GetBoolArg("-reindex-chainstate", false),
-        chainparams.GetConsensus(),
-        m_args.GetIntArg("-checkblocks", DEFAULT_CHECKBLOCKS),
-        m_args.GetIntArg("-checklevel", DEFAULT_CHECKLEVEL),
-        /*get_unix_time_seconds=*/static_cast<int64_t(*)()>(GetTime),
-        [](bool bls_state) {
-            LogPrintf("%s: bls_legacy_scheme=%d\n", __func__, bls_state);
-        });
-    assert(!maybe_verify_error.has_value());
+    BlockValidationState state;
+    if (!chainman.ActiveChainstate().ActivateBestChain(state)) {
+        throw std::runtime_error(strprintf("ActivateBestChain failed. (%s)", state.ToString()));
+    }
+}
+
+TestingSetup::TestingSetup(
+    const std::string& chainName,
+    const std::vector<const char*>& extra_args,
+    const bool coins_db_in_memory,
+    const bool block_tree_db_in_memory)
+    : ChainTestingSetup(chainName, extra_args)
+{
+    m_coins_db_in_memory = coins_db_in_memory;
+    m_block_tree_db_in_memory = block_tree_db_in_memory;
+    const CChainParams& chainparams = Params();
+    // Ideally we'd move all the RPC tests to the functional testing framework
+    // instead of unit tests, but for now we need these here.
+    RegisterAllCoreRPCCommands(tableRPC);
+
+    LoadVerifyActivateChainstate();
 
     m_node.banman = std::make_unique<BanMan>(m_args.GetDataDirBase() / "banlist", nullptr, DEFAULT_MISBEHAVING_BANTIME);
     m_node.peerman = PeerManager::make(chainparams, *m_node.connman, *m_node.addrman, m_node.banman.get(),
