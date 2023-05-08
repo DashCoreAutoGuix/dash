@@ -1239,6 +1239,7 @@ bool LegacyScriptPubKeyMan::AddKeyOriginWithDB(WalletBatch& batch, const CPubKey
     std::copy(info.fingerprint, info.fingerprint + 4, mapKeyMetadata[pubkey.GetID()].key_origin.fingerprint);
     mapKeyMetadata[pubkey.GetID()].key_origin.path = info.path;
     mapKeyMetadata[pubkey.GetID()].has_key_origin = true;
+    mapKeyMetadata[pubkey.GetID()].hdKeypath = WriteHDKeypath(info.path, /*apostrophe=*/true);
     return batch.WriteKeyMetadata(mapKeyMetadata[pubkey.GetID()], pubkey, true);
 }
 
@@ -2131,7 +2132,7 @@ bool DescriptorScriptPubKeyMan::SetupDescriptorGeneration(const CExtKey& master_
     }
     std::string desc_suffix = "/*)";
     std::string internal_path = (type == PathDerivationType::BIP44_Internal) ? "/1" : "/0";
-    std::string desc_str = desc_prefix + "/0'" + internal_path + desc_suffix;
+    std::string desc_str = desc_prefix + "/0h" + internal_path + desc_suffix;
 
     // Make the descriptor
     FlatSigningProvider keys;
