@@ -542,30 +542,30 @@ static RPCHelpMan getaddednodeinfo()
 static RPCHelpMan getnettotals()
 {
     return RPCHelpMan{"getnettotals",
-        "\nReturns information about network traffic, including bytes in, bytes out,\n"
-        "and current time.\n",
+        "Returns information about network traffic, including bytes in, bytes out,\n"
+        "and current system time.",
         {},
-        RPCResult{
-           RPCResult::Type::OBJ, "", "",
-           {
-               {RPCResult::Type::NUM, "totalbytesrecv", "Total bytes received"},
-               {RPCResult::Type::NUM, "totalbytessent", "Total bytes sent"},
-               {RPCResult::Type::NUM_TIME, "timemillis", "Current " + UNIX_EPOCH_TIME + " in milliseconds"},
-               {RPCResult::Type::OBJ, "uploadtarget", "",
-               {
-                   {RPCResult::Type::NUM, "timeframe", "Length of the measuring timeframe in seconds"},
-                   {RPCResult::Type::NUM, "target", "Target in bytes"},
-                   {RPCResult::Type::BOOL, "target_reached", "True if target is reached"},
-                   {RPCResult::Type::BOOL, "serve_historical_blocks", "True if serving historical blocks"},
-                   {RPCResult::Type::NUM, "bytes_left_in_cycle", "Bytes left in current time cycle"},
-                   {RPCResult::Type::NUM, "time_left_in_cycle", "Seconds left in current time cycle"},
-                }},
-           }
-        },
-        RPCExamples{
-            HelpExampleCli("getnettotals", "")
-    + HelpExampleRpc("getnettotals", "")
-        },
+                RPCResult{
+                   RPCResult::Type::OBJ, "", "",
+                   {
+                       {RPCResult::Type::NUM, "totalbytesrecv", "Total bytes received"},
+                       {RPCResult::Type::NUM, "totalbytessent", "Total bytes sent"},
+                       {RPCResult::Type::NUM_TIME, "timemillis", "Current system " + UNIX_EPOCH_TIME + " in milliseconds"},
+                       {RPCResult::Type::OBJ, "uploadtarget", "",
+                       {
+                           {RPCResult::Type::NUM, "timeframe", "Length of the measuring timeframe in seconds"},
+                           {RPCResult::Type::NUM, "target", "Target in bytes"},
+                           {RPCResult::Type::BOOL, "target_reached", "True if target is reached"},
+                           {RPCResult::Type::BOOL, "serve_historical_blocks", "True if serving historical blocks"},
+                           {RPCResult::Type::NUM, "bytes_left_in_cycle", "Bytes left in current time cycle"},
+                           {RPCResult::Type::NUM, "time_left_in_cycle", "Seconds left in current time cycle"},
+                        }},
+                    }
+                },
+                RPCExamples{
+                    HelpExampleCli("getnettotals", "")
+            + HelpExampleRpc("getnettotals", "")
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     const NodeContext& node = EnsureAnyNodeContext(request.context);
@@ -574,7 +574,7 @@ static RPCHelpMan getnettotals()
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("totalbytesrecv", connman.GetTotalBytesRecv());
     obj.pushKV("totalbytessent", connman.GetTotalBytesSent());
-    obj.pushKV("timemillis", GetTimeMillis());
+    obj.pushKV("timemillis", TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()));
 
     UniValue outboundLimit(UniValue::VOBJ);
     outboundLimit.pushKV("timeframe", count_seconds(connman.GetMaxOutboundTimeframe()));
