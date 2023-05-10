@@ -252,6 +252,24 @@ def satoshi_round(amount):
     return Decimal(amount).quantize(Decimal('0.00000001'), rounding=ROUND_DOWN)
 
 
+def ceildiv(a, b):
+    """
+    Divide 2 ints and round up to next int rather than round down
+    Implementation requires python integers, which have a // operator that does floor division.
+    Other types like decimal.Decimal whose // operator truncates towards 0 will not work.
+    """
+    assert isinstance(a, int)
+    assert isinstance(b, int)
+    return -(-a // b)
+
+
+def get_fee(tx_size, feerate_btc_kvb):
+    """Calculate the fee in BTC given a feerate is BTC/kvB. Reflects CFeeRate::GetFee"""
+    feerate_sat_kvb = int(feerate_btc_kvb * Decimal(1e8)) # Fee in sat/kvb as an int to avoid float precision errors
+    target_fee_sat = ceildiv(feerate_sat_kvb * tx_size, 1000) # Round calculated fee up to nearest sat
+    return target_fee_sat / Decimal(1e8) # Return result in  BTC
+
+
 def wait_until_helper(predicate, *, attempts=float('inf'), timeout=float('inf'), sleep=0.05, timeout_factor=1.0, lock=None, do_assert=True, allow_exception=False):
     """Sleep until the predicate resolves to be True.
 
