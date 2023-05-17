@@ -26,6 +26,7 @@
 namespace node {
 std::atomic_bool fImporting(false);
 std::atomic_bool fReindex(false);
+std::atomic_bool g_indexes_ready_to_sync{false};
 bool fPruneMode = false;
 uint64_t nPruneTarget = 0;
 
@@ -896,5 +897,6 @@ void ThreadImport(ChainstateManager& chainman, std::vector<fs::path> vImportFile
     } // End scope of CImportingNow
 
     chainman.ActiveChainstate().LoadMempool(args);
+    g_indexes_ready_to_sync = true;
 }
 } // namespace node
