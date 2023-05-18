@@ -1126,6 +1126,51 @@ bool WalletBatch::WriteWalletFlags(const uint64_t flags)
     return WriteIC(DBKeys::FLAGS, flags);
 }
 
+bool WalletBatch::EraseRecords(const std::unordered_set<std::string>& types)
+{
+    // Begin db txn
+    if (!m_batch->TxnBegin()) return false;
+
+    // Get cursor
+    if (!m_batch->StartCursor())
+    {
+        m_batch->TxnAbort();
+        return false;
+    }
+
+    // Iterate the DB and look for any records that have the type prefixes
+    while (true) {
+        // Read next record
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+        bool complete;
+        bool ret = m_batch->ReadAtCursor(ssKey, ssValue, complete);
+        if (complete) {
+            break;
+        } else if (!ret) {
+            m_batch->CloseCursor();
+            m_batch->TxnAbort(); // abort db txn
+            return false;
+        }
+
+        // Make a copy of key to avoid data being deleted by the following read of the type
+        CDataStream ssKeyCopy(ssKey);
+
+        std::string type;
+        ssKey >> type;
+
+        if (types.count(type) > 0) {
+            if (!m_batch->Erase(ssKeyCopy)) {
+                m_batch->CloseCursor();
+                m_batch->TxnAbort();
+                return false; // erase failed
+            }
+        }
+    }
+    // Finish db txn
+    m_batch->CloseCursor();
+    return m_batch->TxnCommit();
+}
 bool WalletBatch::TxnBegin()
 {
     return m_batch->TxnBegin();
