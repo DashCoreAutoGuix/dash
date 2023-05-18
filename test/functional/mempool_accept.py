@@ -337,6 +337,5 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
             maxfeerate=0,
         )
 
-
 if __name__ == '__main__':
     MempoolAcceptanceTest().main()
