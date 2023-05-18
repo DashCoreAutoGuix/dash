@@ -165,30 +165,42 @@ public:
     virtual bool SupportsAutoBackup() override { return true; }
 };
 
+/** RAII class that automatically cleanses its data on destruction */
+class SafeDbt final
+{
+    Dbt m_dbt;
+
+public:
+    // construct Dbt with internally-managed data
+    SafeDbt();
+    // construct Dbt with provided data
+    SafeDbt(void* data, size_t size);
+    ~SafeDbt();
+
+    // delegate to Dbt
+    const void* get_data() const;
+    uint32_t get_size() const;
+
+    // conversion operator to access the underlying Dbt
+    operator Dbt*();
+};
+
+class BerkeleyCursor : public DatabaseCursor
+{
+private:
+    Dbc* m_cursor;
+
+public:
+    explicit BerkeleyCursor(BerkeleyDatabase& database, const BerkeleyBatch& batch);
+    ~BerkeleyCursor() override;
+
+    Status Next(DataStream& key, DataStream& value) override;
+    Dbc* dbc() const { return m_cursor; }
+};
+
 /** RAII class that provides access to a Berkeley database */
 class BerkeleyBatch : public DatabaseBatch
 {
-public:
-    /** RAII class that automatically cleanses its data on destruction */
-    class SafeDbt final
-    {
-        Dbt m_dbt;
-
-    public:
-        // construct Dbt with internally-managed data
-        SafeDbt();
-        // construct Dbt with provided data
-        SafeDbt(void* data, size_t size);
-        ~SafeDbt();
-
-        // delegate to Dbt
-        const void* get_data() const;
-        uint32_t get_size() const;
-
-        // conversion operator to access the underlying Dbt
-        operator Dbt*();
-    };
-
 private:
     bool ReadKey(CDataStream&& key, CDataStream& value) override;
     bool WriteKey(CDataStream&& key, CDataStream&& value, bool overwrite = true) override;
@@ -218,9 +230,12 @@ public:
     bool StartCursor() override;
     bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete) override;
     void CloseCursor() override;
+    std::unique_ptr<DatabaseCursor> GetNewCursor() override;
     bool TxnBegin() override;
     bool TxnCommit() override;
     bool TxnAbort() override;
+    DbTxn* txn() const { return activeTxn; }
+    bool ErasePrefix(Span<const std::byte> prefix) override;
 };
 
 std::string BerkeleyDatabaseVersion();

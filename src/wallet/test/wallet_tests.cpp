@@ -441,6 +441,24 @@ BOOST_AUTO_TEST_CASE(ComputeTimeSmart)
     BOOST_CHECK_EQUAL(AddTx(*m_node.chainman, m_wallet, 5, 50, 600), 300);
 }
 
+void TestLoadWallet(const std::string& name, DatabaseFormat format, std::function<void(std::shared_ptr<CWallet>)> f)
+{
+    node::NodeContext node;
+    auto chain = interfaces::MakeChain(node);
+    auto coinjoin_loader = interfaces::MakeCoinJoinLoader(*chain);
+
+    DatabaseOptions options;
+    options.require_format = format;
+    DatabaseStatus status;
+    bilingual_str error;
+    std::vector<bilingual_str> warnings;
+    auto database = MakeWalletDatabase(name, options, status, error);
+    auto wallet = std::make_shared<CWallet>(chain.get(), coinjoin_loader.get(), "", std::move(database));
+    wallet->m_keypool_size = 1; // Avoid timeout in TopUp()
+    BOOST_CHECK_EQUAL(wallet->LoadWallet(), DBErrors::LOAD_OK);
+    WITH_LOCK(wallet->cs_wallet, f(wallet));
+}
+
 BOOST_AUTO_TEST_CASE(LoadReceiveRequests)
 {
     CTxDestination dest = PKHash();
