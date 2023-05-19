@@ -284,6 +284,7 @@ BITCOIN_CORE_H = \
   node/context.h \
   node/eviction.h \
   node/miner.h \
+  node/mini_miner.h \
   node/minisketchwrapper.h \
   node/psbt.h \
   node/transaction.h \
@@ -533,6 +534,7 @@ libbitcoin_node_a_SOURCES = \
   node/eviction.cpp \
   node/interfaces.cpp \
   node/miner.cpp \
+  node/mini_miner.cpp \
   node/minisketchwrapper.cpp \
   node/psbt.cpp \
   node/transaction.cpp \
