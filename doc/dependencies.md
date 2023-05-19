@@ -8,9 +8,15 @@ You can find installation instructions in the `build-*.md` file for your platfor
 | --- | --- |
 | [Autoconf](https://www.gnu.org/software/autoconf/) | [2.69](https://github.com/bitcoin/bitcoin/pull/17769) |
 | [Automake](https://www.gnu.org/software/automake/) | [1.13](https://github.com/bitcoin/bitcoin/pull/18290) |
+<<<<<<< HEAD
 | [Clang](https://clang.llvm.org) | [16.0](https://github.com/bitcoin/bitcoin/pull/30263) |
 | [GCC](https://gcc.gnu.org) | [11.1](https://github.com/bitcoin/bitcoin/pull/29091) |
 | [Python](https://www.python.org) (scripts, tests) | [3.9](https://github.com/bitcoin/bitcoin/pull/28211) |
+=======
+| [Clang](https://clang.llvm.org) | [10.0](https://github.com/bitcoin/bitcoin/pull/27682) |
+| [GCC](https://gcc.gnu.org) | [9.1](https://github.com/bitcoin/bitcoin/pull/27662) |
+| [Python](https://www.python.org) (scripts, tests) | [3.8](https://github.com/bitcoin/bitcoin/pull/27483) |
+>>>>>>> edd6d8395f (Merge bitcoin/bitcoin#27662: build: Bump minimum supported GCC to g++-9)
 | [systemtap](https://sourceware.org/systemtap/) ([tracing](tracing.md))| N/A |
 
 ## Required
