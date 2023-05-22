@@ -963,6 +963,7 @@ std::pair<int64_t, int64_t> ParseDescriptorRange(const UniValue& value)
     return {low, high};
 }
 
+<<<<<<< HEAD
 RPCErrorCode RPCErrorFromTransactionError(TransactionError terr)
 {
     switch (terr) {
@@ -1002,7 +1003,7 @@ UniValue GetServicesNames(ServiceFlags services)
     return servicesNames;
 }
 
-std::vector<CScript> EvalDescriptorStringOrObject(const UniValue& scanobject, FlatSigningProvider& provider)
+std::vector<CScript> EvalDescriptorStringOrObject(const UniValue& scanobject, FlatSigningProvider& provider, const bool expand_priv)
 {
     std::string desc_str;
     std::pair<int64_t, int64_t> range = {0, 1000};
@@ -1034,6 +1035,9 @@ std::vector<CScript> EvalDescriptorStringOrObject(const UniValue& scanobject, Fl
         std::vector<CScript> scripts;
         if (!desc->Expand(i, provider, scripts, provider)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, strprintf("Cannot derive script without private keys: '%s'", desc_str));
+        }
+        if (expand_priv) {
+            desc->ExpandPrivate(/*pos=*/i, provider, /*out=*/provider);
         }
         std::move(scripts.begin(), scripts.end(), std::back_inserter(ret));
     }
