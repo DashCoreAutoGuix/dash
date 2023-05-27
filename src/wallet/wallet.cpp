@@ -1338,6 +1338,13 @@ void CWallet::blockConnected(const CBlock& block, int height)
 
     m_last_block_processed_height = height;
     m_last_block_processed = block_hash;
+
+    // No need to scan block if it was created before the wallet birthday.
+    // Uses chain max time and twice the grace period to adjust time for block time variability.
+    // TODO: In Bitcoin, this uses chain_time_max which is the maximum time in the chain up to this block.
+    // For now, we use the block's time as an approximation.
+    if (block.GetBlockTime() < m_birth_time.load() - (TIMESTAMP_WINDOW * 2)) return;
+
     WalletBatch batch(GetDatabase());
     for (size_t index = 0; index < block.vtx.size(); index++) {
         SyncTransaction(block.vtx[index], TxStateConfirmed{block_hash, height, static_cast<int>(index)}, batch);
@@ -1638,6 +1645,14 @@ bool CWallet::ImportScriptPubKeys(const std::string& label, const std::set<CScri
         }
     }
     return true;
+}
+
+void CWallet::FirstKeyTimeChanged(const ScriptPubKeyMan* spkm, int64_t new_birth_time)
+{
+    int64_t birthtime = m_birth_time.load();
+    if (new_birth_time < birthtime) {
+        m_birth_time = new_birth_time;
+    }
 }
 
 /**
@@ -3049,6 +3064,14 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
     // Try to top up keypool. No-op if the wallet is locked.
     walletInstance->TopUpKeyPool();
 
+    // Cache the first key time
+    std::optional<int64_t> time_first_key;
+    for (auto spk_man : walletInstance->GetAllScriptPubKeyMans()) {
+        int64_t time = spk_man->GetTimeFirstKey();
+        if (!time_first_key || time < *time_first_key) time_first_key = time;
+    }
+    if (time_first_key) walletInstance->m_birth_time = *time_first_key;
+
     if (chain && !AttachChain(walletInstance, *chain, error, warnings)) {
         return nullptr;
     }
@@ -3115,6 +3138,19 @@ bool CWallet::AttachChain(const std::shared_ptr<CWallet>& walletInstance, interf
 
     if (tip_height && *tip_height != rescan_height)
     {
+        // No need to read and scan block if block was created before
+        // our wallet birthday (as adjusted for block time variability)
+        std::optional<int64_t> time_first_key = walletInstance->m_birth_time.load();
+        if (time_first_key) {
+            FoundBlock found = FoundBlock().height(rescan_height);
+            chain.findFirstBlockWithTimeAndHeight(*time_first_key - TIMESTAMP_WINDOW, rescan_height, found);
+            if (!found.found) {
+                // We were unable to find a block that had a time more recent than our earliest timestamp
+                // or a height higher than the wallet was synced to, indicating that the wallet is newer than the
+                // current chain tip. Skip rescanning in this case.
+                rescan_height = *tip_height;
+            }
+        }
         // Technically we could execute the code below in any case, but performing the
         // `while` loop below can make startup very slow, so only check blocks on disk
         // if necessary.
@@ -3737,6 +3773,14 @@ LegacyScriptPubKeyMan* CWallet::GetOrCreateLegacyScriptPubKeyMan()
     return GetLegacyScriptPubKeyMan();
 }
 
+void CWallet::AddScriptPubKeyMan(const uint256& id, std::unique_ptr<ScriptPubKeyMan> spkm_man)
+{
+    const auto& spkm = m_spk_managers[id] = std::move(spkm_man);
+
+    // Update birth time if needed
+    FirstKeyTimeChanged(spkm.get(), spkm->GetTimeFirstKey());
+}
+
 void CWallet::SetupLegacyScriptPubKeyMan()
 {
     if (m_internal_spk_managers || m_external_spk_managers || !m_spk_managers.empty() || IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS)) {
@@ -3746,7 +3790,8 @@ void CWallet::SetupLegacyScriptPubKeyMan()
     auto spk_manager = std::make_unique<LegacyScriptPubKeyMan>(*this);
     m_internal_spk_managers = spk_manager.get();
     m_external_spk_managers = spk_manager.get();
-    m_spk_managers[spk_manager->GetID()] = std::move(spk_manager);
+    uint256 id = spk_manager->GetID();
+    AddScriptPubKeyMan(id, std::move(spk_manager));
 }
 
 bool CWallet::WithEncryptionKey(std::function<bool (const CKeyingMaterial&)> cb) const
@@ -3765,6 +3810,7 @@ void CWallet::ConnectScriptPubKeyManNotifiers()
     for (const auto& spk_man : GetActiveScriptPubKeyMans()) {
         spk_man->NotifyWatchonlyChanged.connect(NotifyWatchonlyChanged);
         spk_man->NotifyCanGetAddressesChanged.connect(NotifyCanGetAddressesChanged);
+        spk_man->NotifyFirstKeyTimeChanged.connect(std::bind(&CWallet::FirstKeyTimeChanged, this, std::placeholders::_1, std::placeholders::_2));
     }
 }
 
@@ -3867,7 +3913,7 @@ void CWallet::SetupDescriptorScriptPubKeyMans(const SecureString& mnemonic_arg, 
             }
             spk_manager->SetupDescriptorGeneration(master_key, mnemonic, mnemonic_passphrase, internal);
             uint256 id = spk_manager->GetID();
-            m_spk_managers[id] = std::move(spk_manager);
+            AddScriptPubKeyMan(id, std::move(spk_manager));
             AddActiveScriptPubKeyMan(id, internal);
         }
     }
@@ -3960,7 +4006,8 @@ ScriptPubKeyMan* CWallet::AddWalletDescriptor(WalletDescriptor& desc, const Flat
         spk_man = new_spk_man.get();
 
         // Save the descriptor to memory
-        m_spk_managers[new_spk_man->GetID()] = std::move(new_spk_man);
+        uint256 id = new_spk_man->GetID();
+        AddScriptPubKeyMan(id, std::move(new_spk_man));
     }
 
     // Add the private keys to the descriptor
