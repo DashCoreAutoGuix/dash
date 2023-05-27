@@ -193,6 +193,12 @@ BASE_SCRIPTS = [
     'wallet_listtransactions.py --descriptors',
     'wallet_watchonly.py --legacy-wallet',
     'wallet_watchonly.py --usecli --legacy-wallet',
+<<<<<<< HEAD
+=======
+    'wallet_reorgsrestore.py',
+    'wallet_conflicts.py --legacy-wallet',
+    'wallet_conflicts.py --descriptors',
+>>>>>>> 7d33ae755d (Merge bitcoin/bitcoin#27145: wallet: when a block is disconnected, update transactions that are no longer conflicted)
     'interface_http.py',
     'interface_rpc.py',
     'interface_usdt_coinselection.py',
