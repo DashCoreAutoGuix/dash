@@ -37,6 +37,7 @@
 #include <wallet/bip39.h> // TODO(refactor): move dependency it to scriptpubkeyman.cpp
 #include <wallet/coincontrol.h>
 #include <wallet/context.h>
+#include <wallet/scriptpubkeyman.h>
 #include <warnings.h>
 
 #include <coinjoin/options.h>
