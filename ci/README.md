@@ -21,12 +21,6 @@ requires `docker` to be installed. To install all requirements on Ubuntu, run
 sudo apt install docker.io bash
 ```
 
-To run the default test stage,
-
-```
-./ci/test_run_all.sh
-```
-
 To run the test stage with a specific configuration,
 
 ```

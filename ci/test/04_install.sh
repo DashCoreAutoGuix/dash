@@ -6,6 +6,8 @@
 
 export LC_ALL=C.UTF-8
 
+set -ex
+
 if [[ $QEMU_USER_CMD == qemu-s390* ]]; then
   export LC_ALL=C
 fi
@@ -33,7 +35,10 @@ export P_CI_DIR="$PWD"
 export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
-  echo "Creating $DOCKER_NAME_TAG container to run in"
+  # Export all env vars to avoid missing some.
+  # Though, exclude those with newlines to avoid parsing problems.
+  python3 -c 'import os; [print(f"{key}={value}") for key, value in os.environ.items() if "\n" not in value and "HOME" not in key]' | tee /tmp/env
+  echo "Creating container to run in"
   LOCAL_UID=$(id -u)
   LOCAL_GID=$(id -g)
 
