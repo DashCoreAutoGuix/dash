@@ -6,6 +6,8 @@
 
 export LC_ALL=C.UTF-8
 
+set -ex
+
 # The root dir.
 # The ci system copies this folder.
 # This is where the depends build is done.

@@ -21,12 +21,6 @@ requires `docker` to be installed. To run on different architectures than the ho
 sudo apt install docker.io bash qemu-user-static
 ```
 
-To run the default test stage,
-
-```
-./ci/test_run_all.sh
-```
-
 To run the test stage with a specific configuration,
 
 ```
