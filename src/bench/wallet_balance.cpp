@@ -29,7 +29,6 @@ static void WalletBalance(benchmark::Bench& bench, const bool set_dirty, const b
         LOCK(wallet.cs_wallet);
         wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
         wallet.SetupDescriptorScriptPubKeyMans("", "");
-        if (wallet.LoadWallet() != DBErrors::LOAD_OK) assert(false);
     }
     auto handler = test_setup->m_node.chain->handleNotifications({&wallet, [](CWallet*) {}});
 
@@ -55,7 +54,7 @@ static void WalletBalanceClean(benchmark::Bench& bench) {WalletBalance(bench, /*
 static void WalletBalanceMine(benchmark::Bench& bench) { WalletBalance(bench, /* set_dirty */ false, /* add_mine */ true, 16000); }
 static void WalletBalanceWatch(benchmark::Bench& bench) { WalletBalance(bench, /* set_dirty */ false, /* add_mine */ false, 8000); }
 
-BENCHMARK(WalletBalanceDirty);
-BENCHMARK(WalletBalanceClean);
-BENCHMARK(WalletBalanceMine);
-BENCHMARK(WalletBalanceWatch);
+BENCHMARK(WalletBalanceDirty, benchmark::PriorityLevel::HIGH);
+BENCHMARK(WalletBalanceClean, benchmark::PriorityLevel::HIGH);
+BENCHMARK(WalletBalanceMine, benchmark::PriorityLevel::HIGH);
+BENCHMARK(WalletBalanceWatch, benchmark::PriorityLevel::HIGH);
