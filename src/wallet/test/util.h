@@ -6,6 +6,8 @@
 #define BITCOIN_WALLET_TEST_UTIL_H
 
 #include <memory>
+#include <outputtype.h>
+#include <script/standard.h>
 
 class ArgsManager;
 class CChain;
@@ -19,8 +21,25 @@ class Loader;
 
 namespace wallet {
 class CWallet;
+class WalletDatabase;
+struct WalletContext;
+
+const std::string ADDRESS_BCRT1_UNSPENDABLE = "bcrt1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3xueyj";
 
 std::unique_ptr<CWallet> CreateSyncedWallet(interfaces::Chain& chain, interfaces::CoinJoin::Loader& coinjoin_loader, CChain& cchain, ArgsManager& args, const CKey& key);
+
+std::shared_ptr<CWallet> TestLoadWallet(WalletContext& context);
+std::shared_ptr<CWallet> TestLoadWallet(std::unique_ptr<WalletDatabase> database, WalletContext& context, uint64_t create_flags);
+void TestUnloadWallet(std::shared_ptr<CWallet>&& wallet);
+
+// Creates a copy of the provided database
+std::unique_ptr<WalletDatabase> DuplicateMockDatabase(WalletDatabase& database);
+
+/** Returns a new encoded destination from the wallet (hardcoded to BECH32) */
+std::string getnewaddress(CWallet& w);
+/** Returns a new destination, of an specific type, from the wallet */
+CTxDestination getNewDestination(CWallet& w, OutputType output_type);
+
 } // namespace wallet
 
 #endif // BITCOIN_WALLET_TEST_UTIL_H

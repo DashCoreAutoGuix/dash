@@ -4,10 +4,11 @@
 
 #include <bench/bench.h>
 #include <interfaces/chain.h>
+#include <key_io.h>
 #include <node/context.h>
 #include <test/util/mining.h>
 #include <test/util/setup_common.h>
-#include <test/util/wallet.h>
+#include <util/translation.h>
 #include <validationinterface.h>
 #include <wallet/receive.h>
 #include <wallet/wallet.h>
@@ -19,17 +20,26 @@ using wallet::CWallet;
 using wallet::DBErrors;
 using wallet::WALLET_FLAG_DESCRIPTORS;
 
+static std::string getnewaddress(CWallet& w)
+{
+    CTxDestination dest;
+    bilingual_str error;
+    if (!w.GetNewDestination("", dest, error)) {
+        assert(false);
+    }
+    return EncodeDestination(dest);
+}
+
 static void WalletBalance(benchmark::Bench& bench, const bool set_dirty, const bool add_mine, const uint32_t epoch_iters)
 {
     const auto test_setup = MakeNoLogFileContext<const TestingSetup>();
-    const auto& ADDRESS_WATCHONLY = ADDRESS_B58T_UNSPENDABLE;
+    const std::string ADDRESS_WATCHONLY = "bcrt1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3xueyj";
 
     CWallet wallet{test_setup->m_node.chain.get(), test_setup->m_node.coinjoin_loader.get(), "", gArgs, CreateMockWalletDatabase()};
     {
         LOCK(wallet.cs_wallet);
         wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
         wallet.SetupDescriptorScriptPubKeyMans("", "");
-        if (wallet.LoadWallet() != DBErrors::LOAD_OK) assert(false);
     }
     auto handler = test_setup->m_node.chain->handleNotifications({&wallet, [](CWallet*) {}});
 
