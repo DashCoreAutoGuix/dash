@@ -71,13 +71,20 @@ bool BaseIndex::Init()
         SetBestBlockIndex(m_chainstate->FindForkInGlobalIndex(locator));
     }
 
+<<<<<<< HEAD
     // Note: this will latch to true immediately if the user starts up with an empty
     // datadir and an index enabled. If this is the case, indexation will happen solely
     // via `BlockConnected` signals until, possibly, the next restart.
     m_synced = m_best_block_index.load() == active_chain.Tip();
     if (!m_synced) {
+=======
+    // Skip pruning check if indexes are not ready to sync (because reindex-chainstate has wiped the chain).
+    const CBlockIndex* start_block = m_best_block_index.load();
+    bool synced = start_block == active_chain.Tip();
+    if (!synced && g_indexes_ready_to_sync) {
+>>>>>>> 3a83d4417b (Merge bitcoin/bitcoin#27720: index: prevent race by calling 'CustomInit' prior setting 'synced' flag)
         bool prune_violation = false;
-        if (!m_best_block_index) {
+        if (!start_block) {
             // index is not built yet
             // make sure we have all block data back to the genesis
             prune_violation = m_chainstate->m_blockman.GetFirstStoredBlock(*active_chain.Tip()) != active_chain.Genesis();
@@ -85,7 +92,7 @@ bool BaseIndex::Init()
         // in case the index has a best block set and is not fully synced
         // check if we have the required blocks to continue building the index
         else {
-            const CBlockIndex* block_to_test = m_best_block_index.load();
+            const CBlockIndex* block_to_test = start_block;
             if (!active_chain.Contains(block_to_test)) {
                 // if the bestblock is not part of the mainchain, find the fork
                 // and make sure we have all data down to the fork
@@ -109,6 +116,16 @@ bool BaseIndex::Init()
             return InitError(strprintf(Untranslated("%s best block of the index goes beyond pruned data. Please disable the index or reindex (which will download the whole blockchain again)"), GetName()));
         }
     }
+
+    // Child init
+    if (!CustomInit(start_block ? std::make_optional(interfaces::BlockKey{start_block->GetBlockHash(), start_block->nHeight}) : std::nullopt)) {
+        return false;
+    }
+
+    // Note: this will latch to true immediately if the user starts up with an empty
+    // datadir and an index enabled. If this is the case, indexation will happen solely
+    // via `BlockConnected` signals until, possibly, the next restart.
+    m_synced = synced;
     return true;
 }
 
@@ -360,9 +377,13 @@ bool BaseIndex::Start(CChainState& active_chainstate)
     // Need to register this ValidationInterface before running Init(), so that
     // callbacks are not missed if Init sets m_synced to true.
     RegisterValidationInterface(this);
+<<<<<<< HEAD
     if (!Init()) {
         return false;
     }
+=======
+    if (!Init()) return false;
+>>>>>>> 3a83d4417b (Merge bitcoin/bitcoin#27720: index: prevent race by calling 'CustomInit' prior setting 'synced' flag)
 
     m_thread_sync = std::thread(&util::TraceThread, GetName(), [this] { ThreadSync(); });
     return true;
