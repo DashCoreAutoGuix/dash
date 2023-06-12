@@ -155,6 +155,9 @@ public:
     //! Get warnings.
     virtual bilingual_str getWarnings() = 0;
 
+    //! Get exit status.
+    virtual int getExitStatus() = 0;
+
     // Get log flags.
     virtual uint64_t getLogCategories() = 0;
 
