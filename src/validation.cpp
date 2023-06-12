@@ -2105,8 +2105,6 @@ public:
     }
 };
 
-static std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> warningcache GUARDED_BY(cs_main);
-
 static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& consensusparams)
 {
     unsigned int flags = SCRIPT_VERIFY_NONE;
@@ -2889,7 +2887,7 @@ void CChainState::UpdateTip(const CBlockIndex* pindexNew)
         const CBlockIndex* pindex = pindexNew;
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
             WarningBitsConditionChecker checker(bit);
-            ThresholdState state = checker.GetStateFor(pindex, m_params.GetConsensus(), warningcache.at(bit));
+            ThresholdState state = checker.GetStateFor(pindex, m_params.GetConsensus(), m_chainman.m_warningcache.at(bit));
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const bilingual_str warning = strprintf(_("Unknown new rules activated (versionbit %i)"), bit);
                 if (state == ThresholdState::ACTIVE) {
@@ -5924,12 +5922,7 @@ ChainstateManager::~ChainstateManager()
 {
     LOCK(::cs_main);
 
-    // TODO: The version bits cache and warning cache should probably become
-    // non-globals
     g_versionbitscache.Clear();
-    for (auto& i : warningcache) {
-        i.clear();
-    }
 }
 
 bool IsBIP30Repeat(const CBlockIndex& block_index)
