@@ -41,6 +41,13 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   LOCAL_USER=nonroot
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
 
+  if [ -n "${RESTART_CI_DOCKER_BEFORE_RUN}" ] ; then
+    echo "Restart docker before run to stop and clear all containers started with --rm"
+    podman container stop --all  # Similar to "systemctl restart docker"
+    echo "Prune all dangling images"
+    docker image prune --force
+  fi
+
   # shellcheck disable=SC2086
   DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
