@@ -22,9 +22,7 @@ class AnchorsTest(BitcoinTestFramework):
         self.num_nodes = 1
 
     def run_test(self):
-        node_anchors_path = os.path.join(
-            self.nodes[0].datadir, "regtest", "anchors.dat"
-        )
+        node_anchors_path = self.nodes[0].chain_path / "anchors.dat"
 
         self.log.info("When node starts, check if anchors.dat doesn't exist")
         assert not os.path.exists(node_anchors_path)
