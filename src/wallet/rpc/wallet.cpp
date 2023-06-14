@@ -192,6 +192,7 @@ static RPCHelpMan getwalletinfo()
                                      {RPCResult::Type::NUM, "progress", "scanning progress percentage [0.0, 1.0]"},
                                 }},
                             {RPCResult::Type::BOOL, "descriptors", "whether this wallet uses descriptors for scriptPubKey management"},
+                            {RPCResult::Type::BOOL, "blank", "Whether this wallet intentionally does not contain any keys, scripts, or descriptors"},
                         },
                 },
                 RPCExamples{
@@ -269,6 +270,7 @@ static RPCHelpMan getwalletinfo()
         obj.pushKV("scanning", false);
     }
     obj.pushKV("descriptors", pwallet->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS));
+    obj.pushKV("blank", pwallet->IsWalletFlagSet(WALLET_FLAG_BLANK_WALLET));
     return obj;
 },
     };
