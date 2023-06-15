@@ -222,7 +222,8 @@ BITCOIN_TESTS += wallet/test/db_tests.cpp
 endif
 
 FUZZ_WALLET_SRC = \
- wallet/test/fuzz/coinselection.cpp
+ wallet/test/fuzz/coinselection.cpp \
+ wallet/test/fuzz/fees.cpp
 
 if USE_SQLITE
 FUZZ_WALLET_SRC += \
