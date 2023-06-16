@@ -15,6 +15,9 @@ from test_framework.util import (
 )
 from test_framework.wallet_util import bytes_to_wif, generate_wif_key
 
+EMPTY_PASSPHRASE_MSG = "Empty string given as passphrase, wallet will not be encrypted."
+LEGACY_WALLET_MSG = "Wallet created successfully. The legacy wallet type is being deprecated and support for creating and opening legacy wallets will be removed in the future."
+
 class CreateWalletTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
@@ -157,7 +160,7 @@ class CreateWalletTest(BitcoinTestFramework):
         assert_equal(walletinfo['keypoolsize_hd_internal'], keys)
         # Allow empty passphrase, but there should be a warning
         resp = self.nodes[0].createwallet(wallet_name='w7', disable_private_keys=False, blank=False, passphrase='')
-        assert 'Empty string given as passphrase, wallet will not be encrypted.' in resp['warning']
+        assert_equal(resp["warnings"], [EMPTY_PASSPHRASE_MSG] if self.options.descriptors else [EMPTY_PASSPHRASE_MSG, LEGACY_WALLET_MSG])
         w7 = node.get_wallet_rpc('w7')
         assert_raises_rpc_error(-15, 'Error: running with an unencrypted wallet, but walletpassphrase was called.', w7.walletpassphrase, '', 60)
 
@@ -169,6 +172,20 @@ class CreateWalletTest(BitcoinTestFramework):
 
         self.log.info('Using a passphrase with private keys disabled returns error')
         assert_raises_rpc_error(-4, 'Passphrase provided but private keys are disabled. A passphrase is only used to encrypt private keys, so cannot be used for wallets with private keys disabled.', self.nodes[0].createwallet, wallet_name='w9', disable_private_keys=True, passphrase='thisisapassphrase')
+
+        if self.is_bdb_compiled():
+            self.log.info("Test legacy wallet deprecation")
+            result = self.nodes[0].createwallet(wallet_name="legacy_w0", descriptors=False, passphrase=None)
+            assert_equal(result, {
+                "name": "legacy_w0",
+                "warnings": [LEGACY_WALLET_MSG],
+            })
+            result = self.nodes[0].createwallet(wallet_name="legacy_w1", descriptors=False, passphrase="")
+            assert_equal(result, {
+                "name": "legacy_w1",
+                "warnings": [EMPTY_PASSPHRASE_MSG, LEGACY_WALLET_MSG],
+            })
+
 
 if __name__ == '__main__':
     CreateWalletTest().main()

@@ -444,24 +444,28 @@ static RPCHelpMan upgradetohd()
 static RPCHelpMan loadwallet()
 {
     return RPCHelpMan{"loadwallet",
-        "\nLoads a wallet from a wallet file or directory."
-        "\nNote that all wallet command-line options used when starting dashd will be"
-        "\napplied to the new wallet (eg, rescan, etc).\n",
-        {
-            {"filename", RPCArg::Type::STR, RPCArg::Optional::NO, "The wallet directory or .dat file."},
-            {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED_NAMED_ARG, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
-        },
-        RPCResult{
-            RPCResult::Type::OBJ, "", "",
-            {
-                {RPCResult::Type::STR, "name", "The wallet name if loaded successfully."},
-                {RPCResult::Type::STR, "warning", "Warning message if wallet was not loaded cleanly."},
-            }
-        },
-        RPCExamples{
-            HelpExampleCli("loadwallet", "\"test.dat\"")
-    + HelpExampleRpc("loadwallet", "\"test.dat\"")
-        },
+                "\nLoads a wallet from a wallet file or directory."
+                "\nNote that all wallet command-line options used when starting dashd will be"
+                "\napplied to the new wallet.\n",
+                {
+                    {"filename", RPCArg::Type::STR, RPCArg::Optional::NO, "The wallet directory or .dat file."},
+                    {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
+                },
+                RPCResult{
+                    RPCResult::Type::OBJ, "", "",
+                    {
+                        {RPCResult::Type::STR, "name", "The wallet name if loaded successfully."},
+                        {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to loading the wallet.",
+                        {
+                            {RPCResult::Type::STR, "", ""},
+                        }},
+                    }
+                },
+                RPCExamples{
+                    HelpExampleCli("loadwallet", "\"test.dat\"")
+            + HelpExampleRpc("loadwallet", "\"test.dat\"")
+                },
+>>>>>>> f0758d8a66 (Merge bitcoin/bitcoin#27757: rpc: remove deprecated "warning" field from {create,load,restore,unload}wallet)
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     WalletContext& context = EnsureWalletContext(request.context);
@@ -480,7 +484,7 @@ static RPCHelpMan loadwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    PushWarnings(warnings, obj);
 
     return obj;
 },
@@ -573,7 +577,10 @@ static RPCHelpMan createwallet()
             RPCResult::Type::OBJ, "", "",
             {
                 {RPCResult::Type::STR, "name", "The wallet name if created successfully. If the wallet was created using a full path, the wallet_name will be the full path."},
-                {RPCResult::Type::STR, "warning", "Warning message if wallet was not loaded cleanly."},
+                {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to creating and loading the wallet.",
+                {
+                    {RPCResult::Type::STR, "", ""},
+                }},
             }
         },
         RPCExamples{
@@ -640,7 +647,7 @@ static RPCHelpMan createwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    PushWarnings(warnings, obj);
 
     return obj;
 },
@@ -650,19 +657,22 @@ static RPCHelpMan createwallet()
 static RPCHelpMan unloadwallet()
 {
     return RPCHelpMan{"unloadwallet",
-        "Unloads the wallet referenced by the request endpoint otherwise unloads the wallet specified in the argument.\n"
-        "Specifying the wallet name on a wallet endpoint is invalid.",
-        {
-            {"wallet_name", RPCArg::Type::STR, RPCArg::DefaultHint{"the wallet name from the RPC endpoint"}, "The name of the wallet to unload. If provided both here and in the RPC endpoint, the two must be identical."},
-            {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED_NAMED_ARG, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
-        },
-        RPCResult{RPCResult::Type::OBJ, "", "", {
-            {RPCResult::Type::STR, "warning", "Warning message if wallet was not unloaded cleanly."},
-        }},
-        RPCExamples{
-            HelpExampleCli("unloadwallet", "wallet_name")
-    + HelpExampleRpc("unloadwallet", "wallet_name")
-        },
+                "Unloads the wallet referenced by the request endpoint, otherwise unloads the wallet specified in the argument.\n"
+                "Specifying the wallet name on a wallet endpoint is invalid.",
+                {
+                    {"wallet_name", RPCArg::Type::STR, RPCArg::DefaultHint{"the wallet name from the RPC endpoint"}, "The name of the wallet to unload. If provided both here and in the RPC endpoint, the two must be identical."},
+                    {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
+                },
+                RPCResult{RPCResult::Type::OBJ, "", "", {
+                    {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to unloading the wallet.",
+                    {
+                        {RPCResult::Type::STR, "", ""},
+                    }},
+                }},
+                RPCExamples{
+                    HelpExampleCli("unloadwallet", "wallet_name")
+            + HelpExampleRpc("unloadwallet", "wallet_name")
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     std::string wallet_name;
@@ -699,7 +709,8 @@ static RPCHelpMan unloadwallet()
     UnloadWallet(std::move(wallet));
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    PushWarnings(warnings, result);
+
     return result;
 },
     };
