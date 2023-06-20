@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -542,8 +543,9 @@ bool CBlockPolicyEstimator::_removeTx(const uint256& hash, bool inBlock)
     }
 }
 
-CBlockPolicyEstimator::CBlockPolicyEstimator()
-    : nBestSeenHeight(0), firstRecordedHeight(0), historicalFirst(0), historicalBest(0), trackedTxs(0), untrackedTxs(0)
+CBlockPolicyEstimator::CBlockPolicyEstimator(const fs::path& estimation_filepath, const bool read_stale_estimates)
+    : nBestSeenHeight(0), firstRecordedHeight(0), historicalFirst(0), historicalBest(0), trackedTxs(0), untrackedTxs(0),
+      m_estimation_filepath{estimation_filepath}, m_read_stale_estimates{read_stale_estimates}
 {
     static_assert(MIN_BUCKET_FEERATE > 0, "Min feerate must be nonzero");
     size_t bucketIndex = 0;
@@ -560,11 +562,23 @@ CBlockPolicyEstimator::CBlockPolicyEstimator()
     shortStats = std::make_unique<TxConfirmStats>(buckets, bucketMap, SHORT_BLOCK_PERIODS, SHORT_DECAY, SHORT_SCALE);
     longStats = std::make_unique<TxConfirmStats>(buckets, bucketMap, LONG_BLOCK_PERIODS, LONG_DECAY, LONG_SCALE);
 
-    // If the fee estimation file is present, read recorded estimations
-    fs::path est_filepath = gArgs.GetDataDirNet() / FEE_ESTIMATES_FILENAME;
-    CAutoFile est_file(fsbridge::fopen(est_filepath, "rb"), SER_DISK, CLIENT_VERSION);
-    if (est_file.IsNull() || !Read(est_file)) {
-        LogPrintf("Failed to read fee estimates from %s. Continue anyway.\n", fs::PathToString(est_filepath));
+    CAutoFile est_file(fsbridge::fopen(m_estimation_filepath, "rb"), SER_DISK, CLIENT_VERSION);
+
+    // Whenever the fee estimation file is not present return early
+    if (est_file.IsNull()) {
+        LogPrintf("%s is not found. Continue anyway.\n", fs::PathToString(m_estimation_filepath));
+        return;
+    }
+
+    std::chrono::hours file_age = GetFeeEstimatorFileAge();
+    // fee estimate file must not be too old to avoid wrong fee estimates.
+    if (file_age > MAX_FILE_AGE && !m_read_stale_estimates) {
+        LogPrintf("Fee estimation file %s too old (age=%lld > %lld hours) and will not be used to avoid serving stale estimates.\n", fs::PathToString(m_estimation_filepath), Ticks<std::chrono::hours>(file_age), Ticks<std::chrono::hours>(MAX_FILE_AGE));
+        return;
+    }
+
+    if (!Read(est_file)) {
+        LogPrintf("Failed to read fee estimates from %s. Continue anyway.\n", fs::PathToString(m_estimation_filepath));
     }
 }
 
@@ -920,11 +934,16 @@ CFeeRate CBlockPolicyEstimator::estimateSmartFee(int confTarget, FeeCalculation 
 
 void CBlockPolicyEstimator::Flush() {
     FlushUnconfirmed();
+    FlushFeeEstimates();
+}
 
-    fs::path est_filepath = gArgs.GetDataDirNet() / FEE_ESTIMATES_FILENAME;
-    CAutoFile est_file(fsbridge::fopen(est_filepath, "wb"), SER_DISK, CLIENT_VERSION);
+void CBlockPolicyEstimator::FlushFeeEstimates()
+{
+    CAutoFile est_file(fsbridge::fopen(m_estimation_filepath, "wb"), SER_DISK, CLIENT_VERSION);
     if (est_file.IsNull() || !Write(est_file)) {
-        LogPrintf("Failed to write fee estimates to %s. Continue anyway.\n", fs::PathToString(est_filepath));
+        LogPrintf("Failed to write fee estimates to %s. Continue anyway.\n", fs::PathToString(m_estimation_filepath));
+    } else {
+        LogPrintf("Flushed fee estimates to %s.\n", fs::PathToString(m_estimation_filepath.filename()));
     }
 }
 
@@ -1026,4 +1045,47 @@ void CBlockPolicyEstimator::FlushUnconfirmed() {
     }
     int64_t endclear = GetTimeMicros();
     LogPrint(BCLog::ESTIMATEFEE, "Recorded %u unconfirmed txs from mempool in %ld micros\n", num_entries, endclear - startclear);
+}
+
+std::chrono::hours CBlockPolicyEstimator::GetFeeEstimatorFileAge()
+{
+    auto file_time = std::filesystem::last_write_time(m_estimation_filepath);
+    auto now = std::filesystem::file_time_type::clock::now();
+    return std::chrono::duration_cast<std::chrono::hours>(now - file_time);
+}
+
+static std::set<double> MakeFeeSet(const CFeeRate& min_incremental_fee,
+                                   double max_filter_fee_rate,
+                                   double fee_filter_spacing)
+{
+    std::set<double> fee_set;
+
+    const CAmount min_fee_limit{std::max(CAmount(1), min_incremental_fee.GetFeePerK() / 2)};
+    fee_set.insert(0);
+    for (double bucket_boundary = min_fee_limit;
+         bucket_boundary <= max_filter_fee_rate;
+         bucket_boundary *= fee_filter_spacing) {
+
+        fee_set.insert(bucket_boundary);
+    }
+
+    return fee_set;
+}
+
+FeeFilterRounder::FeeFilterRounder(const CFeeRate& minIncrementalFee)
+    : m_fee_set{MakeFeeSet(minIncrementalFee, MAX_FILTER_FEERATE, FEE_FILTER_SPACING)}
+{
+}
+
+CAmount FeeFilterRounder::round(CAmount currentMinFee)
+{
+    AssertLockNotHeld(m_insecure_rand_mutex);
+    std::set<double>::iterator it = m_fee_set.lower_bound(currentMinFee);
+    if (it == m_fee_set.end() ||
+        (it != m_fee_set.begin() &&
+         WITH_LOCK(m_insecure_rand_mutex, return insecure_rand.rand32()) % 3 != 0)) {
+        --it;
+    }
+    return static_cast<CAmount>(*it);
+>>>>>>> f80db62b2d (Merge bitcoin/bitcoin#27622: Fee estimation: avoid serving stale fee estimate)
 }

@@ -13,11 +13,23 @@
 #include <uint256.h>
 
 #include <array>
+#include <chrono>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
+// How often to flush fee estimates to fee_estimates.dat.
+static constexpr std::chrono::hours FEE_FLUSH_INTERVAL{1};
+
+/** fee_estimates.dat that are more than 60 hours (2.5 days) will not be read,
+ * as the estimates in the file are stale.
+ */
+static constexpr std::chrono::hours MAX_FILE_AGE{60};
+
+// Whether we allow importing a fee_estimates file older than MAX_FILE_AGE.
+static constexpr bool DEFAULT_ACCEPT_STALE_FEE_ESTIMATES{false};
 
 class CAutoFile;
 class CTxMemPoolEntry;
@@ -181,7 +193,7 @@ private:
 
 public:
     /** Create new BlockPolicyEstimator and initialize stats tracking classes with default values */
-    CBlockPolicyEstimator();
+    CBlockPolicyEstimator(const fs::path& estimation_filepath, const bool read_stale_estimates);
     ~CBlockPolicyEstimator();
 
     /** Process all the transactions that have been included in a block */
@@ -237,6 +249,13 @@ public:
     void Flush()
         EXCLUSIVE_LOCKS_REQUIRED(!m_cs_fee_estimator);
 
+    /** Record current fee estimations. */
+    void FlushFeeEstimates()
+        EXCLUSIVE_LOCKS_REQUIRED(!m_cs_fee_estimator);
+
+    /** Calculates the age of the file, since last modified */
+    std::chrono::hours GetFeeEstimatorFileAge();
+
 private:
     mutable Mutex m_cs_fee_estimator;
 
@@ -265,6 +284,9 @@ private:
 
     std::vector<double> buckets GUARDED_BY(m_cs_fee_estimator); // The upper-bound of the range for the bucket (inclusive)
     std::map<double, unsigned int> bucketMap GUARDED_BY(m_cs_fee_estimator); // Map of bucket upper-bound to index into all vectors by bucket
+
+    const fs::path m_estimation_filepath GUARDED_BY(m_cs_fee_estimator);
+    const bool m_read_stale_estimates;
 
     /** Process a transaction confirmed in a block*/
     bool processBlockTx(unsigned int nBlockHeight, const CTxMemPoolEntry* entry) EXCLUSIVE_LOCKS_REQUIRED(m_cs_fee_estimator);

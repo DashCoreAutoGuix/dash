@@ -15,6 +15,11 @@
 #include <string>
 #include <vector>
 
+static fs::path FeeestPath(const ArgsManager& argsman)
+{
+    return argsman.GetDataDirNet() / "fee_estimates.dat";
+}
+
 void initialize_policy_estimator()
 {
     static const auto testing_setup = MakeNoLogFileContext<>();
@@ -23,7 +28,7 @@ void initialize_policy_estimator()
 FUZZ_TARGET(policy_estimator, .init = initialize_policy_estimator)
 {
     FuzzedDataProvider fuzzed_data_provider(buffer.data(), buffer.size());
-    CBlockPolicyEstimator block_policy_estimator;
+    CBlockPolicyEstimator block_policy_estimator{FeeestPath(*g_setup->m_node.args), DEFAULT_ACCEPT_STALE_FEE_ESTIMATES};
     LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 10000) {
         CallOneOf(
             fuzzed_data_provider,

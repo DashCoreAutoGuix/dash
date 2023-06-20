@@ -90,6 +90,11 @@ using node::fReindex;
 const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;
 UrlDecodeFn* const URL_DECODE = nullptr;
 
+static fs::path FeeestPath(const ArgsManager& argsman)
+{
+    return argsman.GetDataDirNet() / "fee_estimates.dat";
+}
+
 FastRandomContext g_insecure_rand_ctx;
 /** Random context to get unique temp data dirs. Separate from g_insecure_rand_ctx, which can be seeded from a const env var */
 static FastRandomContext g_insecure_rand_ctx_temp_path;
@@ -241,7 +246,7 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
     m_node.scheduler->m_service_thread = std::thread(util::TraceThread, "scheduler", [&] { m_node.scheduler->serviceQueue(); });
     GetMainSignals().RegisterBackgroundSignalScheduler(*m_node.scheduler);
 
-    m_node.fee_estimator = std::make_unique<CBlockPolicyEstimator>();
+    m_node.fee_estimator = std::make_unique<CBlockPolicyEstimator>(FeeestPath(*m_node.args), DEFAULT_ACCEPT_STALE_FEE_ESTIMATES);
     m_node.mempool = std::make_unique<CTxMemPool>(m_node.fee_estimator.get(), m_node.args->GetIntArg("-checkmempool", 1));
 
     m_cache_sizes = CalculateCacheSizes(m_args);
