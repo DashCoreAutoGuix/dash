@@ -65,7 +65,8 @@ namespace BCLog {
 #ifdef DEBUG_LOCKCONTENTION
         LOCK        = (1 << 24),
 #endif
-        BLOCKSTORE  = (1 << 26),
+        UTIL        = (1 << 25),
+        BLOCKSTORAGE = (1 << 26),
         TXRECONCILIATION = (1 << 27),
 
         //Start Dash
