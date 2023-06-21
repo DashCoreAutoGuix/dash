@@ -8,7 +8,9 @@ from decimal import Decimal
 from itertools import product
 
 from test_framework.descriptors import descsum_create
-from test_framework.key import ECKey
+from test_framework.messages import (
+    COIN,
+)
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_approx,
@@ -21,7 +23,7 @@ from test_framework.util import (
     find_vout_for_address,
     satoshi_round,
 )
-from test_framework.wallet_util import bytes_to_wif
+from test_framework.wallet_util import generate_keypair
 
 
 def get_unspent(listunspent, amount):
@@ -943,11 +945,7 @@ class RawTransactionsTest(BitcoinTestFramework):
 
     def test_external_inputs(self):
         self.log.info("Test funding with external inputs")
-
-        eckey = ECKey()
-        eckey.generate()
-        privkey = bytes_to_wif(eckey.get_bytes())
-
+        privkey, _ = generate_keypair(wif=True)
         self.nodes[2].createwallet("extfund")
         wallet = self.nodes[2].get_wallet_rpc("extfund")
 

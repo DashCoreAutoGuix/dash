@@ -18,6 +18,7 @@ from test_framework.address import (
     key_to_p2pkh,
     ADDRESS_BCRT1_P2SH_OP_TRUE,
 )
+from test_framework.blocktools import COINBASE_MATURITY
 from test_framework.descriptors import descsum_create
 from test_framework.key import ECKey
 from test_framework.messages import (
@@ -45,7 +46,7 @@ from test_framework.util import (
     assert_equal,
     assert_greater_than_or_equal,
 )
-from test_framework.blocktools import COINBASE_MATURITY
+from test_framework.wallet_util import generate_keypair
 
 DEFAULT_FEE = Decimal("0.0001")
 
@@ -317,12 +318,19 @@ class MiniWallet:
 def getnewdestination(address_type='legacy'):
     """Generate a random destination of the specified type and return the
        corresponding public key, scriptPubKey and address. Supported types are
+<<<<<<< HEAD
        'legacy'. Can be used when a random destination is needed, but no
        compiled wallet is available (e.g. as replacement to the
        getnewaddress/getaddressinfo RPCs)."""
     key = ECKey()
     key.generate()
     pubkey = key.get_pubkey().get_bytes()
+=======
+       'legacy', 'p2sh-segwit', 'bech32' and 'bech32m'. Can be used when a random
+       destination is needed, but no compiled wallet is available (e.g. as
+       replacement to the getnewaddress/getaddressinfo RPCs)."""
+    key, pubkey = generate_keypair()
+>>>>>>> 7d65e3372f (Merge bitcoin/bitcoin#27733: test: refactor: introduce `generate_keypair` helper with WIF support)
     if address_type == 'legacy':
         scriptpubkey = key_to_p2pkh_script(pubkey)
         address = key_to_p2pkh(pubkey)

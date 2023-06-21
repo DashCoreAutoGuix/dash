@@ -9,7 +9,10 @@ from itertools import product
 
 from test_framework.authproxy import JSONRPCException
 from test_framework.descriptors import descsum_create
-from test_framework.key import ECKey
+from test_framework.messages import (
+    ser_compact_size,
+    WITNESS_SCALE_FACTOR,
+)
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
@@ -17,7 +20,8 @@ from test_framework.util import (
     assert_greater_than,
     assert_raises_rpc_error,
 )
-from test_framework.wallet_util import bytes_to_wif
+from test_framework.wallet_util import generate_keypair
+
 
 class WalletSendTest(BitcoinTestFramework):
     def set_test_params(self):
@@ -463,9 +467,7 @@ class WalletSendTest(BitcoinTestFramework):
         assert res["complete"]
 
         self.log.info("External outputs")
-        eckey = ECKey()
-        eckey.generate()
-        privkey = bytes_to_wif(eckey.get_bytes())
+        privkey, _ = generate_keypair(wif=True)
 
         self.nodes[1].createwallet("extsend")
         ext_wallet = self.nodes[1].get_wallet_rpc("extsend")
