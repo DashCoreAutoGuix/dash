@@ -421,7 +421,7 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     // generated one, since SRD will result in a random change amount anyway; avoid making the
     // target needlessly large.
     const CAmount srd_target = target_with_change + CHANGE_LOWER;
-    if (auto srd_result{SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.rng_fast)}) {
+    if (auto srd_result{SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.m_change_fee, coin_selection_params.rng_fast)}) {
         srd_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
         results.push_back(*srd_result);
     }
