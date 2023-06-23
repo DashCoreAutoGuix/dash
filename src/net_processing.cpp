@@ -1023,6 +1023,10 @@ private:
     /** Expiration-time ordered list of (expire time, relay map entry) pairs. */
     std::deque<std::pair<std::chrono::microseconds, MapRelay::iterator>> g_relay_expiration GUARDED_BY(cs_main);
 
+    /** Process compact block txns  */
+    void ProcessCompactBlockTxns(CNode& pfrom, Peer& peer, const BlockTransactions& block_transactions)
+        EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex, !m_most_recent_block_mutex);
+
     /**
      * When a peer sends us a valid block, instruct it to announce blocks to us
      * using CMPCTBLOCK if possible by adding its nodeid to the end of
@@ -3491,33 +3495,96 @@ void PeerManagerImpl::ProcessBlock(CNode& node, const std::shared_ptr<const CBlo
     }
 }
 
-void PeerManagerImpl::ProcessPeerMsgRet(const PeerMsgRet& ret, CNode& pfrom)
+void PeerManagerImpl::ProcessCompactBlockTxns(CNode& pfrom, Peer& peer, const BlockTransactions& block_transactions)
 {
-    if (!ret) Misbehaving(pfrom.GetId(), ret.error().score, ret.error().message);
+    std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>();
+    bool fBlockRead{false};
+    const CNetMsgMaker msgMaker(pfrom.GetCommonVersion());
+    {
+        LOCK(cs_main);
+
+        auto range_flight = mapBlocksInFlight.equal_range(block_transactions.blockhash);
+        size_t already_in_flight = std::distance(range_flight.first, range_flight.second);
+        bool requested_block_from_this_peer{false};
+
+        // Multimap ensures ordering of outstanding requests. It's either empty or first in line.
+        bool first_in_flight = already_in_flight == 0 || (range_flight.first->second.first == pfrom.GetId());
+
+        while (range_flight.first != range_flight.second) {
+            auto [node_id, block_it] = range_flight.first->second;
+            if (node_id == pfrom.GetId() && block_it->partialBlock) {
+                requested_block_from_this_peer = true;
+                break;
+            }
+            range_flight.first++;
+        }
+
+        if (!requested_block_from_this_peer) {
+            LogPrint(BCLog::NET, "Peer %d sent us block transactions for block we weren't expecting\n", pfrom.GetId());
+            return;
+        }
+
+        PartiallyDownloadedBlock& partialBlock = *range_flight.first->second.second->partialBlock;
+        ReadStatus status = partialBlock.FillBlock(*pblock, block_transactions.txn);
+        if (status == READ_STATUS_INVALID) {
+            RemoveBlockRequest(block_transactions.blockhash, pfrom.GetId()); // Reset in-flight state in case Misbehaving does not result in a disconnect
+            Misbehaving(peer, 100, "invalid compact block/non-matching block transactions");
+            return;
+        } else if (status == READ_STATUS_FAILED) {
+            if (first_in_flight) {
+                // Might have collided, fall back to getdata now :(
+                std::vector<CInv> invs;
+                invs.push_back(CInv(MSG_BLOCK | GetFetchFlags(peer), block_transactions.blockhash));
+                m_connman.PushMessage(&pfrom, msgMaker.Make(NetMsgType::GETDATA, invs));
+            } else {
+                RemoveBlockRequest(block_transactions.blockhash, pfrom.GetId());
+                LogPrint(BCLog::NET, "Peer %d sent us a compact block but it failed to reconstruct, waiting on first download to complete\n", pfrom.GetId());
+                return;
+            }
+        } else {
+            // Block is either okay, or possibly we received
+            // READ_STATUS_CHECKBLOCK_FAILED.
+            // Note that CheckBlock can only fail for one of a few reasons:
+            // 1. bad-proof-of-work (impossible here, because we've already
+            //    accepted the header)
+            // 2. merkleroot doesn't match the transactions given (already
+            //    caught in FillBlock with READ_STATUS_FAILED, so
+            //    impossible here)
+            // 3. the block is otherwise invalid (eg invalid coinbase,
+            //    block is too big, too many legacy sigops, etc).
+            // So if CheckBlock failed, #3 is the only possibility.
+            // Under BIP 152, we don't discourage the peer unless proof of work is
+            // invalid (we don't require all the stateless checks to have
+            // been run).  This is handled below, so just treat this as
+            // though the block was successfully read, and rely on the
+            // handling in ProcessNewBlock to ensure the block index is
+            // updated, etc.
+            RemoveBlockRequest(block_transactions.blockhash, pfrom.GetId()); // it is now an empty pointer
+            fBlockRead = true;
+            // mapBlockSource is used for potentially punishing peers and
+            // updating which peers send us compact blocks, so the race
+            // between here and cs_main in ProcessNewBlock is fine.
+            // BIP 152 permits peers to relay compact blocks after validating
+            // the header only; we should not punish peers if the block turns
+            // out to be invalid.
+            mapBlockSource.emplace(block_transactions.blockhash, std::make_pair(pfrom.GetId(), false));
+        }
+    } // Don't hold cs_main when we call into ProcessNewBlock
+    if (fBlockRead) {
+        // Since we requested this block (it was in mapBlocksInFlight), force it to be processed,
+        // even if it would not be a candidate for new tip (missing previous block, chain not long enough, etc)
+        // This bypasses some anti-DoS logic in AcceptBlock (eg to prevent
+        // disk-space attacks), but this should be safe due to the
+        // protections in the compact block handler -- see related comment
+        // in compact block optimistic reconstruction handling.
+        ProcessBlock(pfrom, pblock, /*force_processing=*/true, /*min_pow_checked=*/true);
+    }
+    return;
 }
 
-void PeerManagerImpl::PostProcessMessage(MessageProcessingResult&& result, NodeId node)
-{
-    if (result.m_error) {
-        Misbehaving(node, result.m_error->score, result.m_error->message);
-    }
-    if (result.m_to_erase) {
-        WITH_LOCK(cs_main, EraseObjectRequest(node, result.m_to_erase.value()));
-    }
-    for (const auto& tx : result.m_transactions) {
-        WITH_LOCK(cs_main, _RelayTransaction(tx));
-    }
-    if (result.m_inventory) {
-        RelayInv(result.m_inventory.value());
-    }
-}
-
-void PeerManagerImpl::ProcessMessage(
-    CNode& pfrom,
-    const std::string& msg_type,
-    CDataStream& vRecv,
-    const std::chrono::microseconds time_received,
-    const std::atomic<bool>& interruptMsgProc)
+void PeerManagerImpl::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDataStream& vRecv,
+                                     const std::chrono::microseconds time_received,
+                                     const std::atomic<bool>& interruptMsgProc)
 {
     AssertLockHeld(g_msgproc_mutex);
 
@@ -4634,12 +4701,12 @@ void PeerManagerImpl::ProcessMessage(
             }
         }
 
-        // When we succeed in decoding a block's txids from a cmpctblock
-        // message we typically jump to the BLOCKTXN handling code, with a
-        // dummy (empty) BLOCKTXN message, to re-use the logic there in
-        // completing processing of the putative block (without cs_main).
+        if (received_new_header) {
+            LogPrintfCategory(BCLog::NET, "Saw new cmpctblock header hash=%s peer=%d\n",
+                blockhash.ToString(), pfrom.GetId());
+        }
+
         bool fProcessBLOCKTXN = false;
-        CDataStream blockTxnMsg(SER_NETWORK, PROTOCOL_VERSION);
 
         // If we end up treating this as a plain headers message, call that as well
         // without cs_main.
@@ -4722,10 +4789,6 @@ void PeerManagerImpl::ProcessMessage(
                         req.indexes.push_back(i);
                 }
                 if (req.indexes.empty()) {
-                    // Dirty hack to jump to BLOCKTXN code (TODO: move message handling into their own functions)
-                    BlockTransactions txn;
-                    txn.blockhash = cmpctblock.header.GetHash();
-                    blockTxnMsg << txn;
                     fProcessBLOCKTXN = true;
                 } else {
                     req.blockhash = pindex->GetBlockHash();
@@ -4764,8 +4827,11 @@ void PeerManagerImpl::ProcessMessage(
         }
         } // cs_main
 
-        if (fProcessBLOCKTXN)
-            return ProcessMessage(pfrom, NetMsgType::BLOCKTXN, blockTxnMsg, time_received, interruptMsgProc);
+        if (fProcessBLOCKTXN) {
+            BlockTransactions txn;
+            txn.blockhash = blockhash;
+            return ProcessCompactBlockTxns(pfrom, *peer, txn);
+        }
 
         if (fRevertToHeaderProcessing) {
             // Headers received from HB compact block peers are permitted to be
@@ -4816,68 +4882,7 @@ void PeerManagerImpl::ProcessMessage(
         BlockTransactions resp;
         vRecv >> resp;
 
-        std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>();
-        bool fBlockRead = false;
-        {
-            LOCK(cs_main);
-
-            std::map<uint256, std::pair<NodeId, std::list<QueuedBlock>::iterator> >::iterator it = mapBlocksInFlight.find(resp.blockhash);
-            if (it == mapBlocksInFlight.end() || !it->second.second->partialBlock ||
-                    it->second.first != pfrom.GetId()) {
-                LogPrint(BCLog::NET, "Peer %d sent us block transactions for block we weren't expecting\n", pfrom.GetId());
-                return;
-            }
-
-            PartiallyDownloadedBlock& partialBlock = *it->second.second->partialBlock;
-            ReadStatus status = partialBlock.FillBlock(*pblock, resp.txn);
-            if (status == READ_STATUS_INVALID) {
-                RemoveBlockRequest(resp.blockhash); // Reset in-flight state in case Misbehaving does not result in a disconnect
-                Misbehaving(pfrom.GetId(), 100, "invalid compact block/non-matching block transactions");
-                return;
-            } else if (status == READ_STATUS_FAILED) {
-                // Might have collided, fall back to getdata now :(
-                std::vector<CInv> invs;
-                invs.push_back(CInv(MSG_BLOCK, resp.blockhash));
-                m_connman.PushMessage(&pfrom, msgMaker.Make(NetMsgType::GETDATA, invs));
-            } else {
-                // Block is either okay, or possibly we received
-                // READ_STATUS_CHECKBLOCK_FAILED.
-                // Note that CheckBlock can only fail for one of a few reasons:
-                // 1. bad-proof-of-work (impossible here, because we've already
-                //    accepted the header)
-                // 2. merkleroot doesn't match the transactions given (already
-                //    caught in FillBlock with READ_STATUS_FAILED, so
-                //    impossible here)
-                // 3. the block is otherwise invalid (eg invalid coinbase,
-                //    block is too big, too many legacy sigops, etc).
-                // So if CheckBlock failed, #3 is the only possibility.
-                // Under BIP 152, we don't discourage the peer unless proof of work is
-                // invalid (we don't require all the stateless checks to have
-                // been run).  This is handled below, so just treat this as
-                // though the block was successfully read, and rely on the
-                // handling in ProcessNewBlock to ensure the block index is
-                // updated, etc.
-                RemoveBlockRequest(resp.blockhash); // it is now an empty pointer
-                fBlockRead = true;
-                // mapBlockSource is used for potentially punishing peers and
-                // updating which peers send us compact blocks, so the race
-                // between here and cs_main in ProcessNewBlock is fine.
-                // BIP 152 permits peers to relay compact blocks after validating
-                // the header only; we should not punish peers if the block turns
-                // out to be invalid.
-                mapBlockSource.emplace(resp.blockhash, std::make_pair(pfrom.GetId(), false));
-            }
-        } // Don't hold cs_main when we call into ProcessNewBlock
-        if (fBlockRead) {
-            // Since we requested this block (it was in mapBlocksInFlight), force it to be processed,
-            // even if it would not be a candidate for new tip (missing previous block, chain not long enough, etc)
-            // This bypasses some anti-DoS logic in AcceptBlock (eg to prevent
-            // disk-space attacks), but this should be safe due to the
-            // protections in the compact block handler -- see related comment
-            // in compact block optimistic reconstruction handling.
-            ProcessBlock(pfrom, pblock, /*force_processing=*/true);
-        }
-        return;
+        return ProcessCompactBlockTxns(pfrom, *peer, resp);
     }
 
     if (msg_type == NetMsgType::HEADERS || msg_type == NetMsgType::HEADERS2) {
