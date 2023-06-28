@@ -16,6 +16,9 @@ import unittest
 from test_framework.crypto import secp256k1
 from test_framework.util import random_bitflip
 
+# Point with no known discrete log.
+H_POINT = "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+
 # Order of the secp256k1 curve
 ORDER = secp256k1.GE.ORDER
 
@@ -288,8 +291,8 @@ def sign_schnorr(key, msg, aux=None, flip_p=False, flip_r=False):
 
 
 class TestFrameworkKey(unittest.TestCase):
-    def test_ecdsa_and_schnorr(self):
-        """Test the Python ECDSA and Schnorr implementations."""
+    def test_schnorr(self):
+        """Test the Python Schnorr implementation."""
         byte_arrays = [generate_privkey() for _ in range(3)] + [v.to_bytes(32, 'big') for v in [0, ORDER - 1, ORDER, 2**256 - 1]]
         keys = {}
         for privkey_bytes in byte_arrays:  # build array of key/pubkey pairs
