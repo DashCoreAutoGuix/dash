@@ -1125,7 +1125,6 @@ bool WalletBatch::WriteWalletFlags(const uint64_t flags)
 {
     return WriteIC(DBKeys::FLAGS, flags);
 }
-
 bool WalletBatch::TxnBegin()
 {
     return m_batch->TxnBegin();
