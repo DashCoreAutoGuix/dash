@@ -10,6 +10,7 @@ import argparse
 import configparser
 import logging
 import os
+import pathlib
 import random
 import subprocess
 import sys
@@ -88,8 +89,8 @@ def main():
     configfile = os.path.abspath(os.path.dirname(__file__)) + "/../config.ini"
     config.read_file(open(configfile, encoding="utf8"))
 
-    if not config["components"].getboolean("ENABLE_FUZZ"):
-        logging.error("Must have fuzz targets built")
+    if not config["components"].getboolean("ENABLE_FUZZ_BINARY"):
+        logging.error("Must have fuzz executable built")
         sys.exit(1)
 
     # Build list of tests
@@ -144,11 +145,12 @@ def main():
             ],
             env=get_fuzz_env(target=test_list_selection[0], source_dir=config['environment']['SRCDIR']),
             timeout=20,
-            check=True,
+            check=False,
             stderr=subprocess.PIPE,
             universal_newlines=True,
         ).stderr
-        if "libFuzzer" not in help_output:
+        using_libfuzzer = "libFuzzer" in help_output
+        if (args.generate or args.m_dir) and not using_libfuzzer:
             logging.error("Must be built with libFuzzer")
             sys.exit(1)
     except subprocess.TimeoutExpired:
@@ -182,7 +184,9 @@ def main():
             test_list=test_list_selection,
             src_dir=config['environment']['SRCDIR'],
             build_dir=config["environment"]["BUILDDIR"],
+            using_libfuzzer=using_libfuzzer,
             use_valgrind=args.valgrind,
+            empty_min_time=None,
         )
 
 
@@ -263,16 +267,25 @@ def merge_inputs(*, fuzz_pool, corpus, test_list, src_dir, build_dir, merge_dir)
         future.result()
 
 
-def run_once(*, fuzz_pool, corpus, test_list, src_dir, build_dir, use_valgrind):
+def run_once(*, fuzz_pool, corpus, test_list, src_dir, build_dir, using_libfuzzer, use_valgrind, empty_min_time):
     jobs = []
     for t in test_list:
         corpus_path = os.path.join(corpus, t)
         os.makedirs(corpus_path, exist_ok=True)
         args = [
             os.path.join(build_dir, 'src', 'test', 'fuzz', 'fuzz'),
-            '-runs=1',
-            corpus_path,
         ]
+        empty_dir = not any(pathlib.Path(corpus_path).iterdir())
+        if using_libfuzzer:
+            if empty_min_time and empty_dir:
+                args += [f"-max_total_time={empty_min_time}"]
+            else:
+                args += [
+                    "-runs=1",
+                    corpus_path,
+                ]
+        else:
+            args += [corpus_path]
         if use_valgrind:
             args = ['valgrind', '--quiet', '--error-exitcode=1'] + args
 
@@ -299,14 +312,7 @@ def run_once(*, fuzz_pool, corpus, test_list, src_dir, build_dir, use_valgrind):
                 logging.info(e.stdout)
             if e.stderr:
                 logging.info(e.stderr)
-            logging.info("Target \"{}\" failed with exit code {}: {}".format(t, e.returncode, " ".join(args)))
-            sys.exit(1)
-        except subprocess.CalledProcessError as e:
-            if e.stdout:
-                logging.info(e.stdout)
-            if e.stderr:
-                logging.info(e.stderr)
-            logging.info("Target \"{}\" failed with exit code {}".format(" ".join(result.args), e.returncode))
+            logging.info(f"Target {result.args} failed with exit code {e.returncode}")
             sys.exit(1)
 
 
