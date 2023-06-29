@@ -17,3 +17,5 @@ export OSX_SDK=""
 export CCACHE_SIZE=300M
 
 export RUN_SECURITY_TESTS="true"
+export RUN_FUZZ_TESTS=true
+export FUZZ_TESTS_CONFIG="--exclude banman"  # https://github.com/bitcoin/bitcoin/issues/27924
