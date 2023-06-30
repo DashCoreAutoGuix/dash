@@ -10,6 +10,8 @@ import http.client
 from io import BytesIO
 import json
 from struct import pack, unpack
+import typing
+from typing import Optional
 import urllib.parse
 
 
@@ -27,6 +29,7 @@ from test_framework.wallet import (
     MiniWallet,
     getnewdestination,
 )
+from typing import Optional
 
 
 INVALID_PARAM = "abc"
@@ -57,7 +60,16 @@ class RESTTest (BitcoinTestFramework):
             args.append("-whitelist=noban@127.0.0.1")
         self.supports_cli = False
 
-    def test_rest_request(self, uri, http_method='GET', req_type=ReqType.JSON, body='', status=200, ret_type=RetType.JSON):
+    def test_rest_request(
+            self,
+            uri: str,
+            http_method: str = 'GET',
+            req_type: ReqType = ReqType.JSON,
+            body: str = '',
+            status: int = 200,
+            ret_type: RetType = RetType.JSON,
+            query_params: Optional[typing.Dict[str, typing.Any]] = None,
+            ) -> typing.Union[http.client.HTTPResponse, bytes, str, None]:
         rest_uri = '/rest' + uri
         if req_type == ReqType.JSON:
             rest_uri += '.json'
