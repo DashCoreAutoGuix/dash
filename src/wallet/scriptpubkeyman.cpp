@@ -2380,7 +2380,11 @@ std::unique_ptr<CKeyMetadata> DescriptorScriptPubKeyMan::GetMetadata(const CTxDe
 uint256 DescriptorScriptPubKeyMan::GetID() const
 {
     LOCK(cs_desc_man);
+<<<<<<< HEAD
     return m_wallet_descriptor.id;
+=======
+    return DescriptorID(*m_wallet_descriptor.descriptor);
+>>>>>>> f08d914a67 (Merge bitcoin/bitcoin#27920: wallet: bugfix, always use apostrophe for spkm descriptor ID)
 }
 
 void DescriptorScriptPubKeyMan::SetCache(const DescriptorCache& cache)

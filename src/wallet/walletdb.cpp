@@ -618,6 +618,7 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
             uint256 id;
             ssValue >> id;
 
+<<<<<<< HEAD
             bool internal = strType == DBKeys::ACTIVEINTERNALSPK;
             auto& spk_mans = internal ? wss.m_active_internal_spks : wss.m_active_external_spks;
             const OutputType type = OutputType::LEGACY;
@@ -636,6 +637,20 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
             }
             pwallet->LoadDescriptorScriptPubKeyMan(id, desc);
         } else if (strType == DBKeys::WALLETDESCRIPTORCACHE) {
+=======
+        // Prior to doing anything with this spkm, verify ID compatibility
+        if (id != pwallet->GetDescriptorScriptPubKeyMan(desc)->GetID()) {
+            strErr = "The descriptor ID calculated by the wallet differs from the one in DB";
+            return DBErrors::CORRUPT;
+        }
+
+        DescriptorCache cache;
+
+        // Get key cache for this descriptor
+        DataStream prefix = PrefixStream(DBKeys::WALLETDESCRIPTORCACHE, id);
+        LoadResult key_cache_res = LoadRecords(pwallet, batch, DBKeys::WALLETDESCRIPTORCACHE, prefix,
+            [&id, &cache] (CWallet* pwallet, DataStream& key, CDataStream& value, std::string& err) {
+>>>>>>> f08d914a67 (Merge bitcoin/bitcoin#27920: wallet: bugfix, always use apostrophe for spkm descriptor ID)
             bool parent = true;
             uint256 desc_id;
             uint32_t key_exp_index;
