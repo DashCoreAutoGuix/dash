@@ -35,7 +35,6 @@ struct Params;
 namespace node {
 static constexpr bool DEFAULT_ADDRESSINDEX{false};
 static constexpr bool DEFAULT_SPENTINDEX{false};
-static constexpr bool DEFAULT_STOPAFTERBLOCKIMPORT{false};
 static constexpr bool DEFAULT_TIMESTAMPINDEX{false};
 
 /** The pre-allocation chunk size for blk?????.dat files (since 0.8) */
