@@ -30,10 +30,9 @@ from test_framework.messages import (
 )
 from test_framework.script import (
     CScript,
-    SignatureHash,
-    OP_TRUE,
     OP_NOP,
-    SIGHASH_ALL,
+    OP_TRUE,
+    sign_input_legacy,
 )
 from test_framework.script_util import (
     key_to_p2pk_script,
@@ -70,8 +69,6 @@ class MiniWalletMode(Enum):
     ADDRESS_OP_TRUE = 1
     RAW_OP_TRUE = 2
     RAW_P2PK = 3
-
-
 class MiniWallet:
     def __init__(self, test_node, *, mode=MiniWalletMode.ADDRESS_OP_TRUE):
         self._test_node = test_node
@@ -134,18 +131,16 @@ class MiniWallet:
 
     def sign_tx(self, tx, fixed_length=True):
         if self._mode == MiniWalletMode.RAW_P2PK:
-            (sighash, err) = SignatureHash(CScript(self._scriptPubKey), tx, 0, SIGHASH_ALL)
-            assert err is None
             # for exact fee calculation, create only signatures with fixed size by default (>49.89% probability):
             # 65 bytes: high-R val (33 bytes) + low-S val (32 bytes)
-            # with the DER header/skeleton data of 6 bytes added, this leads to a target size of 71 bytes
-            der_sig = b''
-            while not len(der_sig) == 71:
-                der_sig = self._priv_key.sign_ecdsa(sighash)
+            # with the DER header/skeleton data of 6 bytes added, plus 2 bytes scriptSig overhead
+            # (OP_PUSHn and SIGHASH_ALL), this leads to a scriptSig target size of 73 bytes
+            tx.vin[0].scriptSig = b''
+            while not len(tx.vin[0].scriptSig) == 73:
+                tx.vin[0].scriptSig = b''
+                sign_input_legacy(tx, 0, self._scriptPubKey, self._priv_key)
                 if not fixed_length:
                     break
-            tx.vin[0].scriptSig = CScript([der_sig + bytes(bytearray([SIGHASH_ALL]))])
-            tx.rehash()
         elif self._mode == MiniWalletMode.RAW_OP_TRUE:
             for i in range(len(tx.vin)):
                 tx.vin[i].scriptSig = CScript([OP_NOP] * 24)  # pad to identical size
@@ -312,8 +307,6 @@ class MiniWallet:
         txid = from_node.sendrawtransaction(hexstring=tx_hex, maxfeerate=maxfeerate, **kwargs)
         self.scan_tx(from_node.decoderawtransaction(tx_hex))
         return txid
-
-
 def getnewdestination(address_type='legacy'):
     """Generate a random destination of the specified type and return the
        corresponding public key, scriptPubKey and address. Supported types are
@@ -329,8 +322,6 @@ def getnewdestination(address_type='legacy'):
     else:
         assert False
     return pubkey, scriptpubkey, address
-
-
 def address_to_scriptpubkey(address):
     """Converts a given address to the corresponding output script (scriptPubKey)."""
     payload, version = base58_to_byte(address)
@@ -341,8 +332,6 @@ def address_to_scriptpubkey(address):
     # TODO: also support other address formats
     else:
         assert False
-
-
 def make_chain(node, address, privkeys, parent_txid, parent_value, n=0, parent_locking_script=None, fee=DEFAULT_FEE):
     """Build a transaction that spends parent_txid.vout[n] and produces one output with
     amount = parent_value with a fee deducted.

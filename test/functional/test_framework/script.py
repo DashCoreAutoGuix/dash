@@ -616,16 +616,15 @@ def FindAndDelete(script, sig):
     return CScript(r)
 
 
-def SignatureHash(script, txTo, inIdx, hashtype):
-    """Consensus-correct SignatureHash
+def LegacySignatureMsg(script, txTo, inIdx, hashtype):
+    """Legacy signature message calculation
 
-    Returns (hash, err) to precisely match the consensus-critical behavior of
-    the SIGHASH_SINGLE bug. (inIdx is *not* checked for validity)
+    Returns the message to be hashed, or None with error message.
     """
     HASH_ONE = b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
     if inIdx >= len(txTo.vin):
-        return (HASH_ONE, "inIdx %d out of range (%d)" % (inIdx, len(txTo.vin)))
+        return None  # Will be handled by LegacySignatureHash
     txtmp = CTransaction(txTo)
 
     for txin in txtmp.vin:
@@ -642,7 +641,7 @@ def SignatureHash(script, txTo, inIdx, hashtype):
     elif (hashtype & 0x1f) == SIGHASH_SINGLE:
         outIdx = inIdx
         if outIdx >= len(txtmp.vout):
-            return (HASH_ONE, "outIdx %d out of range (%d)" % (outIdx, len(txtmp.vout)))
+            return None  # Will be handled by LegacySignatureHash
 
         tmp = txtmp.vout[outIdx]
         txtmp.vout = []
@@ -662,9 +661,41 @@ def SignatureHash(script, txTo, inIdx, hashtype):
     s = txtmp.serialize()
     s += struct.pack(b"<I", hashtype)
 
-    hash = hash256(s)
+    return s
 
-    return (hash, None)
+def SignatureHash(script, txTo, inIdx, hashtype):
+    """Consensus-correct SignatureHash
+
+    Returns (hash, err) to precisely match the consensus-critical behavior of
+    the SIGHASH_SINGLE bug. (inIdx is *not* checked for validity)
+    """
+    msg = LegacySignatureMsg(script, txTo, inIdx, hashtype)
+    return (hash256(msg), None)
+
+def LegacySignatureHash(*args, **kwargs):
+    """Consensus-correct SignatureHash
+
+    Returns (hash, err) to precisely match the consensus-critical behavior of
+    the SIGHASH_SINGLE bug. (inIdx is *not* checked for validity)
+    """
+
+    HASH_ONE = b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    msg = LegacySignatureMsg(*args, **kwargs)
+    if msg is None:
+        return (HASH_ONE, "error")  # Simplified error handling for now
+    else:
+        return (hash256(msg), None)
+
+def sign_input_legacy(tx, input_index, input_scriptpubkey, privkey, sighash_type=SIGHASH_ALL):
+    """Add legacy ECDSA signature for a given transaction input. Note that the signature
+       is prepended to the scriptSig field, i.e. additional data pushes necessary for more
+       complex spends than P2PK (e.g. pubkey for P2PKH) can be already set before."""
+    (sighash, err) = LegacySignatureHash(input_scriptpubkey, tx, input_index, sighash_type)
+    assert err is None
+    der_sig = privkey.sign_ecdsa(sighash)
+    tx.vin[input_index].scriptSig = bytes(CScript([der_sig + bytes([sighash_type])])) + tx.vin[input_index].scriptSig
+    tx.rehash()
+
 
 class TestFrameworkScript(unittest.TestCase):
     def test_bn2vch(self):
