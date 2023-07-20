@@ -6,6 +6,7 @@
 """
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 import argparse
 import configparser
 import logging
@@ -186,6 +187,42 @@ def main():
         )
 
 
+def transform_process_message_target(targets, src_dir):
+    """Add a target per process message, and also keep ("process_message", {}) to allow for
+    cross-pollination, or unlimited search"""
+
+    p2p_msg_target = "process_message"
+    if (p2p_msg_target, {}) in targets:
+        lines = subprocess.run(
+            ["git", "grep", "--function-context", "g_all_net_message_types{", src_dir / "src" / "protocol.cpp"],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        ).stdout.splitlines()
+        lines = [l.split("::", 1)[1].split(",")[0].lower() for l in lines if l.startswith("src/protocol.cpp-    NetMsgType::")]
+        assert len(lines)
+        targets += [(p2p_msg_target, {"LIMIT_TO_MESSAGE_TYPE": m}) for m in lines]
+    return targets
+
+
+def transform_rpc_target(targets, src_dir):
+    """Add a target per RPC command, and also keep ("rpc", {}) to allow for cross-pollination,
+    or unlimited search"""
+
+    rpc_target = "rpc"
+    if (rpc_target, {}) in targets:
+        lines = subprocess.run(
+            ["git", "grep", "--function-context", "RPC_COMMANDS_SAFE_FOR_FUZZING{", src_dir / "src" / "test" / "fuzz" / "rpc.cpp"],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        ).stdout.splitlines()
+        lines = [l.split("\"", 1)[1].split("\"")[0] for l in lines if l.startswith("src/test/fuzz/rpc.cpp-    \"")]
+        assert len(lines)
+        targets += [(rpc_target, {"LIMIT_TO_RPC_COMMAND": r}) for r in lines]
+    return targets
+
+
 def generate_corpus(*, fuzz_pool, src_dir, build_dir, corpus_dir, targets):
     """Generates new corpus.
 
@@ -193,21 +230,24 @@ def generate_corpus(*, fuzz_pool, src_dir, build_dir, corpus_dir, targets):
     {corpus_dir}.
     """
     logging.info("Generating corpus to {}".format(corpus_dir))
+    targets = [(t, {}) for t in targets]  # expand to add dictionary for target-specific env variables
+    targets = transform_process_message_target(targets, Path(src_dir))
+    targets = transform_rpc_target(targets, Path(src_dir))
 
-    def job(command, t):
+    def job(command, t, t_env):
         logging.debug("Running '{}'\n".format(" ".join(command)))
         logging.debug("Command '{}' output:\n'{}'\n".format(
             ' '.join(command),
             subprocess.run(
                 command,
-                env=get_fuzz_env(target=t, source_dir=src_dir),
+                env=dict(get_fuzz_env(target=t, source_dir=src_dir), **t_env),
                 check=True,
                 stderr=subprocess.PIPE,
                 universal_newlines=True,
             ).stderr))
 
     futures = []
-    for target in targets:
+    for target, t_env in targets:
         target_corpus_dir = os.path.join(corpus_dir, target)
         os.makedirs(target_corpus_dir, exist_ok=True)
         use_value_profile = int(random.random() < .3)
@@ -219,7 +259,7 @@ def generate_corpus(*, fuzz_pool, src_dir, build_dir, corpus_dir, targets):
             f"-use_value_profile={use_value_profile}",
             target_corpus_dir,
         ]
-        futures.append(fuzz_pool.submit(job, command, target))
+        futures.append(fuzz_pool.submit(job, command, target, t_env))
 
     for future in as_completed(futures):
         future.result()
