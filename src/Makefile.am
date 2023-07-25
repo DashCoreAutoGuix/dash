@@ -285,6 +285,7 @@ BITCOIN_CORE_H = \
   node/eviction.h \
   node/miner.h \
   node/minisketchwrapper.h \
+  node/peerman_args.h \
   node/psbt.h \
   node/transaction.h \
   node/txreconciliation.h \
@@ -534,6 +535,7 @@ libbitcoin_node_a_SOURCES = \
   node/interfaces.cpp \
   node/miner.cpp \
   node/minisketchwrapper.cpp \
+  node/peerman_args.cpp \
   node/psbt.cpp \
   node/transaction.cpp \
   node/txreconciliation.cpp \

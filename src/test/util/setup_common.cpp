@@ -22,6 +22,8 @@
 #include <node/blockstorage.h>
 #include <node/chainstate.h>
 #include <node/miner.h>
+#include <node/peerman_args.h>
+#include <node/validation_cache_args.h>
 #include <policy/fees.h>
 #include <pow.h>
 #include <rpc/blockchain.h>
@@ -331,10 +333,13 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
     assert(!maybe_verify_error.has_value());
 
     m_node.banman = std::make_unique<BanMan>(m_args.GetDataDirBase() / "banlist", nullptr, DEFAULT_MISBEHAVING_BANTIME);
+    m_node.connman = std::make_unique<ConnmanTestMsg>(0x1337, 0x1337, *m_node.addrman, *m_node.netgroupman); // Deterministic randomness for tests.
+    PeerManager::Options peerman_opts;
+    ApplyArgsManOptions(*m_node.args, peerman_opts);
     m_node.peerman = PeerManager::make(chainparams, *m_node.connman, *m_node.addrman, m_node.banman.get(),
                                        *m_node.chainman, *m_node.mempool, *m_node.mn_metaman, *m_node.mn_sync,
                                        *m_node.govman, *m_node.sporkman, /* mn_activeman = */ nullptr, m_node.dmnman,
-                                       m_node.cj_ctx, m_node.llmq_ctx, /* ignore_incoming_txs = */ false);
+                                       m_node.cj_ctx, m_node.llmq_ctx, peerman_opts);
     {
         CConnman::Options options;
         options.m_msgproc = m_node.peerman.get();
