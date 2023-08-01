@@ -30,7 +30,11 @@ class AbortNodeTest(BitcoinTestFramework):
         datadir = get_datadir_path(self.options.tmpdir, 0)
 
         # Deleting the undo file will result in reorg failure
-        os.unlink(os.path.join(datadir, self.chain, 'blocks', 'rev00000.dat'))
+        (self.nodes[0].blocks_path / "rev00000.dat").unlink()
+        (self.nodes[0].blocks_path / "rev00000.dat").unlink()
+        (self.nodes[0].blocks_path / "rev00000.dat").unlink()
+        (self.nodes[0].blocks_path / "rev00000.dat").unlink()
+        (self.nodes[0].blocks_path / "rev00000.dat").unlink()
 
         # Connecting to a node with a more work chain will trigger a reorg
         # attempt.

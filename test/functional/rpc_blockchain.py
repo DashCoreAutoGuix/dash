@@ -537,9 +537,15 @@ class BlockchainTest(BitcoinTestFramework):
         assert_raises_rpc_error(-1, "JSON value is not an integer as expected", node.getblock, blockhash, "2")
 
         def move_block_file(old, new):
+<<<<<<< HEAD
             old_path = os.path.join(datadir, self.chain, 'blocks', old)
             new_path = os.path.join(datadir, self.chain, 'blocks', new)
             os.rename(old_path, new_path)
+=======
+            old_path = self.nodes[0].blocks_path / old
+            new_path = self.nodes[0].blocks_path / new
+            old_path.rename(new_path)
+>>>>>>> 8535802f1d (Merge bitcoin/bitcoin#28070: test: Drop 22.x node from TxindexCompatibilityTest)
 
         # Move instead of deleting so we can restore chain state afterwards
         move_block_file('rev00000.dat', 'rev_wrong')
