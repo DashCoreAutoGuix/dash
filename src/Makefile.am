@@ -867,6 +867,7 @@ libbitcoin_util_a_SOURCES = \
   randomenv.cpp \
   rpc/request.cpp \
   stacktraces.cpp \
+  streams.cpp \
   support/cleanse.cpp \
   sync.cpp \
   util/asmap.cpp \
