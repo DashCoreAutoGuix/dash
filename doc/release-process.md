@@ -54,7 +54,7 @@ git shortlog --no-merges v(current version, e.g. 19.3.0)..v(new version, e.g. 20
 Generate list of authors:
 
 ```sh
-git log --format='- %aN' v(current version, e.g. 19.3.0)..v(new version, e.g. 20.0.0) | sort -fiu
+git log --format='- %aN' v(current version, e.g. 19.3.0)..v(new version, e.g. 20.0.0) | grep -v 'merge-script' | sort -fiu
 ```
 
 Tag version (or release candidate) in git
@@ -179,7 +179,6 @@ Commit your signature for the signed macOS/Windows binaries:
 pushd ./guix.sigs
 git add "${VERSION}/${SIGNER}"/all.SHA256SUMS{,.asc}
 git commit -m "Add attestations by ${SIGNER} for ${VERSION} codesigned"
-git push  # Assuming you can push to the guix.sigs tree
 popd
 ```
 
@@ -269,7 +268,7 @@ To verify that the notarization process was successful, run the following comman
 spctl -a -vv -t install Dash-Qt.app
 ```
 
-Replace `Dash-Qt.app` with the path to your .app file. This command checks whether your .app file passes Gatekeeper’s
+Replace `Dash-Qt.app` with the path to your .app file. This command checks whether your .app file passes Gatekeeper's
 checks. If the app is successfully notarized, the command line will include a line stating `source=<Notarized Developer ID>`.
 
 ### Additional information
@@ -291,3 +290,4 @@ To calculate `m_assumed_chain_state_size`:
 Notes:
 - When taking the size for `m_assumed_blockchain_size`, there's no need to exclude the `/chainstate` directory since it's a guideline value and an overhead will be added anyway.
 - The expected overhead for growth may change over time, so it may not be the same value as last release; pay attention to that when changing the variables.
+EOF < /dev/null
