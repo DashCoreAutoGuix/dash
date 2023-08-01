@@ -865,8 +865,7 @@ libbitcoin_util_a_SOURCES = \
   messagesigner.cpp \
   random.cpp \
   randomenv.cpp \
-  rpc/request.cpp \
-  stacktraces.cpp \
+  streams.cpp \
   support/cleanse.cpp \
   sync.cpp \
   util/asmap.cpp \
@@ -1002,6 +1001,9 @@ if TARGET_WINDOWS
 dash_wallet_SOURCES += dash-wallet-res.rc
 endif
 #
+
+
+
 
 # dashconsensus library #
 if BUILD_BITCOIN_LIBS

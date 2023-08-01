@@ -23,6 +23,27 @@
 #include <utility>
 #include <vector>
 
+namespace util {
+inline void Xor(Span<std::byte> write, Span<const std::byte> key, size_t key_offset = 0)
+{
+    if (key.size() == 0) {
+        return;
+    }
+    key_offset %= key.size();
+
+    for (size_t i = 0, j = key_offset; i != write.size(); i++) {
+        write[i] ^= key[j++];
+
+        // This potentially acts on very many bytes of data, so it's
+        // important that we calculate `j`, i.e. the `key` index in this
+        // way instead of doing a %, which would effectively be a division
+        // for each byte Xor'd -- much slower than need be.
+        if (j == key.size())
+            j = 0;
+    }
+}
+} // namespace util
+
 template<typename Stream>
 class OverrideStream
 {
@@ -328,20 +349,7 @@ public:
      */
     void Xor(const std::vector<unsigned char>& key)
     {
-        if (key.size() == 0) {
-            return;
-        }
-
-        for (size_type i = 0, j = 0; i != size(); i++) {
-            vch[i] ^= std::byte{key[j++]};
-
-            // This potentially acts on very many bytes of data, so it's
-            // important that we calculate `j`, i.e. the `key` index in this
-            // way instead of doing a %, which would effectively be a division
-            // for each byte Xor'd -- much slower than need be.
-            if (j == key.size())
-                j = 0;
-        }
+        util::Xor(MakeWritableByteSpan(*this), MakeByteSpan(key));
     }
 };
 
@@ -505,11 +513,11 @@ private:
     const int nVersion;
 
     FILE* file;
+    const std::vector<std::byte> m_xor;
 
 public:
-    CAutoFile(FILE* filenew, int nTypeIn, int nVersionIn) : nType(nTypeIn), nVersion(nVersionIn)
+    CAutoFile(FILE* filenew, int nTypeIn, int nVersionIn, std::vector<std::byte> data_xor = {}) : nType(nTypeIn), nVersion(nVersionIn), file(filenew), m_xor(std::move(data_xor))
     {
-        file = filenew;
     }
 
     ~CAutoFile()
@@ -528,6 +536,8 @@ public:
             file = nullptr;
         }
     }
+    
+    bool feof() const { return file ? std::feof(file) : true; }
 
     /** Get wrapped FILE* with transfer of ownership.
      * @note This will invalidate the CAutoFile object, and makes it the responsibility of the caller
@@ -551,36 +561,14 @@ public:
     int GetType() const          { return nType; }
     int GetVersion() const       { return nVersion; }
 
-    void read(Span<std::byte> dst)
-    {
-        if (!file)
-            throw std::ios_base::failure("CAutoFile::read: file handle is nullptr");
-        if (fread(dst.data(), 1, dst.size(), file) != dst.size()) {
-            throw std::ios_base::failure(feof(file) ? "CAutoFile::read: end of file" : "CAutoFile::read: fread failed");
-        }
-    }
+    /** Implementation detail, only used internally. */
+    std::size_t detail_fread(Span<std::byte> dst);
+    
+    void read(Span<std::byte> dst);
 
-    void ignore(size_t nSize)
-    {
-        if (!file)
-            throw std::ios_base::failure("CAutoFile::ignore: file handle is nullptr");
-        unsigned char data[4096];
-        while (nSize > 0) {
-            size_t nNow = std::min<size_t>(nSize, sizeof(data));
-            if (fread(data, 1, nNow, file) != nNow)
-                throw std::ios_base::failure(feof(file) ? "CAutoFile::ignore: end of file" : "CAutoFile::read: fread failed");
-            nSize -= nNow;
-        }
-    }
+    void ignore(size_t nSize);
 
-    void write(Span<const std::byte> src)
-    {
-        if (!file)
-            throw std::ios_base::failure("CAutoFile::write: file handle is nullptr");
-        if (fwrite(src.data(), 1, src.size(), file) != src.size()) {
-            throw std::ios_base::failure("CAutoFile::write: write failed");
-        }
-    }
+    void write(Span<const std::byte> src);
 
     template<typename T>
     CAutoFile& operator<<(const T& obj)
