@@ -191,7 +191,7 @@ void CTxMemPool::UpdateTransactionsFromBlock(const std::vector<uint256> &vHashes
     }
 }
 
-bool CTxMemPool::CalculateAncestorsAndCheckLimits(size_t entry_size,
+bool CTxMemPool::CalculateAncestorsAndCheckLimits(int64_t entry_size,
                                                   size_t entry_count,
                                                   setEntries& setAncestors,
                                                   CTxMemPoolEntry::Parents& staged_ancestors,
@@ -201,7 +201,7 @@ bool CTxMemPool::CalculateAncestorsAndCheckLimits(size_t entry_size,
                                                   uint64_t limitDescendantSize,
                                                   std::string &errString) const
 {
-    size_t totalSizeWithAncestors = entry_size;
+    int64_t totalSizeWithAncestors = entry_size;
 
     while (!staged_ancestors.empty()) {
         const CTxMemPoolEntry& stage = staged_ancestors.begin()->get();
@@ -248,7 +248,7 @@ bool CTxMemPool::CheckPackageLimits(const Package& package,
                                     std::string &errString) const
 {
     CTxMemPoolEntry::Parents staged_ancestors;
-    size_t total_size = 0;
+    int64_t total_size = 0;
     for (const auto& tx : package) {
         total_size += GetVirtualTransactionSize(*tx);
         for (const auto& input : tx->vin) {

@@ -553,7 +553,7 @@ private:
      * param@[in]   staged_ancestors    Should contain entries in the mempool.
      * param@[out]  setAncestors        Will be populated with all mempool ancestors.
      */
-    bool CalculateAncestorsAndCheckLimits(size_t entry_size,
+    bool CalculateAncestorsAndCheckLimits(int64_t entry_size,
                                           size_t entry_count,
                                           setEntries& setAncestors,
                                           CTxMemPoolEntry::Parents &staged_ancestors,
