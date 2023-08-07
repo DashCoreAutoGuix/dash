@@ -11,11 +11,15 @@
 
 #include <chainparams.h>
 #include <fs.h>
+#include <common/args.h>
+#include <common/init.h>
+#include <common/system.h>
 #include <init.h>
 #include <interfaces/handler.h>
 #include <interfaces/init.h>
 #include <interfaces/node.h>
 #include <net.h>
+#include <logging.h>
 #include <node/context.h>
 #include <node/interface_ui.h>
 #include <noui.h>

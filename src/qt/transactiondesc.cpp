@@ -19,6 +19,8 @@
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <util/system.h>
+#include <logging.h>
+#include <policy/policy.h>
 #include <validation.h>
 #include <wallet/ismine.h>
 

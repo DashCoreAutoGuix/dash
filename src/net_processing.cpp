@@ -15,6 +15,8 @@
 #include <hash.h>
 #include <index/blockfilterindex.h>
 #include <validation.h>
+#include <kernel/mempool_entry.h>
+#include <logging.h>
 #include <merkleblock.h>
 #include <netmessagemaker.h>
 #include <netbase.h>

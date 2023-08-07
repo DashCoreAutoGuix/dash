@@ -19,6 +19,8 @@
 #include <interfaces/ipc.h>
 #include <key_io.h>
 #include <net.h>
+#include <kernel/cs_main.h>
+#include <logging.h>
 #include <node/context.h>
 #include <rpc/index_util.h>
 #include <rpc/server.h>

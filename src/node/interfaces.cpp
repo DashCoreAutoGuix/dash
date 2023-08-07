@@ -23,6 +23,9 @@
 #include <instantsend/instantsend.h>
 #include <llmq/chainlocks.h>
 #include <llmq/context.h>
+#include <kernel/chain.h>
+#include <kernel/mempool_entry.h>
+#include <logging.h>
 #include <mapport.h>
 #include <masternode/sync.h>
 #include <net.h>
