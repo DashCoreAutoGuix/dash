@@ -32,6 +32,7 @@
 #include <interfaces/init.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
+#include <logging.h>
 #include <mapport.h>
 #include <node/miner.h>
 #include <net.h>

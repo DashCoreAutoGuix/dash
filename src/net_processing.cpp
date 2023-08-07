@@ -14,6 +14,8 @@
 #include <consensus/validation.h>
 #include <hash.h>
 #include <index/blockfilterindex.h>
+#include <kernel/mempool_entry.h>
+#include <logging.h>
 #include <validation.h>
 #include <merkleblock.h>
 #include <netmessagemaker.h>
