@@ -108,6 +108,13 @@ private:
     bool FindBlockPos(FlatFilePos& pos, unsigned int nAddSize, unsigned int nHeight, CChain& active_chain, uint64_t nTime, bool fKnown);
     bool FindUndoPos(BlockValidationState& state, int nFile, FlatFilePos& pos, unsigned int nAddSize);
 
+    FlatFileSeq BlockFileSeq() const;
+    FlatFileSeq UndoFileSeq() const;
+
+    FILE* OpenUndoFile(const FlatFilePos& pos, bool fReadOnly = false) const;
+
+    bool WriteBlockToDisk(const CBlock& block, FlatFilePos& pos) const;
+    bool UndoWriteToDisk(const CBlockUndo& blockundo, FlatFilePos& pos, const uint256& hashBlock) const;
     /* Calculate the block/rev files to delete based on height specified by user with RPC command pruneblockchain */
     void FindFilesToPruneManual(std::set<int>& setFilesToPrune, int nManualPruneHeight, int chain_tip_height);
 
