@@ -6,11 +6,18 @@
 
 export LC_ALL=C.UTF-8
 
-# The root dir.
+# The source root dir, usually from git, usually read-only.
 # The ci system copies this folder.
-# This is where the depends build is done.
-BASE_ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../ >/dev/null 2>&1 && pwd )
-export BASE_ROOT_DIR
+BASE_READ_ONLY_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../ >/dev/null 2>&1 && pwd )
+export BASE_READ_ONLY_DIR
+# The destination root dir inside the container.
+if [ -z "${DANGER_RUN_CI_ON_HOST}" ] ; then
+  # This folder only exists on the ci guest and will be a copy of BASE_READ_ONLY_DIR
+  export BASE_ROOT_DIR="/ci_container_base"
+else
+  # This folder is equal to BASE_READ_ONLY_DIR and is read-write
+  export BASE_ROOT_DIR="${BASE_READ_ONLY_DIR}"
+fi
 
 echo "Setting specific values in env"
 if [ -n "${FILE_ENV}" ]; then
@@ -26,9 +33,15 @@ export JOB_NUMBER=${JOB_NUMBER:-1}
 echo "Fallback to default values in env (if not yet set)"
 # The number of parallel jobs to pass down to make and test_runner.py
 export MAKEJOBS=${MAKEJOBS:--j$(nproc)}
-# A folder for the ci system to put temporary files (ccache, datadirs for tests, ...)
-# This folder only exists on the ci host.
+# The depends dir.
+# This folder exists on the ci guest and on the ci host as a volume.
+export DEPENDS_DIR=${DEPENDS_DIR:-$BASE_ROOT_DIR/depends}
+# A folder for the ci system to put temporary files (build result, datadirs for tests, ...)
+# This folder only exists on the ci guest.
 export BASE_SCRATCH_DIR=${BASE_SCRATCH_DIR:-$BASE_ROOT_DIR/ci/scratch}
+# A folder for the ci system to put executables.
+# This folder only exists on the ci guest.
+export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
 # What host to compile for. See also ./depends/README.md
 # Tests that need cross-compilation export the appropriate HOST.
 # Tests that run natively guess the host
@@ -53,7 +66,7 @@ export DOCKER_NAME_TAG=${DOCKER_NAME_TAG:-ubuntu:20.04}
 export BOOST_TEST_RANDOM=${BOOST_TEST_RANDOM:-1}
 # See man 7 debconf
 export DEBIAN_FRONTEND=noninteractive
-export HOST_CACHE_DIR=${HOST_CACHE_DIR:-$BASE_ROOT_DIR/ci-cache-$BUILD_TARGET}
+export HOST_CACHE_DIR=${HOST_CACHE_DIR:-$BASE_READ_ONLY_DIR/ci-cache-$BUILD_TARGET}
 export CACHE_DIR=${CACHE_DIR:-$HOST_CACHE_DIR}
 export CCACHE_SIZE=${CCACHE_SIZE:-100M}
 export CCACHE_TEMPDIR=${CCACHE_TEMPDIR:-/tmp/.ccache-temp}
@@ -61,9 +74,6 @@ export CCACHE_COMPRESS=${CCACHE_COMPRESS:-1}
 # The cache dir.
 # This folder exists on the ci host and ci guest. Changes are propagated back and forth.
 export CCACHE_DIR=${CCACHE_DIR:-$CACHE_DIR/ccache}
-# The depends dir.
-# This folder exists on the ci host and ci guest. Changes are propagated back and forth.
-export DEPENDS_DIR=${DEPENDS_DIR:-$BASE_ROOT_DIR/depends}
 # Folder where the build result is put (bin and lib).
 export BASE_OUTDIR=${BASE_OUTDIR:-$BASE_SCRATCH_DIR/out/$HOST}
 # Folder where the build is done (dist and out-of-tree build).
@@ -73,11 +83,11 @@ export SDK_URL=${SDK_URL:-https://bitcoincore.org/depends-sources/sdks}
 export DOCKER_PACKAGES=${DOCKER_PACKAGES:-build-essential libtool autotools-dev automake pkg-config bsdmainutils curl ca-certificates ccache python3 rsync git procps}
 export GOAL=${GOAL:-install}
 export DIR_QA_ASSETS=${DIR_QA_ASSETS:-${BASE_SCRATCH_DIR}/qa-assets}
-export PATH=${BASE_ROOT_DIR}/ci/retry:$PATH
+export PATH=${BASE_READ_ONLY_DIR}/ci/retry:$PATH
 export CI_RETRY_EXE=${CI_RETRY_EXE:-"retry --"}
 # Dash's Docker-specifics
 export BUILDER_IMAGE_NAME="dash-builder-$BUILD_TARGET-$JOB_NUMBER"
-export DOCKER_RUN_VOLUME_ARGS="-v $BASE_ROOT_DIR:$BASE_ROOT_DIR -v $HOST_CACHE_DIR:$CACHE_DIR"
-export DOCKER_RUN_ENV_ARGS="-e BASE_ROOT_DIR=$BASE_ROOT_DIR -e CACHE_DIR=$CACHE_DIR -e PULL_REQUEST=$PULL_REQUEST -e COMMIT_RANGE=$COMMIT_RANGE -e JOB_NUMBER=$JOB_NUMBER -e BUILD_TARGET=$BUILD_TARGET"
+export DOCKER_RUN_VOLUME_ARGS="-v $BASE_READ_ONLY_DIR:$BASE_READ_ONLY_DIR -v $HOST_CACHE_DIR:$CACHE_DIR"
+export DOCKER_RUN_ENV_ARGS="-e BASE_ROOT_DIR=$BASE_ROOT_DIR -e BASE_READ_ONLY_DIR=$BASE_READ_ONLY_DIR -e CACHE_DIR=$CACHE_DIR -e PULL_REQUEST=$PULL_REQUEST -e COMMIT_RANGE=$COMMIT_RANGE -e JOB_NUMBER=$JOB_NUMBER -e BUILD_TARGET=$BUILD_TARGET"
 export DOCKER_RUN_ARGS="$DOCKER_RUN_VOLUME_ARGS $DOCKER_RUN_ENV_ARGS"
 export DOCKER_RUN_IN_BUILDER="docker run -t --rm -w $BASE_ROOT_DIR $DOCKER_RUN_ARGS $BUILDER_IMAGE_NAME"

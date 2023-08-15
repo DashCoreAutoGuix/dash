@@ -16,10 +16,6 @@ if [ "$CI_OS_NAME" == "macos" ]; then
   IN_GETOPT_BIN="/usr/local/opt/gnu-getopt/bin/getopt" ${CI_RETRY_EXE} pip3 install --user $PIP_PACKAGES
 fi
 
-# Create folders that are mounted into the docker
-mkdir -p "${CCACHE_DIR}"
-mkdir -p "${PREVIOUS_RELEASES_DIR}"
-
 export ASAN_OPTIONS="detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1"
 export LSAN_OPTIONS="suppressions=${BASE_BUILD_DIR}/test/sanitizer_suppressions/lsan"
 export TSAN_OPTIONS="suppressions=${BASE_BUILD_DIR}/test/sanitizer_suppressions/tsan:halt_on_error=1"
@@ -30,9 +26,11 @@ if [[ $BITCOIN_CONFIG = *--with-sanitizers=*address* ]]; then # If ran with (ASa
 fi
 
 export P_CI_DIR="$PWD"
-export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
+  # Create folders that are mounted into the docker when running on the host
+  mkdir -p "${CCACHE_DIR}"
+  mkdir -p "${PREVIOUS_RELEASES_DIR}"
   echo "Creating $DOCKER_NAME_TAG container to run in"
   LOCAL_UID=$(id -u)
   LOCAL_GID=$(id -g)
@@ -43,7 +41,7 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
 
   # shellcheck disable=SC2086
   DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
-                  --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
+                  --mount type=bind,src=$BASE_READ_ONLY_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
                   --mount type=bind,src=$PREVIOUS_RELEASES_DIR,dst=$PREVIOUS_RELEASES_DIR \
@@ -63,6 +61,9 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   export DOCKER_CI_CMD_PREFIX="docker exec -u $LOCAL_UID $DOCKER_ID"
 else
   echo "Running on host system without docker wrapper"
+  echo "Create missing folders"
+  mkdir -p "${CCACHE_DIR}"
+  mkdir -p "${PREVIOUS_RELEASES_DIR}"
 fi
 
 CI_EXEC () {
