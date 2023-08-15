@@ -67,6 +67,7 @@
 #include <ranges>
 #include <string>
 
+using fsbridge::FopenFn;
 using node::BlockManager;
 using node::BlockMap;
 using node::CBlockIndexHeightOnlyComparator;
@@ -4423,15 +4424,6 @@ void PruneBlockFilesManual(CChainState& active_chainstate, int nManualPruneHeigh
     }
 }
 
-void CChainState::LoadMempool(const ArgsManager& args)
-{
-    if (!m_mempool) return;
-    if (args.GetBoolArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
-        ::LoadMempool(*m_mempool, *this);
-    }
-    m_mempool->SetIsLoaded(!ShutdownRequested());
-}
-
 bool CChainState::LoadChainTip()
 {
     AssertLockHeld(cs_main);
@@ -5435,6 +5427,101 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
             if (pool.get(txid) != nullptr) pool.AddUnbroadcastTx(txid);
         }
 
+    } catch (const std::exception& e) {
+        LogPrintf("Failed to deserialize mempool data on disk: %s. Continuing anyway.\n", e.what());
+        return false;
+    }
+
+    LogPrintf("Imported mempool transactions from disk: %i succeeded, %i failed, %i expired, %i already there, %i waiting for initial broadcast\n", count, failed, expired, already_there, unbroadcast);
+    return true;
+}
+
+bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mockable_fopen_function, const fs::path& load_path,
+                 bool use_current_time, bool apply_fee_delta_priority, bool apply_unbroadcast_set)
+{
+    if (load_path.empty()) return false;
+
+    FILE* filestr{mockable_fopen_function(load_path, "rb")};
+    CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
+    if (file.IsNull()) {
+        LogPrintf("Failed to open mempool file from disk. Continuing anyway.\n");
+        return false;
+    }
+
+    int64_t count = 0;
+    int64_t expired = 0;
+    int64_t failed = 0;
+    int64_t already_there = 0;
+    int64_t unbroadcast = 0;
+    const int64_t nNow = GetTime();
+    const int64_t nExpiryTimeout = gArgs.GetIntArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60;
+
+    try {
+        uint64_t version;
+        file >> version;
+        if (version != MEMPOOL_DUMP_VERSION) {
+            return false;
+        }
+        uint64_t num;
+        file >> num;
+        while (num) {
+            --num;
+            CTransactionRef tx;
+            int64_t nTime;
+            int64_t nFeeDelta;
+            file >> tx;
+            file >> nTime;
+            file >> nFeeDelta;
+
+            if (apply_fee_delta_priority) {
+                CAmount amountdelta = nFeeDelta;
+                if (amountdelta) {
+                    pool.PrioritiseTransaction(tx->GetHash(), amountdelta);
+                }
+            }
+
+            const int64_t entry_time = use_current_time ? nNow : nTime;
+            if (entry_time > nNow - nExpiryTimeout) {
+                LOCK(cs_main);
+                const auto& accepted = AcceptToMemoryPool(active_chainstate, tx, entry_time, /*bypass_limits=*/false, /*test_accept=*/false);
+                if (accepted.m_result_type == MempoolAcceptResult::ResultType::VALID) {
+                    ++count;
+                } else {
+                    // mempool may contain the transaction already, e.g. from
+                    // wallet(s) having loaded it while we were processing
+                    // mempool transactions; consider these as valid, instead of
+                    // failed, but mark them as 'already there'
+                    if (pool.exists(tx->GetHash())) {
+                        ++already_there;
+                    } else {
+                        ++failed;
+                    }
+                }
+            } else {
+                ++expired;
+            }
+            if (ShutdownRequested())
+                return false;
+        }
+        std::map<uint256, CAmount> mapDeltas;
+        file >> mapDeltas;
+
+        if (apply_fee_delta_priority) {
+            for (const auto& i : mapDeltas) {
+                pool.PrioritiseTransaction(i.first, i.second);
+            }
+        }
+
+        std::set<uint256> unbroadcast_txids;
+        file >> unbroadcast_txids;
+        if (apply_unbroadcast_set) {
+            unbroadcast = unbroadcast_txids.size();
+            for (const auto& txid : unbroadcast_txids) {
+                // Ensure transactions were accepted to mempool then add to
+                // unbroadcast set.
+                if (pool.get(txid) != nullptr) pool.AddUnbroadcastTx(txid);
+            }
+        }
     } catch (const std::exception& e) {
         LogPrintf("Failed to deserialize mempool data on disk: %s. Continuing anyway.\n", e.what());
         return false;

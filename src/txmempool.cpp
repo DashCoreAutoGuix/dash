@@ -1726,16 +1726,16 @@ void CTxMemPool::GetTransactionAncestry(const uint256& txid, size_t& ancestors, 
     }
 }
 
-bool CTxMemPool::IsLoaded() const
+bool CTxMemPool::GetLoadTried() const
 {
     LOCK(cs);
     return m_is_loaded;
 }
 
-void CTxMemPool::SetIsLoaded(bool loaded)
+void CTxMemPool::SetLoadTried(bool load_tried)
 {
     LOCK(cs);
-    m_is_loaded = loaded;
+    m_is_loaded = load_tried;
 }
 
 

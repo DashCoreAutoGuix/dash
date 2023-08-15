@@ -2344,6 +2344,11 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
             node.mn_activeman->Init(chainman.ActiveTip());
         }
 
+        // Load mempool from disk
+        if (auto* pool{chainman.ActiveChainstate().GetMempool()}) {
+            ::LoadMempool(*pool, chainman.ActiveChainstate());
+            pool->SetLoadTried(!chainman.m_interrupt);
+        }
     });
 #ifdef ENABLE_WALLET
     if (!args.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET)) {

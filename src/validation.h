@@ -736,10 +736,6 @@ public:
      * By default this only executes fully when using the Regtest chain; see: fCheckBlockIndex.
      */
     void CheckBlockIndex();
-
-    /** Load the persisted mempool from disk */
-    void LoadMempool(const ArgsManager& args);
-
     /** Update the chain tip based on database information, i.e. CoinsTip()'s best block. */
     bool LoadChainTip() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
@@ -1057,6 +1053,10 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function = fsbri
 
 /** Load the mempool from disk. */
 bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mockable_fopen_function = fsbridge::fopen);
+
+/** Load the mempool from a specific path with import options. */
+bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mockable_fopen_function, const fs::path& load_path,
+                 bool use_current_time = true, bool apply_fee_delta_priority = false, bool apply_unbroadcast_set = false);
 
 /**
  * Return the expected assumeutxo value for a given height, if one exists.

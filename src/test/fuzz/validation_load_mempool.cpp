@@ -35,5 +35,6 @@ FUZZ_TARGET(validation_load_mempool, .init = initialize_validation_load_mempool)
         return fuzzed_file_provider.open();
     };
     (void)LoadMempool(pool, g_setup->m_node.chainman->ActiveChainstate(), fuzzed_fopen);
+    pool.SetLoadTried(true);
     (void)DumpMempool(pool, fuzzed_fopen, true);
 }
