@@ -34,6 +34,10 @@ FUZZ_TARGET(validation_load_mempool, .init = initialize_validation_load_mempool)
     auto fuzzed_fopen = [&](const fs::path&, const char*) {
         return fuzzed_file_provider.open();
     };
-    (void)LoadMempool(pool, g_setup->m_node.chainman->ActiveChainstate(), fuzzed_fopen);
+    (void)LoadMempool(pool, g_setup->m_args.GetDataDirNet() / "mempool.dat", g_setup->m_node.chainman->ActiveChainstate(),
+                      ImportMempoolOptions{
+                          .mockable_fopen_function = fuzzed_fopen,
+                      });
+    pool.SetIsLoaded(true);
     (void)DumpMempool(pool, fuzzed_fopen, true);
 }

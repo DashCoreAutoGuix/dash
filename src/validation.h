@@ -1055,8 +1055,15 @@ using FopenFn = std::function<FILE*(const fs::path&, const char*)>;
 /** Dump the mempool to disk. */
 bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function = fsbridge::fopen, bool skip_file_commit = false);
 
-/** Load the mempool from disk. */
-bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mockable_fopen_function = fsbridge::fopen);
+struct ImportMempoolOptions {
+    FopenFn mockable_fopen_function{fsbridge::fopen};
+    bool use_current_time{false};
+    bool apply_fee_delta_priority{true};
+    bool apply_unbroadcast_set{true};
+};
+
+/** Import the file and attempt to add its contents to the mempool. */
+bool LoadMempool(CTxMemPool& pool, const fs::path& load_path, CChainState& active_chainstate, ImportMempoolOptions&& opts);
 
 /**
  * Return the expected assumeutxo value for a given height, if one exists.

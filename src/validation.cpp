@@ -67,6 +67,7 @@
 #include <ranges>
 #include <string>
 
+using fsbridge::FopenFn;
 using node::BlockManager;
 using node::BlockMap;
 using node::CBlockIndexHeightOnlyComparator;
@@ -4427,7 +4428,7 @@ void CChainState::LoadMempool(const ArgsManager& args)
 {
     if (!m_mempool) return;
     if (args.GetBoolArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
-        ::LoadMempool(*m_mempool, *this);
+        ::LoadMempool(*m_mempool, args.GetDataDirNet() / "mempool.dat", *this, ImportMempoolOptions{});
     }
     m_mempool->SetIsLoaded(!ShutdownRequested());
 }
@@ -5359,10 +5360,11 @@ bool CChainState::ResizeCoinsCaches(size_t coinstip_size, size_t coinsdb_size)
 
 static const uint64_t MEMPOOL_DUMP_VERSION = 1;
 
-bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mockable_fopen_function)
+bool LoadMempool(CTxMemPool& pool, const fs::path& load_path, CChainState& active_chainstate, ImportMempoolOptions&& opts)
 {
-    int64_t nExpiryTimeout = gArgs.GetIntArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60;
-    FILE* filestr{mockable_fopen_function(gArgs.GetDataDirNet() / "mempool.dat", "rb")};
+    if (load_path.empty()) return false;
+
+    FILE* filestr{opts.mockable_fopen_function(load_path, "rb")};
     CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
     if (file.IsNull()) {
         LogPrintf("Failed to open mempool file from disk. Continuing anyway.\n");
@@ -5374,7 +5376,7 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
     int64_t failed = 0;
     int64_t already_there = 0;
     int64_t unbroadcast = 0;
-    int64_t nNow = GetTime();
+    const auto now{GetTime<std::chrono::seconds>()};
 
     try {
         uint64_t version;
@@ -5393,11 +5395,15 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
             file >> nTime;
             file >> nFeeDelta;
 
+            if (opts.use_current_time) {
+                nTime = count_seconds(now);
+            }
+
             CAmount amountdelta = nFeeDelta;
-            if (amountdelta) {
+            if (amountdelta && opts.apply_fee_delta_priority) {
                 pool.PrioritiseTransaction(tx->GetHash(), amountdelta);
             }
-            if (nTime > nNow - nExpiryTimeout) {
+            if (nTime > count_seconds(now - pool.m_expiry)) {
                 LOCK(cs_main);
                 const auto& accepted = AcceptToMemoryPool(active_chainstate, tx, nTime, /*bypass_limits=*/false, /*test_accept=*/false);
                 if (accepted.m_result_type == MempoolAcceptResult::ResultType::VALID) {
@@ -5422,17 +5428,21 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
         std::map<uint256, CAmount> mapDeltas;
         file >> mapDeltas;
 
-        for (const auto& i : mapDeltas) {
-            pool.PrioritiseTransaction(i.first, i.second);
+        if (opts.apply_fee_delta_priority) {
+            for (const auto& i : mapDeltas) {
+                pool.PrioritiseTransaction(i.first, i.second);
+            }
         }
 
         std::set<uint256> unbroadcast_txids;
         file >> unbroadcast_txids;
-        unbroadcast = unbroadcast_txids.size();
-        for (const auto& txid : unbroadcast_txids) {
-            // Ensure transactions were accepted to mempool then add to
-            // unbroadcast set.
-            if (pool.get(txid) != nullptr) pool.AddUnbroadcastTx(txid);
+        if (opts.apply_unbroadcast_set) {
+            unbroadcast = unbroadcast_txids.size();
+            for (const auto& txid : unbroadcast_txids) {
+                // Ensure transactions were accepted to mempool then add to
+                // unbroadcast set.
+                if (pool.get(txid) != nullptr) pool.AddUnbroadcastTx(txid);
+            }
         }
 
     } catch (const std::exception& e) {
