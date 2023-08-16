@@ -74,6 +74,14 @@ CI_EXEC_ROOT () {
 export -f CI_EXEC
 export -f CI_EXEC_ROOT
 
+# Normalize all folders to BASE_ROOT_DIR
+CI_EXEC rsync --archive --stats --human-readable "${BASE_READ_ONLY_DIR}/" "${BASE_ROOT_DIR}" || echo "Nothing to copy from ${BASE_READ_ONLY_DIR}/"
+CI_EXEC "${BASE_ROOT_DIR}/ci/test/01_base_install.sh"
+CI_EXEC rsync --archive --stats --human-readable /ro_base/ "${BASE_ROOT_DIR}" || echo "Nothing to copy from ro_base"
+# Fixes permission issues when there is a container UID/GID mismatch with the owner
+# of the git source code directory.
+CI_EXEC git config --global --add safe.directory \"*\"
+
 CI_EXEC mkdir -p "${BINS_SCRATCH_DIR}"
 
 if [ -n "$DPKG_ADD_ARCH" ]; then

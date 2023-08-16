@@ -8,9 +8,21 @@ export LC_ALL=C.UTF-8
 
 # The root dir.
 # The ci system copies this folder.
-# This is where the depends build is done.
-BASE_ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../ >/dev/null 2>&1 && pwd )
-export BASE_ROOT_DIR
+BASE_READ_ONLY_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../ >/dev/null 2>&1 && pwd )
+export BASE_READ_ONLY_DIR
+# The destination root dir inside the container.
+# This folder will also hold any SDKs.
+# This folder only exists on the ci guest and will be a copy of BASE_READ_ONLY_DIR
+export BASE_ROOT_DIR="${BASE_ROOT_DIR:-/ci_container_base}"
+# The depends dir.
+# This folder exists only on the ci guest, and on the ci host as a volume.
+export DEPENDS_DIR=${DEPENDS_DIR:-$BASE_ROOT_DIR/depends}
+# A folder for the ci system to put temporary files (build result, datadirs for tests, ...)
+# This folder only exists on the ci guest.
+export BASE_SCRATCH_DIR=${BASE_SCRATCH_DIR:-$BASE_ROOT_DIR/ci/scratch}
+# A folder for the ci system to put executables.
+# This folder only exists on the ci guest.
+export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
 
 echo "Setting specific values in env"
 if [ -n "${FILE_ENV}" ]; then
@@ -26,9 +38,6 @@ export JOB_NUMBER=${JOB_NUMBER:-1}
 echo "Fallback to default values in env (if not yet set)"
 # The number of parallel jobs to pass down to make and test_runner.py
 export MAKEJOBS=${MAKEJOBS:--j$(nproc)}
-# A folder for the ci system to put temporary files (ccache, datadirs for tests, ...)
-# This folder only exists on the ci host.
-export BASE_SCRATCH_DIR=${BASE_SCRATCH_DIR:-$BASE_ROOT_DIR/ci/scratch}
 # What host to compile for. See also ./depends/README.md
 # Tests that need cross-compilation export the appropriate HOST.
 # Tests that run natively guess the host
