@@ -2548,6 +2548,250 @@ static RPCHelpMan scantxoutset()
     };
 }
 
+<<<<<<< HEAD
+=======
+/** RAII object to prevent concurrency issue when scanning blockfilters */
+static std::atomic<int> g_scanfilter_progress;
+static std::atomic<int> g_scanfilter_progress_height;
+static std::atomic<bool> g_scanfilter_in_progress;
+static std::atomic<bool> g_scanfilter_should_abort_scan;
+class BlockFiltersScanReserver
+{
+private:
+    bool m_could_reserve{false};
+public:
+    explicit BlockFiltersScanReserver() = default;
+
+    bool reserve() {
+        CHECK_NONFATAL(!m_could_reserve);
+        if (g_scanfilter_in_progress.exchange(true)) {
+            return false;
+        }
+        m_could_reserve = true;
+        return true;
+    }
+
+    ~BlockFiltersScanReserver() {
+        if (m_could_reserve) {
+            g_scanfilter_in_progress = false;
+        }
+    }
+};
+
+static bool CheckBlockFilterMatches(BlockManager& blockman, const CBlockIndex& blockindex, const GCSFilter::ElementSet& needles)
+{
+    const CBlock block{GetBlockChecked(blockman, &blockindex)};
+    const CBlockUndo block_undo{GetUndoChecked(blockman, &blockindex)};
+
+    // Check if any of the outputs match the scriptPubKey
+    for (const auto& tx : block.vtx) {
+        if (std::any_of(tx->vout.cbegin(), tx->vout.cend(), [&](const auto& txout) {
+                return needles.count(std::vector<unsigned char>(txout.scriptPubKey.begin(), txout.scriptPubKey.end())) != 0;
+            })) {
+            return true;
+        }
+    }
+    // Check if any of the inputs match the scriptPubKey
+    for (const auto& txundo : block_undo.vtxundo) {
+        if (std::any_of(txundo.vprevout.cbegin(), txundo.vprevout.cend(), [&](const auto& coin) {
+                return needles.count(std::vector<unsigned char>(coin.out.scriptPubKey.begin(), coin.out.scriptPubKey.end())) != 0;
+            })) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static RPCHelpMan scanblocks()
+{
+    return RPCHelpMan{"scanblocks",
+        "\nReturn relevant blockhashes for given descriptors (requires blockfilterindex).\n"
+        "This call may take several minutes. Make sure to use no RPC timeout (bitcoin-cli -rpcclienttimeout=0)",
+        {
+            scan_action_arg_desc,
+            scan_objects_arg_desc,
+            RPCArg{"start_height", RPCArg::Type::NUM, RPCArg::Default{0}, "Height to start to scan from"},
+            RPCArg{"stop_height", RPCArg::Type::NUM, RPCArg::DefaultHint{"chain tip"}, "Height to stop to scan"},
+            RPCArg{"filtertype", RPCArg::Type::STR, RPCArg::Default{BlockFilterTypeName(BlockFilterType::BASIC)}, "The type name of the filter"},
+            RPCArg{"options", RPCArg::Type::OBJ, RPCArg::Optional::OMITTED, "",
+                {
+                    {"filter_false_positives", RPCArg::Type::BOOL, RPCArg::Default{false}, "Filter false positives (slower and may fail on pruned nodes). Otherwise they may occur at a rate of 1/M"},
+                },
+                RPCArgOptions{.oneline_description="options"}},
+        },
+        {
+            scan_result_status_none,
+            RPCResult{"When action=='start'; only returns after scan completes", RPCResult::Type::OBJ, "", "", {
+                {RPCResult::Type::NUM, "from_height", "The height we started the scan from"},
+                {RPCResult::Type::NUM, "to_height", "The height we ended the scan at"},
+                {RPCResult::Type::ARR, "relevant_blocks", "Blocks that may have matched a scanobject.", {
+                    {RPCResult::Type::STR_HEX, "blockhash", "A relevant blockhash"},
+                }},
+                {RPCResult::Type::BOOL, "completed", "true if the scan process was not aborted"}
+            }},
+            RPCResult{"when action=='status' and a scan is currently in progress", RPCResult::Type::OBJ, "", "", {
+                    {RPCResult::Type::NUM, "progress", "Approximate percent complete"},
+                    {RPCResult::Type::NUM, "current_height", "Height of the block currently being scanned"},
+                },
+            },
+            scan_result_abort,
+        },
+        RPCExamples{
+            HelpExampleCli("scanblocks", "start '[\"addr(bcrt1q4u4nsgk6ug0sqz7r3rj9tykjxrsl0yy4d0wwte)\"]' 300000") +
+            HelpExampleCli("scanblocks", "start '[\"addr(bcrt1q4u4nsgk6ug0sqz7r3rj9tykjxrsl0yy4d0wwte)\"]' 100 150 basic") +
+            HelpExampleCli("scanblocks", "status") +
+            HelpExampleRpc("scanblocks", "\"start\", [\"addr(bcrt1q4u4nsgk6ug0sqz7r3rj9tykjxrsl0yy4d0wwte)\"], 300000") +
+            HelpExampleRpc("scanblocks", "\"start\", [\"addr(bcrt1q4u4nsgk6ug0sqz7r3rj9tykjxrsl0yy4d0wwte)\"], 100, 150, \"basic\"") +
+            HelpExampleRpc("scanblocks", "\"status\"")
+        },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+{
+    UniValue ret(UniValue::VOBJ);
+    if (request.params[0].get_str() == "status") {
+        BlockFiltersScanReserver reserver;
+        if (reserver.reserve()) {
+            // no scan in progress
+            return NullUniValue;
+        }
+        ret.pushKV("progress", g_scanfilter_progress.load());
+        ret.pushKV("current_height", g_scanfilter_progress_height.load());
+        return ret;
+    } else if (request.params[0].get_str() == "abort") {
+        BlockFiltersScanReserver reserver;
+        if (reserver.reserve()) {
+            // reserve was possible which means no scan was running
+            return false;
+        }
+        // set the abort flag
+        g_scanfilter_should_abort_scan = true;
+        return true;
+    } else if (request.params[0].get_str() == "start") {
+        BlockFiltersScanReserver reserver;
+        if (!reserver.reserve()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Scan already in progress, use action \"abort\" or \"status\"");
+        }
+        const std::string filtertype_name{request.params[4].isNull() ? "basic" : request.params[4].get_str()};
+
+        BlockFilterType filtertype;
+        if (!BlockFilterTypeByName(filtertype_name, filtertype)) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown filtertype");
+        }
+
+        UniValue options{request.params[5].isNull() ? UniValue::VOBJ : request.params[5]};
+        bool filter_false_positives{options.exists("filter_false_positives") ? options["filter_false_positives"].get_bool() : false};
+
+        BlockFilterIndex* index = GetBlockFilterIndex(filtertype);
+        if (!index) {
+            throw JSONRPCError(RPC_MISC_ERROR, "Index is not enabled for filtertype " + filtertype_name);
+        }
+
+        NodeContext& node = EnsureAnyNodeContext(request.context);
+        ChainstateManager& chainman = EnsureChainman(node);
+
+        // set the start-height
+        const CBlockIndex* start_index = nullptr;
+        const CBlockIndex* stop_block = nullptr;
+        {
+            LOCK(cs_main);
+            CChain& active_chain = chainman.ActiveChain();
+            start_index = active_chain.Genesis();
+            stop_block = active_chain.Tip(); // If no stop block is provided, stop at the chain tip.
+            if (!request.params[2].isNull()) {
+                start_index = active_chain[request.params[2].getInt<int>()];
+                if (!start_index) {
+                    throw JSONRPCError(RPC_MISC_ERROR, "Invalid start_height");
+                }
+            }
+            if (!request.params[3].isNull()) {
+                stop_block = active_chain[request.params[3].getInt<int>()];
+                if (!stop_block || stop_block->nHeight < start_index->nHeight) {
+                    throw JSONRPCError(RPC_MISC_ERROR, "Invalid stop_height");
+                }
+            }
+        }
+        CHECK_NONFATAL(start_index);
+        CHECK_NONFATAL(stop_block);
+
+        // loop through the scan objects, add scripts to the needle_set
+        GCSFilter::ElementSet needle_set;
+        for (const UniValue& scanobject : request.params[1].get_array().getValues()) {
+            FlatSigningProvider provider;
+            std::vector<CScript> scripts = EvalDescriptorStringOrObject(scanobject, provider);
+            for (const CScript& script : scripts) {
+                needle_set.emplace(script.begin(), script.end());
+            }
+        }
+        UniValue blocks(UniValue::VARR);
+        const int amount_per_chunk = 10000;
+        std::vector<BlockFilter> filters;
+        int start_block_height = start_index->nHeight; // for progress reporting
+        const int total_blocks_to_process = stop_block->nHeight - start_block_height;
+
+        g_scanfilter_should_abort_scan = false;
+        g_scanfilter_progress = 0;
+        g_scanfilter_progress_height = start_block_height;
+        bool completed = true;
+
+        const CBlockIndex* end_range = nullptr;
+        do {
+            node.rpc_interruption_point(); // allow a clean shutdown
+            if (g_scanfilter_should_abort_scan) {
+                completed = false;
+                break;
+            }
+
+            // split the lookup range in chunks if we are deeper than 'amount_per_chunk' blocks from the stopping block
+            int start_block = !end_range ? start_index->nHeight : start_index->nHeight + 1; // to not include the previous round 'end_range' block
+            end_range = (start_block + amount_per_chunk < stop_block->nHeight) ?
+                    WITH_LOCK(::cs_main, return chainman.ActiveChain()[start_block + amount_per_chunk]) :
+                    stop_block;
+
+            if (index->LookupFilterRange(start_block, end_range, filters)) {
+                for (const BlockFilter& filter : filters) {
+                    // compare the elements-set with each filter
+                    if (filter.GetFilter().MatchAny(needle_set)) {
+                        if (filter_false_positives) {
+                            // Double check the filter matches by scanning the block
+                            const CBlockIndex& blockindex = *CHECK_NONFATAL(WITH_LOCK(cs_main, return chainman.m_blockman.LookupBlockIndex(filter.GetBlockHash())));
+
+                            if (!CheckBlockFilterMatches(chainman.m_blockman, blockindex, needle_set)) {
+                                continue;
+                            }
+                        }
+
+                        blocks.push_back(filter.GetBlockHash().GetHex());
+                    }
+                }
+            }
+            start_index = end_range;
+
+            // update progress
+            int blocks_processed = end_range->nHeight - start_block_height;
+            if (total_blocks_to_process > 0) { // avoid division by zero
+                g_scanfilter_progress = (int)(100.0 / total_blocks_to_process * blocks_processed);
+            } else {
+                g_scanfilter_progress = 100;
+            }
+            g_scanfilter_progress_height = end_range->nHeight;
+
+        // Finish if we reached the stop block
+        } while (start_index != stop_block);
+
+        ret.pushKV("from_height", start_block_height);
+        ret.pushKV("to_height", start_index->nHeight); // start_index is always the last scanned block here
+        ret.pushKV("relevant_blocks", blocks);
+        ret.pushKV("completed", completed);
+    }
+    else {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid action '%s'", request.params[0].get_str()));
+    }
+    return ret;
+},
+    };
+}
+
+>>>>>>> ecb20563b6a (Merge bitcoin/bitcoin#28123: Bugfix: RPC: Remove quotes from non-string oneline descriptions)
 static RPCHelpMan getblockfilter()
 {
     return RPCHelpMan{"getblockfilter",

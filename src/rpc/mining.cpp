@@ -550,6 +550,7 @@ static RPCHelpMan getblocktemplate()
         "    https://github.com/bitcoin/bips/blob/master/bip-0023.mediawiki\n"
         "    https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki#getblocktemplate_changes\n",
         {
+<<<<<<< HEAD
             {"template_request", RPCArg::Type::OBJ, RPCArg::Default{UniValue::VOBJ}, "Format of the template",
                 {
                     {"mode", RPCArg::Type::STR, /* treat as named arg */ RPCArg::Optional::OMITTED_NAMED_ARG, "This must be set to \"template\", \"proposal\" (see BIP 23), or omitted"},
@@ -565,6 +566,24 @@ static RPCHelpMan getblocktemplate()
                         },
                 },
                 "\"template_request\""},
+=======
+            {"template_request", RPCArg::Type::OBJ, RPCArg::Optional::NO, "Format of the template",
+            {
+                {"mode", RPCArg::Type::STR, /* treat as named arg */ RPCArg::Optional::OMITTED, "This must be set to \"template\", \"proposal\" (see BIP 23), or omitted"},
+                {"capabilities", RPCArg::Type::ARR, /* treat as named arg */ RPCArg::Optional::OMITTED, "A list of strings",
+                {
+                    {"str", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "client side supported feature, 'longpoll', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
+                }},
+                {"rules", RPCArg::Type::ARR, RPCArg::Optional::NO, "A list of strings",
+                {
+                    {"segwit", RPCArg::Type::STR, RPCArg::Optional::NO, "(literal) indicates client side segwit support"},
+                    {"str", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "other client side supported softfork deployment"},
+                }},
+                {"longpollid", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "delay processing request until the result would vary significantly from the \"longpollid\" of a prior template"},
+                {"data", RPCArg::Type::STR_HEX, RPCArg::Optional::OMITTED, "proposed block data to check, encoded in hexadecimal; valid only for mode=\"proposal\""},
+            },
+            },
+>>>>>>> ecb20563b6a (Merge bitcoin/bitcoin#28123: Bugfix: RPC: Remove quotes from non-string oneline descriptions)
         },
         {
             RPCResult{"If the proposal was accepted with mode=='proposal'", RPCResult::Type::NONE, "", ""},

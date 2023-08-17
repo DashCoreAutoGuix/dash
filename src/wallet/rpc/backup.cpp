@@ -1512,7 +1512,16 @@ RPCHelpMan importmulti()
                             {"label", RPCArg::Type::STR, RPCArg::Default{""}, "Label to assign to the address, only allowed with internal=false"},
                             {"keypool", RPCArg::Type::BOOL, RPCArg::Default{false}, "Stating whether imported public keys should be added to the keypool for when users request new addresses. Only allowed when wallet private keys are disabled"},
                         },
+<<<<<<< HEAD
                     },
+=======
+                        RPCArgOptions{.oneline_description="requests"}},
+                    {"options", RPCArg::Type::OBJ_NAMED_PARAMS, RPCArg::Optional::OMITTED, "",
+                        {
+                            {"rescan", RPCArg::Type::BOOL, RPCArg::Default{true}, "Scan the chain and mempool for wallet transactions after all imports."},
+                        },
+                        RPCArgOptions{.oneline_description="options"}},
+>>>>>>> ecb20563b6a (Merge bitcoin/bitcoin#28123: Bugfix: RPC: Remove quotes from non-string oneline descriptions)
                 },
                 "\"requests\""},
             {"options", RPCArg::Type::OBJ, RPCArg::Optional::OMITTED_NAMED_ARG, "",
@@ -1826,7 +1835,11 @@ RPCHelpMan importdescriptors() {
                                 },
                             },
                         },
+<<<<<<< HEAD
                         "\"requests\""},
+=======
+                        RPCArgOptions{.oneline_description="requests"}},
+>>>>>>> ecb20563b6a (Merge bitcoin/bitcoin#28123: Bugfix: RPC: Remove quotes from non-string oneline descriptions)
                 },
                 RPCResult{
                     RPCResult::Type::ARR, "", "Response is an array with the same size as the input that has the execution result",

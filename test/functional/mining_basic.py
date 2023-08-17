@@ -113,6 +113,12 @@ class MiningTest(BitcoinTestFramework):
         block.nNonce = 0
         block.vtx = [coinbase_tx]
 
+<<<<<<< HEAD
+=======
+        self.log.info("getblocktemplate: segwit rule must be set")
+        assert_raises_rpc_error(-8, "getblocktemplate must be called with the segwit rule set", node.getblocktemplate, {})
+
+>>>>>>> ecb20563b6a (Merge bitcoin/bitcoin#28123: Bugfix: RPC: Remove quotes from non-string oneline descriptions)
         self.log.info("getblocktemplate: Test valid block")
         assert_template(node, block, None)
 
