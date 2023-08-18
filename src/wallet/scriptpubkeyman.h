@@ -220,9 +220,10 @@ public:
     virtual uint256 GetID() const { return uint256(); }
 
     /** Prepends the wallet name in logging output to ease debugging in multi-wallet use cases */
-    template<typename... Params>
-    void WalletLogPrintf(std::string fmt, Params... parameters) const {
-        LogPrintf(("%s " + fmt).c_str(), m_storage.GetDisplayName(), parameters...);
+    template <typename... Params>
+    void WalletLogPrintf(const char* fmt, Params... parameters) const
+    {
+        LogPrintf(("%s " + std::string{fmt}).c_str(), m_storage.GetDisplayName(), parameters...);
     };
 
     /** Watch-only address added */
