@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#\!/usr/bin/env bash
 #
 # Copyright (c) 2019-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
@@ -7,6 +7,7 @@
 export LC_ALL=C.UTF-8
 
 export CONTAINER_NAME=ci_win64
+export CI_IMAGE_NAME_TAG="docker.io/amd64/ubuntu:22.04"  # Check that Jammy can cross-compile to win64
 export HOST=x86_64-w64-mingw32
 export DPKG_ADD_ARCH="i386"
 export PACKAGES="python3 nsis g++-mingw-w64-x86-64-posix wine-binfmt wine64 wine32 file"
@@ -18,3 +19,4 @@ export GOAL="deploy"
 # https://github.com/mingw-w64/mingw-w64/commit/1690994f515910a31b9fb7c7bd3a52d4ba987abe
 export BITCOIN_CONFIG="--enable-gui --enable-reduce-exports --disable-miner --without-boost-process CXXFLAGS='-Wno-return-type -Wno-error=maybe-uninitialized -Wno-error=array-bounds'"
 export DIRECT_WINE_EXEC_TESTS=true
+EOF < /dev/null
