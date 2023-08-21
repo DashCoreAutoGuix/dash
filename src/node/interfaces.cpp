@@ -476,8 +476,9 @@ public:
         }
         return GuessVerificationProgress(Params().TxData(), tip);
     }
-    bool isInitialBlockDownload() override {
-        return chainman().ActiveChainstate().IsInitialBlockDownload();
+    bool isInitialBlockDownload() override
+    {
+        return chainman().IsInitialBlockDownload();
     }
     bool isMasternode() override
     {
@@ -961,8 +962,9 @@ public:
         return m_node.chainman->m_blockman.m_have_pruned;
     }
     bool isReadyToBroadcast() override { return !node::fImporting && !node::fReindex && !isInitialBlockDownload(); }
-    bool isInitialBlockDownload() override {
-        return chainman().ActiveChainstate().IsInitialBlockDownload();
+    bool isInitialBlockDownload() override
+    {
+        return chainman().IsInitialBlockDownload();
     }
     bool shutdownRequested() override { return ShutdownRequested(); }
     void initMessage(const std::string& message) override { ::uiInterface.InitMessage(message); }
