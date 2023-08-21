@@ -342,8 +342,9 @@ static void LimitMempoolSize(CTxMemPool& pool, CCoinsViewCache& coins_cache, siz
 static bool IsCurrentForFeeEstimation(CChainState& active_chainstate) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
     AssertLockHeld(cs_main);
-    if (active_chainstate.IsInitialBlockDownload())
+    if (active_chainstate.m_chainman.IsInitialBlockDownload()) {
         return false;
+    }
     if (active_chainstate.m_chain.Tip()->GetBlockTime() < count_seconds(GetTime<std::chrono::seconds>() - MAX_FEE_ESTIMATION_TIP_AGE))
         return false;
     if (active_chainstate.m_chain.Height() < active_chainstate.m_chainman.m_best_header->nHeight - 1) {
@@ -1589,7 +1590,7 @@ void CChainState::InitCoinsCache(size_t cache_size_bytes)
 // `const` so that `CValidationInterface` clients (which are given a `const CChainState*`)
 // can call it.
 //
-bool CChainState::IsInitialBlockDownload() const
+bool ChainstateManager::IsInitialBlockDownload() const
 {
     // Optimization: pre-test latch before taking the lock.
     if (m_cached_finished_ibd.load(std::memory_order_relaxed))
@@ -1598,13 +1599,17 @@ bool CChainState::IsInitialBlockDownload() const
     LOCK(cs_main);
     if (m_cached_finished_ibd.load(std::memory_order_relaxed))
         return false;
-    if (fImporting || fReindex)
+    if (m_blockman.LoadingBlocks()) {
         return true;
-    if (m_chain.Tip() == nullptr)
+    }
+    CChain& chain{ActiveChain()};
+    if (chain.Tip() == nullptr) {
         return true;
-    if (m_chain.Tip()->nChainWork < nMinimumChainWork)
+    }
+    if (chain.Tip()->nChainWork < MinimumChainWork()) {
         return true;
-    if (m_chain.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))
+    }
+    if (chain.Tip()->Time() < Now<NodeSeconds>() - m_options.max_tip_age) {
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     m_cached_finished_ibd.store(true, std::memory_order_relaxed);
@@ -1637,7 +1642,7 @@ void CChainState::CheckForkWarningConditions()
 
     // Before we get past initial download, we cannot reliably alert about forks
     // (we assume we don't get stuck on a fork before finishing our initial sync)
-    if (IsInitialBlockDownload()) {
+    if (m_chainman.IsInitialBlockDownload()) {
         return;
     }
 
@@ -2694,7 +2699,7 @@ bool CChainState::FlushStateToDisk(
             } else {
                 LOG_TIME_MILLIS_WITH_CATEGORY("find files to prune", BCLog::BENCHMARK);
 
-                m_blockman.FindFilesToPrune(setFilesToPrune, m_params.PruneAfterHeight(), m_chain.Height(), last_prune, IsInitialBlockDownload());
+                m_blockman.FindFilesToPrune(setFilesToPrune, m_chainman.GetParams().PruneAfterHeight(), m_chain.Height(), last_prune, m_chainman.IsInitialBlockDownload());
                 m_blockman.m_check_for_pruning = false;
             }
             if (!setFilesToPrune.empty()) {
@@ -2884,7 +2889,7 @@ void CChainState::UpdateTip(const CBlockIndex* pindexNew)
     }
 
     bilingual_str warning_messages;
-    if (!this->IsInitialBlockDownload())
+    if (!m_chainman.IsInitialBlockDownload())
     {
         const CBlockIndex* pindex = pindexNew;
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
@@ -3301,18 +3306,19 @@ static SynchronizationState GetSynchronizationState(bool init)
     return SynchronizationState::INIT_DOWNLOAD;
 }
 
-static bool NotifyHeaderTip(CChainState& chainstate) LOCKS_EXCLUDED(cs_main) {
+static bool NotifyHeaderTip(ChainstateManager& chainman) LOCKS_EXCLUDED(cs_main)
+{
     bool fNotify = false;
     bool fInitialBlockDownload = false;
     static CBlockIndex* pindexHeaderOld = nullptr;
     CBlockIndex* pindexHeader = nullptr;
     {
         LOCK(cs_main);
-        pindexHeader = chainstate.m_chainman.m_best_header;
+        pindexHeader = chainman.m_best_header;
 
         if (pindexHeader != pindexHeaderOld) {
             fNotify = true;
-            fInitialBlockDownload = chainstate.IsInitialBlockDownload();
+            fInitialBlockDownload = chainman.IsInitialBlockDownload();
             pindexHeaderOld = pindexHeader;
         }
     }
@@ -3404,7 +3410,7 @@ bool CChainState::ActivateBestChain(BlockValidationState& state, std::shared_ptr
             if (!blocks_connected) return true;
 
             const CBlockIndex* pindexFork = m_chain.FindFork(starting_tip);
-            bool fInitialDownload = IsInitialBlockDownload();
+            bool fInitialDownload = m_chainman.IsInitialBlockDownload();
 
             // Notify external listeners about the new tip.
             // Enqueue while holding cs_main to ensure that UpdatedBlockTip is called in the order in which blocks are connected
@@ -3617,13 +3623,13 @@ bool CChainState::InvalidateBlock(BlockValidationState& state, CBlockIndex* pind
         }
 
         InvalidChainFound(to_mark_failed);
-        GetMainSignals().SynchronousUpdatedBlockTip(m_chain.Tip(), nullptr, IsInitialBlockDownload());
-        GetMainSignals().UpdatedBlockTip(m_chain.Tip(), nullptr, IsInitialBlockDownload());
+        GetMainSignals().SynchronousUpdatedBlockTip(m_chain.Tip(), nullptr, m_chainman.IsInitialBlockDownload());
+        GetMainSignals().UpdatedBlockTip(m_chain.Tip(), nullptr, m_chainman.IsInitialBlockDownload());
     }
 
     // Only notify about a new block tip if the active chain was modified.
     if (pindex_was_in_chain) {
-        uiInterface.NotifyBlockTip(GetSynchronizationState(IsInitialBlockDownload()), to_mark_failed->pprev);
+        uiInterface.NotifyBlockTip(GetSynchronizationState(m_chainman.IsInitialBlockDownload()), to_mark_failed->pprev);
     }
     return true;
 }
@@ -4182,6 +4188,23 @@ bool ChainstateManager::AcceptBlockHeader(const CBlockHeader& block, BlockValida
     // Notify external listeners about accepted block header
     GetMainSignals().AcceptedBlockHeader(pindex);
 
+    // Since this is the earliest point at which we have determined that a
+    // header is both new and valid, log here.
+    //
+    // These messages are valuable for detecting potential selfish mining behavior;
+    // if multiple displacing headers are seen near simultaneously across many
+    // nodes in the network, this might be an indication of selfish mining. Having
+    // this log by default when not in IBD ensures broad availability of this data
+    // in case investigation is merited.
+    const auto msg = strprintf(
+        "Saw new header hash=%s height=%d", hash.ToString(), pindex->nHeight);
+
+    if (m_chainman.IsInitialBlockDownload()) {
+        LogPrintLevel(BCLog::VALIDATION, BCLog::Level::Debug, "%s\n", msg);
+    } else {
+        LogPrintf("%s\n", msg);
+    }
+
     return true;
 }
 
@@ -4204,8 +4227,8 @@ bool ChainstateManager::ProcessNewBlockHeaders(const std::vector<CBlockHeader>& 
             }
         }
     }
-    if (NotifyHeaderTip(ActiveChainstate())) {
-        if (ActiveChainstate().IsInitialBlockDownload() && ppindex && *ppindex) {
+    if (NotifyHeaderTip(*this)) {
+        if (IsInitialBlockDownload() && ppindex && *ppindex) {
             const CBlockIndex& last_accepted{**ppindex};
             const int64_t blocks_left{(GetTime() - last_accepted.GetBlockTime()) / chainparams.GetConsensus().nPowTargetSpacing};
             const double progress{100.0 * last_accepted.nHeight / (last_accepted.nHeight + blocks_left)};
@@ -4213,6 +4236,31 @@ bool ChainstateManager::ProcessNewBlockHeaders(const std::vector<CBlockHeader>& 
         }
     }
     return true;
+}
+
+void ChainstateManager::ReportHeadersPresync(const arith_uint256& work, int64_t height, int64_t timestamp)
+{
+    AssertLockNotHeld(cs_main);
+    {
+        LOCK(cs_main);
+        // Don't report headers presync progress if we already have a post-minchainwork header chain.
+        // This means we lose reporting for potentially legitimate, but unlikely, deep reorgs, but
+        // prevent attackers that spam low-work headers from filling our logs.
+        if (m_best_header->nChainWork >= UintToArith256(GetConsensus().nMinimumChainWork)) return;
+        // Rate limit headers presync updates to 4 per second, as these are not subject to DoS
+        // protection.
+        auto now = std::chrono::steady_clock::now();
+        if (now < m_last_presync_update + std::chrono::milliseconds{250}) return;
+        m_last_presync_update = now;
+    }
+    bool initial_download = IsInitialBlockDownload();
+    // NOTE: Dash doesn't have GetNotifications() system, using direct UI notification
+    uiInterface.NotifyHeaderTip(GetSynchronizationState(initial_download), nullptr);
+    if (initial_download) {
+        const int64_t blocks_left{(GetTime() - timestamp) / GetConsensus().nPowTargetSpacing};
+        const double progress{100.0 * height / (height + blocks_left)};
+        LogPrintf("Pre-synchronizing blockheaders, height: %d (~%.2f%%)\n", height, progress);
+    }
 }
 
 /** Store block on disk. If dbp is non-nullptr, the file is known to already reside on disk */
@@ -4278,7 +4326,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, Block
 
     // Header is valid/has work, merkle tree is good...RELAY NOW
     // (but if it does not build on our best tip, let the SendMessages loop relay it)
-    if (!IsInitialBlockDownload() && m_chain.Tip() == pindex->pprev)
+    if (!m_chainman.IsInitialBlockDownload() && m_chain.Tip() == pindex->pprev)
         GetMainSignals().NewPoWValidBlock(pindex, pblock);
 
     // Write block to history file
@@ -4336,7 +4384,7 @@ bool ChainstateManager::ProcessNewBlock(const CChainParams& chainparams, const s
         }
     }
 
-    NotifyHeaderTip(ActiveChainstate());
+    NotifyHeaderTip(*this);
 
     BlockValidationState state; // Only used to report errors, not invalidity - ignore it
     if (!ActiveChainstate().ActivateBestChain(state, block))
@@ -5038,6 +5086,27 @@ void CChainState::LoadExternalBlockFile(
                     }
                 }
 
+                if (m_blockman.IsPruneMode() && !fReindex && pblock) {
+                    // must update the tip for pruning to work while importing with -loadblock.
+                    // this is a tradeoff to conserve disk space at the expense of time
+                    // spent updating the tip to be able to prune.
+                    // otherwise, ActivateBestChain won't be called by the import process
+                    // until after all of the block files are loaded. ActivateBestChain can be
+                    // called by concurrent network message processing. but, that is not
+                    // reliable for the purpose of pruning while importing.
+                    bool activation_failure = false;
+                    for (auto c : GetAll()) {
+                        BlockValidationState state;
+                        if (!c->ActivateBestChain(state, pblock)) {
+                            LogPrint(BCLog::REINDEX, "failed to activate chain (%s)\n", state.ToString());
+                            activation_failure = true;
+                            break;
+                        }
+                    }
+                    if (activation_failure) {
+                        break;
+                    }
+                }
                 NotifyHeaderTip(*this);
 
                 if (!blocks_with_unknown_parent) continue;
@@ -5906,7 +5975,7 @@ void ChainstateManager::MaybeRebalanceCaches()
         // If both chainstates exist, determine who needs more cache based on IBD status.
         //
         // Note: shrink caches first so that we don't inadvertently overwhelm available memory.
-        if (m_snapshot_chainstate->IsInitialBlockDownload()) {
+        if (IsInitialBlockDownload()) {
             m_ibd_chainstate->ResizeCoinsCaches(
                 m_total_coinstip_cache * 0.05, m_total_coinsdb_cache * 0.05);
             m_snapshot_chainstate->ResizeCoinsCaches(

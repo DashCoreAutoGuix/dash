@@ -472,14 +472,6 @@ protected:
      */
     Mutex m_chainstate_mutex;
 
-    /**
-     * Whether this chainstate is undergoing initial block download.
-     *
-     * Mutable because we need to be able to mark IsInitialBlockDownload()
-     * const, which latches this for caching purposes.
-     */
-    mutable std::atomic<bool> m_cached_finished_ibd{false};
-
     //! Optional mempool that is kept in sync with the chain.
     //! Only the active chainstate has a mempool.
     CTxMemPool* m_mempool;
@@ -724,9 +716,6 @@ public:
 
     void UnloadBlockIndex() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
-    /** Check whether we are doing an initial block download (synchronizing from disk or network) */
-    bool IsInitialBlockDownload() const;
-
     /** Find the last common block of this chain and a locator. */
     const CBlockIndex* FindForkInGlobalIndex(const CBlockLocator& locator) const EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
@@ -899,6 +888,15 @@ public:
     node::BlockManager m_blockman;
 
     /**
+     * Whether initial block download has ended and IsInitialBlockDownload
+     * should return false from now on.
+     *
+     * Mutable because we need to be able to mark IsInitialBlockDownload()
+     * const, which latches this for caching purposes.
+     */
+    mutable std::atomic<bool> m_cached_finished_ibd{false};
+
+    /**
      * In order to efficiently track invalidity of headers, we keep the set of
      * blocks which we tried to connect and found to be invalid here (ie which
      * were set to BLOCK_FAILED_VALID since the last restart). We can then
@@ -987,6 +985,10 @@ public:
 
     //! Is there a snapshot in use and has it been fully validated?
     bool IsSnapshotValidated() const EXCLUSIVE_LOCKS_REQUIRED(::cs_main) { return m_snapshot_validated; }
+
+    /** Check whether we are doing an initial block download (synchronizing from disk or network) */
+    bool IsInitialBlockDownload() const;
+
 
     /**
      * Process an incoming block. This only returns after the best known valid
