@@ -109,6 +109,7 @@ BASE_SCRIPTS = [
     'p2p_quorum_data.py',
     # vv Tests less than 2m vv
     'p2p_instantsend.py',
+    'p2p_orphan_handling.py',
     'wallet_basic.py --legacy-wallet',
     'wallet_basic.py --descriptors',
     'wallet_labels.py --legacy-wallet',
