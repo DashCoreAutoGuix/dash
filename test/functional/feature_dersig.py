@@ -122,14 +122,22 @@ class BIP66Test(BitcoinTestFramework):
 
         # First we show that this tx is valid except for DERSIG by getting it
         # rejected from the mempool for exactly that reason.
-        assert_raises_rpc_error(-26, 'non-mandatory-script-verify-flag (Non-canonical DER signature)', self.nodes[0].sendrawtransaction, spendtx.serialize().hex(), 0)
+        assert_equal(
+            [{
+                'txid': spendtx.hash,
+                'wtxid': spendtx.getwtxid(),
+                'allowed': False,
+                'reject-reason': 'mandatory-script-verify-flag-failed (Non-canonical DER signature)',
+            }],
+            self.nodes[0].testmempoolaccept(rawtxs=[spendtx.serialize().hex()], maxfeerate=0),
+        )
 
         # Now we verify that a block with this transaction is also invalid.
         block.vtx.append(spendtx)
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
 
-        with self.nodes[0].assert_debug_log(expected_msgs=[f'CheckInputScripts on {block.vtx[-1].hash} failed with non-mandatory-script-verify-flag (Non-canonical DER signature)']):
+        with self.nodes[0].assert_debug_log(expected_msgs=[f'CheckInputScripts on {block.vtx[-1].hash} failed with mandatory-script-verify-flag-failed (Non-canonical DER signature)']):
             peer.send_and_ping(msg_block(block))
             assert_equal(int(self.nodes[0].getbestblockhash(), 16), tip)
             peer.sync_with_ping()

@@ -30,7 +30,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
 )
 
-NULLDUMMY_ERROR = "non-mandatory-script-verify-flag (Dummy CHECKMULTISIG argument must be zero)"
+NULLDUMMY_ERROR = "mandatory-script-verify-flag-failed (Dummy CHECKMULTISIG argument must be zero)"
 
 
 def invalidate_nulldummy_tx(tx):
