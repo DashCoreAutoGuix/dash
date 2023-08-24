@@ -31,7 +31,6 @@ fi
 
 export P_CI_DIR="$PWD"
 export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
-
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Creating $DOCKER_NAME_TAG container to run in"
   LOCAL_UID=$(id -u)
@@ -82,10 +81,10 @@ fi
 
 if [[ $DOCKER_NAME_TAG == *centos* ]]; then
   CI_EXEC_ROOT yum -y install epel-release
-  CI_EXEC_ROOT yum -y install "$DOCKER_PACKAGES" "$PACKAGES"
+  CI_EXEC_ROOT yum -y install "$CI_BASE_PACKAGES" "$PACKAGES"
 elif [ "$CI_USE_APT_INSTALL" != "no" ]; then
   ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get update
-  ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get install --no-install-recommends --no-upgrade -y "$PACKAGES" "$DOCKER_PACKAGES"
+  ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get install --no-install-recommends --no-upgrade -y "$PACKAGES" "$CI_BASE_PACKAGES"
   if [ -n "$PIP_PACKAGES" ]; then
     # shellcheck disable=SC2086
     ${CI_RETRY_EXE} pip3 install --user $PIP_PACKAGES
