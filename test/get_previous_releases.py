@@ -274,6 +274,11 @@ def check_host(args) -> int:
     if args.download_binary:
         platforms = {
             'aarch64-*-linux*': 'aarch64-linux-gnu',
+<<<<<<< HEAD
+=======
+            'powerpc64le-*-linux-*': 'powerpc64le-linux-gnu',
+            'riscv64-*-linux*': 'riscv64-linux-gnu',
+>>>>>>> 1348454d82 (Merge bitcoin/bitcoin#28352: test: Support powerpc64le in get_previous_releases.py)
             'x86_64-*-linux*': 'x86_64-linux-gnu',
             'x86_64-apple-darwin*': 'x86_64-apple-darwin',
             'aarch64-apple-darwin*': 'arm64-apple-darwin',
