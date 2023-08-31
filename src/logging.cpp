@@ -179,6 +179,11 @@ const CLogCategoryDesc LogCategories[] =
 #endif
     {BCLog::BLOCKSTORE, "blockstorage"},
     {BCLog::TXRECONCILIATION, "txreconciliation"},
+<<<<<<< HEAD
+=======
+    {BCLog::SCAN, "scan"},
+    {BCLog::TXPACKAGES, "txpackages"},
+>>>>>>> 5666966dff (Merge bitcoin/bitcoin#28364: log: log wtxids when possible, add TXPACKAGES category)
     {BCLog::ALL, "1"},
     {BCLog::ALL, "all"},
 
@@ -296,6 +301,7 @@ std::string LogCategoryToStr(BCLog::LogFlags category)
         return "blockstorage";
     case BCLog::LogFlags::TXRECONCILIATION:
         return "txreconciliation";
+<<<<<<< HEAD
     /* Start Dash */
     case BCLog::LogFlags::CHAINLOCKS:
         return "chainlocks";
@@ -328,6 +334,12 @@ std::string LogCategoryToStr(BCLog::LogFlags category)
     case BCLog::LogFlags::NET_NETCONN:
         return "net|netconn";
     /* End Dash */
+=======
+    case BCLog::LogFlags::SCAN:
+        return "scan";
+    case BCLog::LogFlags::TXPACKAGES:
+        return "txpackages";
+>>>>>>> 5666966dff (Merge bitcoin/bitcoin#28364: log: log wtxids when possible, add TXPACKAGES category)
     case BCLog::LogFlags::ALL:
         return "all";
     }

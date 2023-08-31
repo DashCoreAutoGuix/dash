@@ -67,6 +67,7 @@ namespace BCLog {
 #endif
         BLOCKSTORE  = (1 << 26),
         TXRECONCILIATION = (1 << 27),
+<<<<<<< HEAD
 
         //Start Dash
         CHAINLOCKS  = ((uint64_t)1 << 32),
@@ -91,6 +92,11 @@ namespace BCLog {
         //End Dash
 
         ALL         = ~(uint64_t)0,
+=======
+        SCAN        = (1 << 28),
+        TXPACKAGES  = (1 << 29),
+        ALL         = ~(uint32_t)0,
+>>>>>>> 5666966dff (Merge bitcoin/bitcoin#28364: log: log wtxids when possible, add TXPACKAGES category)
     };
     enum class Level {
         Trace = 0, // High-volume or detailed logging for development/debugging

@@ -4,6 +4,8 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test addr response caching"""
 
+import time
+
 from test_framework.p2p import (
     P2PInterface,
     p2p_lock
@@ -65,7 +67,7 @@ class AddrTest(BitcoinTestFramework):
         last_response_on_onion_bind2 = None
         self.log.info('Send many addr requests within short time to receive same response')
         N = 5
-        cur_mock_time = self.mocktime
+        cur_mock_time = int(time.time())
         for i in range(N):
             addr_receiver_local = self.nodes[0].add_p2p_connection(AddrReceiver())
             addr_receiver_onion1 = self.nodes[0].add_p2p_connection(AddrReceiver(), dstport=self.onion_port1)
