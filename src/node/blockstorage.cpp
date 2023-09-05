@@ -8,20 +8,29 @@
 #include <chainparams.h>
 #include <clientversion.h>
 #include <consensus/validation.h>
+#include <dbwrapper.h>
 #include <flatfile.h>
 #include <fs.h>
 #include <hash.h>
 #include <pow.h>
 #include <shutdown.h>
 #include <streams.h>
+#include <sync.h>
 #include <undo.h>
+#include <util/batchpriority.h>
+#include <util/fs.h>
+#include <util/signalinterrupt.h>
 #include <util/system.h>
+#include <util/translation.h>
 #include <validation.h>
 #include <walletinitinterface.h>
 
 #include <map>
 #include <ranges>
 #include <unordered_map>
+
+// Note: In Bitcoin, BlockTreeDB implementation moved here from txdb.cpp
+// In Dash, we keep CBlockTreeDB in txdb.cpp to minimize changes
 
 namespace node {
 std::atomic_bool fImporting(false);

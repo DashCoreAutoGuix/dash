@@ -7,13 +7,26 @@
 
 #include <attributes.h>
 #include <chain.h>
+#include <dbwrapper.h>
 #include <fs.h>
+#include <kernel/blockmanager_opts.h>
+#include <kernel/chainparams.h>
+#include <kernel/cs_main.h>
 #include <protocol.h>
 #include <sync.h>
 #include <txdb.h>
+#include <util/fs.h>
+#include <util/hasher.h>
 
 #include <cstdint>
+#include <functional>
+#include <limits>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 extern RecursiveMutex cs_main;
@@ -32,7 +45,27 @@ namespace Consensus {
 struct Params;
 }
 
+namespace kernel {
+/** Access to the block database (blocks/index/) */
+class BlockTreeDB : public CDBWrapper
+{
+public:
+    using CDBWrapper::CDBWrapper;
+    bool WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo);
+    bool ReadBlockFileInfo(int nFile, CBlockFileInfo& info);
+    bool ReadLastBlockFile(int& nFile);
+    bool WriteReindexing(bool fReindexing);
+    void ReadReindexing(bool& fReindexing);
+    bool WriteFlag(const std::string& name, bool fValue);
+    bool ReadFlag(const std::string& name, bool& fValue);
+    bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt)
+        EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+};
+} // namespace kernel
+
 namespace node {
+using kernel::BlockTreeDB;
+
 static constexpr bool DEFAULT_ADDRESSINDEX{false};
 static constexpr bool DEFAULT_SPENTINDEX{false};
 static constexpr bool DEFAULT_STOPAFTERBLOCKIMPORT{false};
@@ -163,7 +196,7 @@ public:
      */
     std::multimap<CBlockIndex*, CBlockIndex*> m_blocks_unlinked;
 
-    std::unique_ptr<CBlockTreeDB> m_block_tree_db GUARDED_BY(::cs_main);
+    std::unique_ptr<BlockTreeDB> m_block_tree_db GUARDED_BY(::cs_main);
 
     bool WriteBlockIndexDB() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     bool LoadBlockIndexDB() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);

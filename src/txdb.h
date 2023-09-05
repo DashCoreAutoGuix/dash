@@ -10,15 +10,19 @@
 #include <dbwrapper.h>
 #include <spentindex.h>
 #include <timestampindex.h>
+#include <kernel/cs_main.h>
+#include <sync.h>
+#include <util/fs.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
-#include <utility>
 #include <vector>
 
 class CBlockFileInfo;
 class CBlockIndex;
+class COutPoint;
 class uint256;
 namespace Consensus {
 struct Params;
@@ -110,7 +114,5 @@ public:
     bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex)
         EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 };
-
-std::optional<bilingual_str> CheckLegacyTxindex(CBlockTreeDB& block_tree_db);
 
 #endif // BITCOIN_TXDB_H

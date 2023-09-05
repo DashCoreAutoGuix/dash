@@ -83,10 +83,10 @@ class WalletHDTest(BitcoinTestFramework):
         self.stop_node(1)
         # we need to delete the complete chain directory
         # otherwise node1 would auto-recover all funds in flag the keypool keys as used
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "blocks"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "chainstate"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "evodb"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "llmq"))
+        shutil.rmtree(os.path.join(self.nodes[1].blocks_path))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "chainstate"))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "evodb"))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "llmq"))
         shutil.copyfile(
             os.path.join(self.nodes[1].datadir, "hd.bak"),
             os.path.join(self.nodes[1].datadir, self.chain, "wallets", self.default_wallet_name, self.wallet_data_filename),
@@ -110,10 +110,10 @@ class WalletHDTest(BitcoinTestFramework):
 
         # Try a RPC based rescan
         self.stop_node(1)
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "blocks"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "chainstate"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "evodb"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "llmq"))
+        shutil.rmtree(os.path.join(self.nodes[1].blocks_path))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "chainstate"))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "evodb"))
+        shutil.rmtree(os.path.join(self.nodes[1].chain_path, "llmq"))
         shutil.copyfile(
             os.path.join(self.nodes[1].datadir, "hd.bak"),
             os.path.join(self.nodes[1].datadir, self.chain, "wallets", self.default_wallet_name, self.wallet_data_filename),

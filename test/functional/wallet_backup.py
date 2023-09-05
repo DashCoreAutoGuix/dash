@@ -214,10 +214,10 @@ class WalletBackupTest(BitcoinTestFramework):
             self.erase_three()
 
             #start node2 with no chain
-            shutil.rmtree(os.path.join(self.nodes[2].datadir, self.chain, 'blocks'))
-            shutil.rmtree(os.path.join(self.nodes[2].datadir, self.chain, 'chainstate'))
-            shutil.rmtree(os.path.join(self.nodes[2].datadir, self.chain, 'evodb'))
-            shutil.rmtree(os.path.join(self.nodes[2].datadir, self.chain, 'llmq'))
+            shutil.rmtree(os.path.join(self.nodes[2].blocks_path))
+            shutil.rmtree(os.path.join(self.nodes[2].chain_path, 'chainstate'))
+            shutil.rmtree(os.path.join(self.nodes[2].chain_path, 'evodb'))
+            shutil.rmtree(os.path.join(self.nodes[2].chain_path, 'llmq'))
 
             self.start_three(["-nowallet"])
             # Create new wallets for the three nodes.

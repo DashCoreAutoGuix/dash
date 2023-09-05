@@ -43,7 +43,6 @@
 #include <vector>
 
 class CChainState;
-class CBlockTreeDB;
 class CChainParams;
 class CEvoDB;
 class CMNHFManager;
