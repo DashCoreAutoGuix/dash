@@ -67,6 +67,7 @@ static const int EFFICIENT_QRINFO_VERSION = 70236;
 //! cycleHash in isdlock message switched to using quorum's base block in this version
 static const int ISDLOCK_CYCLEHASH_UPDATE_VERSION = 70237;
 
-// Make sure that none of the values above collide with `ADDRV2_FORMAT`.
+// Make sure that none of the values above collide with
+// `SERIALIZE_TRANSACTION_NO_WITNESS`.
 
 #endif // BITCOIN_VERSION_H
