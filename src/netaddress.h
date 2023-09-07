@@ -241,13 +241,23 @@ public:
         return IsIPv4() || IsIPv6() || IsTor() || IsI2P() || IsCJDNS();
     }
 
+    enum class Encoding {
+        V1,
+        V2, //!< BIP155 encoding
+    };
+    struct SerParams {
+        const Encoding enc;
+    };
+    static constexpr SerParams V1{Encoding::V1};
+    static constexpr SerParams V2{Encoding::V2};
+
     /**
      * Serialize to a stream.
      */
     template <typename Stream>
     void Serialize(Stream& s) const
     {
-        if (s.GetVersion() & ADDRV2_FORMAT) {
+        if (s.GetParams().enc == Encoding::V2) {
             SerializeV2Stream(s);
         } else {
             SerializeV1Stream(s);
@@ -260,7 +270,7 @@ public:
     template <typename Stream>
     void Unserialize(Stream& s)
     {
-        if (s.GetVersion() & ADDRV2_FORMAT) {
+        if (s.GetParams().enc == Encoding::V2) {
             UnserializeV2Stream(s);
         } else {
             UnserializeV1Stream(s);
@@ -567,8 +577,7 @@ public:
 
     SERIALIZE_METHODS(CService, obj)
     {
-        READWRITEAS(CNetAddr, obj);
-        READWRITE(Using<BigEndianFormatter<2>>(obj.port));
+        READWRITE(AsBase<CNetAddr>(obj), Using<BigEndianFormatter<2>>(obj.port));
     }
 
     friend class CServiceHash;
