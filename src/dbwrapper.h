@@ -5,7 +5,7 @@
 #ifndef BITCOIN_DBWRAPPER_H
 #define BITCOIN_DBWRAPPER_H
 
-#include <clientversion.h>
+#include <attributes.h>
 #include <fs.h>
 #include <serialize.h>
 #include <span.h>
@@ -181,7 +181,7 @@ public:
     template<typename V> bool GetValue(V& value) {
         leveldb::Slice slValue = piter->value();
         try {
-            CDataStream ssValue{MakeByteSpan(slValue), SER_DISK, CLIENT_VERSION};
+            DataStream ssValue{MakeByteSpan(slValue)};
             ssValue.Xor(dbwrapper_private::GetObfuscateKey(parent));
             ssValue >> value;
         } catch (const std::exception&) {
