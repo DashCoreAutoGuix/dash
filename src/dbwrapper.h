@@ -56,16 +56,16 @@ private:
     const CDBWrapper &parent;
     leveldb::WriteBatch batch;
 
-    CDataStream ssKey;
-    CDataStream ssValue;
+    DataStream ssKey{};
+    DataStream ssValue{};
 
-    size_t size_estimate;
+    size_t size_estimate{0};
 
 public:
     /**
      * @param[in] _parent    CDBWrapper that this batch is to be submitted to
      */
-    explicit CDBBatch(const CDBWrapper &_parent) : parent(_parent), ssKey(SER_DISK, CLIENT_VERSION), ssValue(SER_DISK, CLIENT_VERSION), size_estimate(0) { };
+    explicit CDBBatch(const CDBWrapper &_parent) : parent(_parent) { };
 
     void Clear()
     {
@@ -83,7 +83,7 @@ public:
     }
 
     template <typename V>
-    void Write(const CDataStream& _ssKey, const V& value)
+    void Write(const DataStream& _ssKey, const V& value)
     {
         leveldb::Slice slKey(CharCast(_ssKey.data()), _ssKey.size());
 
@@ -111,7 +111,7 @@ public:
         ssKey.clear();
     }
 
-    void Erase(const CDataStream& _ssKey) {
+    void Erase(const DataStream& _ssKey) {
         leveldb::Slice slKey(CharCast(_ssKey.data()), _ssKey.size());
 
         batch.Delete(slKey);
