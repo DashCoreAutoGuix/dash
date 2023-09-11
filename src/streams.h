@@ -494,13 +494,12 @@ public:
 class CAutoFile
 {
 private:
-    const int nType;
     const int nVersion;
 
     FILE* file;
 
 public:
-    CAutoFile(FILE* filenew, int nTypeIn, int nVersionIn) : nType(nTypeIn), nVersion(nVersionIn)
+    CAutoFile(FILE* filenew, int nVersionIn) : nVersion(nVersionIn)
     {
         file = filenew;
     }
@@ -541,7 +540,6 @@ public:
     //
     // Stream subset
     //
-    int GetType() const          { return nType; }
     int GetVersion() const       { return nVersion; }
 
     void read(Span<std::byte> dst)
@@ -605,7 +603,6 @@ public:
 class CBufferedFile
 {
 private:
-    const int nType;
     const int nVersion;
 
     FILE *src;            //!< source file
@@ -655,8 +652,8 @@ private:
     }
 
 public:
-    CBufferedFile(FILE* fileIn, uint64_t nBufSize, uint64_t nRewindIn, int nTypeIn, int nVersionIn)
-        : nType(nTypeIn), nVersion(nVersionIn), nSrcPos(0), m_read_pos(0), nReadLimit(std::numeric_limits<uint64_t>::max()), nRewind(nRewindIn), vchBuf(nBufSize, std::byte{0})
+    CBufferedFile(FILE* fileIn, uint64_t nBufSize, uint64_t nRewindIn, int nVersionIn)
+        : nVersion(nVersionIn), nSrcPos(0), m_read_pos(0), nReadLimit(std::numeric_limits<uint64_t>::max()), nRewind(nRewindIn), vchBuf(nBufSize, std::byte{0})
     {
         if (nRewindIn >= nBufSize)
             throw std::ios_base::failure("Rewind limit must be less than buffer size");
@@ -673,7 +670,6 @@ public:
     CBufferedFile& operator=(const CBufferedFile&) = delete;
 
     int GetVersion() const { return nVersion; }
-    int GetType() const { return nType; }
 
     void fclose()
     {
