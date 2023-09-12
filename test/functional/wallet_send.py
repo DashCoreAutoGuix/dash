@@ -495,13 +495,10 @@ class WalletSendTest(BitcoinTestFramework):
         signed = ext_wallet.walletprocesspsbt(res["psbt"])
         signed = ext_fund.walletprocesspsbt(res["psbt"])
         assert signed["complete"]
-        self.nodes[0].finalizepsbt(signed["psbt"])
 
         res = self.test_send(from_wallet=ext_wallet, to_wallet=self.nodes[0], amount=15, inputs=[ext_utxo], add_inputs=True, psbt=True, include_watching=True, solving_data={"descriptors": [desc]})
         signed = ext_wallet.walletprocesspsbt(res["psbt"])
         signed = ext_fund.walletprocesspsbt(res["psbt"])
         assert signed["complete"]
-        self.nodes[0].finalizepsbt(signed["psbt"])
-
 if __name__ == '__main__':
     WalletSendTest().main()
