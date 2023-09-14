@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#\!/usr/bin/env bash
 #
 # Copyright (c) 2018-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
@@ -42,7 +42,7 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
 
   # shellcheck disable=SC2086
-  DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
+  DOCKER_ID=$(docker run $DOCKER_ADMIN --cap-add LINUX_IMMUTABLE -idt \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
@@ -83,7 +83,7 @@ fi
 if [[ $DOCKER_NAME_TAG == *centos* ]]; then
   CI_EXEC_ROOT yum -y install epel-release
   CI_EXEC_ROOT yum -y install "$DOCKER_PACKAGES" "$PACKAGES"
-elif [ "$CI_USE_APT_INSTALL" != "no" ]; then
+elif [ "$CI_USE_APT_INSTALL" \!= "no" ]; then
   ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get update
   ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get install --no-install-recommends --no-upgrade -y "$PACKAGES" "$DOCKER_PACKAGES"
   if [ -n "$PIP_PACKAGES" ]; then
@@ -105,7 +105,7 @@ CI_EXEC df -h
 
 if [ "$RUN_FUZZ_TESTS" = "true" ]; then
   export DIR_FUZZ_IN=${DIR_QA_ASSETS}/fuzz_seed_corpus/
-  if [ ! -d "$DIR_FUZZ_IN" ]; then
+  if [ \! -d "$DIR_FUZZ_IN" ]; then
     CI_EXEC git clone --depth=1 https://github.com/bitcoin-core/qa-assets "${DIR_QA_ASSETS}"
   fi
   (
@@ -115,7 +115,7 @@ if [ "$RUN_FUZZ_TESTS" = "true" ]; then
   )
 elif [ "$RUN_UNIT_TESTS" = "true" ] || [ "$RUN_UNIT_TESTS_SEQUENTIAL" = "true" ]; then
   export DIR_UNIT_TEST_DATA=${DIR_QA_ASSETS}/unit_test_data/
-  if [ ! -d "$DIR_UNIT_TEST_DATA" ]; then
+  if [ \! -d "$DIR_UNIT_TEST_DATA" ]; then
     CI_EXEC mkdir -p "$DIR_UNIT_TEST_DATA"
     CI_EXEC curl --location --fail https://github.com/bitcoin-core/qa-assets/raw/main/unit_test_data/script_assets_test.json -o "${DIR_UNIT_TEST_DATA}/script_assets_test.json"
   fi
