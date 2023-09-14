@@ -42,7 +42,8 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
 
   # shellcheck disable=SC2086
-  DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
+  # Add LINUX_IMMUTABLE capability for readonly blockstore test
+  DOCKER_ID=$(docker run $DOCKER_ADMIN --cap-add LINUX_IMMUTABLE -idt \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
