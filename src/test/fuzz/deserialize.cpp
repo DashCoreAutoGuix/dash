@@ -62,9 +62,9 @@ struct invalid_fuzzing_input_exception : public std::exception {
 };
 
 template <typename T>
-CDataStream Serialize(const T& obj, const int version = INIT_PROTO_VERSION, const int ser_type = SER_NETWORK)
+CDataStream Serialize(const T& obj)
 {
-    CDataStream ds(ser_type, version);
+    CDataStream ds{SER_NETWORK, INIT_PROTO_VERSION};
     ds << obj;
     return ds;
 }
@@ -78,12 +78,10 @@ T Deserialize(CDataStream ds)
 }
 
 template <typename T>
-void DeserializeFromFuzzingInput(FuzzBufferType buffer, T& obj, const std::optional<int> protocol_version = std::nullopt, const int ser_type = SER_NETWORK)
+void DeserializeFromFuzzingInput(FuzzBufferType buffer, T&& obj)
 {
-    CDataStream ds(buffer, ser_type, INIT_PROTO_VERSION);
-    if (protocol_version) {
-        ds.SetVersion(*protocol_version);
-    } else {
+    CDataStream ds{buffer, SER_NETWORK, INIT_PROTO_VERSION};
+    {
         try {
             int version;
             ds >> version;
@@ -101,9 +99,9 @@ void DeserializeFromFuzzingInput(FuzzBufferType buffer, T& obj, const std::optio
 }
 
 template <typename T>
-void AssertEqualAfterSerializeDeserialize(const T& obj, const int version = INIT_PROTO_VERSION, const int ser_type = SER_NETWORK)
+void AssertEqualAfterSerializeDeserialize(const T& obj)
 {
-    assert(Deserialize<T>(Serialize(obj, version, ser_type)) == obj);
+    assert(Deserialize<T>(Serialize(obj)) == obj);
 }
 
 } // namespace
@@ -227,17 +225,17 @@ FUZZ_TARGET_DESERIALIZE(netaddr_deserialize, {
     CNetAddr na;
     DeserializeFromFuzzingInput(buffer, na);
     if (na.IsAddrV1Compatible()) {
-        AssertEqualAfterSerializeDeserialize(na);
+        AssertEqualAfterSerializeDeserialize(na, CNetAddr::V1);
     }
-    AssertEqualAfterSerializeDeserialize(na, INIT_PROTO_VERSION | ADDRV2_FORMAT);
+    AssertEqualAfterSerializeDeserialize(na, CNetAddr::V2);
 })
 FUZZ_TARGET_DESERIALIZE(service_deserialize, {
     CService s;
     DeserializeFromFuzzingInput(buffer, s);
     if (s.IsAddrV1Compatible()) {
-        AssertEqualAfterSerializeDeserialize(s);
+        AssertEqualAfterSerializeDeserialize(s, CNetAddr::V1);
     }
-    AssertEqualAfterSerializeDeserialize(s, INIT_PROTO_VERSION | ADDRV2_FORMAT);
+    AssertEqualAfterSerializeDeserialize(s, CNetAddr::V2);
     CService s1;
     DeserializeFromFuzzingInput(buffer, s1, INIT_PROTO_VERSION);
     AssertEqualAfterSerializeDeserialize(s1, INIT_PROTO_VERSION);
@@ -251,38 +249,31 @@ FUZZ_TARGET_DESERIALIZE(messageheader_deserialize, {
     DeserializeFromFuzzingInput(buffer, mh);
     (void)mh.IsCommandValid();
 })
-FUZZ_TARGET_DESERIALIZE(address_deserialize_v1_notime, {
-    CAddress a;
-    DeserializeFromFuzzingInput(buffer, a, INIT_PROTO_VERSION);
-    // A CAddress without nTime (as is expected under INIT_PROTO_VERSION) will roundtrip
-    // in all 5 formats (with/without nTime, v1/v2, network/disk)
-    AssertEqualAfterSerializeDeserialize(a, INIT_PROTO_VERSION);
-    AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION);
-    AssertEqualAfterSerializeDeserialize(a, 0, SER_DISK);
-    AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION | ADDRV2_FORMAT);
-    AssertEqualAfterSerializeDeserialize(a, ADDRV2_FORMAT, SER_DISK);
-})
-FUZZ_TARGET_DESERIALIZE(address_deserialize_v1_withtime, {
-    CAddress a;
-    DeserializeFromFuzzingInput(buffer, a, PROTOCOL_VERSION);
-    // A CAddress in V1 mode will roundtrip in all 4 formats that have nTime.
-    AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION);
-    AssertEqualAfterSerializeDeserialize(a, 0, SER_DISK);
-    AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION | ADDRV2_FORMAT);
-    AssertEqualAfterSerializeDeserialize(a, ADDRV2_FORMAT, SER_DISK);
-})
-FUZZ_TARGET_DESERIALIZE(address_deserialize_v2, {
-    CAddress a;
-    DeserializeFromFuzzingInput(buffer, a, PROTOCOL_VERSION | ADDRV2_FORMAT);
-    // A CAddress in V2 mode will roundtrip in both V2 formats, and also in the V1 formats
-    // with time if it's V1 compatible.
-    if (a.IsAddrV1Compatible()) {
-        AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION);
-        AssertEqualAfterSerializeDeserialize(a, 0, SER_DISK);
+FUZZ_TARGET(address_deserialize, .init = initialize_deserialize)
+{
+    FuzzedDataProvider fdp{buffer.data(), buffer.size()};
+    const auto ser_enc{ConsumeDeserializationParams<CAddress::SerParams>(fdp)};
+    const auto maybe_a{ConsumeDeserializable<CAddress>(fdp, ser_enc)};
+    if (!maybe_a) return;
+    const CAddress& a{*maybe_a};
+    // A CAddress in V1 mode will roundtrip
+    // in all 4 formats (v1/v2, network/disk)
+    if (ser_enc.enc == CNetAddr::Encoding::V1) {
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V1_NETWORK);
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V1_DISK);
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V2_NETWORK);
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V2_DISK);
+    } else {
+        // A CAddress in V2 mode will roundtrip in both V2 formats, and also in the V1 formats
+        // if it's V1 compatible.
+        if (a.IsAddrV1Compatible()) {
+            AssertEqualAfterSerializeDeserialize(a, CAddress::V1_DISK);
+            AssertEqualAfterSerializeDeserialize(a, CAddress::V1_NETWORK);
+        }
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V2_NETWORK);
+        AssertEqualAfterSerializeDeserialize(a, CAddress::V2_DISK);
     }
-    AssertEqualAfterSerializeDeserialize(a, PROTOCOL_VERSION | ADDRV2_FORMAT);
-    AssertEqualAfterSerializeDeserialize(a, ADDRV2_FORMAT, SER_DISK);
-})
+}
 FUZZ_TARGET_DESERIALIZE(inv_deserialize, {
     CInv i;
     DeserializeFromFuzzingInput(buffer, i);
