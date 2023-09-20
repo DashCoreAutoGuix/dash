@@ -501,11 +501,7 @@ public:
         m_view(&m_dummy),
         m_viewmempool(&active_chainstate.CoinsTip(), m_pool),
         m_active_chainstate(active_chainstate),
-        m_chain_helper(active_chainstate.ChainHelper()),
-        m_limit_ancestors(gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT)),
-        m_limit_ancestor_size(gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT)*1000),
-        m_limit_descendants(gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT)),
-        m_limit_descendant_size(gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT)*1000) {
+        m_chain_helper(active_chainstate.ChainHelper()) {
     }
 
     // We put the arguments we're handed into a struct, so we can pass them
@@ -687,13 +683,8 @@ private:
     CChainState& m_active_chainstate;
     CChainstateHelper& m_chain_helper;
 
-    // The package limits in effect at the time of invocation.
-    const size_t m_limit_ancestors;
-    const size_t m_limit_ancestor_size;
-    // These may be modified while evaluating a transaction (eg to account for
-    // in-mempool conflicts; see below).
-    size_t m_limit_descendants;
-    size_t m_limit_descendant_size;
+    /** Whether the transaction(s) would replace any mempool transactions. If so, RBF rules apply. */
+    bool m_rbf{false};
 };
 
 bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
@@ -869,9 +860,57 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
         if (!bypass_limits && !CheckFeeRate(ws.m_vsize, ws.m_modified_fees, state)) return false;
     }
 
+    ws.m_iters_conflicting = m_pool.GetIterSet(ws.m_conflicts);
+
+    // Get the default limits
+    const size_t limit_ancestors = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
+    const size_t limit_ancestor_size = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
+    size_t limit_descendants = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+    size_t limit_descendant_size = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
+
+    // Note that these modifications are only applicable to single transaction scenarios;
+    // carve-outs and package RBF are disabled for multi-transaction evaluations.
+    size_t maybe_rbf_limit_descendants = limit_descendants;
+    size_t maybe_rbf_limit_descendant_size = limit_descendant_size;
+
     // Calculate in-mempool ancestors, up to a limit.
     std::string errString;
-    if (!m_pool.CalculateMemPoolAncestors(*entry, ws.m_ancestors, m_limit_ancestors, m_limit_ancestor_size, m_limit_descendants, m_limit_descendant_size, errString)) {
+    if (ws.m_conflicts.size() == 1) {
+        // In general, when we receive an RBF transaction with mempool conflicts, we want to know whether we
+        // would meet the chain limits after the conflicts have been removed. However, there isn't a practical
+        // way to do this short of calculating the ancestor and descendant sets with an overlay cache of
+        // changed mempool entries. Due to both implementation and runtime complexity concerns, this isn't
+        // very realistic, thus we only ensure a limited set of transactions are RBF'able despite mempool
+        // conflicts here. Importantly, we need to ensure that some transactions which were accepted using
+        // the below carve-out are able to be RBF'ed, without impacting the security the carve-out provides
+        // for off-chain contract systems (see link in the comment below).
+        //
+        // Specifically, the subset of RBF transactions which we allow despite chain limits are those which
+        // conflict directly with exactly one other transaction (but may evict children of said transaction),
+        // and which are not adding any new mempool dependencies. Note that the "no new mempool dependencies"
+        // check is accomplished later, so we don't bother doing anything about it here, but if our
+        // policy changes, we may need to move that check to here instead of removing it wholesale.
+        //
+        // Such transactions are clearly not merging any existing packages, so we are only concerned with
+        // ensuring that (a) no package is growing past the package size (not count) limits and (b) we are
+        // not allowing something to effectively use the (below) carve-out spot when it shouldn't be allowed
+        // to.
+        //
+        // To check these we first check if we meet the RBF criteria, above, and increment the descendant
+        // limits by the direct conflict and its descendants (as these are recalculated in
+        // CalculateMempoolAncestors by assuming the new transaction being added is a new descendant, with no
+        // removals, of each parent's existing dependent set). The ancestor count limits are unmodified (as
+        // the ancestor limits should be the same for both our new transaction and any conflicts).
+        // We don't bother incrementing limit_descendants by the full removal count as that limit never comes
+        // into force here (as we're only adding a single transaction).
+        assert(ws.m_iters_conflicting.size() == 1);
+        CTxMemPool::txiter conflict = *ws.m_iters_conflicting.begin();
+
+        maybe_rbf_limit_descendants += 1;
+        maybe_rbf_limit_descendant_size += conflict->GetSizeWithDescendants();
+    }
+
+    if (!m_pool.CalculateMemPoolAncestors(*entry, ws.m_ancestors, limit_ancestors, limit_ancestor_size, maybe_rbf_limit_descendants, maybe_rbf_limit_descendant_size, errString)) {
         ws.m_ancestors.clear();
         // If CalculateMemPoolAncestors fails second time, we want the original error string.
         std::string dummy_err_string;
@@ -886,7 +925,7 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
         // outputs - one for each counterparty. For more info on the uses for
         // this, see https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2018-November/016518.html
         if (ws.m_vsize > EXTRA_DESCENDANT_TX_SIZE_LIMIT ||
-                !m_pool.CalculateMemPoolAncestors(*entry, ws.m_ancestors, 2, m_limit_ancestor_size, m_limit_descendants + 1, m_limit_descendant_size + EXTRA_DESCENDANT_TX_SIZE_LIMIT, dummy_err_string)) {
+                !m_pool.CalculateMemPoolAncestors(*entry, ws.m_ancestors, 2, limit_ancestor_size, maybe_rbf_limit_descendants + 1, maybe_rbf_limit_descendant_size + EXTRA_DESCENDANT_TX_SIZE_LIMIT, dummy_err_string)) {
             return state.Invalid(TxValidationResult::TX_MEMPOOL_POLICY, "too-long-mempool-chain", errString);
         }
     }
@@ -915,9 +954,15 @@ bool MemPoolAccept::PackageMempoolChecks(const std::vector<CTransactionRef>& txn
     assert(std::all_of(txns.cbegin(), txns.cend(), [this](const auto& tx)
                        { return !m_pool.exists(tx->GetHash());}));
 
+    // Get the default limits for package checks
+    const size_t limit_ancestors = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
+    const size_t limit_ancestor_size = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
+    const size_t limit_descendants = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+    const size_t limit_descendant_size = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
+    
     std::string err_string;
-    if (!m_pool.CheckPackageLimits(txns, m_limit_ancestors, m_limit_ancestor_size, m_limit_descendants,
-                                   m_limit_descendant_size, err_string)) {
+    if (!m_pool.CheckPackageLimits(txns, limit_ancestors, limit_ancestor_size, limit_descendants,
+                                   limit_descendant_size, err_string)) {
         // This is a package-wide error, separate from an individual transaction error.
         return package_state.Invalid(PackageValidationResult::PCKG_POLICY, "package-mempool-limits", err_string);
     }
@@ -1058,17 +1103,25 @@ bool MemPoolAccept::SubmitPackage(const ATMPArgs& args, std::vector<Workspace>& 
 
         // Re-calculate mempool ancestors to call addUnchecked(). They may have changed since the
         // last calculation done in PreChecks, since package ancestors have already been submitted.
-        std::string unused_err_string;
-        if(!m_pool.CalculateMemPoolAncestors(*ws.m_entry, ws.m_ancestors, m_limit_ancestors,
-                                             m_limit_ancestor_size, m_limit_descendants,
-                                             m_limit_descendant_size, unused_err_string)) {
-            results.emplace(ws.m_ptx->GetHash(), MempoolAcceptResult::Failure(ws.m_state));
-            // Since PreChecks() and PackageMempoolChecks() both enforce limits, this should never fail.
-            Assume(false);
-            all_submitted = false;
-            package_state.Invalid(PackageValidationResult::PCKG_MEMPOOL_ERROR,
-                                  strprintf("BUG! Mempool ancestors or descendants were underestimated: %s",
-                                            ws.m_ptx->GetHash().ToString()));
+        {
+            // Get the default limits
+            const size_t limit_ancestors = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
+            const size_t limit_ancestor_size = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
+            const size_t limit_descendants = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+            const size_t limit_descendant_size = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
+            
+            std::string unused_err_string;
+            if(!m_pool.CalculateMemPoolAncestors(*ws.m_entry, ws.m_ancestors, limit_ancestors,
+                                                 limit_ancestor_size, limit_descendants,
+                                                 limit_descendant_size, unused_err_string)) {
+                results.emplace(ws.m_ptx->GetHash(), MempoolAcceptResult::Failure(ws.m_state));
+                // Since PreChecks() and PackageMempoolChecks() both enforce limits, this should never fail.
+                Assume(false);
+                all_submitted = false;
+                package_state.Invalid(PackageValidationResult::PCKG_MEMPOOL_ERROR,
+                                      strprintf("BUG! Mempool ancestors or descendants were underestimated: %s",
+                                                ws.m_ptx->GetHash().ToString()));
+            }
         }
         // If we call LimitMempoolSize() for each individual Finalize(), the mempool will not take
         // the transaction's descendant feerate into account because it hasn't seen them yet. Also,
