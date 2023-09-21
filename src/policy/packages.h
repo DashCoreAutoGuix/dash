@@ -15,18 +15,21 @@
 
 /** Default maximum number of transactions in a package. */
 static constexpr uint32_t MAX_PACKAGE_COUNT{25};
-/** Default maximum total virtual size of transactions in a package in KvB. */
-static constexpr uint32_t MAX_PACKAGE_SIZE{101};
-static_assert(MAX_PACKAGE_SIZE * 1000 >= MAX_STANDARD_TX_SIZE);
+/** Default maximum total virtual size of transactions in a package in vB.
+    This must allow a superset of sigops weighted vsize limited transactions
+    to not disallow transactions we would have otherwise accepted individually. */
+static constexpr uint32_t MAX_PACKAGE_SIZE{404'000};
+static_assert(MAX_PACKAGE_SIZE >= MAX_STANDARD_TX_SIZE);
 
-// If a package is submitted, it must be within the mempool's ancestor/descendant limits. Since a
-// submitted package must be child-with-unconfirmed-parents (all of the transactions are an ancestor
+// If a package is to be evaluated, it must be at least as large as the mempool's ancestor/descendant limits,
+// otherwise transactions that would be individually accepted may be rejected in a package erroneously.
+// Since a submitted package must be child-with-unconfirmed-parents (all of the transactions are an ancestor
 // of the child), package limits are ultimately bounded by mempool package limits. Ensure that the
 // defaults reflect this constraint.
 static_assert(DEFAULT_DESCENDANT_LIMIT >= MAX_PACKAGE_COUNT);
 static_assert(DEFAULT_ANCESTOR_LIMIT >= MAX_PACKAGE_COUNT);
-static_assert(DEFAULT_ANCESTOR_SIZE_LIMIT >= MAX_PACKAGE_SIZE);
-static_assert(DEFAULT_DESCENDANT_SIZE_LIMIT >= MAX_PACKAGE_SIZE);
+static_assert(MAX_PACKAGE_SIZE >= DEFAULT_ANCESTOR_SIZE_LIMIT_KVB * 1000);
+static_assert(MAX_PACKAGE_SIZE >= DEFAULT_DESCENDANT_SIZE_LIMIT_KVB * 1000);
 
 /** A "reason" why a package was invalid. It may be that one or more of the included
  * transactions is invalid or the package itself violates our rules.
