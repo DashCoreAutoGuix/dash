@@ -41,9 +41,10 @@ CreateWalletDialog::CreateWalletDialog(QWidget* parent) :
         // set to true, enable it when isDisablePrivateKeysChecked is false.
         ui->encrypt_wallet_checkbox->setEnabled(!checked);
 
-        // Wallets without private keys start out blank
+        // Wallets without private keys cannot set blank
+        ui->blank_wallet_checkbox->setEnabled(!checked);
         if (checked) {
-            ui->blank_wallet_checkbox->setChecked(true);
+            ui->blank_wallet_checkbox->setChecked(false);
         }
 
         // When the encrypt_wallet_checkbox is disabled, uncheck it.
@@ -53,8 +54,11 @@ CreateWalletDialog::CreateWalletDialog(QWidget* parent) :
     });
 
     connect(ui->blank_wallet_checkbox, &QCheckBox::toggled, [this](bool checked) {
-        if (!checked) {
-          ui->disable_privkeys_checkbox->setChecked(false);
+        // Disable the disable_privkeys_checkbox when blank_wallet_checkbox is checked
+        // as blank-ness only pertains to wallets with private keys.
+        ui->disable_privkeys_checkbox->setEnabled(!checked);
+        if (checked) {
+            ui->disable_privkeys_checkbox->setChecked(false);
         }
     });
 
