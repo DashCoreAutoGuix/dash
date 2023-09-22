@@ -14,6 +14,7 @@
 
 #include <core_io.h>
 #include <interfaces/handler.h>
+#include <tinyformat.h>
 #include <uint256.h>
 #include <util/system.h>
 
@@ -423,8 +424,6 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
     case TransactionRecord::SendToAddress:
     case TransactionRecord::SendToOther:
         return tr("Sent to");
-    case TransactionRecord::SendToSelf:
-        return tr("Payment to yourself");
     case TransactionRecord::Generated:
         return tr("Mined");
     case TransactionRecord::PlatformTransfer:
@@ -476,8 +475,6 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
         return formatAddressLabel(wtx->strAddress, wtx->label, tooltip) + watchAddress;
     case TransactionRecord::SendToOther:
         return QString::fromStdString(wtx->strAddress) + watchAddress;
-    case TransactionRecord::SendToSelf:
-        return formatAddressLabel(wtx->strAddress, wtx->label, tooltip) + watchAddress;
     case TransactionRecord::CoinJoinMixing:
     case TransactionRecord::CoinJoinCollateralPayment:
     case TransactionRecord::CoinJoinMakeCollaterals:
@@ -504,7 +501,6 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
             return GUIUtil::getThemedQColor(GUIUtil::ThemedColor::BAREADDRESS);
         }
         } break;
-    case TransactionRecord::SendToSelf:
     case TransactionRecord::CoinJoinCreateDenominations:
     case TransactionRecord::CoinJoinMixing:
     case TransactionRecord::CoinJoinMakeCollaterals:
@@ -545,7 +541,6 @@ QVariant TransactionTableModel::amountColor(const TransactionRecord *rec) const
     case TransactionRecord::SendToOther:
     case TransactionRecord::Other:
         return GUIUtil::getThemedQColor(GUIUtil::ThemedColor::RED);
-    case TransactionRecord::SendToSelf:
     case TransactionRecord::CoinJoinMixing:
     case TransactionRecord::CoinJoinCollateralPayment:
     case TransactionRecord::CoinJoinMakeCollaterals:
@@ -652,7 +647,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         case Status:
             return QString::fromStdString(rec->status.sortKey);
         case Date:
-            return rec->time;
+            return QString::fromStdString(strprintf("%020s-%s", rec->time, rec->status.sortKey));
         case Type:
             return formatTxType(rec);
         case Watchonly:

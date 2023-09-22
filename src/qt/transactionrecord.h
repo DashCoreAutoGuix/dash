@@ -78,7 +78,6 @@ public:
         SendToOther,
         RecvWithAddress,
         RecvFromOther,
-        SendToSelf,
         RecvWithCoinJoin,
         CoinJoinMixing,
         CoinJoinCollateralPayment,
