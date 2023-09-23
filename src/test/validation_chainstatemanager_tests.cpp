@@ -9,6 +9,7 @@
 #include <llmq/blockprocessor.h>
 #include <llmq/context.h>
 #include <node/chainstate.h>
+#include <node/disconnected_transactions.h>
 #include <node/utxo_snapshot.h>
 #include <random.h>
 #include <rpc/blockchain.h>
