@@ -282,6 +282,7 @@ BITCOIN_CORE_H = \
   node/coinstats.h \
   node/connection_types.h \
   node/context.h \
+  node/disconnected_transactions.h \
   node/eviction.h \
   node/miner.h \
   node/minisketchwrapper.h \

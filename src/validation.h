@@ -53,7 +53,7 @@ class CChainstateHelper;
 class ChainstateManager;
 struct PrecomputedTransactionData;
 struct ChainTxData;
-struct DisconnectedBlockTransactions;
+class DisconnectedBlockTransactions;
 struct LockPoints;
 struct AssumeutxoData;
 namespace node {
