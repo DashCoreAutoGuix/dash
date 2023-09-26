@@ -20,6 +20,7 @@ extern RecursiveMutex cs_main;
 
 class ArgsManager;
 class BlockValidationState;
+class CAutoFile;
 class CBlock;
 class CBlockUndo;
 class CChain;
@@ -107,7 +108,6 @@ private:
     void FlushUndoFile(int block_file, bool finalize = false);
     bool FindBlockPos(FlatFilePos& pos, unsigned int nAddSize, unsigned int nHeight, CChain& active_chain, uint64_t nTime, bool fKnown);
     bool FindUndoPos(BlockValidationState& state, int nFile, FlatFilePos& pos, unsigned int nAddSize);
-
     /* Calculate the block/rev files to delete based on height specified by user with RPC command pruneblockchain */
     void FindFilesToPruneManual(std::set<int>& setFilesToPrune, int nManualPruneHeight, int chain_tip_height);
 
@@ -211,7 +211,7 @@ public:
 void CleanupBlockRevFiles();
 
 /** Open a block file (blk?????.dat) */
-FILE* OpenBlockFile(const FlatFilePos& pos, bool fReadOnly = false);
+CAutoFile OpenBlockFile(const FlatFilePos& pos, bool fReadOnly = false);
 /** Translation to a filesystem path */
 fs::path GetBlockPosFilename(const FlatFilePos& pos);
 

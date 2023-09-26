@@ -627,18 +627,17 @@ public:
      * -loadblock= option. There's no unknown-parent tracking, so the last two arguments are omitted.
      *
      *
-     * @param[in]     fileIn                        FILE handle to file containing blocks to read
+     * @param[in]     fileIn                        CAutoFile handle to file containing blocks to read
      * @param[in]     dbp                           (optional) Disk block position (only for reindex)
      * @param[in,out] blocks_with_unknown_parent    (optional) Map of disk positions for blocks with
      *                                              unknown parent, key is parent block hash
      *                                              (only used for reindex)
      * */
     void LoadExternalBlockFile(
-        FILE* fileIn,
+        CAutoFile& fileIn,
         FlatFilePos* dbp = nullptr,
         std::multimap<uint256, FlatFilePos>* blocks_with_unknown_parent = nullptr)
         EXCLUSIVE_LOCKS_REQUIRED(!m_chainstate_mutex);
-
     /**
      * Update the on-disk chain state.
      * The caches and indexes are flushed depending on the mode we're called with
@@ -987,6 +986,9 @@ public:
 
     //! Is there a snapshot in use and has it been fully validated?
     bool IsSnapshotValidated() const EXCLUSIVE_LOCKS_REQUIRED(::cs_main) { return m_snapshot_validated; }
+
+    /** Check whether we are doing an initial block download (synchronizing from disk or network) */
+    bool IsInitialBlockDownload() const;
 
     /**
      * Process an incoming block. This only returns after the best known valid
