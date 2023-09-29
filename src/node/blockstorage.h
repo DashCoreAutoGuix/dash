@@ -103,9 +103,14 @@ private:
      */
     bool LoadBlockIndex(const Consensus::Params& consensus_params)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
-    void FlushBlockFile(bool fFinalize = false, bool finalize_undo = false);
-    void FlushUndoFile(int block_file, bool finalize = false);
-    bool FindBlockPos(FlatFilePos& pos, unsigned int nAddSize, unsigned int nHeight, CChain& active_chain, uint64_t nTime, bool fKnown);
+
+    /** Return false if block file or undo file flushing fails. */
+    [[nodiscard]] bool FlushBlockFile(bool fFinalize = false, bool finalize_undo = false);
+
+    /** Return false if undo file flushing fails. */
+    [[nodiscard]] bool FlushUndoFile(int block_file, bool finalize = false);
+
+    [[nodiscard]] bool FindBlockPos(FlatFilePos& pos, unsigned int nAddSize, unsigned int nHeight, CChain& active_chain, uint64_t nTime, bool fKnown);
     bool FindUndoPos(BlockValidationState& state, int nFile, FlatFilePos& pos, unsigned int nAddSize);
 
     /* Calculate the block/rev files to delete based on height specified by user with RPC command pruneblockchain */
@@ -136,6 +141,9 @@ private:
      *  or if we allocate more file space when we're in prune mode
      */
     bool m_check_for_pruning = false;
+
+    /** The height of the last block in the last block file written. */
+    uint32_t m_undo_height_in_last_blockfile = 0;
 
     /** Dirty block index entries. */
     std::set<CBlockIndex*> m_dirty_blockindex;
