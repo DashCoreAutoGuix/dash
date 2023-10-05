@@ -16,6 +16,14 @@ Before every minor and major release:
   - Testnet should be set some tens of thousands back from the tip due to reorgs there.
   - This update should be reviewed with a `reindex-chainstate` with `assumevalid=0` to catch any defect
     that causes rejection of blocks in the past history.
+* [ ] Consider updating the headers synchronization tuning parameters to account for the chainparams updates.
+  The optimal values change very slowly, so this isn't strictly necessary every release, but doing so doesn't hurt.
+  - Update configuration variables in [`contrib/devtools/headerssync-params.py`](contrib/devtools/headerssync-params.py):
+    - Set `TIME` to the software's expected supported lifetime -- after this time, its ability to defend against a high bandwidth timewarp attacker will begin to degrade.
+    - Set `MINCHAINWORK_HEADERS` to the height used for the `nMinimumChainWork` calculation above.
+    - Check that the other variables still look reasonable.
+  - Run the script. It works fine in CPython, but PyPy is much faster (seconds instead of minutes): `pypy3 contrib/devtools/headerssync-params.py`.
+  - Paste the output defining `HEADER_COMMITMENT_PERIOD` and `REDOWNLOAD_BUFFER_SIZE` into the top of [`src/headerssync.cpp`](/src/headerssync.cpp).
 * [ ] Ensure all TODOs are evaluated and resolved if needed
 * [ ] Verify Insight works
 * [ ] Verify p2pool works (unmaintained; no responsible party)
