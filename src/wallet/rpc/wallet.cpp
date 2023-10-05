@@ -566,8 +566,16 @@ static RPCHelpMan createwallet()
             {"blank", RPCArg::Type::BOOL, RPCArg::Default{false}, "Create a blank wallet. A blank wallet has no keys or HD seed. One can be set using upgradetohd (by mnemonic) or sethdseed (WIF private key)."},
             {"passphrase", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "Encrypt the wallet with this passphrase."},
             {"avoid_reuse", RPCArg::Type::BOOL, RPCArg::Default{false}, "Keep track of coin reuse, and treat dirty and clean coins differently with privacy considerations in mind."},
+<<<<<<< HEAD
             {"descriptors", RPCArg::Type::BOOL, RPCArg::Default{false}, "Create a native descriptor wallet. The wallet will use descriptors internally to handle address creation. This feature is well-tested but still considered experimental."},
             {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED_NAMED_ARG, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
+=======
+            {"descriptors", RPCArg::Type::BOOL, RPCArg::Default{true}, "Create a native descriptor wallet. The wallet will use descriptors internally to handle address creation."
+                                                                       " Setting to \"false\" will create a legacy wallet; This is only possible with the -deprecatedrpc=create_bdb setting because, the legacy wallet type is being deprecated and"
+                                                                       " support for creating and opening legacy wallets will be removed in the future."},
+            {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
+            {"external_signer", RPCArg::Type::BOOL, RPCArg::Default{false}, "Use an external signer such as a hardware wallet. Requires -signer to be configured. Wallet creation will fail if keys cannot be fetched. Requires disable_private_keys and descriptors set to true."},
+>>>>>>> cf553e3ab7 (Merge bitcoin/bitcoin#28597: wallet: No BDB creation, unless -deprecatedrpc=create_bdb)
         },
         RPCResult{
             RPCResult::Type::OBJ, "", "",
@@ -616,6 +624,11 @@ static RPCHelpMan createwallet()
         }
         flags |= WALLET_FLAG_DESCRIPTORS;
         warnings.emplace_back(Untranslated("Wallet is an experimental descriptor wallet"));
+    } else {
+        if (!context.chain->rpcEnableDeprecated("create_bdb")) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "BDB wallet creation is deprecated and will be removed in a future release."
+                                                 " In this release it can be re-enabled temporarily with the -deprecatedrpc=create_bdb setting.");
+        }
     }
 
 #ifndef USE_BDB
