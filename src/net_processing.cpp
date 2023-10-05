@@ -763,6 +763,10 @@ private:
     void RelayAddress(NodeId originator, const CAddress& addr, bool fReachable)
         EXCLUSIVE_LOCKS_REQUIRED(!m_peer_mutex, g_msgproc_mutex);
 
+    FastRandomContext m_rng GUARDED_BY(NetEventsInterface::g_msgproc_mutex);
+
+    FeeFilterRounder m_fee_filter_rounder GUARDED_BY(NetEventsInterface::g_msgproc_mutex);
+
     const CChainParams& m_chainparams;
     CConnman& m_connman;
     AddrMan& m_addrman;
@@ -895,6 +899,7 @@ private:
     bool SetupAddressRelay(const CNode& node, Peer& peer) EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex);
 
     void AddAddressKnown(Peer& peer, const CAddress& addr) EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex);
+<<<<<<< HEAD
     void PushAddress(Peer& peer, const CAddress& addr, FastRandomContext& insecure_rand) EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex);
 
     /** Number of nodes with fSyncStarted. */
@@ -1048,6 +1053,9 @@ private:
     std::vector<std::pair<uint256, CTransactionRef>> vExtraTxnForCompact GUARDED_BY(g_cs_orphans);
     /** Offset into vExtraTxnForCompact to insert the next tx */
     size_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
+=======
+    void PushAddress(Peer& peer, const CAddress& addr) EXCLUSIVE_LOCKS_REQUIRED(g_msgproc_mutex);
+>>>>>>> 52c6904c78 (Merge bitcoin/bitcoin#28558: Make PeerManager own a FastRandomContext)
 };
 
 // Keeps track of the time (in microseconds) when transactions were requested last time
@@ -1083,7 +1091,7 @@ void PeerManagerImpl::AddAddressKnown(Peer& peer, const CAddress& addr)
     peer.m_addr_known->insert(addr.GetKey());
 }
 
-void PeerManagerImpl::PushAddress(Peer& peer, const CAddress& addr, FastRandomContext& insecure_rand)
+void PeerManagerImpl::PushAddress(Peer& peer, const CAddress& addr)
 {
     // Known checking here is only to save space from duplicates.
     // Before sending, we'll filter it again for known addresses that were
@@ -1091,7 +1099,7 @@ void PeerManagerImpl::PushAddress(Peer& peer, const CAddress& addr, FastRandomCo
     assert(peer.m_addr_known);
     if (addr.IsValid() && !peer.m_addr_known->contains(addr.GetKey()) && IsAddrCompatible(peer, addr)) {
         if (peer.m_addrs_to_send.size() >= MAX_ADDR_TO_SEND) {
-            peer.m_addrs_to_send[insecure_rand.randrange(peer.m_addrs_to_send.size())] = addr;
+            peer.m_addrs_to_send[m_rng.randrange(peer.m_addrs_to_send.size())] = addr;
         } else {
             peer.m_addrs_to_send.push_back(addr);
         }
@@ -1953,6 +1961,7 @@ std::unique_ptr<PeerManager> PeerManager::make(const CChainParams& chainparams, 
     return std::make_unique<PeerManagerImpl>(chainparams, connman, addrman, banman, chainman, pool, mn_metaman, mn_sync, govman, sporkman, mn_activeman, dmnman, cj_ctx, llmq_ctx, ignore_incoming_txs);
 }
 
+<<<<<<< HEAD
 PeerManagerImpl::PeerManagerImpl(const CChainParams& chainparams, CConnman& connman, AddrMan& addrman, BanMan* banman,
                                  ChainstateManager& chainman, CTxMemPool& pool,
                                  CMasternodeMetaMan& mn_metaman, CMasternodeSync& mn_sync,
@@ -1963,6 +1972,14 @@ PeerManagerImpl::PeerManagerImpl(const CChainParams& chainparams, CConnman& conn
                                  const std::unique_ptr<LLMQContext>& llmq_ctx,
                                  bool ignore_incoming_txs)
     : m_chainparams(chainparams),
+=======
+PeerManagerImpl::PeerManagerImpl(CConnman& connman, AddrMan& addrman,
+                                 BanMan* banman, ChainstateManager& chainman,
+                                 CTxMemPool& pool, Options opts)
+    : m_rng{opts.deterministic_rng},
+      m_fee_filter_rounder{CFeeRate{DEFAULT_MIN_RELAY_TX_FEE}, m_rng},
+      m_chainparams(chainman.GetParams()),
+>>>>>>> 52c6904c78 (Merge bitcoin/bitcoin#28558: Make PeerManager own a FastRandomContext)
       m_connman(connman),
       m_addrman(addrman),
       m_banman(banman),
@@ -2487,7 +2504,6 @@ void PeerManagerImpl::RelayAddress(NodeId originator,
     const CSipHasher hasher{m_connman.GetDeterministicRandomizer(RANDOMIZER_ID_ADDRESS_RELAY)
                                 .Write(hash_addr)
                                 .Write(time_addr)};
-    FastRandomContext insecure_rand;
 
     // Relay reachable addresses to 2 peers. Unreachable addresses are relayed randomly to 1 or 2 peers.
     unsigned int nRelayNodes = (fReachable || (hasher.Finalize() & 1)) ? 2 : 1;
@@ -2511,7 +2527,7 @@ void PeerManagerImpl::RelayAddress(NodeId originator,
     };
 
     for (unsigned int i = 0; i < nRelayNodes && best[i].first != 0; i++) {
-        PushAddress(*best[i].second, addr, insecure_rand);
+        PushAddress(*best[i].second, addr);
     }
 }
 
@@ -4003,7 +4019,7 @@ void PeerManagerImpl::ProcessMessage(
         const bool rate_limited = !pfrom.HasPermission(NetPermissionFlags::Addr);
         uint64_t num_proc = 0;
         uint64_t num_rate_limit = 0;
-        Shuffle(vAddr.begin(), vAddr.end(), FastRandomContext());
+        Shuffle(vAddr.begin(), vAddr.end(), m_rng);
         for (CAddress& addr : vAddr)
         {
             if (interruptMsgProc)
@@ -4979,9 +4995,8 @@ void PeerManagerImpl::ProcessMessage(
         } else {
             vAddr = m_connman.GetAddresses(pfrom, MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
         }
-        FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
-            PushAddress(*peer, addr, insecure_rand);
+            PushAddress(*peer, addr);
         }
         return;
     }
@@ -5676,8 +5691,7 @@ void PeerManagerImpl::MaybeSendAddr(CNode& node, Peer& peer, std::chrono::micros
         }
         if (std::optional<CService> local_service = GetLocalAddrForPeer(node)) {
             CAddress local_addr{*local_service, peer.m_our_services, Now<NodeSeconds>()};
-            FastRandomContext insecure_rand;
-            PushAddress(peer, local_addr, insecure_rand);
+            PushAddress(peer, local_addr);
         }
         peer.m_next_local_addr_send = GetExponentialRand(current_time, AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL);
     }
@@ -5724,6 +5738,70 @@ void PeerManagerImpl::MaybeSendAddr(CNode& node, Peer& peer, std::chrono::micros
     }
 }
 
+<<<<<<< HEAD
+=======
+void PeerManagerImpl::MaybeSendSendHeaders(CNode& node, Peer& peer)
+{
+    // Delay sending SENDHEADERS (BIP 130) until we're done with an
+    // initial-headers-sync with this peer. Receiving headers announcements for
+    // new blocks while trying to sync their headers chain is problematic,
+    // because of the state tracking done.
+    if (!peer.m_sent_sendheaders && node.GetCommonVersion() >= SENDHEADERS_VERSION) {
+        LOCK(cs_main);
+        CNodeState &state = *State(node.GetId());
+        if (state.pindexBestKnownBlock != nullptr &&
+                state.pindexBestKnownBlock->nChainWork > m_chainman.MinimumChainWork()) {
+            // Tell our peer we prefer to receive headers rather than inv's
+            // We send this to non-NODE NETWORK peers as well, because even
+            // non-NODE NETWORK peers can announce blocks (such as pruning
+            // nodes)
+            m_connman.PushMessage(&node, CNetMsgMaker(node.GetCommonVersion()).Make(NetMsgType::SENDHEADERS));
+            peer.m_sent_sendheaders = true;
+        }
+    }
+}
+
+void PeerManagerImpl::MaybeSendFeefilter(CNode& pto, Peer& peer, std::chrono::microseconds current_time)
+{
+    if (m_ignore_incoming_txs) return;
+    if (pto.GetCommonVersion() < FEEFILTER_VERSION) return;
+    // peers with the forcerelay permission should not filter txs to us
+    if (pto.HasPermission(NetPermissionFlags::ForceRelay)) return;
+    // Don't send feefilter messages to outbound block-relay-only peers since they should never announce
+    // transactions to us, regardless of feefilter state.
+    if (pto.IsBlockOnlyConn()) return;
+
+    CAmount currentFilter = m_mempool.GetMinFee(gArgs.GetIntArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000).GetFeePerK();
+
+    if (m_chainman.ActiveChainstate().IsInitialBlockDownload()) {
+        // Received tx-inv messages are discarded when the active
+        // chainstate is in IBD, so tell the peer to not send them.
+        currentFilter = MAX_MONEY;
+    } else {
+        static const CAmount MAX_FILTER{m_fee_filter_rounder.round(MAX_MONEY)};
+        if (peer.m_fee_filter_sent == MAX_FILTER) {
+            // Send the current filter if we sent MAX_FILTER previously
+            // and made it out of IBD.
+            peer.m_next_send_feefilter = 0us;
+        }
+    }
+    if (current_time > peer.m_next_send_feefilter) {
+        CAmount filterToSend = m_fee_filter_rounder.round(currentFilter);
+        // We always have a fee filter of at least minRelayTxFee
+        filterToSend = std::max(filterToSend, ::minRelayTxFee.GetFeePerK());
+        if (filterToSend != peer.m_fee_filter_sent) {
+            m_connman.PushMessage(&pto, CNetMsgMaker(pto.GetCommonVersion()).Make(NetMsgType::FEEFILTER, filterToSend));
+            peer.m_fee_filter_sent = filterToSend;
+        }
+        peer.m_next_send_feefilter = PoissonNextSend(current_time, AVG_FEEFILTER_BROADCAST_INTERVAL);
+    }
+    // If the fee filter has changed substantially and it's still more than MAX_FEEFILTER_CHANGE_DELAY
+    // until scheduled broadcast, then move the broadcast to within MAX_FEEFILTER_CHANGE_DELAY.
+    else if (current_time + MAX_FEEFILTER_CHANGE_DELAY < peer.m_next_send_feefilter &&
+                (currentFilter < 3 * peer.m_fee_filter_sent / 4 || currentFilter > 4 * peer.m_fee_filter_sent / 3)) {
+        peer.m_next_send_feefilter = current_time + GetRandomDuration<std::chrono::microseconds>(MAX_FEEFILTER_CHANGE_DELAY);
+    }
+}
 namespace {
 class CompareInvMempoolOrder
 {
