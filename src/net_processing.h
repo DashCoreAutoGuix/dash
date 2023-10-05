@@ -54,7 +54,28 @@ struct CNodeStateStats {
 class PeerManager : public CValidationInterface, public NetEventsInterface
 {
 public:
+<<<<<<< HEAD
     static std::unique_ptr<PeerManager> make(const CChainParams& chainparams, CConnman& connman, AddrMan& addrman,
+=======
+    struct Options {
+        //! Whether this node is running in -blocksonly mode
+        bool ignore_incoming_txs{DEFAULT_BLOCKSONLY};
+        //! Whether transaction reconciliation protocol is enabled
+        bool reconcile_txs{DEFAULT_TXRECONCILIATION_ENABLE};
+        //! Maximum number of orphan transactions kept in memory
+        uint32_t max_orphan_txs{DEFAULT_MAX_ORPHAN_TRANSACTIONS};
+        //! Number of non-mempool transactions to keep around for block reconstruction. Includes
+        //! orphan, replaced, and rejected transactions.
+        uint32_t max_extra_txs{DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN};
+        //! Whether all P2P messages are captured to disk
+        bool capture_messages{false};
+        //! Whether or not the internal RNG behaves deterministically (this is
+        //! a test-only option).
+        bool deterministic_rng{false};
+    };
+
+    static std::unique_ptr<PeerManager> make(CConnman& connman, AddrMan& addrman,
+>>>>>>> 52c6904c78 (Merge bitcoin/bitcoin#28558: Make PeerManager own a FastRandomContext)
                                              BanMan* banman, ChainstateManager& chainman,
                                              CTxMemPool& pool, CMasternodeMetaMan& mn_metaman, CMasternodeSync& mn_sync,
                                              CGovernanceManager& govman, CSporkManager& sporkman,
