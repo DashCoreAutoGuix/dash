@@ -52,11 +52,6 @@ from .util import (
     get_datadir_path,
     initialize_datadir,
     p2p_port,
-    set_node_times,
-    satoshi_round,
-    softfork_active,
-    wait_until_helper,
-    get_chain_folder, rpc_port,
 )
 
 
@@ -874,35 +869,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.sync_blocks(nodes)
         self.sync_mempools(nodes)
 
-    def bump_mocktime(self, t, update_nodes=True, nodes=None, update_schedulers=True):
-        if self.mocktime == 0:
-            return
-
-        self.mocktime += t
-
-        if not update_nodes:
-            return
-
-        nodes_to_update = nodes or self.nodes
-        set_node_times(nodes_to_update, self.mocktime)
-
-        if not update_schedulers:
-            return
-
-        for node in nodes_to_update:
-            if node.version_is_at_least(180100):
-                node.mockscheduler(t)
-
-    def _initialize_mocktime(self, is_genesis):
-        if is_genesis:
-            self.mocktime = TIME_GENESIS_BLOCK
-        else:
-            self.mocktime = TIME_GENESIS_BLOCK + (199 * 156)
-        for node in self.nodes:
-            node.mocktime = self.mocktime
-
-    def wait_until(self, test_function, timeout=60, lock=None, sleep=0.05, do_assert=True):
-        return wait_until_helper(test_function, timeout=timeout, lock=lock, timeout_factor=self.options.timeout_factor, sleep=sleep, do_assert=do_assert)
 
     # Private helper methods. These should not be accessed by the subclass test scripts.
 

@@ -50,7 +50,7 @@ class CMNHFManager;
 class CTxMemPool;
 class TxValidationState;
 class CChainstateHelper;
-class ChainstateManager;
+class CChainStateManager;
 struct PrecomputedTransactionData;
 struct ChainTxData;
 struct DisconnectedBlockTransactions;
@@ -242,7 +242,7 @@ struct PackageMempoolAcceptResult
 
 /**
  * Try to add a transaction to the mempool. This is an internal function and is exposed only for testing.
- * Client code should use ChainstateManager::ProcessTransaction()
+ * Client code should use CChainStateManager::ProcessTransaction()
  *
  * @param[in]  active_chainstate  Reference to the active chainstate.
  * @param[in]  tx                 The transaction to submit for mempool acceptance.
@@ -514,11 +514,11 @@ public:
     //! The chainstate manager that owns this chainstate. The reference is
     //! necessary so that this instance can check whether it is the active
     //! chainstate within deeply nested method calls.
-    ChainstateManager& m_chainman;
+    CChainStateManager& m_chainman;
 
     explicit CChainState(CTxMemPool* mempool,
                          node::BlockManager& blockman,
-                         ChainstateManager& chainman,
+                         CChainStateManager& chainman,
                          CEvoDB& evoDb,
                          const std::unique_ptr<CChainstateHelper>& chain_helper,
                          std::optional<uint256> from_snapshot_blockhash = std::nullopt);
@@ -809,7 +809,7 @@ private:
     void UpdateTip(const CBlockIndex* pindexNew)
         EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
-    friend ChainstateManager;
+    friend CChainStateManager;
 };
 
 /**
@@ -839,7 +839,7 @@ private:
  *    IBD process is happening in the background while use of the
  *    active (snapshot) chainstate allows the rest of the system to function.
  */
-class ChainstateManager
+class CChainStateManager
 {
 private:
     //! The chainstate used under normal operation (i.e. "regular" IBD) or, if
@@ -854,9 +854,10 @@ private:
     //! Once this pointer is set to a corresponding chainstate, it will not
     //! be reset until init.cpp:Shutdown().
     //!
-    //! This is especially important when, e.g., calling ActivateBestChain()
-    //! on all chainstates because we are not able to hold ::cs_main going into
-    //! that call.
+    //! It is important for the pointer to not be deleted until shutdown,
+    //! because cs_main is not always held when the pointer is accessed, for
+    //! example when calling ActivateBestChain, so there's no way you could
+    //! prevent code from using the pointer while deleting it.
     std::unique_ptr<CChainState> m_ibd_chainstate GUARDED_BY(::cs_main);
 
     //! A chainstate initialized on the basis of a UTXO snapshot. If this is
@@ -865,25 +866,15 @@ private:
     //! Once this pointer is set to a corresponding chainstate, it will not
     //! be reset until init.cpp:Shutdown().
     //!
-    //! This is especially important when, e.g., calling ActivateBestChain()
-    //! on all chainstates because we are not able to hold ::cs_main going into
-    //! that call.
+    //! It is important for the pointer to not be deleted until shutdown,
+    //! because cs_main is not always held when the pointer is accessed, for
+    //! example when calling ActivateBestChain, so there's no way you could
+    //! prevent code from using the pointer while deleting it.
     std::unique_ptr<CChainState> m_snapshot_chainstate GUARDED_BY(::cs_main);
 
     //! Points to either the ibd or snapshot chainstate; indicates our
     //! most-work chain.
-    //!
-    //! Once this pointer is set to a corresponding chainstate, it will not
-    //! be reset until init.cpp:Shutdown().
-    //!
-    //! This is especially important when, e.g., calling ActivateBestChain()
-    //! on all chainstates because we are not able to hold ::cs_main going into
-    //! that call.
     CChainState* m_active_chainstate GUARDED_BY(::cs_main) {nullptr};
-
-    //! If true, the assumed-valid chainstate has been fully validated
-    //! by the background validation chainstate.
-    bool m_snapshot_validated GUARDED_BY(::cs_main){false};
 
     CBlockIndex* m_best_invalid GUARDED_BY(::cs_main){nullptr};
 
@@ -958,7 +949,7 @@ public:
     //! Get all chainstates currently being used.
     std::vector<CChainState*> GetAll();
 
-    //! Construct and activate a Chainstate on the basis of UTXO snapshot data.
+    //! Construct and activate a CChainState on the basis of UTXO snapshot data.
     //!
     //! Steps:
     //!
@@ -970,7 +961,7 @@ public:
     //! - "Fast forward" the tip of the new chainstate to the base of the snapshot,
     //!   faking nTx* block index data along the way.
     //! - Move the new chainstate to `m_snapshot_chainstate` and make it our
-    //!   ChainstateActive().
+    //!   CChainStateActive().
     [[nodiscard]] bool ActivateSnapshot(
         CAutoFile& coins_file, const node::SnapshotMetadata& metadata, bool in_memory);
 
@@ -1053,7 +1044,64 @@ public:
     //! ResizeCoinsCaches() as needed.
     void MaybeRebalanceCaches() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
-    ~ChainstateManager();
+    /** Update uncommitted block structures (currently: only the witness reserved value). This is safe for submitted blocks. */
+    void UpdateUncommittedBlockStructures(CBlock& block, const CBlockIndex* pindexPrev) const;
+
+    /** Produce the necessary coinbase commitment for a block (modifies the hash, don't call for mined blocks). */
+    std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBlockIndex* pindexPrev) const;
+
+    /** This is used by net_processing to report pre-synchronization progress of headers, as
+     *  headers are not yet fed to validation during that time, but validation is (for now)
+     *  responsible for logging and signalling through NotifyHeaderTip, so it needs this
+     *  information. */
+    void ReportHeadersPresync(const arith_uint256& work, int64_t height, int64_t timestamp);
+
+    //! When starting up, search the datadir for a chainstate based on a UTXO
+    //! snapshot that is in the process of being validated.
+    bool DetectSnapshotChainstate() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    void ResetChainstates() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Remove the snapshot-based chainstate and all on-disk artifacts.
+    //! Used when reindex{-chainstate} is called during snapshot use.
+    [[nodiscard]] bool DeleteSnapshotChainstate() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Switch the active chainstate to one based on a UTXO snapshot that was loaded
+    //! previously.
+    CChainState& ActivateExistingSnapshot(uint256 base_blockhash) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! If we have validated a snapshot chain during this runtime, copy its
+    //! chainstate directory over to the main `chainstate` location, completing
+    //! validation of the snapshot.
+    //!
+    //! If the cleanup succeeds, the caller will need to ensure chainstates are
+    //! reinitialized, since ResetChainstates() will be called before leveldb
+    //! directories are moved or deleted.
+    //!
+    //! @sa node/chainstate:LoadChainstate()
+    bool ValidatedSnapshotCleanup() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! @returns the chainstate that indexes should consult when ensuring that an
+    //!   index is synced with a chain where we can expect block index entries to have
+    //!   BLOCK_HAVE_DATA beneath the tip.
+    //!
+    //!   In other words, give us the chainstate for which we can reasonably expect
+    //!   that all blocks beneath the tip have been indexed. In practice this means
+    //!   when using an assumed-valid chainstate based upon a snapshot, return only the
+    //!   fully validated chain.
+    CChainState& GetChainstateForIndexing() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Return the [start, end] (inclusive) of block heights we can prune.
+    //!
+    //! start > end is possible, meaning no blocks can be pruned.
+    std::pair<int, int> GetPruneRange(
+        const CChainState& chainstate, int last_height_can_prune) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Return the height of the base block of the snapshot in use, if one exists, else
+    //! nullopt.
+    std::optional<int> GetSnapshotBaseHeight() const EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    ~CChainStateManager();
 };
 
 /**

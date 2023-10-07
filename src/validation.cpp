@@ -66,6 +66,8 @@
 #include <optional>
 #include <ranges>
 #include <string>
+#include <tuple>
+#include <utility>
 
 using node::BlockManager;
 using node::BlockMap;
@@ -3188,7 +3190,7 @@ CBlockIndex* CChainState::FindMostWorkChain()
         CBlockIndex *pindexTest = pindexNew;
         bool fInvalidAncestor = false;
         while (pindexTest && !m_chain.Contains(pindexTest)) {
-            assert(pindexTest->HaveTxsDownloaded() || pindexTest->nHeight == 0);
+            assert(pindexTest->HaveNumChainTxs() || pindexTest->nHeight == 0);
 
             // Pruned nodes may have entries in setBlockIndexCandidates for
             // which block files have been deleted.  Remove those as candidates
@@ -3503,7 +3505,7 @@ bool CChainState::PreciousBlock(BlockValidationState& state, CBlockIndex* pindex
             // call preciousblock 2**31-1 times on the same set of tips...
             nBlockReverseSequenceId--;
         }
-        if (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) && !(pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK) && pindex->HaveTxsDownloaded()) {
+        if (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) && !(pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK) && pindex->HaveNumChainTxs()) {
             setBlockIndexCandidates.insert(pindex);
             PruneBlockIndexCandidates();
         }
@@ -3551,7 +3553,7 @@ bool CChainState::InvalidateBlock(BlockValidationState& state, CBlockIndex* pind
             if (!m_chain.Contains(candidate) &&
                     !CBlockIndexWorkComparator()(candidate, pindex->pprev) &&
                     candidate->IsValid(BLOCK_VALID_TRANSACTIONS) &&
-                    candidate->HaveTxsDownloaded()) {
+                    candidate->HaveNumChainTxs()) {
                 candidate_blocks_by_work.insert(std::make_pair(candidate->nChainWork, candidate));
             }
         }
@@ -3651,7 +3653,7 @@ bool CChainState::InvalidateBlock(BlockValidationState& state, CBlockIndex* pind
         // Loop back over all block index entries and add any missing entries
         // to setBlockIndexCandidates.
         for (auto& [_, block_index] : m_blockman.m_block_index) {
-            if (block_index.IsValid(BLOCK_VALID_TRANSACTIONS) && !(block_index.nStatus & BLOCK_CONFLICT_CHAINLOCK) && block_index.HaveTxsDownloaded() && !setBlockIndexCandidates.value_comp()(&block_index, m_chain.Tip())) {
+            if (block_index.IsValid(BLOCK_VALID_TRANSACTIONS) && !(block_index.nStatus & BLOCK_CONFLICT_CHAINLOCK) && block_index.HaveNumChainTxs() && !setBlockIndexCandidates.value_comp()(&block_index, m_chain.Tip())) {
                 setBlockIndexCandidates.insert(&block_index);
             }
         }
@@ -3753,7 +3755,7 @@ bool CChainState::MarkConflictingBlock(BlockValidationState& state, CBlockIndex 
     // add it again.
     BlockMap::iterator it = m_blockman.m_block_index.begin();
     while (it != m_blockman.m_block_index.end()) {
-        if (it->second.IsValid(BLOCK_VALID_TRANSACTIONS) && !(it->second.nStatus & BLOCK_CONFLICT_CHAINLOCK) && it->second.HaveTxsDownloaded() && !setBlockIndexCandidates.value_comp()(&it->second, m_chain.Tip())) {
+        if (it->second.IsValid(BLOCK_VALID_TRANSACTIONS) && !(it->second.nStatus & BLOCK_CONFLICT_CHAINLOCK) && it->second.HaveNumChainTxs() && !setBlockIndexCandidates.value_comp()(&it->second, m_chain.Tip())) {
             setBlockIndexCandidates.insert(&it->second);
         }
         it++;
@@ -3793,7 +3795,7 @@ void CChainState::ResetBlockFailureFlags(CBlockIndex *pindex, bool ignore_chainl
                 block_index.nStatus &= ~BLOCK_CONFLICT_CHAINLOCK;
             }
             m_blockman.m_dirty_blockindex.insert(&block_index);
-            if (block_index.IsValid(BLOCK_VALID_TRANSACTIONS) && block_index.HaveTxsDownloaded() && setBlockIndexCandidates.value_comp()(m_chain.Tip(), &block_index)) {
+            if (block_index.IsValid(BLOCK_VALID_TRANSACTIONS) && block_index.HaveNumChainTxs() && setBlockIndexCandidates.value_comp()(m_chain.Tip(), &block_index)) {
                 if (ignore_chainlocks || !(block_index.nStatus & BLOCK_CONFLICT_CHAINLOCK)) {
                     setBlockIndexCandidates.insert(&block_index);
                 }
@@ -3814,7 +3816,7 @@ void CChainState::ResetBlockFailureFlags(CBlockIndex *pindex, bool ignore_chainl
                 pindex->nStatus &= ~BLOCK_CONFLICT_CHAINLOCK;
             }
             m_blockman.m_dirty_blockindex.insert(pindex);
-            if (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) && pindex->HaveTxsDownloaded() && setBlockIndexCandidates.value_comp()(m_chain.Tip(), pindex)) {
+            if (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) && pindex->HaveNumChainTxs() && setBlockIndexCandidates.value_comp()(m_chain.Tip(), pindex)) {
                 if (ignore_chainlocks || !(pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK)) {
                     setBlockIndexCandidates.insert(pindex);
                 }
@@ -3852,7 +3854,7 @@ void CChainState::ReceivedBlockTransactions(const CBlock& block, CBlockIndex* pi
     pindexNew->RaiseValidity(BLOCK_VALID_TRANSACTIONS);
     m_blockman.m_dirty_blockindex.insert(pindexNew);
 
-    if (pindexNew->pprev == nullptr || pindexNew->pprev->HaveTxsDownloaded()) {
+    if (pindexNew->pprev == nullptr || pindexNew->pprev->HaveNumChainTxs()) {
         // If pindexNew is the genesis block or all parents are BLOCK_VALID_TRANSACTIONS.
         std::deque<CBlockIndex*> queue;
         queue.push_back(pindexNew);
@@ -4864,7 +4866,7 @@ bool ChainstateManager::LoadBlockIndex()
             if (ShutdownRequested()) return false;
             if (pindex->IsAssumedValid() ||
                     (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) &&
-                     (pindex->HaveTxsDownloaded() || pindex->pprev == nullptr))) {
+                     (pindex->HaveNumChainTxs() || pindex->pprev == nullptr))) {
 
                 // Fill each chainstate's block candidate set. Only add assumed-valid
                 // blocks to the tip candidate set if the chainstate is allowed to rely on
@@ -5172,6 +5174,15 @@ void CChainState::CheckBlockIndex()
     CBlockIndex* pindexFirstNotScriptsValid = nullptr; // Oldest ancestor of pindex which does not have BLOCK_VALID_SCRIPTS (regardless of being valid or not).
     while (pindex != nullptr) {
         nNodes++;
+        // Make sure nChainTx sum is correctly computed.
+        unsigned int prev_chain_tx = pindex->pprev ? pindex->pprev->nChainTx : 0;
+        assert((pindex->nChainTx == pindex->nTx + prev_chain_tx)
+               // For testing, allow transaction counts to be completely unset.
+               || (pindex->nChainTx == 0 && pindex->nTx == 0)
+               // For testing, allow this nChainTx to be unset if previous is also unset.
+               || (pindex->nChainTx == 0 && prev_chain_tx == 0 && pindex->pprev));
+
+        if (pindexFirstAssumeValid == nullptr && pindex->nStatus & BLOCK_ASSUMED_VALID) pindexFirstAssumeValid = pindex;
         if (pindexFirstInvalid == nullptr && pindex->nStatus & BLOCK_FAILED_VALID) pindexFirstInvalid = pindex;
         if (pindexFirstConflicing == nullptr && pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK) pindexFirstConflicing = pindex;
         // Assumed-valid index entries will not have data since we haven't downloaded the
@@ -5208,7 +5219,7 @@ void CChainState::CheckBlockIndex()
             assert(pindex->GetBlockHash() == m_params.GetConsensus().hashGenesisBlock); // Genesis block's hash must match.
             assert(pindex == m_chain.Genesis()); // The current active chain's genesis block must be this block.
         }
-        if (!pindex->HaveTxsDownloaded()) assert(pindex->nSequenceId <= 0); // nSequenceId can't be set positive for blocks that aren't linked (negative is used for preciousblock)
+        if (!pindex->HaveNumChainTxs()) assert(pindex->nSequenceId <= 0); // nSequenceId can't be set positive for blocks that aren't linked (negative is used for preciousblock)
         // VALID_TRANSACTIONS is equivalent to nTx > 0 for all nodes (whether or not pruning has occurred).
         // HAVE_DATA is only equivalent to nTx > 0 (or VALID_TRANSACTIONS) if no pruning has occurred.
         // Unless these indexes are assumed valid and pending block download on a
@@ -5232,9 +5243,9 @@ void CChainState::CheckBlockIndex()
             // actually seen a block's transactions.
             assert(((pindex->nStatus & BLOCK_VALID_MASK) >= BLOCK_VALID_TRANSACTIONS) == (pindex->nTx > 0)); // This is pruning-independent.
         }
-        // All parents having had data (at some point) is equivalent to all parents being VALID_TRANSACTIONS, which is equivalent to HaveTxsDownloaded().
-        assert((pindexFirstNeverProcessed == nullptr) == pindex->HaveTxsDownloaded());
-        assert((pindexFirstNotTransactionsValid == nullptr) == pindex->HaveTxsDownloaded());
+        // All parents having had data (at some point) is equivalent to all parents being VALID_TRANSACTIONS, which is equivalent to HaveNumChainTxs().
+        assert((pindexFirstNeverProcessed == nullptr) == pindex->HaveNumChainTxs());
+        assert((pindexFirstNotTransactionsValid == nullptr) == pindex->HaveNumChainTxs());
         assert(pindex->nHeight == nHeight); // nHeight must be consistent.
         assert(pindex->pprev == nullptr || pindex->nChainWork >= pindex->pprev->nChainWork); // For every block except the genesis block, the chainwork must be larger than the parent's.
         assert(nHeight < 2 || (pindex->pskip && (pindex->pskip->nHeight < nHeight))); // The pskip pointer must point back for all but the first 2 blocks.
@@ -5964,11 +5975,6 @@ ChainstateManager::~ChainstateManager()
 {
     LOCK(::cs_main);
 
-    // TODO: The version bits cache and warning cache should probably become
-    // non-globals
-    g_versionbitscache.Clear();
-    for (auto& i : warningcache) {
-        i.clear();
     }
 }
 

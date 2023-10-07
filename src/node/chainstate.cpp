@@ -234,6 +234,55 @@ void DashChainstateSetup(ChainstateManager& chainman,
     chain_helper = std::make_unique<CChainstateHelper>(*cpoolman, *dmnman, *mnhf_manager, govman, *(llmq_ctx->isman), *(llmq_ctx->quorum_block_processor),
                                                        *(llmq_ctx->qsnapman), chainman, consensus_params, mn_sync, sporkman, *(llmq_ctx->clhandler),
                                                        *(llmq_ctx->qman));
+
+    auto [init_status, init_error] = CompleteChainstateInitialization(chainman, cache_sizes, options);
+    if (init_status != ChainstateLoadStatus::SUCCESS) {
+        return {init_status, init_error};
+    }
+
+    // If a snapshot chainstate was fully validated by a background chainstate during
+    // the last run, detect it here and clean up the now-unneeded background
+    // chainstate.
+    //
+    // Why is this cleanup done here (on subsequent restart) and not just when the
+    // snapshot is actually validated? Because this entails unusual
+    // filesystem operations to move leveldb data directories around, and that seems
+    // too risky to do in the middle of normal runtime.
+    auto snapshot_completion = chainman.MaybeCompleteSnapshotValidation();
+
+    if (snapshot_completion == SnapshotCompletionResult::SKIPPED) {
+        // do nothing; expected case
+    } else if (snapshot_completion == SnapshotCompletionResult::SUCCESS) {
+        LogPrintf("[snapshot] cleaning up unneeded background chainstate, then reinitializing\n");
+        if (!chainman.ValidatedSnapshotCleanup()) {
+            return {ChainstateLoadStatus::FAILURE_FATAL, Untranslated("Background chainstate cleanup failed unexpectedly.")};
+        }
+
+        // Because ValidatedSnapshotCleanup() has torn down chainstates with
+        // ChainstateManager::ResetChainstates(), reinitialize them here without
+        // duplicating the blockindex work above.
+        assert(chainman.GetAll().empty());
+        assert(!chainman.IsSnapshotActive());
+        assert(!chainman.IsSnapshotValidated());
+
+        chainman.InitializeChainstate(options.mempool);
+
+        // A reload of the block index is required to recompute setBlockIndexCandidates
+        // for the fully validated chainstate.
+        chainman.ActiveChainstate().ClearBlockIndexCandidates();
+
+        auto [init_status, init_error] = CompleteChainstateInitialization(chainman, cache_sizes, options);
+        if (init_status != ChainstateLoadStatus::SUCCESS) {
+            return {init_status, init_error};
+        }
+    } else {
+        return {ChainstateLoadStatus::FAILURE, _(
+           "UTXO snapshot failed to validate. "
+           "Restart to resume normal initial block download, or try loading a different snapshot.")};
+    }
+
+    return {ChainstateLoadStatus::SUCCESS, {}};
+>>>>>>> 38f4b0d9d1 (Merge bitcoin/bitcoin#28562: AssumeUTXO follow-ups)
 }
 
 void DashChainstateSetupClose(std::unique_ptr<CChainstateHelper>& chain_helper,

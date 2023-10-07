@@ -34,7 +34,7 @@ from .util import (
     get_auth_cookie,
     get_rpc_proxy,
     rpc_url,
-    wait_until_helper,
+    wait_until_helper_internal,
     p2p_port,
     get_chain_folder,
     EncodeDecimal,
@@ -279,7 +279,7 @@ class TestNode():
                 if self.version_is_at_least(180000):
                     # getmempoolinfo.loaded is available since commit
                     # 71e38b9ebcb78b3a264a4c25c7c4e373317f2a40 (version 0.18.0)
-                    wait_until_helper(lambda: rpc.getmempoolinfo()['loaded'])
+                    wait_until_helper_internal(lambda: rpc.getmempoolinfo()['loaded'], timeout_factor=self.timeout_factor)
                     # Wait for the node to finish reindex, block import, and
                     # loading the mempool. Usually importing happens fast or
                     # even "immediate" when the node is started. However, there
@@ -421,8 +421,29 @@ class TestNode():
         self.log.debug("Node stopped")
         return True
 
-    def wait_until_stopped(self, timeout=BITCOIND_PROC_WAIT_TIMEOUT):
-        wait_until_helper(self.is_node_stopped, timeout=timeout, timeout_factor=self.timeout_factor)
+    def wait_until_stopped(self, *, timeout=BITCOIND_PROC_WAIT_TIMEOUT, expect_error=False, **kwargs):
+        expected_ret_code = 1 if expect_error else 0  # Whether node shutdown return EXIT_FAILURE or EXIT_SUCCESS
+        wait_until_helper_internal(lambda: self.is_node_stopped(expected_ret_code=expected_ret_code, **kwargs), timeout=timeout, timeout_factor=self.timeout_factor)
+
+    def replace_in_config(self, replacements):
+        """
+        Perform replacements in the configuration file.
+        The substitutions are passed as a list of search-replace-tuples, e.g.
+            [("old", "new"), ("foo", "bar"), ...]
+        """
+        with open(self.bitcoinconf, 'r', encoding='utf8') as conf:
+            conf_data = conf.read()
+        for replacement in replacements:
+            assert_equal(len(replacement), 2)
+            old, new = replacement[0], replacement[1]
+            conf_data = conf_data.replace(old, new)
+        with open(self.bitcoinconf, 'w', encoding='utf8') as conf:
+            conf.write(conf_data)
+
+    @property
+    def datadir_path(self) -> Path:
+        return Path(self.datadir)
+>>>>>>> 38f4b0d9d1 (Merge bitcoin/bitcoin#28562: AssumeUTXO follow-ups)
 
     @property
     def chain_path(self) -> Path:
@@ -519,7 +540,7 @@ class TestNode():
 
         initial_peer_id = get_highest_peer_id()
         yield
-        wait_until_helper(lambda: get_highest_peer_id() > initial_peer_id,
+        wait_until_helper_internal(lambda: get_highest_peer_id() > initial_peer_id,
                           timeout=timeout, timeout_factor=self.timeout_factor)
 
     @contextlib.contextmanager
@@ -785,11 +806,11 @@ class TestNode():
                     if p['subver'] == p2p.strSubVer:
                         return False
             return True
-        wait_until_helper(check_peers, timeout=5)
+        wait_until_helper_internal(check_peers, timeout=5)
 
         del self.p2ps[:]
 
-        wait_until_helper(lambda: self.num_test_p2p_connections() == 0, timeout_factor=self.timeout_factor)
+        wait_until_helper_internal(lambda: self.num_test_p2p_connections() == 0, timeout_factor=self.timeout_factor)
 
 
 class TestNodeCLIAttr:
