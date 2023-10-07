@@ -272,9 +272,15 @@ public Q_SLOTS:
     /** Get restart command-line parameters and request restart */
     void handleRestart(QStringList args);
     /** Set number of blocks and last block date shown in the UI */
+<<<<<<< HEAD
     void setNumBlocks(int count, const QDateTime& blockDate, const QString& blockHash, double nVerificationProgress, bool headers, SynchronizationState sync_state);
     /** Set additional data sync status shown in the UI */
     void setAdditionalDataSyncProgress(double nSyncProgress);
+=======
+    void setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, SyncType synctype, SynchronizationState sync_state);
+    /** Launch the wallet creation modal (no-op if wallet is not compiled) **/
+    void createWallet();
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
 
     /** Notify the user of an event from the core network or transaction handling code.
        @param[in] title             the message box / notification title

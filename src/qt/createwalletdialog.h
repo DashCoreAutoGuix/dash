@@ -27,7 +27,11 @@ public:
     bool isEncryptWalletChecked() const;
     bool isDisablePrivateKeysChecked() const;
     bool isMakeBlankWalletChecked() const;
+<<<<<<< HEAD
     bool isDescriptorWalletChecked() const;
+=======
+    bool isExternalSignerChecked() const;
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
 
 private:
     Ui::CreateWalletDialog *ui;

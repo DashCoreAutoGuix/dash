@@ -247,14 +247,21 @@ void CreateWalletActivity::createWallet()
 
     std::string name = m_create_wallet_dialog->walletName().toStdString();
     uint64_t flags = 0;
+    // Enable descriptors by default.
+    flags |= WALLET_FLAG_DESCRIPTORS;
     if (m_create_wallet_dialog->isDisablePrivateKeysChecked()) {
         flags |= WALLET_FLAG_DISABLE_PRIVATE_KEYS;
     }
     if (m_create_wallet_dialog->isMakeBlankWalletChecked()) {
         flags |= WALLET_FLAG_BLANK_WALLET;
     }
+<<<<<<< HEAD
     if (m_create_wallet_dialog->isDescriptorWalletChecked()) {
         flags |= WALLET_FLAG_DESCRIPTORS;
+=======
+    if (m_create_wallet_dialog->isExternalSignerChecked()) {
+        flags |= WALLET_FLAG_EXTERNAL_SIGNER;
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
     }
 
     QTimer::singleShot(500ms, worker(), [this, name, flags] {

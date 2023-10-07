@@ -6,8 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
+<<<<<<< HEAD
     <width>407</width>
     <height>0</height>
+=======
+    <width>371</width>
+    <height>298</height>
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +22,48 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_description">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>You are one step away from creating your new wallet!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_subdescription">
+     <property name="text">
+      <string>Please provide a name and, if desired, enable any advanced options</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>3</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -75,7 +122,19 @@
      <property name="title">
       <string>Advanced Options</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout_groupbox">
+      <property name="spacing">
+       <number>9</number>
+      </property>
       <item>
        <widget class="QCheckBox" name="disable_privkeys_checkbox">
         <property name="enabled">
@@ -100,12 +159,21 @@
        </widget>
       </item>
       <item>
+<<<<<<< HEAD
        <widget class="QCheckBox" name="descriptor_checkbox">
         <property name="toolTip">
          <string>Use descriptors for scriptPubKey management. This feature is well-tested but still considered experimental and not recommended for use yet.</string>
         </property>
         <property name="text">
          <string>Descriptor Wallet (EXPERIMENTAL)</string>
+=======
+       <widget class="QCheckBox" name="external_signer_checkbox">
+        <property name="toolTip">
+         <string>Use an external signing device such as a hardware wallet. Configure the external signer script in wallet preferences first.</string>
+        </property>
+        <property name="text">
+         <string>External signer</string>
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
         </property>
        </widget>
       </item>
@@ -142,6 +210,10 @@
   <tabstop>encrypt_wallet_checkbox</tabstop>
   <tabstop>disable_privkeys_checkbox</tabstop>
   <tabstop>blank_wallet_checkbox</tabstop>
+<<<<<<< HEAD
+=======
+  <tabstop>external_signer_checkbox</tabstop>
+>>>>>>> d2b8c5e123 (Merge bitcoin-core/gui#764: Remove legacy wallet creation)
  </tabstops>
  <resources/>
  <connections>
