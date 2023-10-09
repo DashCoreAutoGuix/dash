@@ -21,7 +21,7 @@ from test_framework.util import (
     find_vout_for_address,
     satoshi_round,
 )
-from test_framework.wallet_util import bytes_to_wif
+from test_framework.wallet_util import bytes_to_wif, WalletUnlock
 
 
 def get_unspent(listunspent, amount):
@@ -553,19 +553,18 @@ class RawTransactionsTest(BitcoinTestFramework):
         self.nodes[1].encryptwallet("test")
 
         if self.options.descriptors:
-            self.nodes[1].walletpassphrase('test', 10)
-            self.nodes[1].importdescriptors([{
-                'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/0h/*h)'),
-                'timestamp': 'now',
-                'active': True
-            },
-            {
-                'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/1h/*h)'),
-                'timestamp': 'now',
-                'active': True,
-                'internal': True
-            }])
-            self.nodes[1].walletlock()
+            with WalletUnlock(self.nodes[1], "test"):
+                self.nodes[1].importdescriptors([{
+                    'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/0h/*h)'),
+                    'timestamp': 'now',
+                    'active': True
+                },
+                {
+                    'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/1h/*h)'),
+                    'timestamp': 'now',
+                    'active': True,
+                    'internal': True
+                }])
 
         # Drain the keypool.
         self.nodes[1].getnewaddress()
@@ -586,8 +585,8 @@ class RawTransactionsTest(BitcoinTestFramework):
         assert_raises_rpc_error(-4, "Transaction needs a change address, but we can't generate it. Please call keypoolrefill first.", self.nodes[1].fundrawtransaction, rawtx)
 
         # Refill the keypool.
-        self.nodes[1].walletpassphrase("test", 100)
-        self.nodes[1].walletlock()
+        with WalletUnlock(self.nodes[1], "test"):
+            self.nodes[1].keypoolrefill(8) #need to refill the keypool to get an internal change address
 
         assert_raises_rpc_error(-13, "walletpassphrase", self.nodes[1].sendtoaddress, self.nodes[0].getnewaddress(), 12)
 
@@ -599,13 +598,13 @@ class RawTransactionsTest(BitcoinTestFramework):
         fundedTx = self.nodes[1].fundrawtransaction(rawtx)
 
         # Now we need to unlock.
-        self.nodes[1].walletpassphrase("test", 600)
-        signedTx = self.nodes[1].signrawtransactionwithwallet(fundedTx['hex'])
-        self.nodes[1].sendrawtransaction(signedTx['hex'])
-        self.generate(self.nodes[1], 1)
+        with WalletUnlock(self.nodes[1], "test"):
+            signedTx = self.nodes[1].signrawtransactionwithwallet(fundedTx['hex'])
+            self.nodes[1].sendrawtransaction(signedTx['hex'])
+            self.generate(self.nodes[1], 1)
 
-        # Make sure funds are received at node1.
-        assert_equal(oldBalance+Decimal('511.0000000'), self.nodes[0].getbalance())
+            # Make sure funds are received at node1.
+            assert_equal(oldBalance+Decimal('511.0000000'), self.nodes[0].getbalance())
 
     def test_many_inputs_fee(self):
         """Multiple (~19) inputs tx test | Compare fee."""

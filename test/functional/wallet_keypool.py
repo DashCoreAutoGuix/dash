@@ -8,11 +8,11 @@ import time
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.wallet_util import WalletUnlock
 
 class KeyPoolTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
-        self.extra_args = [['-usehd=0']]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
@@ -28,9 +28,8 @@ class KeyPoolTest(BitcoinTestFramework):
         assert_raises_rpc_error(-12, "Error: Keypool ran out, please call keypoolrefill first", nodes[0].getnewaddress)
 
         # put three new keys in the keypool
-        nodes[0].walletpassphrase('test', 12000)
-        nodes[0].keypoolrefill(3)
-        nodes[0].walletlock()
+        with WalletUnlock(nodes[0], 'test'):
+            nodes[0].keypoolrefill(3)
 
         # drain the keys
         addr = set()
@@ -40,7 +39,7 @@ class KeyPoolTest(BitcoinTestFramework):
         # assert that three unique addresses were returned
         assert len(addr) == 3
         # the next one should fail
-        assert_raises_rpc_error(-12, "Keypool ran out", nodes[0].getrawchangeaddress)
+        assert_raises_rpc_error(-12, "Error: Keypool ran out, please call keypoolrefill first", nodes[0].getrawchangeaddress)
 
         # refill keypool with three new addresses
         nodes[0].walletpassphrase('test', 1)
