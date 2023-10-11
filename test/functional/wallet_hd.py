@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# Copyright (c) 2016-2020 The Bitcoin Core developers
+# Copyright (c) 2016-2022 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test Hierarchical Deterministic wallet function."""
 
 import shutil
-import os
 
 from test_framework.blocktools import COINBASE_MATURITY
 from test_framework.test_framework import BitcoinTestFramework
@@ -14,47 +13,45 @@ from test_framework.util import (
     assert_raises_rpc_error,
 )
 
+
 class WalletHDTest(BitcoinTestFramework):
+    def add_options(self, parser):
+        self.add_wallet_options(parser)
+
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
-        self.extra_args = [['-usehd=0'], ['-usehd=1', '-keypool=0']]
+        self.extra_args = [[], ['-keypool=0']]
         # whitelist peers to speed up tx relay / mempool sync
         for args in self.extra_args:
             args.append("-whitelist=noban@127.0.0.1")
 
-    def setup_network(self):
-        self.add_nodes(self.num_nodes, self.extra_args)
-        self.start_nodes()
-        self.import_deterministic_coinbase_privkeys()
+        self.supports_cli = False
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
 
     def run_test(self):
-        # Make sure can't switch off usehd after wallet creation
-        self.stop_node(1)
-        self.nodes[1].assert_start_raises_init_error(['-usehd=0'], "Error: Error loading %s: You can't disable HD on an already existing HD wallet" % self.default_wallet_name)
-        self.start_node(1)
-        self.connect_nodes(0, 1)
-
-        # Make sure we use hd, keep chainid
+        # Make sure we use hd, keep masterkeyid
         hd_fingerprint = self.nodes[1].getaddressinfo(self.nodes[1].getnewaddress())['hdmasterfingerprint']
         assert_equal(len(hd_fingerprint), 8)
 
         # create an internal key
         change_addr = self.nodes[1].getrawchangeaddress()
-        change_addrV= self.nodes[1].getaddressinfo(change_addr)
-        assert_equal(change_addrV["hdkeypath"], "m/44'/1'/0'/1/0") #first internal child key
+        change_addrV = self.nodes[1].getaddressinfo(change_addr)
+        if self.options.descriptors:
+            assert_equal(change_addrV["hdkeypath"], "m/84h/1h/0h/1/0")
+        else:
+            assert_equal(change_addrV["hdkeypath"], "m/0'/1'/0'")  #first internal child key
 
         # Import a non-HD private key in the HD wallet
-        non_hd_add = 'yLU9vxiAWUdiKKxn6EazLDFq9WXrK2T7RP'
-        non_hd_key = 'cVCzrzfxMhUMxV34UhTmdmntAqHvosAuNo2KUZsiHZSKLm73g35o'
+        non_hd_add = 'bcrt1qmevj8zfx0wdvp05cqwkmr6mxkfx60yezwjksmt'
+        non_hd_key = 'cS9umN9w6cDMuRVYdbkfE4c7YUFLJRoXMfhQ569uY4odiQbVN8Rt'
         self.nodes[1].importprivkey(non_hd_key)
 
         # This should be enough to keep the master key and the non-HD key
-        self.nodes[1].backupwallet(os.path.join(self.nodes[1].datadir, "hd.bak"))
-        #self.nodes[1].dumpwallet(os.path.join(self.nodes[1].datadir, "hd.dump"))
+        self.nodes[1].backupwallet(self.nodes[1].datadir_path / "hd.bak")
+        #self.nodes[1].dumpwallet(self.nodes[1].datadir_path / "hd.dump")
 
         # Derive some HD addresses and remember the last
         # Also send funds to each add
@@ -64,7 +61,10 @@ class WalletHDTest(BitcoinTestFramework):
         for i in range(1, NUM_HD_ADDS + 1):
             hd_add = self.nodes[1].getnewaddress()
             hd_info = self.nodes[1].getaddressinfo(hd_add)
-            assert_equal(hd_info["hdkeypath"], "m/44'/1'/0'/0/" + str(i))
+            if self.options.descriptors:
+                assert_equal(hd_info["hdkeypath"], "m/84h/1h/0h/0/" + str(i))
+            else:
+                assert_equal(hd_info["hdkeypath"], "m/0'/0'/" + str(i) + "'")
             assert_equal(hd_info["hdmasterfingerprint"], hd_fingerprint)
             self.nodes[0].sendtoaddress(hd_add, 1)
             self.generate(self.nodes[0], 1)
@@ -73,8 +73,11 @@ class WalletHDTest(BitcoinTestFramework):
 
         # create an internal key (again)
         change_addr = self.nodes[1].getrawchangeaddress()
-        change_addrV= self.nodes[1].getaddressinfo(change_addr)
-        assert_equal(change_addrV["hdkeypath"], "m/44'/1'/0'/1/1") #second internal child key
+        change_addrV = self.nodes[1].getaddressinfo(change_addr)
+        if self.options.descriptors:
+            assert_equal(change_addrV["hdkeypath"], "m/84h/1h/0h/1/1")
+        else:
+            assert_equal(change_addrV["hdkeypath"], "m/0'/1'/1'")  #second internal child key
 
         self.sync_all()
         assert_equal(self.nodes[1].getbalance(), NUM_HD_ADDS + 1)
@@ -83,13 +86,11 @@ class WalletHDTest(BitcoinTestFramework):
         self.stop_node(1)
         # we need to delete the complete chain directory
         # otherwise node1 would auto-recover all funds in flag the keypool keys as used
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "blocks"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "chainstate"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "evodb"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "llmq"))
+        shutil.rmtree(self.nodes[1].blocks_path)
+        shutil.rmtree(self.nodes[1].chain_path / "chainstate")
         shutil.copyfile(
-            os.path.join(self.nodes[1].datadir, "hd.bak"),
-            os.path.join(self.nodes[1].datadir, self.chain, "wallets", self.default_wallet_name, self.wallet_data_filename),
+            self.nodes[1].datadir_path / "hd.bak",
+            self.nodes[1].wallets_path / self.default_wallet_name / self.wallet_data_filename
         )
         self.start_node(1)
 
@@ -98,25 +99,26 @@ class WalletHDTest(BitcoinTestFramework):
         for i in range(1, NUM_HD_ADDS + 1):
             hd_add_2 = self.nodes[1].getnewaddress()
             hd_info_2 = self.nodes[1].getaddressinfo(hd_add_2)
-            assert_equal(hd_info_2["hdkeypath"], "m/44'/1'/0'/0/"+str(i))
+            if self.options.descriptors:
+                assert_equal(hd_info_2["hdkeypath"], "m/84h/1h/0h/0/" + str(i))
+            else:
+                assert_equal(hd_info_2["hdkeypath"], "m/0'/0'/" + str(i) + "'")
             assert_equal(hd_info_2["hdmasterfingerprint"], hd_fingerprint)
         assert_equal(hd_add, hd_add_2)
         self.connect_nodes(0, 1)
         self.sync_all()
 
         # Needs rescan
-        self.restart_node(1, extra_args=self.extra_args[1] + ['-rescan'])
+        self.nodes[1].rescanblockchain()
         assert_equal(self.nodes[1].getbalance(), NUM_HD_ADDS + 1)
 
         # Try a RPC based rescan
         self.stop_node(1)
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "blocks"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "chainstate"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "evodb"))
-        shutil.rmtree(os.path.join(self.nodes[1].datadir, self.chain, "llmq"))
+        shutil.rmtree(self.nodes[1].blocks_path)
+        shutil.rmtree(self.nodes[1].chain_path / "chainstate")
         shutil.copyfile(
-            os.path.join(self.nodes[1].datadir, "hd.bak"),
-            os.path.join(self.nodes[1].datadir, self.chain, "wallets", self.default_wallet_name, self.wallet_data_filename),
+            self.nodes[1].datadir_path / "hd.bak",
+            self.nodes[1].wallets_path / self.default_wallet_name / self.wallet_data_filename
         )
         self.start_node(1, extra_args=self.extra_args[1])
         self.connect_nodes(0, 1)
@@ -139,54 +141,48 @@ class WalletHDTest(BitcoinTestFramework):
             if out['value'] != 1:
                 keypath = self.nodes[1].getaddressinfo(out['scriptPubKey']['address'])['hdkeypath']
 
-        assert_equal(keypath[0:13], "m/44'/1'/0'/1")
+        if self.options.descriptors:
+            assert_equal(keypath[0:14], "m/84h/1h/0h/1/")
+        else:
+            assert_equal(keypath[0:7], "m/0'/1'")
 
         if not self.options.descriptors:
-            # NOTE: sethdseed can't replace existing seed in Dash Core
-            # though bitcoin lets to do it. Therefore this functional test
-            # are not the same with bitcoin's
             # Generate a new HD seed on node 1 and make sure it is set
-
-            self.nodes[1].createwallet(wallet_name='wallet_new_seed', blank=True)
-            wallet_new_seed = self.nodes[1].get_wallet_rpc('wallet_new_seed')
-            assert 'hdchainid' not in wallet_new_seed.getwalletinfo()
-            wallet_new_seed.sethdseed()
-            new_masterkeyid = wallet_new_seed.getwalletinfo()['hdchainid']
-            addr = wallet_new_seed.getnewaddress()
+            orig_masterkeyid = self.nodes[1].getwalletinfo()['hdseedid']
+            self.nodes[1].sethdseed()
+            new_masterkeyid = self.nodes[1].getwalletinfo()['hdseedid']
+            assert orig_masterkeyid != new_masterkeyid
+            addr = self.nodes[1].getnewaddress()
             # Make sure the new address is the first from the keypool
-            assert_equal(wallet_new_seed.getaddressinfo(addr)['hdkeypath'], "m/44'/1'/0'/0/1")
-            wallet_new_seed.keypoolrefill(1)  # Fill keypool with 1 key
+            assert_equal(self.nodes[1].getaddressinfo(addr)['hdkeypath'], 'm/0\'/0\'/0\'')
+            self.nodes[1].keypoolrefill(1)  # Fill keypool with 1 key
 
             # Set a new HD seed on node 1 without flushing the keypool
             new_seed = self.nodes[0].dumpprivkey(self.nodes[0].getnewaddress())
-            assert_raises_rpc_error(-4, "Cannot set a HD seed. The wallet already has a seed", wallet_new_seed.sethdseed, False, new_seed)
-            self.nodes[1].createwallet(wallet_name='wallet_imported_seed', blank=True)
-            wallet_imported_seed = self.nodes[1].get_wallet_rpc('wallet_imported_seed')
-            wallet_imported_seed.sethdseed(False, new_seed)
-
-            new_masterkeyid = wallet_imported_seed.getwalletinfo()['hdchainid']
-            addr = wallet_imported_seed.getnewaddress()
-            assert_equal(new_masterkeyid, wallet_imported_seed.getaddressinfo(addr)['hdchainid'])
+            orig_masterkeyid = new_masterkeyid
+            self.nodes[1].sethdseed(False, new_seed)
+            new_masterkeyid = self.nodes[1].getwalletinfo()['hdseedid']
+            assert orig_masterkeyid != new_masterkeyid
+            addr = self.nodes[1].getnewaddress()
+            assert_equal(orig_masterkeyid, self.nodes[1].getaddressinfo(addr)['hdseedid'])
             # Make sure the new address continues previous keypool
-            assert_equal(wallet_imported_seed.getaddressinfo(addr)['hdkeypath'], "m/44'/1'/0'/0/0")
+            assert_equal(self.nodes[1].getaddressinfo(addr)['hdkeypath'], 'm/0\'/0\'/1\'')
 
             # Check that the next address is from the new seed
-            wallet_imported_seed.keypoolrefill(1)
-            next_addr = wallet_imported_seed.getnewaddress()
-            assert_equal(new_masterkeyid, wallet_imported_seed.getaddressinfo(next_addr)['hdchainid'])
+            self.nodes[1].keypoolrefill(1)
+            next_addr = self.nodes[1].getnewaddress()
+            assert_equal(new_masterkeyid, self.nodes[1].getaddressinfo(next_addr)['hdseedid'])
             # Make sure the new address is not from previous keypool
-            assert_equal(wallet_imported_seed.getaddressinfo(next_addr)['hdkeypath'], "m/44'/1'/0'/0/1")
+            assert_equal(self.nodes[1].getaddressinfo(next_addr)['hdkeypath'], 'm/0\'/0\'/0\'')
             assert next_addr != addr
 
-            self.nodes[1].createwallet(wallet_name='wallet_no_seed', blank=True)
-            wallet_no_seed = self.nodes[1].get_wallet_rpc('wallet_no_seed')
-            wallet_no_seed.importprivkey(non_hd_key)
             # Sethdseed parameter validity
             assert_raises_rpc_error(-1, 'sethdseed', self.nodes[0].sethdseed, False, new_seed, 0)
-            assert_raises_rpc_error(-5, "Invalid private key", wallet_no_seed.sethdseed, False, "not_wif")
-            assert_raises_rpc_error(-1, "JSON value is not a boolean as expected", wallet_no_seed.sethdseed, "Not_bool")
-            assert_raises_rpc_error(-1, "JSON value is not a string as expected", wallet_no_seed.sethdseed, False, True)
-            assert_raises_rpc_error(-5, "Already have this key", wallet_no_seed.sethdseed, False, non_hd_key)
+            assert_raises_rpc_error(-5, "Invalid private key", self.nodes[1].sethdseed, False, "not_wif")
+            assert_raises_rpc_error(-3, "JSON value of type string is not of expected type bool", self.nodes[1].sethdseed, "Not_bool")
+            assert_raises_rpc_error(-3, "JSON value of type bool is not of expected type string", self.nodes[1].sethdseed, False, True)
+            assert_raises_rpc_error(-5, "Already have this key", self.nodes[1].sethdseed, False, new_seed)
+            assert_raises_rpc_error(-5, "Already have this key", self.nodes[1].sethdseed, False, self.nodes[1].dumpprivkey(self.nodes[1].getnewaddress()))
 
             self.log.info('Test sethdseed restoring with keys outside of the initial keypool')
             self.generate(self.nodes[0], 10)
@@ -203,10 +199,12 @@ class WalletHDTest(BitcoinTestFramework):
             self.nodes[1].createwallet(wallet_name='restore', blank=True)
             restore_rpc = self.nodes[1].get_wallet_rpc('restore')
             restore_rpc.sethdseed(True, seed)  # Set to be the same seed as origin_rpc
+            restore_rpc.sethdseed(True)  # Rotate to a new seed, making original `seed` inactive
 
             self.nodes[1].createwallet(wallet_name='restore2', blank=True)
             restore2_rpc = self.nodes[1].get_wallet_rpc('restore2')
             restore2_rpc.sethdseed(True, seed)  # Set to be the same seed as origin_rpc
+            restore2_rpc.sethdseed(True)  # Rotate to a new seed, making original `seed` inactive
 
             # Check persistence of inactive seed by reloading restore. restore2 is still loaded to test the case where the wallet is not reloaded
             restore_rpc.unloadwallet()
@@ -283,4 +281,4 @@ class WalletHDTest(BitcoinTestFramework):
 
 
 if __name__ == '__main__':
-    WalletHDTest().main ()
+    WalletHDTest().main()

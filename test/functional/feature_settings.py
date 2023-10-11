@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2020 The Bitcoin Core developers
+# Copyright (c) 2017-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test various command line arguments and configuration file parameters."""
 
 import json
 
-from pathlib import Path
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.test_node import ErrorMatch
@@ -21,8 +20,8 @@ class SettingsTest(BitcoinTestFramework):
 
     def run_test(self):
         node, = self.nodes
-        settings = Path(node.datadir, self.chain, "settings.json")
-        conf = Path(node.datadir, "dash.conf")
+        settings = node.chain_path / "settings.json"
+        conf = node.datadir_path / "dash.conf"
 
         # Assert empty settings file was created
         self.stop_node(0)
@@ -79,7 +78,7 @@ class SettingsTest(BitcoinTestFramework):
             self.stop_node(0)
 
         # Test alternate settings path
-        altsettings = Path(node.datadir, "altsettings.json")
+        altsettings = node.datadir_path / "altsettings.json"
         with altsettings.open("w") as fp:
             fp.write('{"key": "value"}')
         with node.assert_debug_log(expected_msgs=['Setting file arg: key = "value"']):

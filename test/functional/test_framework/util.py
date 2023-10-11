@@ -418,7 +418,7 @@ def write_config(config_path, *, n, chain, extra_config=""):
 
 
 def get_datadir_path(dirname, n):
-    return os.path.join(dirname, "node" + str(n))
+    return pathlib.Path(dirname) / f"node{n}"
 
 
 def append_config(datadir, options):
