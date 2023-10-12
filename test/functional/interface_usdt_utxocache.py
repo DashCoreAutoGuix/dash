@@ -401,6 +401,14 @@ class UTXOCacheTracepointTest(BitcoinTestFramework):
         expected_flushes.append(
             {"mode": "NONE", "for_prune": True, "size_fn": lambda x: x == BLOCKS_TO_MINE})
 
+        self.log.info("test the utxocache:flush tracepoint API with pruning")
+        self.log.info("hook into the utxocache:flush tracepoint")
+        ctx = USDT(pid=self.nodes[0].process.pid)
+        ctx.enable_probe(probe="utxocache:flush",
+                         fn_name="trace_utxocache_flush")
+        bpf = BPF(text=utxocache_flushes_program, usdt_contexts=[ctx], debug=0, cflags=["-Wno-error=implicit-function-declaration"])
+        bpf["utxocache_flush"].open_perf_buffer(handle_utxocache_flush)
+
         self.log.info(f"prune blockchain to trigger a flush for pruning")
         self.nodes[0].pruneblockchain(415)
 
