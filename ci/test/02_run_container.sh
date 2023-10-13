@@ -6,6 +6,8 @@
 
 export LC_ALL=C.UTF-8
 
+set -ex
+
 if [[ $QEMU_USER_CMD == qemu-s390* ]]; then
   export LC_ALL=C
 fi
@@ -41,8 +43,15 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   LOCAL_USER=nonroot
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
 
+  if [ -n "${RESTART_CI_DOCKER_BEFORE_RUN}" ] ; then
+    echo "Restart docker before run to stop and clear all containers started with --rm"
+    podman container rm --force --all  # Similar to "systemctl restart docker"
+    echo "Prune all dangling images"
+    docker image prune --force
+  fi
+
   # shellcheck disable=SC2086
-  DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
+  CI_CONTAINER_ID=$(docker run $DOCKER_ADMIN -idt \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
@@ -56,11 +65,11 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   #
   # This prevents the root user in the container modifying the local file system permissions
   # on the mounted directories
-  docker exec "$DOCKER_ID" useradd -u "$LOCAL_UID" -o -m "$LOCAL_USER"
-  docker exec "$DOCKER_ID" groupmod -o -g "$LOCAL_GID" "$LOCAL_USER"
-  docker exec "$DOCKER_ID" chown -R "$LOCAL_USER":"$LOCAL_USER" "${BASE_ROOT_DIR}"
-  export DOCKER_CI_CMD_PREFIX_ROOT="docker exec -u 0 $DOCKER_ID"
-  export DOCKER_CI_CMD_PREFIX="docker exec -u $LOCAL_UID $DOCKER_ID"
+  docker exec "$CI_CONTAINER_ID" useradd -u "$LOCAL_UID" -o -m "$LOCAL_USER"
+  docker exec "$CI_CONTAINER_ID" groupmod -o -g "$LOCAL_GID" "$LOCAL_USER"
+  docker exec "$CI_CONTAINER_ID" chown -R "$LOCAL_USER":"$LOCAL_USER" "${BASE_ROOT_DIR}"
+  export DOCKER_CI_CMD_PREFIX_ROOT="docker exec -u 0 $CI_CONTAINER_ID"
+  export DOCKER_CI_CMD_PREFIX="docker exec -u $LOCAL_UID $CI_CONTAINER_ID"
 else
   echo "Running on host system without docker wrapper"
 fi
@@ -136,4 +145,13 @@ if [ "$USE_BUSY_BOX" = "true" ]; then
   CI_EXEC for util in \$\(busybox --list \| grep -v "^ar$" \| grep -v "^tar$" \)\; do ln -s \$\(command -v busybox\) "${BINS_SCRATCH_DIR}/\$util"\; done
   # Print BusyBox version
   CI_EXEC patch --help
+fi
+
+CI_EXEC "${BASE_ROOT_DIR}/ci/test/05_before_script.sh"
+CI_EXEC "${BASE_ROOT_DIR}/ci/test/06_script_a.sh"
+CI_EXEC "${BASE_ROOT_DIR}/ci/test/06_script_b.sh"
+
+if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
+  echo "Stop and remove CI container by ID"
+  docker container kill "${CI_CONTAINER_ID}"
 fi
