@@ -1002,11 +1002,7 @@ static RPCHelpMan addpeeraddress()
         },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
-
-    const NodeContext& node = EnsureAnyNodeContext(request.context);
-    if (!node.addrman) {
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Address manager functionality missing or disabled");
-    }
+    AddrMan& addrman = EnsureAnyAddrman(request.context);
 
     const std::string& addr_string{request.params[0].get_str()};
     const auto port{request.params[1].getInt<uint16_t>()};
@@ -1022,11 +1018,11 @@ static RPCHelpMan addpeeraddress()
         address.nTime = Now<NodeSeconds>();
         // The source address is set equal to the address. This is equivalent to the peer
         // announcing itself.
-        if (node.addrman->Add({address}, address)) {
+        if (addrman.Add({address}, address)) {
             success = true;
             if (tried) {
                 // Attempt to move the address to the tried addresses table.
-                node.addrman->Good(address);
+                addrman.Good(address);
             }
         }
     }
@@ -1110,6 +1106,111 @@ static RPCHelpMan setmnthreadactive()
     };
 }
 
+static RPCHelpMan getaddrmaninfo()
+{
+    return RPCHelpMan{
+        "getaddrmaninfo",
+        "\nProvides information about the node's address manager by returning the number of "
+        "addresses in the `new` and `tried` tables and their sum for all networks.\n",
+        {},
+        RPCResult{
+            RPCResult::Type::OBJ_DYN, "", "json object with network type as keys", {
+                {RPCResult::Type::OBJ, "network", "the network (" + Join(GetNetworkNames(), ", ") + ", all_networks)", {
+                {RPCResult::Type::NUM, "new", "number of addresses in the new table, which represent potential peers the node has discovered but hasn't yet successfully connected to."},
+                {RPCResult::Type::NUM, "tried", "number of addresses in the tried table, which represent peers the node has successfully connected to in the past."},
+                {RPCResult::Type::NUM, "total", "total number of addresses in both new/tried tables"},
+            }},
+        }},
+        RPCExamples{HelpExampleCli("getaddrmaninfo", "") + HelpExampleRpc("getaddrmaninfo", "")},
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue {
+            AddrMan& addrman = EnsureAnyAddrman(request.context);
+
+            UniValue ret(UniValue::VOBJ);
+            for (int n = 0; n < NET_MAX; ++n) {
+                enum Network network = static_cast<enum Network>(n);
+                if (network == NET_UNROUTABLE || network == NET_INTERNAL) continue;
+                UniValue obj(UniValue::VOBJ);
+                obj.pushKV("new", addrman.Size(network, true));
+                obj.pushKV("tried", addrman.Size(network, false));
+                obj.pushKV("total", addrman.Size(network));
+                ret.pushKV(GetNetworkName(network), obj);
+            }
+            UniValue obj(UniValue::VOBJ);
+            obj.pushKV("new", addrman.Size(std::nullopt, true));
+            obj.pushKV("tried", addrman.Size(std::nullopt, false));
+            obj.pushKV("total", addrman.Size());
+            ret.pushKV("all_networks", obj);
+            return ret;
+        },
+    };
+}
+
+UniValue AddrmanEntryToJSON(const AddrInfo& info)
+{
+    UniValue obj(UniValue::VOBJ);
+    obj.pushKV("address", info.ToStringAddr());
+    obj.pushKV("port", info.GetPort());
+    obj.pushKV("services", (uint64_t)info.nServices);
+    obj.pushKV("time", int64_t{TicksSinceEpoch<std::chrono::seconds>(info.nTime)});
+    obj.pushKV("network", GetNetworkName(info.GetNetClass()));
+    obj.pushKV("source", info.source.ToStringAddr());
+    obj.pushKV("source_network", GetNetworkName(info.source.GetNetClass()));
+    return obj;
+}
+
+UniValue AddrmanTableToJSON(const std::vector<std::pair<AddrInfo, AddressPosition>>& tableInfos)
+{
+    UniValue table(UniValue::VOBJ);
+    for (const auto& e : tableInfos) {
+        UniValue obj(UniValue::VOBJ);
+        obj.pushKV("address", e.first.ToStringAddr());
+        obj.pushKV("port", e.first.GetPort());
+        obj.pushKV("services", (uint64_t)e.first.nServices);
+        obj.pushKV("time", int64_t{TicksSinceEpoch<std::chrono::seconds>(e.first.nTime)});
+        obj.pushKV("network", GetNetworkName(e.first.GetNetClass()));
+        obj.pushKV("source", e.first.source.ToStringAddr());
+        obj.pushKV("source_network", GetNetworkName(e.first.source.GetNetClass()));
+        table.pushKV(ToString(e.second), obj);
+    }
+    return table;
+}
+
+static RPCHelpMan getrawaddrman()
+{
+    return RPCHelpMan{"getrawaddrman",
+        "EXPERIMENTAL warning: this call may be changed in future releases.\n"
+        "\nReturns information on all address manager entries for the new and tried tables.\n",
+        {},
+        RPCResult{
+            RPCResult::Type::OBJ_DYN, "", "", {
+                {RPCResult::Type::OBJ_DYN, "table", "buckets with addresses in the address manager table ( new, tried )", {
+                    {RPCResult::Type::OBJ, "bucket/position", "the location in the address manager table (<bucket>/<position>)", {
+                        {RPCResult::Type::STR, "address", "The address of the node"},
+                        {RPCResult::Type::NUM, "port", "The port number of the node"},
+                        {RPCResult::Type::STR, "network", "The network (" + Join(GetNetworkNames(), ", ") + ") of the address"},
+                        {RPCResult::Type::NUM, "services", "The services offered by the node"},
+                        {RPCResult::Type::NUM_TIME, "time", "The " + UNIX_EPOCH_TIME + " when the node was last seen"},
+                        {RPCResult::Type::STR, "source", "The address that relayed the address to us"},
+                        {RPCResult::Type::STR, "source_network", "The network (" + Join(GetNetworkNames(), ", ") + ") of the source address"},
+                    }}
+                }}
+            }
+        },
+        RPCExamples{
+            HelpExampleCli("getrawaddrman", "")
+            + HelpExampleRpc("getrawaddrman", "")
+        },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue {
+            AddrMan& addrman = EnsureAnyAddrman(request.context);
+
+            UniValue ret(UniValue::VOBJ);
+            ret.pushKV("new", AddrmanTableToJSON(addrman.GetEntries(false)));
+            ret.pushKV("tried", AddrmanTableToJSON(addrman.GetEntries(true)));
+            return ret;
+        },
+    };
+}
+
 void RegisterNetRPCCommands(CRPCTable &t)
 {
 // clang-format off
@@ -1129,12 +1230,14 @@ static const CRPCCommand commands[] =
     { "network",             &clearbanned,             },
     { "network",             &setnetworkactive,        },
     { "network",             &getnodeaddresses,        },
+    { "network",             &getaddrmaninfo,          },
 
     { "hidden",              &cleardiscouraged,        },
     { "hidden",              &addconnection,           },
     { "hidden",              &addpeeraddress,          },
     { "hidden",              &sendmsgtopeer            },
     { "hidden",              &setmnthreadactive        },
+    { "hidden",              &getrawaddrman            },
 };
 // clang-format on
     for (const auto& c : commands) {
