@@ -15,6 +15,7 @@ from test_framework.messages import (
 )
 
 from itertools import product
+import time
 
 from test_framework.test_framework import DashTestFramework
 from test_framework.util import (
@@ -342,6 +343,8 @@ class NetTest(DashTestFramework):
         assert_equal(node.getnodeaddresses(count=0), [])
 
         self.log.debug("Test that adding a valid address to the tried table succeeds")
+        self.addr_time = int(time.time())
+        node.setmocktime(self.addr_time)
         assert_equal(node.addpeeraddress(address="1.2.3.4", tried=True, port=8333), {"success": True})
         with node.assert_debug_log(expected_msgs=["CheckAddrman: new 0, tried 1, total 1 started"]):
             addrs = node.getnodeaddresses(count=0)  # getnodeaddresses re-runs the addrman checks
