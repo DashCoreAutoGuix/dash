@@ -8,6 +8,7 @@ import time
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.wallet_util import WalletUnlock
 
 class KeyPoolTest(BitcoinTestFramework):
     def set_test_params(self):
@@ -28,9 +29,8 @@ class KeyPoolTest(BitcoinTestFramework):
         assert_raises_rpc_error(-12, "Error: Keypool ran out, please call keypoolrefill first", nodes[0].getnewaddress)
 
         # put three new keys in the keypool
-        nodes[0].walletpassphrase('test', 12000)
-        nodes[0].keypoolrefill(3)
-        nodes[0].walletlock()
+        with WalletUnlock(nodes[0], 'test'):
+            nodes[0].keypoolrefill(3)
 
         # drain the keys
         addr = set()

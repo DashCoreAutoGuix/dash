@@ -89,3 +89,22 @@ def generate_wif_key():
     k = ECKey()
     k.generate()
     return bytes_to_wif(k.get_bytes(), k.is_compressed)
+
+class WalletUnlock():
+    """
+    A context manager for unlocking a wallet with a passphrase and automatically locking it afterward.
+    """
+
+    MAXIMUM_TIMEOUT = 999000
+
+    def __init__(self, wallet, passphrase, timeout=MAXIMUM_TIMEOUT):
+        self.wallet = wallet
+        self.passphrase = passphrase
+        self.timeout = timeout
+
+    def __enter__(self):
+        self.wallet.walletpassphrase(self.passphrase, self.timeout)
+
+    def __exit__(self, *args):
+        _ = args
+        self.wallet.walletlock()
