@@ -9,6 +9,7 @@
 #include <chain.h>
 #include <coins.h>
 #include <consensus/amount.h>
+#include <crypto/muhash.h>
 #include <streams.h>
 #include <uint256.h>
 
@@ -80,6 +81,9 @@ bool GetUTXOStats(CCoinsView* view, node::BlockManager& blockman, CCoinsStats& s
 uint64_t GetBogoSize(const CScript& script_pub_key);
 
 CDataStream TxOutSer(const COutPoint& outpoint, const Coin& coin);
+
+void ApplyCoinHash(MuHash3072& muhash, const COutPoint& outpoint, const Coin& coin);
+void RemoveCoinHash(MuHash3072& muhash, const COutPoint& outpoint, const Coin& coin);
 } // namespace node
 
 #endif // BITCOIN_NODE_COINSTATS_H
