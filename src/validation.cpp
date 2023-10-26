@@ -649,7 +649,7 @@ private:
 
         const CTransactionRef& m_ptx;
         /** Txid. */
-        const uint256& m_hash;
+        const Txid& m_hash;
         TxValidationState m_state;
         /** A temporary cache containing serialized transaction data for signature verification.
          * Reused across PolicyScriptChecks and ConsensusScriptChecks. */

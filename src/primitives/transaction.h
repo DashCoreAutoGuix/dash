@@ -11,6 +11,7 @@
 #include <script/script.h>
 #include <serialize.h>
 #include <uint256.h>
+#include <util/transaction_identifier.h> // IWYU pragma: export
 
 #include <cstddef>
 #include <cstdint>
@@ -231,9 +232,9 @@ public:
 
 private:
     /** Memory only. */
-    const uint256 hash;
+    const Txid hash;
 
-    uint256 ComputeHash() const;
+    Txid ComputeHash() const;
 
 public:
     /** Convert a CMutableTransaction into a CTransaction. */
@@ -260,7 +261,9 @@ public:
         return vin.empty() && vout.empty();
     }
 
-    const uint256& GetHash() const LIFETIMEBOUND { return hash; }
+    const Txid& GetHash() const LIFETIMEBOUND { return hash; }
+    // Dash doesn't have witness transactions, so GetWitnessHash returns the same as GetHash
+    const Txid& GetWitnessHash() const LIFETIMEBOUND { return hash; }
 
     // Return sum of txouts.
     CAmount GetValueOut() const;
@@ -303,6 +306,9 @@ public:
     {
         return IsSpecialTxVersion() && nType != TRANSACTION_NORMAL;
     }
+    
+    // Dash doesn't have witness data
+    bool HasWitness() const { return false; }
 };
 
 /** A mutable version of CTransaction. */
@@ -339,7 +345,9 @@ struct CMutableTransaction
     /** Compute the hash of this CMutableTransaction. This is computed on the
      * fly, as opposed to GetHash() in CTransaction, which uses a cached result.
      */
-    uint256 GetHash() const;
+    Txid GetHash() const;
+
+    bool HasWitness() const { return false; }
 
     std::string ToString() const;
 };

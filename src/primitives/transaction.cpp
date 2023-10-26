@@ -12,6 +12,7 @@
 #include <tinyformat.h>
 #include <uint256.h>
 #include <util/strencodings.h>
+#include <util/transaction_identifier.h>
 #include <version.h>
 
 #include <cassert>
@@ -70,8 +71,9 @@ std::string CTxOut::ToString() const
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nType(TRANSACTION_NORMAL), nLockTime(0) {}
 CMutableTransaction::CMutableTransaction(const CTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nType(tx.nType), nLockTime(tx.nLockTime), vExtraPayload(tx.vExtraPayload) {}
 
-uint256 CMutableTransaction::GetHash() const
+Txid CMutableTransaction::GetHash() const
 {
+<<<<<<< HEAD
     return SerializeHash(*this);
 }
 
@@ -91,15 +93,35 @@ std::string CMutableTransaction::ToString() const
     for (unsigned int i = 0; i < vout.size(); i++)
         str += "    " + vout[i].ToString() + "\n";
     return str;
+=======
+    return Txid::FromUint256((CHashWriter{SERIALIZE_TRANSACTION_NO_WITNESS} << *this).GetHash());
+>>>>>>> 5572f98f05 (Merge bitcoin/bitcoin#28107: util: Type-safe transaction identifiers)
 }
 
-uint256 CTransaction::ComputeHash() const
+Txid CTransaction::ComputeHash() const
 {
+<<<<<<< HEAD
     return SerializeHash(*this);
 }
 
 CTransaction::CTransaction(const CMutableTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nType(tx.nType), nLockTime(tx.nLockTime), vExtraPayload(tx.vExtraPayload), hash{ComputeHash()} {}
 CTransaction::CTransaction(CMutableTransaction&& tx) : vin(std::move(tx.vin)), vout(std::move(tx.vout)), nVersion(tx.nVersion), nType(tx.nType), nLockTime(tx.nLockTime), vExtraPayload(tx.vExtraPayload), hash{ComputeHash()} {}
+=======
+    return Txid::FromUint256((CHashWriter{SERIALIZE_TRANSACTION_NO_WITNESS} << *this).GetHash());
+}
+
+Wtxid CTransaction::ComputeWitnessHash() const
+{
+    if (!HasWitness()) {
+        return Wtxid::FromUint256(hash.ToUint256());
+    }
+
+    return Wtxid::FromUint256((CHashWriter{0} << *this).GetHash());
+}
+
+CTransaction::CTransaction(const CMutableTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
+CTransaction::CTransaction(CMutableTransaction&& tx) : vin(std::move(tx.vin)), vout(std::move(tx.vout)), nVersion(tx.nVersion), nLockTime(tx.nLockTime), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
+>>>>>>> 5572f98f05 (Merge bitcoin/bitcoin#28107: util: Type-safe transaction identifiers)
 
 CAmount CTransaction::GetValueOut() const
 {

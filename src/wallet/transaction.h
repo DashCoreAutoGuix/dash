@@ -302,7 +302,8 @@ public:
     bool isConflicted() const { return state<TxStateConflicted>(); }
     bool isUnconfirmed() const { return !isAbandoned() && !isConflicted() && !isConfirmed(); }
     bool isConfirmed() const { return state<TxStateConfirmed>(); }
-    const uint256& GetHash() const LIFETIMEBOUND { return tx->GetHash(); }
+    const Txid& GetHash() const LIFETIMEBOUND { return tx->GetHash(); }
+    const Txid& GetWitnessHash() const LIFETIMEBOUND { return tx->GetWitnessHash(); }
     bool IsCoinBase() const { return tx->IsCoinBase(); }
     bool IsPlatformTransfer() const { return tx->IsPlatformTransfer(); }
 

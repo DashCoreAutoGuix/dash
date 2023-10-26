@@ -7,6 +7,7 @@
 #include <consensus/validation.h>
 #include <logging.h>
 #include <policy/policy.h>
+#include <primitives/transaction.h>
 #include <stats/client.h>
 
 #include <cassert>
@@ -22,7 +23,7 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
 {
     AssertLockHeld(g_cs_orphans);
 
-    const uint256& hash = tx->GetHash();
+    const Txid& hash = tx->GetHash();
     if (m_orphans.count(hash))
         return false;
 
@@ -57,10 +58,10 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
     return true;
 }
 
-int TxOrphanage::EraseTx(const uint256& txid)
+int TxOrphanage::EraseTx(const Txid& txid)
 {
     AssertLockHeld(g_cs_orphans);
-    std::map<uint256, OrphanTx>::iterator it = m_orphans.find(txid);
+    std::map<Txid, OrphanTx>::iterator it = m_orphans.find(txid);
     if (it == m_orphans.end())
         return 0;
     for (const CTxIn& txin : it->second.tx->vin)
@@ -97,10 +98,10 @@ void TxOrphanage::EraseForPeer(NodeId peer)
     AssertLockHeld(g_cs_orphans);
 
     int nErased = 0;
-    std::map<uint256, OrphanTx>::iterator iter = m_orphans.begin();
+    std::map<Txid, OrphanTx>::iterator iter = m_orphans.begin();
     while (iter != m_orphans.end())
     {
-        std::map<uint256, OrphanTx>::iterator maybeErase = iter++; // increment to avoid iterator becoming invalid
+        std::map<Txid, OrphanTx>::iterator maybeErase = iter++; // increment to avoid iterator becoming invalid
         if (maybeErase->second.fromPeer == peer)
         {
             nErased += EraseTx(maybeErase->second.tx->GetHash());
@@ -120,10 +121,10 @@ unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
         // Sweep out expired orphan pool entries:
         int nErased = 0;
         int64_t nMinExpTime = nNow + ORPHAN_TX_EXPIRE_TIME - ORPHAN_TX_EXPIRE_INTERVAL;
-        std::map<uint256, OrphanTx>::iterator iter = m_orphans.begin();
+        std::map<Txid, OrphanTx>::iterator iter = m_orphans.begin();
         while (iter != m_orphans.end())
         {
-            std::map<uint256, OrphanTx>::iterator maybeErase = iter++;
+            std::map<Txid, OrphanTx>::iterator maybeErase = iter++;
             if (maybeErase->second.nTimeExpire <= nNow) {
                 nErased += EraseTx(maybeErase->second.tx->GetHash());
             } else {
@@ -149,10 +150,10 @@ void TxOrphanage::AddChildrenToWorkSet(const CTransaction& tx, std::set<uint256>
 {
     AssertLockHeld(g_cs_orphans);
     for (unsigned int i = 0; i < tx.vout.size(); i++) {
-        const auto it_by_prev = m_outpoint_to_orphan_it.find(COutPoint(tx.GetHash(), i));
+        const auto it_by_prev = m_outpoint_to_orphan_it.find(COutPoint(tx.GetHash().ToUint256(), i));
         if (it_by_prev != m_outpoint_to_orphan_it.end()) {
             for (const auto& elem : it_by_prev->second) {
-                orphan_work_set.insert(elem->first);
+                orphan_work_set.insert(elem->first.ToUint256());
             }
         }
     }
@@ -161,14 +162,14 @@ void TxOrphanage::AddChildrenToWorkSet(const CTransaction& tx, std::set<uint256>
 bool TxOrphanage::HaveTx(const uint256& txid) const
 {
     LOCK(g_cs_orphans);
-    return m_orphans.count(txid);
+    return m_orphans.count(Txid::FromUint256(txid));
 }
 
 std::pair<CTransactionRef, NodeId> TxOrphanage::GetTx(const uint256& txid) const
 {
     AssertLockHeld(g_cs_orphans);
 
-    const auto it = m_orphans.find(txid);
+    const auto it = m_orphans.find(Txid::FromUint256(txid));
     if (it == m_orphans.end()) return {nullptr, -1};
     return {it->second.tx, it->second.fromPeer};
 }
@@ -184,10 +185,10 @@ std::set<uint256> TxOrphanage::GetCandidatesForBlock(const CBlock& block)
 
         // Which orphan pool entries we should reprocess and potentially try to accept into mempool again?
         for (size_t i = 0; i < tx.vin.size(); i++) {
-            auto itByPrev = m_outpoint_to_orphan_it.find(COutPoint(tx.GetHash(), (uint32_t)i));
+            auto itByPrev = m_outpoint_to_orphan_it.find(COutPoint(tx.GetHash().ToUint256(), (uint32_t)i));
             if (itByPrev == m_outpoint_to_orphan_it.end()) continue;
             for (const auto& elem : itByPrev->second) {
-                orphanWorkSet.insert(elem->first);
+                orphanWorkSet.insert(elem->first.ToUint256());
             }
         }
     }
@@ -199,7 +200,7 @@ void TxOrphanage::EraseForBlock(const CBlock& block)
 {
     LOCK(g_cs_orphans);
 
-    std::vector<uint256> vOrphanErase;
+    std::vector<Txid> vOrphanErase;
 
     for (const CTransactionRef& ptx : block.vtx) {
         const CTransaction& tx = *ptx;
@@ -210,7 +211,7 @@ void TxOrphanage::EraseForBlock(const CBlock& block)
             if (itByPrev == m_outpoint_to_orphan_it.end()) continue;
             for (auto mi = itByPrev->second.begin(); mi != itByPrev->second.end(); ++mi) {
                 const CTransaction& orphanTx = *(*mi)->second.tx;
-                const uint256& orphanHash = orphanTx.GetHash();
+                const auto& orphanHash = orphanTx.GetHash();
                 vOrphanErase.push_back(orphanHash);
             }
         }
@@ -219,7 +220,7 @@ void TxOrphanage::EraseForBlock(const CBlock& block)
     // Erase orphan transactions included or precluded by this block
     if (vOrphanErase.size()) {
         int nErased = 0;
-        for (const uint256& orphanHash : vOrphanErase) {
+        for (const auto& orphanHash : vOrphanErase) {
             nErased += EraseTx(orphanHash);
         }
         LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx included or conflicted by block\n", nErased);

@@ -2022,7 +2022,7 @@ void PeerManagerImpl::BlockConnected(const std::shared_ptr<const CBlock>& pblock
     {
         LOCK(m_recent_confirmed_transactions_mutex);
         for (const auto& ptx : pblock->vtx) {
-            m_recent_confirmed_transactions.insert(ptx->GetHash());
+            m_recent_confirmed_transactions.insert(ptx->GetHash().ToUint256());
         }
     }
 
@@ -3222,7 +3222,7 @@ void PeerManagerImpl::ProcessOrphanTx(std::set<uint256>& orphan_work_set)
 
         if (result.m_result_type == MempoolAcceptResult::ResultType::VALID) {
             LogPrint(BCLog::MEMPOOL, "   accepted orphan tx %s\n", orphanHash.ToString());
-            _RelayTransaction(porphanTx->GetHash());
+            _RelayTransaction(porphanTx->GetHash().ToUint256());
             m_orphanage.AddChildrenToWorkSet(*porphanTx, orphan_work_set);
             m_orphanage.EraseTx(orphanHash);
             break;
@@ -4558,11 +4558,11 @@ void PeerManagerImpl::ProcessMessage(
                 LogPrint(BCLog::MEMPOOL, "not keeping orphan with rejected parents %s\n",tx.GetHash().ToString());
                 // We will continue to reject this tx since it has rejected
                 // parents so avoid re-requesting it from other peers.
-                m_recent_rejects.insert(tx.GetHash());
+                m_recent_rejects.insert(tx.GetHash().ToUint256());
                 m_llmq_ctx->isman->TransactionRemovedFromMempool(ptx);
             }
         } else {
-            m_recent_rejects.insert(tx.GetHash());
+            m_recent_rejects.insert(tx.GetHash().ToUint256());
             if (RecursiveDynamicUsage(*ptx) < 100000) {
                 AddToCompactExtraTransactions(ptx);
             }

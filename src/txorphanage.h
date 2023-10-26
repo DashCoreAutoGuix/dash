@@ -35,7 +35,7 @@ public:
     std::set<uint256> GetCandidatesForBlock(const CBlock& block) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
 
     /** Erase an orphan by txid */
-    int EraseTx(const uint256& txid) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
+    int EraseTx(const Txid& txid) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
 
     /** Erase all orphans announced by a peer (eg, after that peer disconnects) */
     void EraseForPeer(NodeId peer) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
@@ -68,7 +68,7 @@ protected:
 
     /** Map from txid to orphan transaction record. Limited by
      *  -maxorphantx/DEFAULT_MAX_ORPHAN_TRANSACTIONS */
-    std::map<uint256, OrphanTx> m_orphans GUARDED_BY(g_cs_orphans);
+    std::map<Txid, OrphanTx> m_orphans GUARDED_BY(g_cs_orphans);
 
     using OrphanMap = decltype(m_orphans);
 
