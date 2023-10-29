@@ -7,6 +7,7 @@
 
 from decimal import Decimal
 from itertools import product
+from random import randbytes
 
 from test_framework.descriptors import descsum_create
 from test_framework.key import ECKey
