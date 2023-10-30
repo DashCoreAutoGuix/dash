@@ -1,6 +1,7 @@
 Checks: '
 -*,
 bugprone-argument-comment,
+bugprone-string-constructor,
 modernize-use-nullptr,
 readability-const-return-type,
 readability-redundant-declaration,
@@ -12,3 +13,4 @@ modernize-use-nullptr,
 readability-redundant-declaration,
 readability-redundant-string-init,
 '
+EOF < /dev/null
