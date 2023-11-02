@@ -494,23 +494,6 @@ libbitcoin_node_a_SOURCES = \
   index/coinstatsindex.cpp \
   index/txindex.cpp \
   init.cpp \
-  instantsend/db.cpp \
-  instantsend/instantsend.cpp \
-  instantsend/lock.cpp \
-  instantsend/signing.cpp \
-  llmq/blockprocessor.cpp \
-  llmq/chainlocks.cpp \
-  llmq/clsig.cpp \
-  llmq/commitment.cpp \
-  llmq/context.cpp \
-  llmq/debug.cpp \
-  llmq/dkgsession.cpp \
-  llmq/dkgsessionhandler.cpp \
-  llmq/dkgsessionmgr.cpp \
-  llmq/ehf_signals.cpp \
-  llmq/options.cpp \
-  llmq/quorums.cpp \
-  llmq/signing.cpp \
   llmq/signing_shares.cpp \
   llmq/snapshot.cpp \
   llmq/utils.cpp \
@@ -531,6 +514,7 @@ libbitcoin_node_a_SOURCES = \
   node/coinstats.cpp \
   node/connection_types.cpp \
   node/context.cpp \
+  node/disconnected_transactions.cpp \
   node/eviction.cpp \
   node/interfaces.cpp \
   node/miner.cpp \
