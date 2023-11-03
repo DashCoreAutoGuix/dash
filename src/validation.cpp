@@ -593,6 +593,17 @@ public:
             };
         }
 
+        /** Parameters for a single transaction within a package. */
+        static ATMPArgs SingleInPackageAccept(const ATMPArgs& package_args) {
+            return ATMPArgs{/* m_chainparams */ package_args.m_chainparams,
+                            /* m_accept_time */ package_args.m_accept_time,
+                            /* m_bypass_limits */ false,
+                            /* m_coins_to_uncache */ package_args.m_coins_to_uncache,
+                            /* m_test_accept */ package_args.m_test_accept,
+                            /* m_package_submission */ false, // individual transaction
+            };
+        }
+
     private:
         // Private ctor to avoid exposing details to clients and allowing the possibility of
         // mixing up the order of the arguments. Use static functions above instead.
@@ -612,6 +623,9 @@ public:
         }
     };
 
+    /** Clean up all non-chainstate coins from m_view and m_viewmempool. */
+    void CleanupTemporaryCoins() EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_pool.cs);
+
     // Single transaction acceptance
     MempoolAcceptResult AcceptSingleTransaction(const CTransactionRef& ptx, ATMPArgs& args) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
@@ -627,6 +641,27 @@ public:
      * with all of its unconfirmed parents, and topologically sorted.
      */
     PackageMempoolAcceptResult AcceptPackage(const Package& package, ATMPArgs& args) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
+    /**
+     * Submission of a subpackage.
+     * If subpackage size == 1, calls AcceptSingleTransaction() with adjusted ATMPArgs to avoid
+     * package policy restrictions like package size limits and CPFP carve out restrictions.
+     * If subpackage size > 1, calls AcceptMultipleTransactions() with the provided ATMPArgs.
+     *
+     * In blockchain reorgs, we may need to re-validate packages of transactions from the
+     * mempool, but each subpackage should be considered in isolation, not as a single atomic
+     * group. ATMPArgs::m_package_submission should be true when revalidating packages of
+     * transactions (e.g. from the mempool) but not when submitting a package through
+     * ProcessNewPackage().
+     *
+     * Calls CleanupTemporaryCoins() to improve performance and ensure mempool consistency.
+     *
+     * @returns a PackageMempoolAcceptResult which includes a MempoolAcceptResult for each
+     * transaction. If a transaction fails, validation will exit early and some results may be
+     * missing.
+     */
+    PackageMempoolAcceptResult AcceptSubPackage(const std::vector<CTransactionRef>& subpackage, ATMPArgs& args)
+        EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_pool.cs);
 
 private:
     // All the intermediate state that gets passed between the various levels
@@ -705,6 +740,9 @@ private:
         }
         return true;
     }
+
+    /** Clean up all non-chainstate coins from m_view and m_viewmempool. */
+    void CleanupTemporaryCoins() EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_pool.cs);
 
 private:
     CTxMemPool& m_pool;
@@ -1176,7 +1214,7 @@ PackageMempoolAcceptResult MemPoolAccept::AcceptMultipleTransactions(const std::
 
     // These context-free package limits can be done before taking the mempool lock.
     PackageValidationState package_state;
-    if (!CheckPackage(txns, package_state)) return PackageMempoolAcceptResult(package_state, {});
+    if (!IsWellFormedPackage(txns, package_state, /*require_sorted=*/true)) return PackageMempoolAcceptResult(package_state, {});
 
     std::vector<Workspace> workspaces{};
     workspaces.reserve(txns.size());
@@ -1230,6 +1268,60 @@ PackageMempoolAcceptResult MemPoolAccept::AcceptMultipleTransactions(const std::
     return PackageMempoolAcceptResult(package_state, std::move(results));
 }
 
+void MemPoolAccept::CleanupTemporaryCoins()
+{
+    // There are 3 kinds of coins in m_view:
+    // (1) Temporary coins from the transactions in subpackage, constructed by m_viewmempool.
+    // (2) Mempool coins from transactions in the mempool, constructed by m_viewmempool.
+    // (3) Confirmed coins fetched from our current UTXO set.
+    //
+    // (1) Temporary coins need to be removed, regardless of whether the transaction was submitted.
+    // If the transaction was submitted to the mempool, m_viewmempool will be able to fetch them from
+    // there. If it wasn't submitted to mempool, it is incorrect to keep them - future calls may try
+    // to spend those coins that don't actually exist.
+    // (2) Mempool coins also need to be removed. If the mempool contents have changed as a result
+    // of submitting or replacing transactions, coins previously fetched from mempool may now be
+    // spent or nonexistent. Those coins need to be deleted from m_view.
+    // (3) Confirmed coins don't need to be removed. The chainstate has not changed (we are
+    // holding cs_main and no blocks have been processed) so the confirmed tx cannot disappear like
+    // a mempool tx can. The coin may now be spent after we submitted a tx to mempool, but
+    // we have already checked that the package does not have 2 transactions spending the same coin.
+    // Keeping them in m_view is an optimization to not re-fetch confirmed coins if we later look up
+    // inputs for this transaction again.
+    for (const auto& outpoint : m_viewmempool.GetNonBaseCoins()) {
+        // In addition to resetting m_viewmempool, we also need to manually delete these coins from
+        // m_view because it caches copies of the coins it fetched from m_viewmempool previously.
+        m_view.Uncache(outpoint);
+    }
+    // This deletes the temporary and mempool coins.
+    m_viewmempool.Reset();
+}
+
+PackageMempoolAcceptResult MemPoolAccept::AcceptSubPackage(const std::vector<CTransactionRef>& subpackage, ATMPArgs& args)
+{
+    AssertLockHeld(::cs_main);
+    AssertLockHeld(m_pool.cs);
+    auto result = [&]() EXCLUSIVE_LOCKS_REQUIRED(::cs_main, m_pool.cs) {
+        if (subpackage.size() > 1) {
+            return AcceptMultipleTransactions(subpackage, args);
+        }
+        const auto& tx = subpackage.front();
+        ATMPArgs single_args = ATMPArgs::SingleInPackageAccept(args);
+        const auto single_res = AcceptSingleTransaction(tx, single_args);
+        PackageValidationState package_state_wrapped;
+        if (single_res.m_result_type != MempoolAcceptResult::ResultType::VALID) {
+            package_state_wrapped.Invalid(PackageValidationResult::PCKG_TX, "transaction failed");
+        }
+        return PackageMempoolAcceptResult(package_state_wrapped, {{tx->GetWitnessHash(), single_res}});
+    }();
+
+    // Clean up m_view and m_viewmempool so that other subpackage evaluations don't have access to
+    // coins they shouldn't. Keep some coins in order to minimize re-fetching coins from the UTXO set.
+    CleanupTemporaryCoins();
+
+    return result;
+}
+
 PackageMempoolAcceptResult MemPoolAccept::AcceptPackage(const Package& package, ATMPArgs& args)
 {
     AssertLockHeld(cs_main);
@@ -1239,7 +1331,9 @@ PackageMempoolAcceptResult MemPoolAccept::AcceptPackage(const Package& package, 
     // transactions and thus won't return any MempoolAcceptResults, just a package-wide error.
 
     // Context-free package checks.
-    if (!CheckPackage(package, package_state)) return PackageMempoolAcceptResult(package_state, {});
+    if (!IsWellFormedPackage(package, package_state, /*require_sorted=*/true)) {
+        return PackageMempoolAcceptResult(package_state, {});
+    }
 
     // All transactions in the package must be a parent of the last transaction. This is just an
     // opportunity for us to fail fast on a context-free check without taking the mempool lock.
