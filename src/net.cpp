@@ -4003,7 +4003,6 @@ bool CConnman::Start(CDeterministicMNManager& dmnman, CMasternodeMetaMan& mn_met
     // Start threads
     //
     assert(m_msgproc);
-    InterruptSocks5(false);
     interruptNet.reset();
     flagInterruptMsgProc = false;
 
@@ -4096,7 +4095,7 @@ void CConnman::Interrupt()
     condMsgProc.notify_all();
 
     interruptNet();
-    InterruptSocks5(true);
+    g_socks5_interrupt();
 
     if (semOutbound) {
         for (int i=0; i<m_max_outbound; i++) {

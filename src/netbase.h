@@ -13,6 +13,7 @@
 #include <netaddress.h>
 #include <serialize.h>
 #include <util/sock.h>
+#include <util/threadinterrupt.h>
 
 #include <functional>
 #include <memory>
@@ -306,7 +307,15 @@ std::unique_ptr<Sock> ConnectThroughProxy(const Proxy& proxy,
                                           uint16_t port,
                                           bool& proxy_connection_failed);
 
-void InterruptSocks5(bool interrupt);
+/**
+ * Timeout for SOCKS5 negotiation
+ */
+extern std::chrono::milliseconds g_socks5_recv_timeout;
+
+/**
+ * Interrupt SOCKS5 reads or writes.
+ */
+extern CThreadInterrupt g_socks5_interrupt;
 
 /**
  * Connect to a specified destination service through an already connected
