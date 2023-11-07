@@ -417,6 +417,7 @@ void Shutdown(NodeContext& node)
     node.fee_estimator.reset();
     node.chainman.reset();
     node.scheduler.reset();
+    node.kernel.reset();
 
     try {
         if (!fs::remove(GetPidFile(*node.args))) {

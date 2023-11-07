@@ -230,6 +230,7 @@ BasicTestingSetup::~BasicTestingSetup()
     fs::remove_all(m_path_root);
     gArgs.ClearArgs();
     ECC_Stop();
+    m_node.kernel.reset();
 }
 
 ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::vector<const char*>& extra_args)
@@ -274,8 +275,10 @@ ChainTestingSetup::~ChainTestingSetup()
     m_node.mn_metaman.reset();
     m_node.args = nullptr;
     m_node.mempool.reset();
-    m_node.scheduler.reset();
+    m_node.fee_estimator.reset();
     m_node.chainman.reset();
+    m_node.scheduler.reset();
+    m_node.kernel.reset();
 }
 
 TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const char*>& extra_args)
