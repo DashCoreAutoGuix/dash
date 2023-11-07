@@ -7,7 +7,7 @@
 
 #include <node/coinstats.h>
 #include <node/transaction.h>
-#include <protocol.h>
+#include <outputtype.h>
 #include <pubkey.h>
 #include <rpc/protocol.h>
 #include <rpc/request.h>
@@ -35,7 +35,6 @@ extern const std::string UNIX_EPOCH_TIME;
  */
 extern const std::string EXAMPLE_ADDRESS[2];
 
-class FillableSigningProvider;
 class FillableSigningProvider;
 class CPubKey;
 class CScript;
@@ -114,9 +113,6 @@ UniValue DescribeAddress(const CTxDestination& dest);
 
 //! Parse a confirm target option and raise an RPC error if it is invalid.
 unsigned int ParseConfirmTarget(const UniValue& value, unsigned int max_target);
-
-/** Returns, given services flags, a list of humanly readable (known) network services */
-UniValue GetServicesNames(ServiceFlags services);
 
 //! Parse a JSON range specified as int64, or [int64, int64]
 std::pair<int64_t, int64_t> ParseDescriptorRange(const UniValue& value);

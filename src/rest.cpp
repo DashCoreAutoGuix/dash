@@ -27,6 +27,7 @@
 #include <sync.h>
 #include <txmempool.h>
 #include <util/check.h>
+#include <util/strencodings.h>
 #include <validation.h>
 #include <version.h>
 
