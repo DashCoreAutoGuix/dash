@@ -14,6 +14,10 @@
 #include <rpc/util.h>
 #include <txmempool.h>
 #include <univalue.h>
+#include <util/fs.h>
+#include <util/moneystr.h>
+#include <util/strencodings.h>
+#include <util/time.h>
 #include <validation.h>
 
 #include <instantsend/instantsend.h>

@@ -7,7 +7,11 @@
 
 #include <node/coinstats.h>
 #include <node/transaction.h>
-#include <protocol.h>
+
+
+
+#include <outputtype.h>
+
 #include <pubkey.h>
 #include <rpc/protocol.h>
 #include <rpc/request.h>
@@ -36,8 +40,6 @@ extern const std::string UNIX_EPOCH_TIME;
 extern const std::string EXAMPLE_ADDRESS[2];
 
 class FillableSigningProvider;
-class FillableSigningProvider;
-class CPubKey;
 class CScript;
 struct Sections;
 
@@ -116,10 +118,12 @@ UniValue DescribeAddress(const CTxDestination& dest);
 unsigned int ParseConfirmTarget(const UniValue& value, unsigned int max_target);
 
 /** Returns, given services flags, a list of humanly readable (known) network services */
-UniValue GetServicesNames(ServiceFlags services);
 
 //! Parse a JSON range specified as int64, or [int64, int64]
 std::pair<int64_t, int64_t> ParseDescriptorRange(const UniValue& value);
+
+/** Evaluate a descriptor given as a string, or as a {"desc":...,"range":...} object, with default range of 1000. */
+std::vector<CScript> EvalDescriptorStringOrObject(const UniValue& scanobject, FlatSigningProvider& provider, const bool expand_priv = false);
 
 /**
  * Serializing JSON objects depends on the outer type. Only arrays and
@@ -127,7 +131,6 @@ std::pair<int64_t, int64_t> ParseDescriptorRange(const UniValue& value);
  */
 enum class OuterType {
     ARR,
-    OBJ,
     NONE, // Only set on first recursion
 };
 /** Evaluate a descriptor given as a string, or as a {"desc":...,"range":...} object, with default range of 1000. */
@@ -379,6 +382,8 @@ private:
     const RPCExamples m_examples;
 };
 
+void PushWarnings(const UniValue& warnings, UniValue& obj);
+void PushWarnings(const std::vector<bilingual_str>& warnings, UniValue& obj);
 RPCErrorCode RPCErrorFromTransactionError(TransactionError terr);
 UniValue JSONRPCTransactionError(TransactionError terr, const std::string& err_string = "");
 
