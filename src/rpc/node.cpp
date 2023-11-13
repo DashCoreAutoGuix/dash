@@ -844,6 +844,10 @@ static RPCHelpMan mockscheduler()
     // protect against null pointer dereference
     CHECK_NONFATAL(node_context->scheduler);
     node_context->scheduler->MockForward(std::chrono::seconds(delta_seconds));
+    SyncWithValidationInterfaceQueue();
+    for (const auto& chain_client : node_context->chain_clients) {
+        chain_client->schedulerMockForward(std::chrono::seconds(delta_seconds));
+    }
 
     return NullUniValue;
 },

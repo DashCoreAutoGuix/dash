@@ -982,6 +982,15 @@ fs::path ArgsManager::GetConfigFilePath() const
     return GetConfigFile(GetPathArg("-conf", BITCOIN_CONF_FILENAME));
 }
 
+void ArgsManager::SetConfigFilePath(fs::path path)
+{
+    LOCK(cs_args);
+    // Note: Dash doesn't have m_config_path member, but this method is needed
+    // for multiprocess compatibility. The actual config file path is handled
+    // through GetConfigFile() with the -conf argument.
+    // TODO: Implement proper config path storage if multiprocess support is added
+}
+
 bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
 {
     {
