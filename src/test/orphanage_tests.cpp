@@ -108,8 +108,14 @@ BOOST_AUTO_TEST_CASE(DoS_mapOrphans)
             tx.vin[j].prevout.n = j;
             tx.vin[j].prevout.hash = txPrev->GetHash();
         }
+<<<<<<< HEAD
         BOOST_CHECK(SignSignature(keystore, *txPrev, tx, 0, SIGHASH_ALL));
         // Re-use same signature for other inputs
+=======
+        SignatureData empty;
+        BOOST_CHECK(SignSignature(keystore, *txPrev, tx, 0, SIGHASH_ALL, empty));
+        // Reuse same signature for other inputs
+>>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
         // (they don't have to be valid for this test)
         for (unsigned int j = 1; j < tx.vin.size(); j++)
             tx.vin[j].scriptSig = tx.vin[0].scriptSig;
