@@ -10,7 +10,11 @@
 #include <test/util/setup_common.h>
 #include <txmempool.h>
 
+<<<<<<< HEAD
 #include <cstdint>
+=======
+#include <memory>
+>>>>>>> afd3e99856 (Merge bitcoin/bitcoin#28873: fuzz: AutoFile with XOR)
 #include <optional>
 #include <string>
 #include <vector>
@@ -69,8 +73,8 @@ FUZZ_TARGET(policy_estimator, .init = initialize_policy_estimator)
         (void)block_policy_estimator.HighestTargetTracked(fuzzed_data_provider.PickValueInArray(ALL_FEE_ESTIMATE_HORIZONS));
     }
     {
-        FuzzedAutoFileProvider fuzzed_auto_file_provider = ConsumeAutoFile(fuzzed_data_provider);
-        CAutoFile fuzzed_auto_file = fuzzed_auto_file_provider.open();
+        FuzzedFileProvider fuzzed_file_provider{fuzzed_data_provider};
+        CAutoFile fuzzed_auto_file{fuzzed_file_provider.open()};
         block_policy_estimator.Write(fuzzed_auto_file);
         block_policy_estimator.Read(fuzzed_auto_file);
     }
