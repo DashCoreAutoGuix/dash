@@ -9,6 +9,8 @@
 #include <netbase.h>
 #include <node/blockstorage.h>
 #include <streams.h>
+#include <sync.h>
+#include <uint256.h>
 
 #include <chainlock/clsig.h>
 #include <governance/common.h>

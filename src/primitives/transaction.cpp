@@ -12,7 +12,6 @@
 #include <tinyformat.h>
 #include <uint256.h>
 #include <util/strencodings.h>
-#include <version.h>
 
 #include <cassert>
 #include <stdexcept>

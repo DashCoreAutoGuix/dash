@@ -13,7 +13,6 @@
 #include <univalue.h>
 #include <util/string.h>
 #include <util/strencodings.h>
-#include <version.h>
 
 #include <algorithm>
 #include <string>

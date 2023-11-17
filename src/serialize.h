@@ -129,7 +129,7 @@ template<typename Stream> inline uint64_t ser_readdata64(Stream &s)
 // i.e. anything that supports .read(Span<std::byte>) and .write(Span<const std::byte>)
 //
 
-class CSizeComputer;
+class SizeComputer;
 
 enum
 {
@@ -250,7 +250,7 @@ inline unsigned int GetSizeOfCompactSize(uint64_t nSize)
     else                         return sizeof(unsigned char) + sizeof(uint64_t);
 }
 
-inline void WriteCompactSize(CSizeComputer& os, uint64_t nSize);
+inline void WriteCompactSize(SizeComputer& os, uint64_t nSize);
 
 template<typename Stream>
 void WriteCompactSize(Stream& os, uint64_t nSize)
@@ -376,7 +376,7 @@ inline unsigned int GetSizeOfVarInt(I n)
 }
 
 template<typename I>
-inline void WriteVarInt(CSizeComputer& os, I n);
+inline void WriteVarInt(SizeComputer& os, I n);
 
 template<typename Stream, VarIntMode Mode, typename I>
 void WriteVarInt(Stream& os, I n)
@@ -516,7 +516,7 @@ struct CFixedVarIntsBitSet
 };
 
 /* Forward declaration for WriteAutoBitSet */
-template <typename T> size_t GetSerializeSize(const T& t, int nVersion = 0);
+template <typename T> size_t GetSerializeSize(const T& t);
 
 template<typename Stream>
 void WriteAutoBitSet(Stream& s, const autobitset_t& item)
@@ -526,8 +526,8 @@ void WriteAutoBitSet(Stream& s, const autobitset_t& item)
 
     assert(vec.size() == size);
 
-    size_t size1 = ::GetSerializeSize(CFixedBitSet(vec, size), s.GetVersion());
-    size_t size2 = ::GetSerializeSize(CFixedVarIntsBitSet(vec, size), s.GetVersion());
+    size_t size1 = ::GetSerializeSize(CFixedBitSet(vec, size));
+    size_t size2 = ::GetSerializeSize(CFixedVarIntsBitSet(vec, size));
 
     assert(size1 == GetSizeOfFixedBitSet(size));
 
@@ -1336,22 +1336,21 @@ struct CSerActionUnserialize
 /* ::GetSerializeSize implementations
  *
  * Computing the serialized size of objects is done through a special stream
- * object of type CSizeComputer, which only records the number of bytes written
+ * object of type SizeComputer, which only records the number of bytes written
  * to it.
  *
  * If your Serialize or SerializationOp method has non-trivial overhead for
  * serialization, it may be worthwhile to implement a specialized version for
- * CSizeComputer, which uses the s.seek() method to record bytes that would
+ * SizeComputer, which uses the s.seek() method to record bytes that would
  * be written instead.
  */
-class CSizeComputer
+class SizeComputer
 {
 protected:
     size_t nSize;
 
-    const int nVersion;
 public:
-    explicit CSizeComputer(int nVersionIn) : nSize(0), nVersion(nVersionIn) {}
+    SizeComputer() : nSize(0) {}
 
     void write(Span<const std::byte> src)
     {
@@ -1365,7 +1364,7 @@ public:
     }
 
     template<typename T>
-    CSizeComputer& operator<<(const T& obj)
+    SizeComputer& operator<<(const T& obj)
     {
         ::Serialize(*this, obj);
         return (*this);
@@ -1374,8 +1373,6 @@ public:
     size_t size() const {
         return nSize;
     }
-
-    int GetVersion() const { return nVersion; }
 };
 
 template <typename Stream, typename... Args>
@@ -1425,28 +1422,20 @@ inline void SerWrite(Stream& s, CSerActionUnserialize ser_action, Type&&, Fn&&)
 }
 
 template<typename I>
-inline void WriteVarInt(CSizeComputer &s, I n)
+inline void WriteVarInt(SizeComputer &s, I n)
 {
     s.seek(GetSizeOfVarInt<I>(n));
 }
 
-inline void WriteCompactSize(CSizeComputer &s, uint64_t nSize)
+inline void WriteCompactSize(SizeComputer &s, uint64_t nSize)
 {
     s.seek(GetSizeOfCompactSize(nSize));
 }
 
 template <typename T>
-size_t GetSerializeSize(const T& t, int nVersion)
+size_t GetSerializeSize(const T& t)
 {
-    return (CSizeComputer(nVersion) << t).size();
-}
-
-template <typename... T>
-size_t GetSerializeSizeMany(int nVersion, const T&... t)
-{
-    CSizeComputer sc(nVersion);
-    SerializeMany(sc, t...);
-    return sc.size();
+    return (SizeComputer() << t).size();
 }
 
 #endif // BITCOIN_SERIALIZE_H

@@ -801,7 +801,7 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
 
         // Include the fee cost for outputs.
         if (!coin_selection_params.m_subtract_fee_outputs) {
-            coin_selection_params.tx_noinputs_size += ::GetSerializeSize(txout, PROTOCOL_VERSION);
+            coin_selection_params.tx_noinputs_size += ::GetSerializeSize(txout);
         }
 
         if (IsDust(txout, wallet.chain().relayDustFee()))

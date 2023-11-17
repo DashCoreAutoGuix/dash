@@ -493,7 +493,7 @@ static bool UndoWriteToDisk(const CBlockUndo& blockundo, FlatFilePos& pos, const
     }
 
     // Write index header
-    unsigned int nSize = GetSerializeSize(blockundo, fileout.GetVersion());
+    unsigned int nSize = GetSerializeSize(blockundo);
     fileout << messageStart << nSize;
 
     // Write undo data
@@ -719,7 +719,7 @@ bool BlockManager::WriteUndoDataForBlock(const CBlockUndo& blockundo, BlockValid
     // Write undo information to disk
     if (pindex->GetUndoPos().IsNull()) {
         FlatFilePos _pos;
-        if (!FindUndoPos(state, pindex->nFile, _pos, ::GetSerializeSize(blockundo, CLIENT_VERSION) + 40)) {
+        if (!FindUndoPos(state, pindex->nFile, _pos, ::GetSerializeSize(blockundo) + 40)) {
             return error("ConnectBlock(): FindUndoPos failed");
         }
         if (!UndoWriteToDisk(blockundo, _pos, pindex->pprev->GetBlockHash(), chainparams.MessageStart())) {

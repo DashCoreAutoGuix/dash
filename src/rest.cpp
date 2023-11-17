@@ -30,7 +30,6 @@
 #include <txmempool.h>
 #include <util/check.h>
 #include <validation.h>
-#include <version.h>
 
 #include <string>
 
