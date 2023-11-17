@@ -1,24 +1,29 @@
-// Copyright (c) 2020 The Bitcoin Core developers
+// Copyright (c) 2020-2022 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <span.h>
 #include <streams.h>
 #include <test/fuzz/FuzzedDataProvider.h>
 #include <test/fuzz/fuzz.h>
 #include <test/fuzz/util.h>
 
 #include <array>
-#include <cstdint>
+#include <cstddef>
+#include <cstdio>
 #include <iostream>
-#include <string>
 #include <vector>
 
 FUZZ_TARGET(autofile)
 {
     FuzzedDataProvider fuzzed_data_provider{buffer.data(), buffer.size()};
-    FuzzedAutoFileProvider fuzzed_auto_file_provider = ConsumeAutoFile(fuzzed_data_provider);
-    CAutoFile auto_file = fuzzed_auto_file_provider.open();
-    LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 10000) {
+    FuzzedFileProvider fuzzed_file_provider{fuzzed_data_provider};
+    AutoFile auto_file{
+        fuzzed_file_provider.open(),
+        ConsumeRandomLengthByteVector<std::byte>(fuzzed_data_provider),
+    };
+    LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 100)
+    {
         CallOneOf(
             fuzzed_data_provider,
             [&] {
@@ -52,8 +57,6 @@ FUZZ_TARGET(autofile)
             });
     }
     (void)auto_file.Get();
-    (void)auto_file.GetType();
-    (void)auto_file.GetVersion();
     (void)auto_file.IsNull();
     if (fuzzed_data_provider.ConsumeBool()) {
         FILE* f = auto_file.release();
