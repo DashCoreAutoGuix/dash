@@ -6,17 +6,30 @@
 #ifndef BITCOIN_SCRIPT_INTERPRETER_H
 #define BITCOIN_SCRIPT_INTERPRETER_H
 
+<<<<<<< HEAD
 #include <script/script_error.h>
+=======
+#include <consensus/amount.h>
+#include <hash.h>
+>>>>>>> 5f9fd11680 (Merge bitcoin/bitcoin#28931: fuzz: Limit fuzz buffer size in script_flags target)
 #include <primitives/transaction.h>
+#include <script/script_error.h> // IWYU pragma: export
+#include <span.h>
+#include <uint256.h>
 
+<<<<<<< HEAD
+=======
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+>>>>>>> 5f9fd11680 (Merge bitcoin/bitcoin#28931: fuzz: Limit fuzz buffer size in script_flags target)
 #include <vector>
-#include <stdint.h>
 
 class CPubKey;
 class CScript;
-class CTransaction;
-class CTxOut;
-class uint256;
+class CScriptNum;
+class XOnlyPubKey;
+struct CScriptWitness;
 
 /** Signature hash types/flags */
 enum
