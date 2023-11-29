@@ -46,13 +46,13 @@ static RPCHelpMan gettxoutproof()
         },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
-    std::set<uint256> setTxids;
+    std::set<Txid> setTxids;
     UniValue txids = request.params[0].get_array();
     if (txids.empty()) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Parameter 'txids' cannot be empty");
     }
     for (unsigned int idx = 0; idx < txids.size(); idx++) {
-        auto ret = setTxids.insert(ParseHashV(txids[idx], "txid"));
+        auto ret{setTxids.insert(Txid::FromUint256(ParseHashV(txids[idx], "txid")))};
         if (!ret.second) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated txid: ") + txids[idx].get_str());
         }
@@ -70,11 +70,11 @@ static RPCHelpMan gettxoutproof()
         }
     } else {
         LOCK(cs_main);
-        CChainState& active_chainstate = chainman.ActiveChainstate();
+        Chainstate& active_chainstate = chainman.ActiveChainstate();
 
         // Loop through txids and try to find which block they're in. Exit loop once a block is found.
         for (const auto& tx : setTxids) {
-            const Coin& coin = AccessByTxid(active_chainstate.CoinsTip(), tx);
+            const Coin& coin{AccessByTxid(active_chainstate.CoinsTip(), tx)};
             if (!coin.IsSpent()) {
                 pblockindex = active_chainstate.m_chain[coin.nHeight];
                 break;
@@ -114,7 +114,7 @@ static RPCHelpMan gettxoutproof()
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Not all transactions found in specified or retrieved block");
     }
 
-    CDataStream ssMB(SER_NETWORK, PROTOCOL_VERSION);
+    DataStream ssMB{};
     CMerkleBlock mb(block, setTxids);
     ssMB << mb;
     std::string strHex = HexStr(ssMB);
@@ -143,7 +143,7 @@ static RPCHelpMan verifytxoutproof()
         },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
-    CDataStream ssMB(ParseHexV(request.params[0], "proof"), SER_NETWORK, PROTOCOL_VERSION);
+    DataStream ssMB{ParseHexV(request.params[0], "proof")};
     CMerkleBlock merkleBlock;
     ssMB >> merkleBlock;
 

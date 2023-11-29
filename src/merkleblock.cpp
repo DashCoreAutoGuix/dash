@@ -27,7 +27,7 @@ std::vector<bool> BytesToBits(const std::vector<unsigned char>& bytes)
     return ret;
 }
 
-CMerkleBlock::CMerkleBlock(const CBlock& block, CBloomFilter* filter, const std::set<uint256>* txids)
+CMerkleBlock::CMerkleBlock(const CBlock& block, CBloomFilter* filter, const std::set<Txid>* txids)
 {
     header = block.GetBlockHeader();
 
@@ -51,9 +51,10 @@ CMerkleBlock::CMerkleBlock(const CBlock& block, CBloomFilter* filter, const std:
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const auto& tx = *block.vtx[i];
-        const uint256& hash = tx.GetHash();
+        const Txid& hash{tx.GetHash()};
         bool isAllowedType = !tx.IsSpecialTxVersion() || allowedTxTypes.count(tx.nType) != 0;
 
+ (Merge bitcoin/bitcoin#28958: refactor: Use Txid in CMerkleBlock)
         if (txids && txids->count(hash)) {
             vMatch.push_back(true);
         } else if (isAllowedType && filter && filter->IsRelevantAndUpdate(*block.vtx[i])) {
