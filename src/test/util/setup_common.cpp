@@ -33,6 +33,7 @@
 #include <streams.h>
 #include <test/util/index.h>
 #include <txdb.h>
+#include <util/check.h>
 #include <util/strencodings.h>
 #include <util/string.h>
 #include <util/thread.h>
@@ -119,6 +120,15 @@ std::ostream& operator<<(std::ostream& os, const uint256& num)
     return os;
 }
 
+struct NetworkSetup
+{
+    NetworkSetup()
+    {
+        Assert(SetupNetworking());
+    }
+};
+static NetworkSetup g_networksetup_instance;
+
 void DashChainstateSetup(ChainstateManager& chainman,
                          NodeContext& node,
                          bool fReset,
@@ -181,7 +191,6 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     ECC_Start();
     BLSInit();
     SetupEnvironment();
-    SetupNetworking();
     InitSignatureCache();
     InitScriptExecutionCache();
     ::g_stats_client = InitStatsClient(*m_node.args);
