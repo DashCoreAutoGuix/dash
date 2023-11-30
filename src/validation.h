@@ -14,6 +14,7 @@
 #include <arith_uint256.h>
 #include <attributes.h>
 #include <chain.h>
+#include <checkqueue.h>
 #include <consensus/amount.h>
 #include <fs.h>
 #include <node/blockstorage.h>
@@ -118,7 +119,6 @@ extern uint256 g_best_block;
 /** Whether there are dedicated script-checking threads running.
  * False indicates all script checking is done on the main threadMessageHandler thread.
  */
-extern bool g_parallel_script_checks;
 extern bool fRequireStandard;
 extern bool fCheckBlockIndex;
 extern bool fCheckpointsEnabled;
@@ -136,11 +136,6 @@ extern arith_uint256 nMinimumChainWork;
 
 /** Documentation for argument 'checklevel'. */
 extern const std::vector<std::string> CHECKLEVEL_DOC;
-
-/** Run instances of script checking worker threads */
-void StartScriptCheckWorkerThreads(int threads_num);
-/** Stop all of the script checking worker threads */
-void StopScriptCheckWorkerThreads();
 
 double ConvertBitsToDouble(unsigned int nBits);
 /**
@@ -908,6 +903,9 @@ private:
         CBlockIndex** ppindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
     friend CChainState;
 
+    //! A queue for script verifications that have to be performed by worker threads.
+    CCheckQueue<CScriptCheck> m_script_check_queue;
+
 public:
     std::thread m_load_block;
     //! A single BlockManager instance is shared across each constructed
@@ -1057,6 +1055,9 @@ public:
     //! ResizeCoinsCaches() as needed.
     void MaybeRebalanceCaches() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
+    CCheckQueue<CScriptCheck>& GetCheckQueue() { return m_script_check_queue; }
+    
+    explicit ChainstateManager(int script_threads = 0) : m_script_check_queue(128, script_threads) {}
     ~ChainstateManager();
 };
 

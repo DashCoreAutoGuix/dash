@@ -254,17 +254,11 @@ ChainTestingSetup::ChainTestingSetup(const std::string& chainName, const std::ve
     m_node.sporkman = std::make_unique<CSporkManager>();
     m_node.mn_sync = std::make_unique<CMasternodeSync>(*m_node.connman, *m_node.netfulfilledman);
     m_node.govman = std::make_unique<CGovernanceManager>(*m_node.mn_metaman, *m_node.netfulfilledman, *m_node.chainman, m_node.dmnman, *m_node.mn_sync);
-
-    // Start script-checking threads. Set g_parallel_script_checks to true so they are used.
-    constexpr int script_check_threads = 2;
-    StartScriptCheckWorkerThreads(script_check_threads);
-    g_parallel_script_checks = true;
 }
 
 ChainTestingSetup::~ChainTestingSetup()
 {
-    m_node.scheduler->stop();
-    StopScriptCheckWorkerThreads();
+    if (m_node.scheduler) m_node.scheduler->stop();
     GetMainSignals().FlushBackgroundCallbacks();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     m_node.mn_sync.reset();
