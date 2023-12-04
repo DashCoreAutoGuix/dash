@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#\!/usr/bin/env python3
 # Copyright (c) 2018-2020 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -28,6 +28,12 @@ class FilelockTest(BitcoinTestFramework):
         expected_msg = f"Error: Cannot obtain a lock on data directory {datadir}. {self.config['environment']['PACKAGE_NAME']} is probably already running."
         self.nodes[1].assert_start_raises_init_error(extra_args=[f'-datadir={self.nodes[0].datadir}', '-noserver'], expected_msg=expected_msg)
 
+        self.log.info("Check that cookie and PID file are not deleted when attempting to start a second dashd using the same datadir")
+        cookie_file = os.path.join(datadir, ".cookie")
+        assert os.path.exists(cookie_file)  # should not be deleted during the second dashd instance shutdown
+        pid_file = os.path.join(datadir, "dashd.pid")
+        assert os.path.exists(pid_file)
+
         if self.is_wallet_compiled():
             def check_wallet_filelock(descriptors):
                 wallet_name = ''.join([random.choice(string.ascii_lowercase) for _ in range(6)])
@@ -47,3 +53,4 @@ class FilelockTest(BitcoinTestFramework):
 
 if __name__ == '__main__':
     FilelockTest().main()
+EOF < /dev/null
