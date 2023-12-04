@@ -6,6 +6,7 @@
 import os
 import random
 import string
+from pathlib import Path
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.test_node import ErrorMatch
@@ -27,6 +28,12 @@ class FilelockTest(BitcoinTestFramework):
         self.log.info("Check that we can't start a second dashd instance using the same datadir")
         expected_msg = f"Error: Cannot obtain a lock on data directory {datadir}. {self.config['environment']['PACKAGE_NAME']} is probably already running."
         self.nodes[1].assert_start_raises_init_error(extra_args=[f'-datadir={self.nodes[0].datadir}', '-noserver'], expected_msg=expected_msg)
+
+        self.log.info("Check that cookie and PID file are not deleted when attempting to start a second dashd using the same datadir")
+        cookie_file = Path(datadir) / ".cookie"
+        assert cookie_file.exists()  # should not be deleted during the second dashd instance shutdown
+        pid_file = Path(datadir) / "dashd.pid"
+        assert pid_file.exists()
 
         if self.is_wallet_compiled():
             def check_wallet_filelock(descriptors):
