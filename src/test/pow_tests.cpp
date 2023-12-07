@@ -181,4 +181,50 @@ BOOST_AUTO_TEST_CASE(GetBlockProofEquivalentTime_test)
     }
 }
 
+void sanity_check_chainparams(const ArgsManager& args, ChainType chain_type)
+{
+    const auto chainParams = CreateChainParams(args, chain_type);
+    const auto consensus = chainParams->GetConsensus();
+
+    // hash genesis is correct
+    BOOST_CHECK_EQUAL(consensus.hashGenesisBlock, chainParams->GenesisBlock().GetHash());
+
+    // target timespan is an even multiple of spacing
+    BOOST_CHECK_EQUAL(consensus.nPowTargetTimespan % consensus.nPowTargetSpacing, 0);
+
+    // genesis nBits is positive, doesn't overflow and is lower than powLimit
+    arith_uint256 pow_compact;
+    bool neg, over;
+    pow_compact.SetCompact(chainParams->GenesisBlock().nBits, &neg, &over);
+    BOOST_CHECK(!neg && pow_compact != 0);
+    BOOST_CHECK(!over);
+    BOOST_CHECK(UintToArith256(consensus.powLimit) >= pow_compact);
+
+    // check max target * 4*nPowTargetTimespan doesn't overflow -- see pow.cpp:CalculateNextWorkRequired()
+    if (!consensus.fPowNoRetargeting) {
+        arith_uint256 targ_max{UintToArith256(uint256S("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"))};
+        targ_max /= consensus.nPowTargetTimespan*4;
+        BOOST_CHECK(UintToArith256(consensus.powLimit) < targ_max);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(ChainParams_MAIN_sanity)
+{
+    sanity_check_chainparams(*m_node.args, ChainType::MAIN);
+}
+
+BOOST_AUTO_TEST_CASE(ChainParams_REGTEST_sanity)
+{
+    sanity_check_chainparams(*m_node.args, ChainType::REGTEST);
+}
+
+BOOST_AUTO_TEST_CASE(ChainParams_TESTNET_sanity)
+{
+    sanity_check_chainparams(*m_node.args, ChainType::TESTNET);
+}
+
+BOOST_AUTO_TEST_CASE(ChainParams_SIGNET_sanity)
+{
+    sanity_check_chainparams(*m_node.args, ChainType::SIGNET);
+}
 BOOST_AUTO_TEST_SUITE_END()
