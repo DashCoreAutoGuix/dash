@@ -7,6 +7,7 @@ Release Process
 Before every minor and major release:
 
 * [ ] Review ["Needs backport" labels](https://github.com/dashpay/dash/labels?q=backport).
+* [ ] Ensure the ["Needs release note" label](https://github.com/dashpay/dash/issues?q=label%3A%22Needs+release+note%22) is removed from all relevant pull requests and issues.
 * [ ] Update DIPs with any changes introduced by this release (see [this pull request](https://github.com/dashpay/dips/pull/142) for an example)
 * [ ] Update version in `configure.ac` (don't forget to set `CLIENT_VERSION_IS_RELEASE` to `true`)
 * [ ] Write release notes (see below)
