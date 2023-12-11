@@ -3,10 +3,17 @@ Reduce Traffic
 
 Some node operators need to deal with bandwidth caps imposed by their ISPs.
 
+<<<<<<< HEAD
 By default, Dash Core allows up to 125 connections to different peers, 10 of
 which are outbound. You can therefore, have at most 115 inbound connections.
 Of the 10 outbound peers, there can be 8 full-relay connections and 2
 block-relay-only ones.
+=======
+By default, Bitcoin Core allows up to 125 connections to different peers, 11 of
+which are outbound. You can therefore, have at most 114 inbound connections.
+Of the 11 outbound peers, there can be 8 full-relay connections, 2
+block-relay-only ones and occasionally 1 short-lived feeler or an extra block-relay-only connection.
+>>>>>>> d58f89d355 (doc: update/clarify max outbound connection count)
 
 The default settings can result in relatively significant traffic consumption.
 
@@ -28,7 +35,7 @@ calculating the target.
 
 ## 2. Disable "listening" (`-listen=0`)
 
-Disabling listening will result in fewer nodes connected (remember the maximum of 10
+Disabling listening will result in fewer nodes connected (remember the maximum of 11
 outbound peers). Fewer nodes will result in less traffic usage as you are relaying
 blocks and transactions to fewer nodes.
 
