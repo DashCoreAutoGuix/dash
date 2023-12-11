@@ -4548,12 +4548,12 @@ void PeerManagerImpl::ProcessMessage(
                     AddToCompactExtraTransactions(ptx);
                 }
 
-                // DoS prevention: do not allow m_orphans to grow unbounded (see CVE-2012-3789)
+                // DoS prevention: do not allow m_orphanage to grow unbounded (see CVE-2012-3789)
                 unsigned int nMaxOrphanTxSize = (unsigned int)std::max((int64_t)0, gArgs.GetIntArg("-maxorphantxsize", DEFAULT_MAX_ORPHAN_TRANSACTIONS_SIZE)) * 1000000;
-                unsigned int nEvicted = m_orphanage.LimitOrphans(nMaxOrphanTxSize);
-                if (nEvicted > 0) {
-                    LogPrint(BCLog::MEMPOOL, "orphanage overflow, removed %u tx\n", nEvicted);
-                }
+                // Convert size to count (approximate)
+                unsigned int nMaxOrphanTx = nMaxOrphanTxSize / 5000;  // Assume ~5KB per orphan tx
+                FastRandomContext rng;
+                m_orphanage.LimitOrphans(nMaxOrphanTx, rng);
             } else {
                 LogPrint(BCLog::MEMPOOL, "not keeping orphan with rejected parents %s\n",tx.GetHash().ToString());
                 // We will continue to reject this tx since it has rejected

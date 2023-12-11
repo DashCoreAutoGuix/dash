@@ -8,6 +8,7 @@
 #include <net.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
+#include <random.h>
 #include <sync.h>
 
 /** Guards orphan transactions and extra txs for compact blocks */
@@ -44,7 +45,7 @@ public:
     void EraseForBlock(const CBlock& block) LOCKS_EXCLUDED(::g_cs_orphans);
 
     /** Limit the orphanage to the given maximum */
-    unsigned int LimitOrphans(unsigned int max_orphans_size) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
+    void LimitOrphans(unsigned int max_orphans, FastRandomContext& rng) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans);
 
     /** Add any orphans that list a particular tx as a parent into a peer's work set
      * (ie orphans that may have found their final missing parent, and so should be reconsidered for the mempool) */

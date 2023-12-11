@@ -109,11 +109,9 @@ void TxOrphanage::EraseForPeer(NodeId peer)
     if (nErased > 0) LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx from peer=%d\n", nErased, peer);
 }
 
-unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
+void TxOrphanage::LimitOrphans(unsigned int max_orphans, FastRandomContext& rng)
 {
     AssertLockHeld(g_cs_orphans);
-
-    unsigned int nEvicted = 0;
     static int64_t nNextSweep;
     int64_t nNow = GetTime();
     if (nNextSweep <= nNow) {
@@ -134,15 +132,13 @@ unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
         nNextSweep = nMinExpTime + ORPHAN_TX_EXPIRE_INTERVAL;
         if (nErased > 0) LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx due to expiration\n", nErased);
     }
-    FastRandomContext rng;
-    while (!m_orphans.empty() && m_orphan_tx_size > max_orphans_size)
+    while (m_orphans.size() > max_orphans)
     {
         // Evict a random orphan:
         size_t randompos = rng.randrange(m_orphan_list.size());
         EraseTx(m_orphan_list[randompos]->first);
-        ++nEvicted;
     }
-    return nEvicted;
+    // Bitcoin PR #29031: Changed return type from unsigned int to void
 }
 
 void TxOrphanage::AddChildrenToWorkSet(const CTransaction& tx, std::set<uint256>& orphan_work_set) const
