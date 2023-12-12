@@ -81,6 +81,7 @@ FUZZ_TARGET(coinselection)
     GroupCoins(fuzzed_data_provider, utxo_pool, coin_params, /*positive_only=*/false, group_all);
 
     // Run coinselection algorithms
+    // Note: In Dash, BnB is always disabled due to mixing coins, so we skip it entirely
     const auto result_bnb = SelectCoinsBnB(group_pos, target, cost_of_change);
 
     auto result_srd = SelectCoinsSRD(group_pos, target, fast_random_context);
