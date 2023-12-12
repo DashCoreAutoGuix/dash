@@ -287,7 +287,7 @@ static bool rest_headers(const CoreContext& context,
 
         UniValue jsonHeaders(UniValue::VARR);
         for (const CBlockIndex *pindex : headers) {
-            jsonHeaders.push_back(blockheaderToJSON(tip, pindex, *llmq_ctx->clhandler));
+            jsonHeaders.push_back(blockheaderToJSON(*tip, *pindex, *llmq_ctx->clhandler));
         }
         std::string strJSON = jsonHeaders.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");
@@ -327,9 +327,9 @@ static bool rest_block(const CoreContext& context,
         if (!pblockindex) {
             return RESTERR(req, HTTP_NOT_FOUND, hashStr + " not found");
         }
-
-        if (chainman.m_blockman.IsBlockPruned(pblockindex))
+        if (chainman.m_blockman.IsBlockPruned(*pblockindex)) {
             return RESTERR(req, HTTP_NOT_FOUND, hashStr + " not available (pruned data)");
+        }
     }
 
     if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) {
@@ -359,7 +359,7 @@ static bool rest_block(const CoreContext& context,
         const LLMQContext* llmq_ctx = GetLLMQContext(context, req);
         if (!llmq_ctx) return false;
 
-        UniValue objBlock = blockToJSON(chainman.m_blockman, block, tip, pblockindex, *llmq_ctx->clhandler, *llmq_ctx->isman, tx_verbosity);
+        UniValue objBlock = blockToJSON(chainman.m_blockman, block, *tip, *pblockindex, *llmq_ctx->clhandler, *llmq_ctx->isman, tx_verbosity);
         std::string strJSON = objBlock.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");
         req->WriteReply(HTTP_OK, strJSON);
