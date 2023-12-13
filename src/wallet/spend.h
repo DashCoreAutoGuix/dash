@@ -108,9 +108,9 @@ struct CreatedTransactionResult
 /**
  * Create a new transaction paying the recipients with a set of coins
  * selected by SelectCoins(); Also create the change output, when needed
- * @note passing change_pos as -1 will result in setting a random position
+ * @note passing change_pos as std::nullopt will result in setting a random position
  */
-std::optional<CreatedTransactionResult> CreateTransaction(CWallet& wallet, const std::vector<CRecipient>& vecSend, int change_pos, bilingual_str& error, const CCoinControl& coin_control, FeeCalculation& fee_calc_out, bool sign = true, int nExtraPayloadSize = 0);
+std::optional<CreatedTransactionResult> CreateTransaction(CWallet& wallet, const std::vector<CRecipient>& vecSend, std::optional<int> change_pos, bilingual_str& error, const CCoinControl& coin_control, FeeCalculation& fee_calc_out, bool sign = true, int nExtraPayloadSize = 0);
 
 /**
  * Insert additional inputs into the transaction by

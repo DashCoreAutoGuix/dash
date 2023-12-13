@@ -67,7 +67,7 @@ UniValue SendMoney(CWallet& wallet, const CCoinControl &coin_control, std::vecto
     // Send
     bilingual_str error;
     FeeCalculation fee_calc_out;
-    std::optional<CreatedTransactionResult> txr = CreateTransaction(wallet, recipients, RANDOM_CHANGE_POSITION, error, coin_control, fee_calc_out, true);
+    std::optional<CreatedTransactionResult> txr = CreateTransaction(wallet, recipients, /*change_pos=*/std::nullopt, error, coin_control, fee_calc_out, true);
     if (!txr) {
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, error.original);
     }

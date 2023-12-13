@@ -558,7 +558,7 @@ public:
         CCoinControl dummy;
         FeeCalculation fee_calc_out;
         {
-            std::optional<CreatedTransactionResult> txr = CreateTransaction(*wallet, {recipient}, RANDOM_CHANGE_POSITION, error, dummy, fee_calc_out);
+            std::optional<CreatedTransactionResult> txr = CreateTransaction(*wallet, {recipient}, /*change_pos=*/std::nullopt, error, dummy, fee_calc_out);
             BOOST_CHECK(txr.has_value());
             tx = txr->tx;
         }

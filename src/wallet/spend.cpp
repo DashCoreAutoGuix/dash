@@ -816,13 +816,6 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
     const CAmount not_input_fees = coin_selection_params.m_effective_feerate.GetFee(coin_selection_params.tx_noinputs_size);
     CAmount selection_target = recipients_sum + not_input_fees;
 
-    // This can only happen if feerate is 0, and requested destinations are value of 0 (e.g. OP_RETURN)
-    // and no pre-selected inputs. This will result in 0-input transaction, which is consensus-invalid anyways
-    if (selection_target == 0 && !coin_control.HasSelected()) {
-        error = _("Transaction requires one destination of non-0 value, a non-0 feerate, or a pre-selected input");
-        return std::nullopt;
-    }
-
     // Get available coins
     auto res_available_coins = AvailableCoins(wallet,
                                               &coin_control,
@@ -1030,7 +1023,7 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
 std::optional<CreatedTransactionResult> CreateTransaction(
         CWallet& wallet,
         const std::vector<CRecipient>& vecSend,
-        int change_pos,
+        std::optional<int> change_pos,
         bilingual_str& error,
         const CCoinControl& coin_control,
         FeeCalculation& fee_calc_out,
@@ -1049,7 +1042,7 @@ std::optional<CreatedTransactionResult> CreateTransaction(
 
     LOCK(wallet.cs_wallet);
 
-    std::optional<CreatedTransactionResult> txr_ungrouped = CreateTransactionInternal(wallet, vecSend, change_pos, error, coin_control, fee_calc_out, sign, nExtraPayloadSize);
+    std::optional<CreatedTransactionResult> txr_ungrouped = CreateTransactionInternal(wallet, vecSend, change_pos.value_or(-1), error, coin_control, fee_calc_out, sign, nExtraPayloadSize);
     TRACE4(coin_selection, normal_create_tx_internal, wallet.GetName().c_str(), txr_ungrouped.has_value(),
            txr_ungrouped.has_value() ? txr_ungrouped->fee : 0, txr_ungrouped.has_value() ? txr_ungrouped->change_pos : 0);
     if (!txr_ungrouped) return std::nullopt;
@@ -1066,7 +1059,7 @@ std::optional<CreatedTransactionResult> CreateTransaction(
             ExtractDestination(txr_ungrouped->tx->vout[ungrouped_change_pos].scriptPubKey, tmp_cc.destChange);
         }
 
-        std::optional<CreatedTransactionResult> txr_grouped = CreateTransactionInternal(wallet, vecSend, change_pos, error2, tmp_cc, fee_calc_out, sign, nExtraPayloadSize);
+        std::optional<CreatedTransactionResult> txr_grouped = CreateTransactionInternal(wallet, vecSend, change_pos.value_or(-1), error2, tmp_cc, fee_calc_out, sign, nExtraPayloadSize);
         if (txr_grouped) {
             // if fee of this alternative one is within the range of the max fee, we use this one
             const bool use_aps = txr_grouped->fee <= txr_ungrouped->fee + wallet.m_max_aps_fee;
@@ -1162,7 +1155,7 @@ bool GenBudgetSystemCollateralTx(CWallet& wallet, CTransactionRef& tx, uint256 h
 
     bilingual_str error;
     FeeCalculation fee_calc_out;
-    auto txr{CreateTransaction(wallet, vecSend, RANDOM_CHANGE_POSITION, error, coinControl, fee_calc_out)};
+    auto txr{CreateTransaction(wallet, vecSend, /*change_pos=*/std::nullopt, error, coinControl, fee_calc_out)};
     if (!txr.has_value()) {
         wallet.WalletLogPrintf("%s -- Error: %s\n", __func__, error.original);
         return false;
