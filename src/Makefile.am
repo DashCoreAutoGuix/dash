@@ -363,7 +363,6 @@ BITCOIN_CORE_H = \
   util/hash_type.h \
   util/irange.h \
   util/asmap.h \
-  util/getuniquepath.h \
   util/macros.h \
   util/message.h \
   util/moneystr.h \
@@ -877,7 +876,6 @@ libbitcoin_util_a_SOURCES = \
   util/error.cpp \
   util/fees.cpp \
   util/hasher.cpp \
-  util/getuniquepath.cpp \
   util/sock.cpp \
   util/syserror.cpp \
   util/system.cpp \
