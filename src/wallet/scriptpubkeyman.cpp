@@ -818,8 +818,10 @@ void LegacyScriptPubKeyMan::UpdateTimeFirstKey(int64_t nCreateTime)
         // Cannot determine birthday information, so set the wallet birthday to
         // the beginning of time.
         nTimeFirstKey = 1;
-    } else if (!nTimeFirstKey || nCreateTime < nTimeFirstKey) {
+        NotifyFirstKeyTimeChanged(this, nTimeFirstKey);
+    } else if (nTimeFirstKey == UNKNOWN_TIME || nCreateTime < nTimeFirstKey) {
         nTimeFirstKey = nCreateTime;
+        NotifyFirstKeyTimeChanged(this, nTimeFirstKey);
     }
 }
 

@@ -279,6 +279,9 @@ private:
     // Local time that the tip block was received. Used to schedule wallet rebroadcasts.
     std::atomic<int64_t> m_best_block_time {0};
 
+    // Wallet birth time. Uses std::numeric_limits<int64_t>::max() for not known.
+    std::atomic<int64_t> m_birth_time{std::numeric_limits<int64_t>::max()};
+
     mutable bool fAnonymizableTallyCached = false;
     mutable std::vector<CompactTallyItem> vecAnonymizableTallyCached;
     mutable bool fAnonymizableTallyCachedNonDenom = false;
@@ -725,6 +728,8 @@ public:
     bool ImportPubKeys(const std::vector<CKeyID>& ordered_pubkeys, const std::map<CKeyID, CPubKey>& pubkey_map, const std::map<CKeyID, std::pair<CPubKey, KeyOriginInfo>>& key_origins, const bool add_keypool, const bool internal, const int64_t timestamp) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
     bool ImportScriptPubKeys(const std::string& label, const std::set<CScript>& script_pub_keys, const bool have_solving_data, const bool apply_label, const int64_t timestamp) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
 
+    /** Updates wallet birth time if 'time' is below it */
+    void MaybeUpdateBirthTime(int64_t time);
     CFeeRate m_pay_tx_fee{DEFAULT_PAY_TX_FEE};
     unsigned int m_confirm_target{DEFAULT_TX_CONFIRM_TARGET};
     /** Allow Coin Selection to pick unconfirmed UTXOs that were sent from our own wallet if it
@@ -922,6 +927,7 @@ public:
     /* Returns true if the wallet can give out new addresses. This means it has keys in the keypool or can generate new keys */
     bool CanGetAddresses(bool internal = false) const;
 
+<<<<<<< HEAD
     void notifyTransactionLock(const CTransactionRef &tx, const std::shared_ptr<const instantsend::InstantSendLock>& islock) override;
     void notifyChainLock(const CBlockIndex* pindexChainLock, const std::shared_ptr<const chainlock::ChainLockSig>& clsig) override;
 
@@ -931,6 +937,10 @@ public:
     bool WriteGovernanceObject(const Governance::Object& obj) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
     /** Returns a vector containing pointers to the governance objects in m_gobjects */
     std::vector<const Governance::Object*> GetGovernanceObjects() EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+=======
+    /* Returns the time of the first created key or, in case of an import, it could be the time of the first received transaction */
+    int64_t GetBirthTime() const { return m_birth_time; }
+>>>>>>> 08e6aaabef (Merge bitcoin/bitcoin#28920: wallet: birth time update during tx scanning)
 
     /**
      * Blocks until the wallet state is up-to-date to /at least/ the current
