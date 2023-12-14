@@ -279,7 +279,7 @@ class TestNode():
                 if self.version_is_at_least(180000):
                     # getmempoolinfo.loaded is available since commit
                     # 71e38b9ebcb78b3a264a4c25c7c4e373317f2a40 (version 0.18.0)
-                    wait_until_helper(lambda: rpc.getmempoolinfo()['loaded'])
+                    self.wait_until(lambda: rpc.getmempoolinfo()['loaded'])
                     # Wait for the node to finish reindex, block import, and
                     # loading the mempool. Usually importing happens fast or
                     # even "immediate" when the node is started. However, there
@@ -422,7 +422,7 @@ class TestNode():
         return True
 
     def wait_until_stopped(self, timeout=BITCOIND_PROC_WAIT_TIMEOUT):
-        wait_until_helper(self.is_node_stopped, timeout=timeout, timeout_factor=self.timeout_factor)
+        self.wait_until(self.is_node_stopped, timeout=timeout)
 
     @property
     def chain_path(self) -> Path:
@@ -519,8 +519,7 @@ class TestNode():
 
         initial_peer_id = get_highest_peer_id()
         yield
-        wait_until_helper(lambda: get_highest_peer_id() > initial_peer_id,
-                          timeout=timeout, timeout_factor=self.timeout_factor)
+        self.wait_until(lambda: get_highest_peer_id() > initial_peer_id, timeout=timeout)
 
     @contextlib.contextmanager
     def profile_with_perf(self, profile_name: str):
@@ -785,11 +784,14 @@ class TestNode():
                     if p['subver'] == p2p.strSubVer:
                         return False
             return True
-        wait_until_helper(check_peers, timeout=5)
+        self.wait_until(check_peers, timeout=5)
 
         del self.p2ps[:]
 
-        wait_until_helper(lambda: self.num_test_p2p_connections() == 0, timeout_factor=self.timeout_factor)
+        self.wait_until(lambda: self.num_test_p2p_connections() == 0)
+
+    def wait_until(self, test_function, timeout=60):
+        return wait_until_helper_internal(test_function, timeout=timeout, timeout_factor=self.timeout_factor)
 
 
 class TestNodeCLIAttr:
