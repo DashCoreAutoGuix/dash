@@ -53,6 +53,9 @@ public:
     virtual void KeepDestinationCallback(bool erased) = 0;
 };
 
+//! Constant representing an unknown spkm creation time
+static constexpr int64_t UNKNOWN_TIME = std::numeric_limits<int64_t>::max();
+
 //! Default for -keypool
 static const unsigned int DEFAULT_KEYPOOL_SIZE = 1000;
 
@@ -252,7 +255,8 @@ private:
     WatchKeyMap mapWatchKeys GUARDED_BY(cs_KeyStore);
     HDPubKeyMap mapHdPubKeys GUARDED_BY(cs_KeyStore); ///<! memory map of HD extended pubkeys
 
-    int64_t nTimeFirstKey GUARDED_BY(cs_KeyStore) = 0;
+    // By default, do not scan any block until keys/scripts are generated/imported
+    int64_t nTimeFirstKey GUARDED_BY(cs_KeyStore) = UNKNOWN_TIME;
 
     bool HaveKeyInner(const CKeyID &address) const;
     bool AddKeyPubKeyInner(const CKey& key, const CPubKey &pubkey);
