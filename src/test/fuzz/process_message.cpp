@@ -8,9 +8,6 @@
 #include <primitives/transaction.h>
 #include <protocol.h>
 #include <script/script.h>
-#include <serialize.h>
-#include <span.h>
-#include <streams.h>
 #include <sync.h>
 #include <test/fuzz/FuzzedDataProvider.h>
 #include <test/fuzz/fuzz.h>
@@ -30,7 +27,6 @@
 #include <llmq/signing.h>
 #include <llmq/signing_shares.h>
 
-#include <atomic>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -83,8 +79,9 @@ FUZZ_TARGET(process_message, .init = initialize_process_message)
     const auto mock_time = ConsumeTime(fuzzed_data_provider);
     SetMockTime(mock_time);
 
-    // fuzzed_data_provider is fully consumed after this call, don't use it
-    CDataStream random_bytes_data_stream{fuzzed_data_provider.ConsumeRemainingBytes<unsigned char>(), SER_NETWORK, PROTOCOL_VERSION};
+    // Limit the data to MAX_PROTOCOL_MESSAGE_LENGTH
+    const std::vector<uint8_t> random_bytes = ConsumeRandomLengthByteVector(fuzzed_data_provider, MAX_PROTOCOL_MESSAGE_LENGTH);
+    CDataStream random_bytes_data_stream{random_bytes, SER_NETWORK, PROTOCOL_VERSION};
     try {
         g_setup->m_node.peerman->ProcessMessage(p2p_node, random_message_type, random_bytes_data_stream, GetTime<std::chrono::microseconds>(), std::atomic<bool>{false});
     } catch (const std::ios_base::failure& e) {
