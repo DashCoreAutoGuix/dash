@@ -48,6 +48,7 @@
 #include <txmempool.h>
 #include <uint256.h>
 #include <util/check.h>
+#include <util/result.h>
 #include <util/system.h>
 #include <util/translation.h>
 #include <validation.h>
@@ -921,21 +922,13 @@ public:
         limit_ancestor_count = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
         limit_descendant_count = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
     }
-    bool checkChainLimits(const CTransactionRef& tx) override
+    util::Result<void> checkChainLimits(const CTransactionRef& tx) override
     {
-        if (!m_node.mempool) return true;
+        if (!m_node.mempool) return {};
         LockPoints lp;
         CTxMemPoolEntry entry(tx, 0, 0, 0, false, 0, lp);
-        CTxMemPool::setEntries ancestors;
-        auto limit_ancestor_count = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
-        auto limit_ancestor_size = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
-        auto limit_descendant_count = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
-        auto limit_descendant_size = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
-        std::string unused_error_string;
         LOCK(m_node.mempool->cs);
-        return m_node.mempool->CalculateMemPoolAncestors(
-            entry, ancestors, limit_ancestor_count, limit_ancestor_size,
-            limit_descendant_count, limit_descendant_size, unused_error_string);
+        return m_node.mempool->CheckPackageLimits({tx}, entry.GetTxSize());
     }
     CFeeRate estimateSmartFee(int num_blocks, bool conservative, FeeCalculation* calc) override
     {

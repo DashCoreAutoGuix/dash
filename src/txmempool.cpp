@@ -240,13 +240,27 @@ bool CTxMemPool::CalculateAncestorsAndCheckLimits(size_t entry_size,
     return true;
 }
 
-bool CTxMemPool::CheckPackageLimits(const Package& package,
-                                    uint64_t limitAncestorCount,
-                                    uint64_t limitAncestorSize,
-                                    uint64_t limitDescendantCount,
-                                    uint64_t limitDescendantSize,
-                                    std::string &errString) const
+util::Result<void> CTxMemPool::CheckPackageLimits(const Package& package,
+                                                  const int64_t total_vsize) const
 {
+    size_t pack_count = package.size();
+
+    // Get limits from gArgs
+    uint64_t limitAncestorCount = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
+    uint64_t limitDescendantCount = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+    uint64_t limitAncestorSize = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
+    uint64_t limitDescendantSize = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
+
+    // Package itself is busting mempool limits; should be rejected even if no staged_ancestors exist
+    if (pack_count > limitAncestorCount) {
+        return util::Error{Untranslated(strprintf("package count %u exceeds ancestor count limit [limit: %u]", pack_count, limitAncestorCount))};
+    } else if (pack_count > limitDescendantCount) {
+        return util::Error{Untranslated(strprintf("package count %u exceeds descendant count limit [limit: %u]", pack_count, limitDescendantCount))};
+    } else if (total_vsize > static_cast<int64_t>(limitAncestorSize)) {
+        return util::Error{Untranslated(strprintf("package size %u exceeds ancestor size limit [limit: %u]", total_vsize, limitAncestorSize))};
+    } else if (total_vsize > static_cast<int64_t>(limitDescendantSize)) {
+        return util::Error{Untranslated(strprintf("package size %u exceeds descendant size limit [limit: %u]", total_vsize, limitDescendantSize))};
+    }
     CTxMemPoolEntry::Parents staged_ancestors;
     size_t total_size = 0;
     for (const auto& tx : package) {
@@ -256,8 +270,7 @@ bool CTxMemPool::CheckPackageLimits(const Package& package,
             if (piter) {
                 staged_ancestors.insert(**piter);
                 if (staged_ancestors.size() + package.size() > limitAncestorCount) {
-                    errString = strprintf("too many unconfirmed parents [limit: %u]", limitAncestorCount);
-                    return false;
+                    return util::Error{Untranslated(strprintf("too many unconfirmed parents [limit: %u]", limitAncestorCount))};
                 }
             }
         }
@@ -266,13 +279,16 @@ bool CTxMemPool::CheckPackageLimits(const Package& package,
     // considered together must be within limits even if they are not interdependent. This may be
     // stricter than the limits for each individual transaction.
     setEntries setAncestors;
+    std::string errString;
     const auto ret = CalculateAncestorsAndCheckLimits(total_size, package.size(),
                                                       setAncestors, staged_ancestors,
                                                       limitAncestorCount, limitAncestorSize,
                                                       limitDescendantCount, limitDescendantSize, errString);
     // It's possible to overestimate the ancestor/descendant totals.
-    if (!ret) errString.insert(0, "possibly ");
-    return ret;
+    if (!ret) {
+        return util::Error{Untranslated("possibly " + errString)};
+    }
+    return {};
 }
 
 bool CTxMemPool::CalculateMemPoolAncestors(const CTxMemPoolEntry &entry,

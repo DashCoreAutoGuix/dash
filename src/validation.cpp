@@ -43,6 +43,7 @@
 #include <undo.h>
 #include <util/check.h>
 #include <util/hasher.h>
+#include <util/result.h>
 #include <util/strencodings.h>
 #include <util/trace.h>
 #include <util/translation.h>
@@ -915,11 +916,16 @@ bool MemPoolAccept::PackageMempoolChecks(const std::vector<CTransactionRef>& txn
     assert(std::all_of(txns.cbegin(), txns.cend(), [this](const auto& tx)
                        { return !m_pool.exists(tx->GetHash());}));
 
-    std::string err_string;
-    if (!m_pool.CheckPackageLimits(txns, m_limit_ancestors, m_limit_ancestor_size, m_limit_descendants,
-                                   m_limit_descendant_size, err_string)) {
+    // Calculate total virtual size of the package
+    int64_t total_vsize = 0;
+    for (const auto& tx : txns) {
+        total_vsize += GetVirtualTransactionSize(*tx);
+    }
+
+    auto result = m_pool.CheckPackageLimits(txns, total_vsize);
+    if (!result) {
         // This is a package-wide error, separate from an individual transaction error.
-        return package_state.Invalid(PackageValidationResult::PCKG_POLICY, "package-mempool-limits", err_string);
+        return package_state.Invalid(PackageValidationResult::PCKG_POLICY, "package-mempool-limits", util::ErrorString(result).original);
     }
    return true;
 }
