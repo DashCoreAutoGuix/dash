@@ -78,11 +78,19 @@ public:
     template <typename T>
     void Set(const T pbegin, const T pend, bool fCompressedIn)
     {
+<<<<<<< HEAD
         if (size_t(pend - pbegin) != keydata.size()) {
             fValid = false;
         } else if (Check(&pbegin[0])) {
             memcpy(keydata.data(), (unsigned char*)&pbegin[0], keydata.size());
             fValid = true;
+=======
+        if (size_t(pend - pbegin) != std::tuple_size_v<KeyType>) {
+            ClearKeyData();
+        } else if (Check(UCharCast(&pbegin[0]))) {
+            MakeKeyData();
+            memcpy(keydata->data(), (unsigned char*)&pbegin[0], keydata->size());
+>>>>>>> fa96d93711 (refactor: Allow std::span construction from CKey)
             fCompressed = fCompressedIn;
         } else {
             fValid = false;
@@ -90,10 +98,17 @@ public:
     }
 
     //! Simple read-only vector-like interface.
+<<<<<<< HEAD
     unsigned int size() const { return (fValid ? keydata.size() : 0); }
     const std::byte* data() const { return reinterpret_cast<const std::byte*>(keydata.data()); }
     const unsigned char* begin() const { return keydata.data(); }
     const unsigned char* end() const { return keydata.data() + size(); }
+=======
+    unsigned int size() const { return keydata ? keydata->size() : 0; }
+    const std::byte* data() const { return keydata ? reinterpret_cast<const std::byte*>(keydata->data()) : nullptr; }
+    const std::byte* begin() const { return data(); }
+    const std::byte* end() const { return data() + size(); }
+>>>>>>> fa96d93711 (refactor: Allow std::span construction from CKey)
 
     //! Check whether this private key is valid.
     bool IsValid() const { return fValid; }

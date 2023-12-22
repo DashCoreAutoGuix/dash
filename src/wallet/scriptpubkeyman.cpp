@@ -257,7 +257,7 @@ bool LegacyScriptPubKeyMan::Encrypt(const CKeyingMaterial& master_key, WalletBat
     {
         const CKey &key = mKey.second;
         CPubKey vchPubKey = key.GetPubKey();
-        CKeyingMaterial vchSecret(key.begin(), key.end());
+        CKeyingMaterial vchSecret{UCharCast(key.begin()), UCharCast(key.end())};
         std::vector<unsigned char> vchCryptedSecret;
         if (!EncryptSecret(master_key, vchSecret, vchPubKey.GetHash(), vchCryptedSecret)) {
             encrypted_batch = nullptr;
@@ -916,10 +916,15 @@ bool LegacyScriptPubKeyMan::AddKeyPubKeyInner(const CKey& key, const CPubKey &pu
     }
 
     std::vector<unsigned char> vchCryptedSecret;
+<<<<<<< HEAD
     CKeyingMaterial vchSecret(key.begin(), key.end());
     if (!m_storage.WithEncryptionKey([&](const CKeyingMaterial& encryption_key) {
             return EncryptSecret(encryption_key, vchSecret, pubkey.GetHash(), vchCryptedSecret);
         })) {
+=======
+    CKeyingMaterial vchSecret{UCharCast(key.begin()), UCharCast(key.end())};
+    if (!EncryptSecret(m_storage.GetEncryptionKey(), vchSecret, pubkey.GetHash(), vchCryptedSecret)) {
+>>>>>>> fa96d93711 (refactor: Allow std::span construction from CKey)
         return false;
     }
 
@@ -1877,9 +1882,13 @@ bool DescriptorScriptPubKeyMan::Encrypt(const CKeyingMaterial& master_key, Walle
     {
         const CKey &key = key_in.second;
         CPubKey pubkey = key.GetPubKey();
+<<<<<<< HEAD
         assert(pubkey.GetID() == key_in.first);
         const auto mnemonic_in = m_mnemonics.find(key_in.first);
         CKeyingMaterial secret(key.begin(), key.end());
+=======
+        CKeyingMaterial secret{UCharCast(key.begin()), UCharCast(key.end())};
+>>>>>>> fa96d93711 (refactor: Allow std::span construction from CKey)
         std::vector<unsigned char> crypted_secret;
         if (!EncryptSecret(master_key, secret, pubkey.GetHash(), crypted_secret)) {
             return false;
@@ -2051,6 +2060,7 @@ bool DescriptorScriptPubKeyMan::AddDescriptorKeyWithDB(WalletBatch& batch, const
         }
 
         std::vector<unsigned char> crypted_secret;
+<<<<<<< HEAD
         std::vector<unsigned char> crypted_mnemonic;
         std::vector<unsigned char> crypted_mnemonic_passphrase;
         CKeyingMaterial secret(key.begin(), key.end());
@@ -2068,6 +2078,10 @@ bool DescriptorScriptPubKeyMan::AddDescriptorKeyWithDB(WalletBatch& batch, const
                 }
                 return true;
             })) {
+=======
+        CKeyingMaterial secret{UCharCast(key.begin()), UCharCast(key.end())};
+        if (!EncryptSecret(m_storage.GetEncryptionKey(), secret, pubkey.GetHash(), crypted_secret)) {
+>>>>>>> fa96d93711 (refactor: Allow std::span construction from CKey)
             return false;
         }
 
