@@ -80,7 +80,7 @@ public:
     {
         if (size_t(pend - pbegin) != keydata.size()) {
             fValid = false;
-        } else if (Check(&pbegin[0])) {
+        } else if (Check(UCharCast(&pbegin[0]))) {
             memcpy(keydata.data(), (unsigned char*)&pbegin[0], keydata.size());
             fValid = true;
             fCompressed = fCompressedIn;
@@ -92,8 +92,8 @@ public:
     //! Simple read-only vector-like interface.
     unsigned int size() const { return (fValid ? keydata.size() : 0); }
     const std::byte* data() const { return reinterpret_cast<const std::byte*>(keydata.data()); }
-    const unsigned char* begin() const { return keydata.data(); }
-    const unsigned char* end() const { return keydata.data() + size(); }
+    const std::byte* begin() const { return data(); }
+    const std::byte* end() const { return data() + size(); }
 
     //! Check whether this private key is valid.
     bool IsValid() const { return fValid; }
