@@ -327,18 +327,18 @@ static bool rest_block(const CoreContext& context,
     }
 
     switch (rf) {
-    case RetFormat::BINARY: {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
-        ssBlock << block;
+    case RESTResponseFormat::BINARY: {
+        DataStream ssBlock;
+        ssBlock << TX_WITH_WITNESS(block);
         std::string binaryBlock = ssBlock.str();
         req->WriteHeader("Content-Type", "application/octet-stream");
         req->WriteReply(HTTP_OK, binaryBlock);
         return true;
     }
 
-    case RetFormat::HEX: {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
-        ssBlock << block;
+    case RESTResponseFormat::HEX: {
+        DataStream ssBlock;
+        ssBlock << TX_WITH_WITNESS(block);
         std::string strHex = HexStr(ssBlock) + "\n";
         req->WriteHeader("Content-Type", "text/plain");
         req->WriteReply(HTTP_OK, strHex);
@@ -677,9 +677,9 @@ static bool rest_tx(const CoreContext& context, HTTPRequest* req, const std::str
     }
 
     switch (rf) {
-    case RetFormat::BINARY: {
-        CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
-        ssTx << tx;
+    case RESTResponseFormat::BINARY: {
+        DataStream ssTx;
+        ssTx << TX_WITH_WITNESS(tx);
 
         std::string binaryTx = ssTx.str();
         req->WriteHeader("Content-Type", "application/octet-stream");
@@ -687,9 +687,9 @@ static bool rest_tx(const CoreContext& context, HTTPRequest* req, const std::str
         return true;
     }
 
-    case RetFormat::HEX: {
-        CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
-        ssTx << tx;
+    case RESTResponseFormat::HEX: {
+        DataStream ssTx;
+        ssTx << TX_WITH_WITNESS(tx);
 
         std::string strHex = HexStr(ssTx) + "\n";
         req->WriteHeader("Content-Type", "text/plain");

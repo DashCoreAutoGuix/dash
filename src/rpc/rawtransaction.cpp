@@ -75,6 +75,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, const  CTxMemPool
     // Blockchain contextual information (confirmations and blocktime) is not
     // available to code in bitcoin-common, so we query them here and push the
     // data into the returned UniValue.
+    TxToUniv(tx, /*block_hash=*/uint256(), entry, /*include_hex=*/true, txundo, verbosity);
 
     uint256 txid = tx.GetHash();
     CSpentIndexTxInfo *txSpentInfoPtr{nullptr};
@@ -302,7 +303,7 @@ static RPCHelpMan getrawtransaction()
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, errmsg + ". Use gettransaction for wallet transactions.");
     }
 
-    if (!fVerbose) {
+    if (verbosity <= 0) {
         return EncodeHexTx(*tx);
     }
 

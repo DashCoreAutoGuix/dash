@@ -787,8 +787,7 @@ RPCHelpMan gettransaction()
     ListTransactions(*pwallet, wtx, 0, false, details, filter, nullptr /* filter_label */);
     entry.pushKV("details", details);
 
-    std::string strHex = EncodeHexTx(*wtx.tx);
-    entry.pushKV("hex", strHex);
+    entry.pushKV("hex", EncodeHexTx(*wtx.tx));
 
     if (verbose) {
         UniValue decoded(UniValue::VOBJ);

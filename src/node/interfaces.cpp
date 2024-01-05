@@ -994,7 +994,7 @@ public:
     {
         RPCRunLater(name, std::move(fn), seconds);
     }
-    util::SettingsValue getSetting(const std::string& name) override
+    common::SettingsValue getSetting(const std::string& name) override
     {
         return gArgs.GetSetting(name);
     }

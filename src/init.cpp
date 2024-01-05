@@ -763,7 +763,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-rpcexternaluser=<users>", "List of comma-separated usernames for JSON-RPC external connections", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::RPC);
     argsman.AddArg("-rpcexternalworkqueue=<n>", strprintf("Set the depth of the work queue to service external RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::RPC);
     argsman.AddArg("-rpcpassword=<pw>", "Password for JSON-RPC connections", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::RPC);
-    argsman.AddArg("-rpcport=<port>", strprintf("Listen for JSON-RPC connections on <port> (default: %u, testnet: %u, regtest: %u)", defaultBaseParams->RPCPort(), testnetBaseParams->RPCPort(), regtestBaseParams->RPCPort()), ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::RPC);
+    argsman.AddArg("-rpcport=<port>", strprintf("Listen for JSON-RPC connections on <port> (default: %u, testnet: %u, signet: %u, regtest: %u)", defaultBaseParams->RPCPort(), testnetBaseParams->RPCPort(), signetBaseParams->RPCPort(), regtestBaseParams->RPCPort()), ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::RPC);
     argsman.AddArg("-rpcservertimeout=<n>", strprintf("Timeout during HTTP requests (default: %d)", DEFAULT_HTTP_SERVER_TIMEOUT), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::RPC);
     argsman.AddArg("-rpcthreads=<n>", strprintf("Set the number of threads to service RPC calls (default: %d)", DEFAULT_HTTP_THREADS), ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::RPC);
@@ -1352,49 +1352,26 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     if (args.GetBoolArg("-peerbloomfilters", DEFAULT_PEERBLOOMFILTERS))
         nLocalServices = ServiceFlags(nLocalServices | NODE_BLOOM);
 
-    nMaxTipAge = args.GetIntArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
-
-    if (args.GetBoolArg("-reindex-chainstate", false)) {
-        // indexes that must be deactivated to prevent index corruption, see #24630
-        if (args.GetBoolArg("-coinstatsindex", DEFAULT_COINSTATSINDEX)) {
-            return InitError(_("-reindex-chainstate option is not compatible with -coinstatsindex. Please temporarily disable coinstatsindex while using -reindex-chainstate, or replace -reindex-chainstate with -reindex to fully rebuild all indexes."));
+    // Also report errors from parsing before daemonization
+    {
+        kernel::Notifications notifications{};
+        ChainstateManager::Options chainman_opts_dummy{
+            .chainparams = chainparams,
+            .datadir = args.GetDataDirNet(),
+            .notifications = notifications,
+        };
+        auto chainman_result{ApplyArgsManOptions(args, chainman_opts_dummy)};
+        if (!chainman_result) {
+            return InitError(util::ErrorString(chainman_result));
         }
-        if (g_enabled_filter_types.count(BlockFilterType::BASIC_FILTER)) {
-            return InitError(_("-reindex-chainstate option is not compatible with -blockfilterindex. Please temporarily disable blockfilterindex while using -reindex-chainstate, or replace -reindex-chainstate with -reindex to fully rebuild all indexes."));
-        }
-        if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
-            return InitError(_("-reindex-chainstate option is not compatible with -txindex. Please temporarily disable txindex while using -reindex-chainstate, or replace -reindex-chainstate with -reindex to fully rebuild all indexes."));
-        }
-    }
-
-    try {
-        const bool fRecoveryEnabled{llmq::QuorumDataRecoveryEnabled()};
-        const bool fQuorumVvecRequestsEnabled{llmq::GetEnabledQuorumVvecSyncEntries().size() > 0};
-        if (!fRecoveryEnabled && fQuorumVvecRequestsEnabled) {
-            InitWarning(Untranslated("-llmq-qvvec-sync set but recovery is disabled due to -llmq-data-recovery=0"));
-        }
-    } catch (const std::invalid_argument& e) {
-        return InitError(Untranslated(e.what()));
-    }
-
-    if (args.IsArgSet("-masternodeblsprivkey")) {
-        if (!args.GetBoolArg("-listen", DEFAULT_LISTEN) && Params().RequireRoutableExternalIP()) {
-            return InitError(Untranslated("Masternode must accept connections from outside, set -listen=1"));
-        }
-        if (!args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
-            return InitError(Untranslated("Masternode must have transaction index enabled, set -txindex=1"));
-        }
-        if (!args.GetBoolArg("-peerbloomfilters", DEFAULT_PEERBLOOMFILTERS)) {
-            return InitError(Untranslated("Masternode must have bloom filters enabled, set -peerbloomfilters=1"));
-        }
-        if (args.GetIntArg("-prune", 0) > 0) {
-            return InitError(Untranslated("Masternode must have no pruning enabled, set -prune=0"));
-        }
-        if (args.GetIntArg("-maxconnections", DEFAULT_MAX_PEER_CONNECTIONS) < DEFAULT_MAX_PEER_CONNECTIONS) {
-            return InitError(strprintf(Untranslated("Masternode must be able to handle at least %d connections, set -maxconnections=%d"), DEFAULT_MAX_PEER_CONNECTIONS, DEFAULT_MAX_PEER_CONNECTIONS));
-        }
-        if (args.GetBoolArg("-disablegovernance", !DEFAULT_GOVERNANCE_ENABLE)) {
-            return InitError(_("You can not disable governance validation on a masternode."));
+        BlockManager::Options blockman_opts_dummy{
+            .chainparams = chainman_opts_dummy.chainparams,
+            .blocks_dir = args.GetBlocksDirPath(),
+            .notifications = chainman_opts_dummy.notifications,
+        };
+        auto blockman_result{ApplyArgsManOptions(args, blockman_opts_dummy)};
+        if (!blockman_result) {
+            return InitError(util::ErrorString(blockman_result));
         }
     }
 

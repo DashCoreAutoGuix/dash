@@ -152,8 +152,8 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
 
 std::string EncodeHexTx(const CTransaction& tx)
 {
-    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
-    ssTx << tx;
+    DataStream ssTx;
+    ssTx << TX_WITH_WITNESS(tx);
     return HexStr(ssTx);
 }
 
@@ -178,7 +178,7 @@ void ScriptToUniv(const CScript& script, UniValue& out, bool include_hex, bool i
     out.pushKV("type", GetTxnOutputType(type));
 }
 
-void TxToUniv(const CTransaction& tx, const uint256& block_hash, UniValue& entry, bool include_hex, int serialize_flags, const CTxUndo* txundo, TxVerbosity verbosity, const CSpentIndexTxInfo* ptxSpentInfo)
+void TxToUniv(const CTransaction& tx, const uint256& block_hash, UniValue& entry, bool include_hex, const CTxUndo* txundo, TxVerbosity verbosity, const CSpentIndexTxInfo* ptxSpentInfo)
 {
     CHECK_NONFATAL(verbosity >= TxVerbosity::SHOW_DETAILS);
 
