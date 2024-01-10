@@ -4632,6 +4632,11 @@ void PeerManagerImpl::ProcessMessage(
             }
         }
 
+        if (received_new_header) {
+            LogInfo("Saw new cmpctblock header hash=%s peer=%d\n",
+                blockhash.ToString(), pfrom.GetId());
+        }
+
         // When we succeed in decoding a block's txids from a cmpctblock
         // message we typically jump to the BLOCKTXN handling code, with a
         // dummy (empty) BLOCKTXN message, to re-use the logic there in
