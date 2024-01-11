@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
+#\!/usr/bin/env python3
 # Copyright (c) 2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Stress tests related to node initialization."""
-import os
 from pathlib import Path
+import platform
 from random import randint
 import shutil
 
 from test_framework.test_framework import BitcoinTestFramework, SkipTest
 from test_framework.test_node import ErrorMatch
 from test_framework.util import assert_equal
+EOF < /dev/null
 
 
 class InitStressTest(BitcoinTestFramework):
@@ -34,7 +35,7 @@ class InitStressTest(BitcoinTestFramework):
         # and other approaches (like below) don't work:
         #
         #   os.kill(node.process.pid, signal.CTRL_C_EVENT)
-        if os.name == 'nt':
+        if platform.system() == 'Windows':
             raise SkipTest("can't SIGTERM on Windows")
 
         self.stop_node(0)

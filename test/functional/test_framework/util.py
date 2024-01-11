@@ -13,9 +13,12 @@ import inspect
 import json
 import logging
 import os
+import pathlib
+import platform
 import random
-import shutil
 import re
+import shutil
+import sys
 import time
 import urllib.parse
 
@@ -418,7 +421,23 @@ def write_config(config_path, *, n, chain, extra_config=""):
 
 
 def get_datadir_path(dirname, n):
-    return os.path.join(dirname, "node" + str(n))
+    return pathlib.Path(dirname) / f"node{n}"
+
+
+def get_temp_default_datadir(temp_dir: pathlib.Path) -> tuple[dict, pathlib.Path]:
+    """Return os-specific environment variables that can be set to make the
+    GetDefaultDataDir() function return a datadir path under the provided
+    temp_dir, as well as the complete path it would return."""
+    if platform.system() == "Windows":
+        env = dict(APPDATA=str(temp_dir))
+        datadir = temp_dir / "Dash Core"
+    else:
+        env = dict(HOME=str(temp_dir))
+        if platform.system() == "Darwin":
+            datadir = temp_dir / "Library/Application Support/DashCore"
+        else:
+            datadir = temp_dir / ".dashcore"
+    return env, datadir
 
 
 def append_config(datadir, options):

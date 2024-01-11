@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#\!/usr/bin/env python3
 # Copyright (c) 2017-2020 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,9 @@ from enum import Enum
 import http.client
 import json
 import logging
+import os
 import os.path
+import platform
 import re
 import subprocess
 import tempfile
@@ -27,9 +29,6 @@ from .descriptors import descsum_create
 from .messages import NODE_P2P_V2
 from .p2p import P2P_SERVICES, P2P_SUBVERSION
 from .util import (
-    MAX_NODES,
-    assert_equal,
-    append_config,
     delete_cookie_file,
     get_auth_cookie,
     get_rpc_proxy,
@@ -553,7 +552,7 @@ class TestNode():
                 cmd, shell=True,
                 stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL) == 0
 
-        if not sys.platform.startswith('linux'):
+        if platform.system() != 'Linux':
             self.log.warning("Can't profile with perf; only available on Linux platforms")
             return None
 
