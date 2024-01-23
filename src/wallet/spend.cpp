@@ -1050,8 +1050,11 @@ std::optional<CreatedTransactionResult> CreateTransaction(
     LOCK(wallet.cs_wallet);
 
     std::optional<CreatedTransactionResult> txr_ungrouped = CreateTransactionInternal(wallet, vecSend, change_pos, error, coin_control, fee_calc_out, sign, nExtraPayloadSize);
-    TRACE4(coin_selection, normal_create_tx_internal, wallet.GetName().c_str(), txr_ungrouped.has_value(),
-           txr_ungrouped.has_value() ? txr_ungrouped->fee : 0, txr_ungrouped.has_value() ? txr_ungrouped->change_pos : 0);
+    TRACE4(coin_selection, normal_create_tx_internal,
+           wallet.GetName().c_str(),
+           txr_ungrouped.has_value(),
+           txr_ungrouped.has_value() ? txr_ungrouped->fee : 0,
+           txr_ungrouped.has_value() && txr_ungrouped->change_pos != -1 ? txr_ungrouped->change_pos : -1);
     if (!txr_ungrouped) return std::nullopt;
     // try with avoidpartialspends unless it's enabled already
     if (txr_ungrouped->fee > 0 /* 0 means non-functional fee rate estimation */ && wallet.m_max_aps_fee > -1 && !coin_control.m_avoid_partial_spends) {
@@ -1069,8 +1072,12 @@ std::optional<CreatedTransactionResult> CreateTransaction(
         std::optional<CreatedTransactionResult> txr_grouped = CreateTransactionInternal(wallet, vecSend, change_pos, error2, tmp_cc, fee_calc_out, sign, nExtraPayloadSize);
         // if fee of this alternative one is within the range of the max fee, we use this one
         const bool use_aps{txr_grouped.has_value() ? (txr_grouped->fee <= txr_ungrouped->fee + wallet.m_max_aps_fee) : false};
-        TRACE5(coin_selection, aps_create_tx_internal, wallet.GetName().c_str(), use_aps, txr_grouped.has_value(),
-               txr_grouped.has_value() ? txr_grouped->fee : 0, txr_grouped.has_value() ? txr_grouped->change_pos : 0);
+        TRACE5(coin_selection, aps_create_tx_internal,
+               wallet.GetName().c_str(),
+               use_aps,
+               txr_grouped.has_value(),
+               txr_grouped.has_value() ? txr_grouped->fee : 0,
+               txr_grouped.has_value() && txr_grouped->change_pos != -1 ? txr_grouped->change_pos : -1);
         if (txr_grouped) {
             wallet.WalletLogPrintf("Fee non-grouped = %lld, grouped = %lld, using %s\n",
                 txr_ungrouped->fee, txr_grouped->fee, use_aps ? "grouped" : "non-grouped");
