@@ -5248,6 +5248,15 @@ void CChainState::CheckBlockIndex()
             // Checks for not-conflciting blocks.
             assert((pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK) == 0); // The conflicting mask cannot be set for blocks without conflicting parents.
         }
+        // Make sure nChainTx sum is correctly computed.
+        unsigned int prev_chain_tx = pindex->pprev ? pindex->pprev->nChainTx : 0;
+        assert((pindex->nChainTx == pindex->nTx + prev_chain_tx)
+               // Transaction may be completely unset - happens if only the header was accepted but the block hasn't been processed.
+               || (pindex->nChainTx == 0 && pindex->nTx == 0)
+               // nChainTx may be unset, but nTx set (if a block has been accepted, but one of its predecessors hasn't been processed yet)
+               || (pindex->nChainTx == 0 && prev_chain_tx == 0 && pindex->pprev)
+               // Transaction counts prior to snapshot are unknown.
+               || pindex->IsAssumedValid());
         if (!CBlockIndexWorkComparator()(pindex, m_chain.Tip()) && pindexFirstNeverProcessed == nullptr) {
             if (pindexFirstInvalid == nullptr && pindexFirstConflicing == nullptr) {
                 const bool is_active = this == &m_chainman.ActiveChainstate();
