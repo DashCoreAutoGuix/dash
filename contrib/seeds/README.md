@@ -5,6 +5,11 @@ Utility to generate the seeds.txt list that is compiled into the client
 
 The seeds compiled into the release are created from the current protx list, like this:
 
+Be sure to update `PATTERN_AGENT` in `makeseeds.py` to include the current version,
+and remove old versions as necessary (at a minimum when SeedsServiceFlags()
+changes its default return value, as those are the services which seeds are added
+to addrman with).
+
 ```bash
 dash-cli protx list valid 1 2018966 > protx_list.json
 
