@@ -9,6 +9,14 @@
 
 class FuzzedDataProvider;
 
-CNetAddr ConsumeNetAddr(FuzzedDataProvider& fuzzed_data_provider) noexcept;
+/**
+ * Create a CNetAddr. It may have `addr.IsValid() == false`.
+ * @param[in,out] fuzzed_data_provider Take data for the address from this, if `rand` is `nullptr`.
+ * @param[in,out] rand If not nullptr, take data from it instead of from `fuzzed_data_provider`.
+ * Prefer generating addresses using `fuzzed_data_provider` because it is not uniform. Only use
+ * `rand` if `fuzzed_data_provider` is exhausted or its data is needed for other things.
+ * @return a "random" network address.
+ */
+CNetAddr ConsumeNetAddr(FuzzedDataProvider& fuzzed_data_provider, FastRandomContext* rand = nullptr) noexcept;
 
 #endif // BITCOIN_TEST_FUZZ_UTIL_NET_H
