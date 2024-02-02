@@ -1057,6 +1057,11 @@ public:
 
     //! Add a descriptor to the wallet, return a ScriptPubKeyMan & associated output type
     ScriptPubKeyMan* AddWalletDescriptor(WalletDescriptor& desc, const FlatSigningProvider& signing_provider, const std::string& label, bool internal) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+
+    //! Add scriptPubKeys for this ScriptPubKeyMan into the scriptPubKey cache
+    void CacheNewScriptPubKeys(const std::set<CScript>& spks, ScriptPubKeyMan* spkm);
+
+    void TopUpCallback(const std::set<CScript>& spks, ScriptPubKeyMan* spkm) override;
 };
 
 /**

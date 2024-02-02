@@ -25,6 +25,12 @@
 #include <optional>
 
 namespace wallet {
+<<<<<<< HEAD
+=======
+struct MigrationData;
+class ScriptPubKeyMan;
+
+>>>>>>> 99a0cddbc0 (wallet: Introduce a callback called after TopUp completes)
 // Wallet storage things that ScriptPubKeyMans need in order to be able to store things to the wallet database.
 // It provides access to things that are part of the entire wallet and not specific to a ScriptPubKeyMan such as
 // wallet flags, wallet version, encryption keys, encryption status, and the database itself. This allows a
@@ -44,6 +50,8 @@ public:
     virtual bool WithEncryptionKey(std::function<bool (const CKeyingMaterial&)> cb) const = 0;
     virtual bool HasEncryptionKeys() const = 0;
     virtual bool IsLocked(bool fForMixing) const = 0;
+    //! Callback function for after TopUp completes containining any scripts that were added by a SPKMan
+    virtual void TopUpCallback(const std::set<CScript>&, ScriptPubKeyMan*) = 0;
 
     // for LegacyScriptPubKeyMan::TopUpInner needs:
     virtual void UpdateProgress(const std::string&, int) = 0;
