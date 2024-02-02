@@ -16,6 +16,7 @@
 #include <sync.h>
 #include <test/util/chainstate.h>
 #include <test/util/setup_common.h>
+#include <test/util/validation.h>
 #include <uint256.h>
 #include <validation.h>
 #include <validationinterface.h>

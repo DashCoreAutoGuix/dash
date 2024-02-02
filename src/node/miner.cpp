@@ -19,9 +19,8 @@
 #include <policy/policy.h>
 #include <pow.h>
 #include <primitives/transaction.h>
-#include <timedata.h>
 #include <util/moneystr.h>
-#include <util/system.h>
+#include <util/time.h>
 #include <validation.h>
 
 #include <evo/specialtx.h>

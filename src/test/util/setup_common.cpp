@@ -32,6 +32,9 @@
 #include <shutdown.h>
 #include <streams.h>
 #include <test/util/index.h>
+#include <test/util/net.h>
+#include <test/util/random.h>
+#include <test/util/txmempool.h>
 #include <txdb.h>
 #include <util/strencodings.h>
 #include <util/string.h>
