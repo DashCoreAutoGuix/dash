@@ -3925,6 +3925,9 @@ ScriptPubKeyMan* CWallet::AddWalletDescriptor(WalletDescriptor& desc, const Flat
 
 void CWallet::CacheNewScriptPubKeys(const std::set<CScript>& spks, ScriptPubKeyMan* spkm)
 {
+    for (const auto& script : spks) {
+        m_cached_spks[script].push_back(spkm);
+    }
 }
 
 void CWallet::TopUpCallback(const std::set<CScript>& spks, ScriptPubKeyMan* spkm)
@@ -4038,6 +4041,8 @@ bool CWallet::ApplyMigrationData(MigrationData& data, bilingual_str& error)
         CTxDestination dest;
         if (ExtractDestination(script, dest)) not_migrated_dests.emplace(dest);
     }
+
+    Assume(!m_cached_spks.empty());
 
     for (auto& desc_spkm : data.desc_spkms) {
         if (m_spk_managers.count(desc_spkm->GetID()) > 0) {
@@ -4481,15 +4486,5 @@ util::Result<MigrationResult> MigrateLegacyToDescriptor(const std::string& walle
         return util::Error{error};
     }
     return res;
-}
-
-void CWallet::CacheNewScriptPubKeys(const std::set<CScript>& spks, ScriptPubKeyMan* spkm)
-{
-}
-
-void CWallet::TopUpCallback(const std::set<CScript>& spks, ScriptPubKeyMan* spkm)
-{
-    // Update scriptPubKey cache
-    CacheNewScriptPubKeys(spks, spkm);
 }
 } // namespace wallet
