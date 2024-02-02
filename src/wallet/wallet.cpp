@@ -3673,11 +3673,17 @@ ScriptPubKeyMan* CWallet::GetScriptPubKeyMan(bool internal) const
 std::set<ScriptPubKeyMan*> CWallet::GetScriptPubKeyMans(const CScript& script, SignatureData& sigdata) const
 {
     std::set<ScriptPubKeyMan*> spk_mans;
-    for (const auto& spk_man_pair : m_spk_managers) {
-        if (spk_man_pair.second->CanProvide(script, sigdata)) {
-            spk_mans.insert(spk_man_pair.second.get());
-        }
+
+    // Search the cache for relevant SPKMs instead of iterating m_spk_managers
+    const auto& it = m_cached_spks.find(script);
+    if (it != m_cached_spks.end()) {
+        spk_mans.insert(it->second.begin(), it->second.end());
     }
+    Assume(std::all_of(spk_mans.begin(), spk_mans.end(), [&script, &sigdata](ScriptPubKeyMan* spkm) { return spkm->CanProvide(script, sigdata); }));
+
+    // Legacy wallet
+    if (IsLegacy() && GetLegacyScriptPubKeyMan()->CanProvide(script, sigdata)) spk_mans.insert(GetLegacyScriptPubKeyMan());
+
     return spk_mans;
 }
 
