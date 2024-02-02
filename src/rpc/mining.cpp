@@ -31,6 +31,7 @@
 #include <script/descriptor.h>
 #include <script/script.h>
 #include <script/sign.h>
+#include <script/signingprovider.h>
 #include <shutdown.h>
 #include <spork.h>
 #include <txmempool.h>
@@ -39,6 +40,7 @@
 #include <util/strencodings.h>
 #include <util/string.h>
 #include <util/system.h>
+#include <util/time.h>
 #include <util/translation.h>
 #include <validation.h>
 #include <validationinterface.h>
