@@ -974,7 +974,6 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
     return result;
 }
 
-<<<<<<< HEAD
 DBErrors WalletBatch::FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWalletTx>& vWtx)
 {
     DBErrors result = DBErrors::LOAD_OK;
@@ -1064,9 +1063,8 @@ DBErrors WalletBatch::ZapSelectTx(std::vector<uint256>& vTxHashIn, std::vector<u
     return DBErrors::LOAD_OK;
 }
 
-bool RunWithinTxn(WalletDatabase& database, std::string_view process_desc, const std::function<bool(WalletBatch&)>& func)
+static bool RunWithinTxn(WalletBatch& batch, std::string_view process_desc, const std::function<bool(WalletBatch&)>& func)
 {
-    WalletBatch batch(database);
     if (!batch.TxnBegin()) {
         LogPrint(BCLog::WALLETDB, "Error: cannot create db txn for %s\n", process_desc);
         return false;
@@ -1086,6 +1084,12 @@ bool RunWithinTxn(WalletDatabase& database, std::string_view process_desc, const
 
     // All good
     return true;
+}
+
+bool RunWithinTxn(WalletDatabase& database, std::string_view process_desc, const std::function<bool(WalletBatch&)>& func)
+{
+    WalletBatch batch(database);
+    return RunWithinTxn(batch, process_desc, func);
 }
 
 void MaybeCompactWalletDB(WalletContext& context)
@@ -1149,6 +1153,15 @@ bool WalletBatch::WriteHDPubKey(const CHDPubKey& hdPubKey, const CKeyMetadata& k
 bool WalletBatch::WriteWalletFlags(const uint64_t flags)
 {
     return WriteIC(DBKeys::FLAGS, flags);
+}
+
+bool WalletBatch::EraseRecords(const std::unordered_set<std::string>& types)
+{
+    return RunWithinTxn(*this, "erase records", [&types](WalletBatch& self) {
+        return std::all_of(types.begin(), types.end(), [&self](const std::string& type) {
+            return self.m_batch->ErasePrefix(DataStream() << type);
+        });
+    });
 }
 
 bool WalletBatch::TxnBegin()
