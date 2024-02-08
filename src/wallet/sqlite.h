@@ -29,6 +29,18 @@ private:
     sqlite3_stmt* m_delete_stmt{nullptr};
     sqlite3_stmt* m_cursor_stmt{nullptr};
 
+    /** Whether this batch has started a database transaction and whether it owns SQLiteDatabase::m_write_semaphore.
+     * If the batch starts a db tx, it acquires the semaphore and sets this to true, keeping the semaphore
+     * until the transaction ends to prevent other batch objects from writing to the database.
+     *
+     * If this batch did not start a transaction, the semaphore is acquired transiently when writing and m_txn
+     * is not set.
+     *
+     * m_txn is different from HasActiveTxn() as it is only true when this batch has started the transaction,
+     * not just when any batch has started a transaction.
+     */
+    bool m_txn{false};
+
     void SetupSQLStatements();
 
     bool ReadKey(CDataStream&& key, CDataStream& value) override;
@@ -82,6 +94,10 @@ public:
     SQLiteDatabase(const fs::path& dir_path, const fs::path& file_path, const DatabaseOptions& options, bool mock = false);
 
     ~SQLiteDatabase();
+
+    // Batches must acquire this semaphore on writing, and release when done writing.
+    // This ensures that only one batch is modifying the database at a time.
+    CSemaphore m_write_semaphore;
 
     bool Verify(bilingual_str& error);
 
