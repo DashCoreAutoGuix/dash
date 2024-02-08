@@ -2268,8 +2268,15 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const std::string& s
 
 bool CWallet::DelAddressBook(const CTxDestination& address)
 {
+    return RunWithinTxn(GetDatabase(), /*process_desc=*/"address book entry removal", [&](WalletBatch& batch){
+        return DelAddressBookWithDB(batch, address);
+    });
+}
+
+bool CWallet::DelAddressBookWithDB(WalletBatch& batch, const CTxDestination& address)
+{
     bool is_mine;
-    WalletBatch batch(GetDatabase());
+    const std::string& dest = EncodeDestination(address);
     {
         LOCK(cs_wallet);
         // If we want to delete receiving addresses, we need to take care that DestData "used" (and possibly newer DestData) gets preserved (and the "deleted" address transformed into a change entry instead of actually being deleted)
