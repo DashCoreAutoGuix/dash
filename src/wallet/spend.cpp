@@ -392,16 +392,37 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
 {
     // Vector of results. We will choose the best one based on waste.
     std::vector<SelectionResult> results;
+    std::vector<util::Result<SelectionResult>> errors;
+    auto append_error = [&] (const util::Result<SelectionResult>& result) {
+        // If any specific error message appears here, then something different from a simple "no selection found" happened.
+        // Let's save it, so it can be retrieved to the user if no other selection algorithm succeeded.
+        if (result.has_value() == false && result.GetFailure().has_value()) {
+            errors.emplace_back(result);
+        }
+    };
+
+    // Maximum allowed weight
+    int max_inputs_weight = MAX_STANDARD_TX_WEIGHT - (coin_selection_params.tx_noinputs_size * WITNESS_SCALE_FACTOR);
+
+    // Knapsack, SRD, and CoinGrinder will create change, deduce change weight
+    max_inputs_weight -= (coin_selection_params.change_output_size * WITNESS_SCALE_FACTOR);
+
+    // For compatibility with Bitcoin, create a Groups structure
+    struct Groups {
+        std::vector<OutputGroup> positive_group;
+        std::vector<OutputGroup> mixed_group;
+    } groups;
+    groups.positive_group = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, true /* positive_only */);
+    groups.mixed_group = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, false /* positive_only */);
 
     // Note that unlike KnapsackSolver, we do not include the fee for creating a change output as BnB will not create a change output.
-    std::vector<OutputGroup> positive_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, true /* positive_only */);
-    positive_groups.clear(); // Cleared to skip BnB and SRD as they're unaware of mixed coins
-    if (auto bnb_result{SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change)}) {
+    // Skip BnB and initial SRD as they're unaware of mixed coins
+    groups.positive_group.clear(); // Cleared to skip BnB and SRD as they're unaware of mixed coins
+    if (auto bnb_result{SelectCoinsBnB(groups.positive_group, nTargetValue, coin_selection_params.m_cost_of_change)}) {
         results.push_back(*bnb_result);
     }
 
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
-    std::vector<OutputGroup> all_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, false /* positive_only */);
     CAmount target_with_change = nTargetValue;
     // While nTargetValue includes the transaction fees for non-input things, it does not include the fee for creating a change output.
     // So we need to include that for KnapsackSolver as well, as we are expecting to create a change output.
@@ -409,22 +430,32 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     if (!coin_selection_params.m_subtract_fee_outputs && nCoinType != CoinType::ONLY_FULLY_MIXED) {
         target_with_change += coin_selection_params.m_change_fee;
     }
-    if (auto knapsack_result{KnapsackSolver(all_groups, target_with_change, coin_selection_params.m_min_change_target,
+    if (auto knapsack_result{KnapsackSolver(groups.mixed_group, target_with_change, coin_selection_params.m_min_change_target,
                                             coin_selection_params.rng_fast, nCoinType == CoinType::ONLY_FULLY_MIXED,
                                             wallet.m_default_max_tx_fee)}) {
         knapsack_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
         results.push_back(*knapsack_result);
+    } else append_error(knapsack_result);
+
+    if (coin_selection_params.m_effective_feerate > CFeeRate{3 * coin_selection_params.m_long_term_feerate}) { // Minimize input set for feerates of at least 3×LTFRE (default: 30 ṩ/vB+)
+        if (auto cg_result{CoinGrinder(groups.positive_group, nTargetValue, coin_selection_params.m_min_change_target, max_inputs_weight)}) {
+            cg_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
+            results.push_back(*cg_result);
+        } else {
+            append_error(cg_result);
+        }
     }
 
-    // Include change for SRD as we want to avoid making really small change if the selection just
-    // barely meets the target. Just use the lower bound change target instead of the randomly
-    // generated one, since SRD will result in a random change amount anyway; avoid making the
-    // target needlessly large.
-    const CAmount srd_target = target_with_change + CHANGE_LOWER;
-    if (auto srd_result{SelectCoinsSRD(positive_groups, srd_target, coin_selection_params.rng_fast)}) {
-        srd_result->ComputeAndSetWaste(coin_selection_params.m_cost_of_change);
+    if (auto srd_result{SelectCoinsSRD(groups.positive_group, nTargetValue, coin_selection_params.m_change_fee, coin_selection_params.rng_fast, max_inputs_weight)}) {
         results.push_back(*srd_result);
+    } else append_error(srd_result);
+
+    if (results.empty()) {
+        // No solution found, retrieve the first explicit error (if any).
+        // future: add 'severity level' to errors so the worst one can be retrieved instead of the first one.
+        return errors.empty() ? util::Error() : errors.front();
     }
+
 
     if (results.size() == 0) {
         // No solution found
