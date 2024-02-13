@@ -194,6 +194,7 @@ private:
     bool WriteKey(CDataStream&& key, CDataStream&& value, bool overwrite = true) override;
     bool EraseKey(CDataStream&& key) override;
     bool HasKey(CDataStream&& key) override;
+    bool ErasePrefix(Span<const std::byte> prefix) override;
 
 protected:
     Db* pdb;

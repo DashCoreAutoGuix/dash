@@ -456,6 +456,43 @@ BOOST_AUTO_TEST_CASE(LoadReceiveRequests)
     BOOST_CHECK_EQUAL(values[1], "val_rr1");
 }
 
+BOOST_FIXTURE_TEST_CASE(LoadReceiveRequests, TestingSetup)
+{
+    for (DatabaseFormat format : DATABASE_FORMATS) {
+        const std::string name{strprintf("receive-requests-%i", format)};
+        TestLoadWallet(name, format, [](std::shared_ptr<CWallet> wallet) EXCLUSIVE_LOCKS_REQUIRED(wallet->cs_wallet) {
+            BOOST_CHECK(!wallet->IsAddressPreviouslySpent(PKHash()));
+            WalletBatch batch{wallet->GetDatabase()};
+            BOOST_CHECK(batch.WriteAddressPreviouslySpent(PKHash(), true));
+            BOOST_CHECK(batch.WriteAddressPreviouslySpent(ScriptHash(), true));
+            BOOST_CHECK(wallet->SetAddressReceiveRequest(batch, PKHash(), "0", "val_rr00"));
+            BOOST_CHECK(wallet->EraseAddressReceiveRequest(batch, PKHash(), "0"));
+            BOOST_CHECK(wallet->SetAddressReceiveRequest(batch, PKHash(), "1", "val_rr10"));
+            BOOST_CHECK(wallet->SetAddressReceiveRequest(batch, PKHash(), "1", "val_rr11"));
+            BOOST_CHECK(wallet->SetAddressReceiveRequest(batch, ScriptHash(), "2", "val_rr20"));
+        });
+        TestLoadWallet(name, format, [](std::shared_ptr<CWallet> wallet) EXCLUSIVE_LOCKS_REQUIRED(wallet->cs_wallet) {
+            BOOST_CHECK(wallet->IsAddressPreviouslySpent(PKHash()));
+            BOOST_CHECK(wallet->IsAddressPreviouslySpent(ScriptHash()));
+            auto requests = wallet->GetAddressReceiveRequests();
+            auto erequests = {"val_rr11", "val_rr20"};
+            BOOST_CHECK_EQUAL_COLLECTIONS(requests.begin(), requests.end(), std::begin(erequests), std::end(erequests));
+            RunWithinTxn(wallet->GetDatabase(), /*process_desc*/"test", [](WalletBatch& batch){
+                BOOST_CHECK(batch.WriteAddressPreviouslySpent(PKHash(), false));
+                BOOST_CHECK(batch.EraseAddressData(ScriptHash()));
+                return true;
+            });
+        });
+        TestLoadWallet(name, format, [](std::shared_ptr<CWallet> wallet) EXCLUSIVE_LOCKS_REQUIRED(wallet->cs_wallet) {
+            BOOST_CHECK(!wallet->IsAddressPreviouslySpent(PKHash()));
+            BOOST_CHECK(!wallet->IsAddressPreviouslySpent(ScriptHash()));
+            auto requests = wallet->GetAddressReceiveRequests();
+            auto erequests = {"val_rr11"};
+            BOOST_CHECK_EQUAL_COLLECTIONS(requests.begin(), requests.end(), std::begin(erequests), std::end(erequests));
+        });
+    }
+}
+
 // Test some watch-only LegacyScriptPubKeyMan methods by the procedure of loading (LoadWatchOnly),
 // checking (HaveWatchOnly), getting (GetWatchPubKey) and removing (RemoveWatchOnly) a
 // given PubKey, resp. its corresponding P2PK Script. Results of the impact on
