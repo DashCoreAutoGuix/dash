@@ -6,7 +6,7 @@ The Dash Core project has been designed to support multiple localisations. This 
 ### Helping to translate (using Transifex)
 Transifex is setup to monitor the GitHub repo for updates, and when code containing new translations is found, Transifex will process any changes. It may take several hours after a pull-request has been merged, to appear in the Transifex web interface.
 
-Multiple language support is critical in assisting Dash’s global adoption, and growth. One of Dash’s greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
+Multiple language support is critical in assisting Dash's global adoption, and growth. One of Dash's greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
 
 See the [Transifex Dash project](https://explore.transifex.com/dash/dash/) to assist in translations. You should also join the translation mailing list for announcements - see details below.
 
@@ -28,7 +28,7 @@ QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
 ```
 
 ### Creating a pull-request
-For general PRs, you shouldn’t include any updates to the translation source files. They will be updated periodically, primarily around pre-releases, allowing time for any new phrases to be translated before public releases. This is also important in avoiding translation related merge conflicts.
+For general PRs, you shouldn't include any updates to the translation source files. They will be updated periodically, primarily around pre-releases, allowing time for any new phrases to be translated before public releases. This is also important in avoiding translation related merge conflicts.
 
 When an updated source file is merged into the GitHub repo, Transifex will automatically detect it (although it can take several hours). Once processed, the new strings will show up as "Remaining" in the Transifex web interface and are ready for translators.
 
@@ -45,29 +45,13 @@ Visit the [Transifex Signup](https://app.transifex.com/signup/) page to create a
 You can find the Dash translation project at <https://explore.transifex.com/dash/dash/>.
 
 ### Installing the Transifex client command-line tool
-The client is used to fetch updated translations. If you are having problems, or need more details, see <https://developers.transifex.com/docs/cli>.
-
-**For Linux and Mac**
-
-`pip install transifex-client`
-
-Setup your Transifex client config as follows. Please *ignore the token field*.
-
-```ini
-nano ~/.transifexrc
-
-[https://www.transifex.com]
-hostname = https://www.transifex.com
-password = PASSWORD
-token =
-username = USERNAME
-```
+The client is used to fetch updated translations. Please check installation instructions and any other details at https://developers.transifex.com/docs/cli.
 
 **For Windows**
 
 Please see <https://developers.transifex.com/docs/cli#download-from-github-releases-linuxmacwindows> for details on installation.
 
-The Transifex Dash project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need to change anything.
+The Transifex Dash project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn't need to change anything.
 
 ### Synchronising translations
 To assist in updating translations, we have created a script to help.
