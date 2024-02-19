@@ -97,6 +97,13 @@ CAmount AmountFromValue(const UniValue& value, int decimals)
     return amount;
 }
 
+CFeeRate ParseFeeRate(const UniValue& json)
+{
+    CAmount val{AmountFromValue(json)};
+    if (val >= COIN) throw JSONRPCError(RPC_INVALID_PARAMETER, "Fee rates larger than or equal to 1BTC/kvB are not accepted");
+    return CFeeRate{val};
+}
+
 uint256 ParseHashV(const UniValue& v, std::string strName)
 {
     std::string strHex{v.get_str()};
@@ -539,6 +546,52 @@ UniValue RPCHelpMan::HandleRequest(const JSONRPCRequest& request) const
     }
     return m_fun(*this, request);
 }
+
+using CheckFn = void(const RPCArg&);
+static const UniValue* DetailMaybeArg(CheckFn* check, const std::vector<RPCArg>& params, const JSONRPCRequest* req, size_t i)
+{
+    CHECK_NONFATAL(i < params.size());
+    const UniValue& arg{CHECK_NONFATAL(req)->params[i]};
+    const RPCArg& param{params.at(i)};
+    if (check) check(param);
+
+    if (!arg.isNull()) return &arg;
+    if (!std::holds_alternative<RPCArg::Default>(param.m_fallback)) return nullptr;
+    return &std::get<RPCArg::Default>(param.m_fallback);
+}
+
+static void CheckRequiredOrDefault(const RPCArg& param)
+{
+    // Must use `Arg<Type>(i)` to get the argument or its default value.
+    const bool required{
+        std::holds_alternative<RPCArg::Optional>(param.m_fallback) && RPCArg::Optional::NO == std::get<RPCArg::Optional>(param.m_fallback),
+    };
+    CHECK_NONFATAL(required || std::holds_alternative<RPCArg::Default>(param.m_fallback));
+}
+
+#define TMPL_INST(check_param, ret_type, return_code)       \
+    template <>                                             \
+    ret_type RPCHelpMan::ArgValue<ret_type>(size_t i) const \
+    {                                                       \
+        const UniValue* maybe_arg{                          \
+            DetailMaybeArg(check_param, m_args, m_req, i),  \
+        };                                                  \
+        return return_code                                  \
+    }                                                       \
+    void force_semicolon(ret_type)
+
+// Optional arg (without default). Can also be called on required args, if needed.
+TMPL_INST(nullptr, const UniValue*, maybe_arg;);
+TMPL_INST(nullptr, std::optional<double>, maybe_arg ? std::optional{maybe_arg->get_real()} : std::nullopt;);
+TMPL_INST(nullptr, std::optional<bool>, maybe_arg ? std::optional{maybe_arg->get_bool()} : std::nullopt;);
+TMPL_INST(nullptr, const std::string*, maybe_arg ? &maybe_arg->get_str() : nullptr;);
+
+// Required arg or optional arg with default value.
+TMPL_INST(CheckRequiredOrDefault, const UniValue&, *CHECK_NONFATAL(maybe_arg););
+TMPL_INST(CheckRequiredOrDefault, bool, CHECK_NONFATAL(maybe_arg)->get_bool(););
+TMPL_INST(CheckRequiredOrDefault, int, CHECK_NONFATAL(maybe_arg)->getInt<int>(););
+TMPL_INST(CheckRequiredOrDefault, uint64_t, CHECK_NONFATAL(maybe_arg)->getInt<uint64_t>(););
+TMPL_INST(CheckRequiredOrDefault, const std::string&, CHECK_NONFATAL(maybe_arg)->get_str(););
 
 bool RPCHelpMan::IsValidNumArgs(size_t num_args) const
 {
