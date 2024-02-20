@@ -3,7 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#if defined(HAVE_CONFIG_H)
+#include <config/bitcoin-config.h>
+#endif
+
 #include <chainparams.h>
+#include <common/args.h>
 #include <init.h>
 #include <interfaces/chain.h>
 #include <interfaces/coinjoin.h>
