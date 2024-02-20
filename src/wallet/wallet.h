@@ -397,6 +397,16 @@ private:
     // ScriptPubKeyMan::GetID. In many cases it will be the hash of an internal structure
     std::map<uint256, std::unique_ptr<ScriptPubKeyMan>> m_spk_managers;
 
+    // Appends spk managers into the main 'm_spk_managers'.
+    // Must be the only method adding data to it.
+    void AddScriptPubKeyMan(const uint256& id, std::unique_ptr<ScriptPubKeyMan> spkm_man);
+
+    // Same as 'AddActiveScriptPubKeyMan' but designed for use within a batch transaction context
+    void AddActiveScriptPubKeyManWithDb(WalletBatch& batch, uint256 id, OutputType type, bool internal);
+
+    //! Cache of descriptor ScriptPubKeys used for IsMine. Maps ScriptPubKey to set of spkms
+    std::unordered_map<CScript, std::vector<ScriptPubKeyMan*>, SaltedSipHasher> m_cached_spks;
+
     /**
      * Catch wallet up to current chain, scanning new blocks, updating the best
      * block locator and m_last_block_processed, and registering for
@@ -1035,7 +1045,7 @@ public:
     void ConnectScriptPubKeyManNotifiers();
 
     //! Instantiate a descriptor ScriptPubKeyMan from the WalletDescriptor and load it
-    void LoadDescriptorScriptPubKeyMan(uint256 id, WalletDescriptor& desc);
+    DescriptorScriptPubKeyMan& LoadDescriptorScriptPubKeyMan(uint256 id, WalletDescriptor& desc);
 
     //! Adds the active ScriptPubKeyMan for the specified type and internal. Writes it to the wallet file
     //! @param[in] id The unique id for the ScriptPubKeyMan
@@ -1060,6 +1070,28 @@ public:
 
     //! Add a descriptor to the wallet, return a ScriptPubKeyMan & associated output type
     ScriptPubKeyMan* AddWalletDescriptor(WalletDescriptor& desc, const FlatSigningProvider& signing_provider, const std::string& label, bool internal) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+
+    /** Move all records from the BDB database to a new SQLite database for storage.
+     * The original BDB file will be deleted and replaced with a new SQLite file.
+     * A backup is not created.
+     * May crash if something unexpected happens in the filesystem.
+     */
+    bool MigrateToSQLite(bilingual_str& error) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+
+    //! Get all of the descriptors from a legacy wallet
+    std::optional<MigrationData> GetDescriptorsForLegacy(bilingual_str& error) const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+
+    //! Adds the ScriptPubKeyMans given in MigrationData to this wallet, removes LegacyScriptPubKeyMan,
+    //! and where needed, moves tx and address book entries to watchonly_wallet or solvable_wallet
+    bool ApplyMigrationData(MigrationData& data, bilingual_str& error) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+
+    //! Whether the (external) signer performs R-value signature grinding
+    bool CanGrindR() const;
+
+    //! Add scriptPubKeys for this ScriptPubKeyMan into the scriptPubKey cache
+    void CacheNewScriptPubKeys(const std::set<CScript>& spks, ScriptPubKeyMan* spkm);
+
+    void TopUpCallback(const std::set<CScript>& spks, ScriptPubKeyMan* spkm) override;
 };
 
 /**

@@ -630,11 +630,27 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
             uint256 id;
             ssKey >> id;
             WalletDescriptor desc;
-            ssValue >> desc;
+            try {
+                ssValue >> desc;
+            } catch (const std::ios_base::failure& e) {
+                strErr = strprintf("Error: Unrecognized descriptor found in wallet %s. ", pwallet->GetName());
+                strErr += (last_client > CLIENT_VERSION) ? "The wallet might had been created on a newer version. " :
+                        "The database might be corrupted or the software version is not compatible with one of your wallet descriptors. ";
+                strErr += "Please try running the latest software version";
+                // Also include error details
+                strErr = strprintf("%s\nDetails: %s", strErr, e.what());
+                return false;
+            }
             if (wss.m_descriptor_caches.count(id) == 0) {
                 wss.m_descriptor_caches[id] = DescriptorCache();
             }
-            pwallet->LoadDescriptorScriptPubKeyMan(id, desc);
+            DescriptorScriptPubKeyMan& spkm = pwallet->LoadDescriptorScriptPubKeyMan(id, desc);
+            
+            // Prior to doing anything with this spkm, verify ID compatibility
+            if (id != spkm.GetID()) {
+                strErr = "The descriptor ID calculated by the wallet differs from the one in DB";
+                return false;
+            }
         } else if (strType == DBKeys::WALLETDESCRIPTORCACHE) {
             bool parent = true;
             uint256 desc_id;
