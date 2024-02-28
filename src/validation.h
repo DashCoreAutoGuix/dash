@@ -376,6 +376,9 @@ bool TestBlockValidity(BlockValidationState& state,
                        bool fCheckPOW = true,
                        bool fCheckMerkleRoot = true) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
+/** Check if a block has been mutated (with respect to its merkle root and witness commitments). */
+bool IsBlockMutated(const CBlock& block, bool check_witness_root);
+
 /** RAII wrapper for VerifyDB: Verify consistency of the block and coin databases */
 class CVerifyDB {
 public:
