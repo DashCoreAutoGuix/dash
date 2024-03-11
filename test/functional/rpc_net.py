@@ -9,6 +9,10 @@ Tests correspond to code in rpc/net.cpp.
 
 from test_framework.p2p import P2PInterface
 import test_framework.messages
+from test_framework.p2p import (
+    P2PInterface,
+    P2P_SERVICES,
+)
 from test_framework.messages import (
     MAX_PROTOCOL_MESSAGE_LENGTH,
     NODE_NETWORK,
@@ -40,7 +44,25 @@ def assert_net_servicesnames(servicesflag, servicenames):
     assert servicesflag_generated == servicesflag
 
 
+<<<<<<< HEAD
 class NetTest(DashTestFramework):
+=======
+def seed_addrman(node):
+    """ Populate the addrman with addresses from different networks.
+    Here 2 ipv4, 2 ipv6, 1 cjdns, 2 onion and 1 i2p addresses are added.
+    """
+    node.addpeeraddress(address="1.2.3.4", tried=True, port=8333)
+    node.addpeeraddress(address="2.0.0.0", port=8333)
+    node.addpeeraddress(address="1233:3432:2434:2343:3234:2345:6546:4534", tried=True, port=8333)
+    node.addpeeraddress(address="2803:0:1234:abcd::1", port=45324)
+    node.addpeeraddress(address="fc00:1:2:3:4:5:6:7", port=8333)
+    node.addpeeraddress(address="pg6mmjiyjmcrsslvykfwnntlaru7p5svn6y2ymmju6nubxndf4pscryd.onion", tried=True, port=8333)
+    node.addpeeraddress(address="nrfj6inpyf73gpkyool35hcmne5zwfmse3jl3aw23vk7chdemalyaqad.onion", port=45324, tried=True)
+    node.addpeeraddress(address="c4gfnttsuwqomiygupdqqqyy5y5emnk5c73hrfvatri67prd7vyq.b32.i2p", port=8333)
+
+
+class NetTest(BitcoinTestFramework):
+>>>>>>> a945f09fa6 (Merge bitcoin/bitcoin#29007: test: create deterministic addrman in the functional tests)
     def set_test_params(self):
         self.set_dash_test_params(3, 1)
         self.supports_cli = False
@@ -68,6 +90,8 @@ class NetTest(DashTestFramework):
         self.test_getnodeaddresses()
         self.test_addpeeraddress()
         self.test_sendmsgtopeer()
+        self.test_getaddrmaninfo()
+        self.test_getrawaddrman()
 
     def test_connection_count(self):
         self.log.info("Test getconnectioncount")
@@ -320,16 +344,8 @@ class NetTest(DashTestFramework):
         assert_raises_rpc_error(-8, "Network not recognized: Foo", self.nodes[0].getnodeaddresses, 1, "Foo")
 
     def test_addpeeraddress(self):
-        """RPC addpeeraddress sets the source address equal to the destination address.
-        If an address with the same /16 as an existing new entry is passed, it will be
-        placed in the same new bucket and have a 1/64 chance of the bucket positions
-        colliding (depending on the value of nKey in the addrman), in which case the
-        new address won't be added.  The probability of collision can be reduced to
-        1/2^16 = 1/65536 by using an address from a different /16.  We avoid this here
-        by first testing adding a tried table entry before testing adding a new table one.
-        """
         self.log.info("Test addpeeraddress")
-        self.restart_node(1, ["-checkaddrman=1"])
+        self.restart_node(1, ["-checkaddrman=1", "-test=addrman"])
         node = self.nodes[1]
 
         self.log.debug("Test that addpeerinfo is a hidden RPC")
@@ -397,6 +413,148 @@ class NetTest(DashTestFramework):
         zero_byte_string = b'\x00' * int(MAX_PROTOCOL_MESSAGE_LENGTH + 1)
         node.sendmsgtopeer(peer_id=0, msg_type="addr", msg=zero_byte_string.hex())
         self.wait_until(lambda: len(self.nodes[0].getpeerinfo()) == 0, timeout=10)
+
+    def test_getaddrmaninfo(self):
+        self.log.info("Test getaddrmaninfo")
+        self.restart_node(1, extra_args=["-cjdnsreachable", "-test=addrman"], clear_addrman=True)
+        node = self.nodes[1]
+        seed_addrman(node)
+
+        expected_network_count = {
+            'all_networks': {'new': 4, 'tried': 4, 'total': 8},
+            'ipv4': {'new': 1, 'tried': 1, 'total': 2},
+            'ipv6': {'new': 1, 'tried': 1, 'total': 2},
+            'onion': {'new': 0, 'tried': 2, 'total': 2},
+            'i2p': {'new': 1, 'tried': 0, 'total': 1},
+            'cjdns': {'new': 1, 'tried': 0, 'total': 1},
+        }
+
+        self.log.debug("Test that count of addresses in addrman match expected values")
+        res = node.getaddrmaninfo()
+        for network, count in expected_network_count.items():
+            assert_equal(res[network]['new'], count['new'])
+            assert_equal(res[network]['tried'], count['tried'])
+            assert_equal(res[network]['total'], count['total'])
+
+    def test_getrawaddrman(self):
+        self.log.info("Test getrawaddrman")
+        self.restart_node(1, extra_args=["-cjdnsreachable", "-test=addrman"], clear_addrman=True)
+        node = self.nodes[1]
+        self.addr_time = int(time.time())
+        node.setmocktime(self.addr_time)
+        seed_addrman(node)
+
+        self.log.debug("Test that getrawaddrman is a hidden RPC")
+        # It is hidden from general help, but its detailed help may be called directly.
+        assert "getrawaddrman" not in node.help()
+        assert "getrawaddrman" in node.help("getrawaddrman")
+
+        def check_addr_information(result, expected):
+            """Utility to compare a getrawaddrman result entry with an expected entry"""
+            assert_equal(result["address"], expected["address"])
+            assert_equal(result["port"], expected["port"])
+            assert_equal(result["services"], expected["services"])
+            assert_equal(result["network"], expected["network"])
+            assert_equal(result["source"], expected["source"])
+            assert_equal(result["source_network"], expected["source_network"])
+            assert_equal(result["time"], self.addr_time)
+
+        def check_getrawaddrman_entries(expected):
+            """Utility to compare a getrawaddrman result with expected addrman contents"""
+            getrawaddrman = node.getrawaddrman()
+            getaddrmaninfo = node.getaddrmaninfo()
+            for (table_name, table_info) in expected.items():
+                assert_equal(len(getrawaddrman[table_name]), len(table_info))
+                assert_equal(len(getrawaddrman[table_name]), getaddrmaninfo["all_networks"][table_name])
+
+                for bucket_position in getrawaddrman[table_name].keys():
+                    entry = getrawaddrman[table_name][bucket_position]
+                    expected_entry = list(filter(lambda e: e["address"] == entry["address"], table_info))[0]
+                    assert bucket_position == expected_entry["bucket_position"]
+                    check_addr_information(entry, expected_entry)
+
+        # we expect 4 new and 4 tried table entries in the addrman which were added using seed_addrman()
+        expected = {
+            "new": [
+                    {
+                        "bucket_position": "82/8",
+                        "address": "2.0.0.0",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "ipv4",
+                        "source": "2.0.0.0",
+                        "source_network": "ipv4",
+                    },
+                    {
+                        "bucket_position": "336/24",
+                        "address": "fc00:1:2:3:4:5:6:7",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "cjdns",
+                        "source": "fc00:1:2:3:4:5:6:7",
+                        "source_network": "cjdns",
+                    },
+                    {
+                        "bucket_position": "963/46",
+                        "address": "c4gfnttsuwqomiygupdqqqyy5y5emnk5c73hrfvatri67prd7vyq.b32.i2p",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "i2p",
+                        "source": "c4gfnttsuwqomiygupdqqqyy5y5emnk5c73hrfvatri67prd7vyq.b32.i2p",
+                        "source_network": "i2p",
+                    },
+                    {
+                        "bucket_position": "613/6",
+                        "address": "2803:0:1234:abcd::1",
+                        "services": 9,
+                        "network": "ipv6",
+                        "source": "2803:0:1234:abcd::1",
+                        "source_network": "ipv6",
+                        "port": 45324,
+                    }
+            ],
+            "tried": [
+                    {
+                        "bucket_position": "6/33",
+                        "address": "1.2.3.4",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "ipv4",
+                        "source": "1.2.3.4",
+                        "source_network": "ipv4",
+                    },
+                    {
+                        "bucket_position": "197/34",
+                        "address": "1233:3432:2434:2343:3234:2345:6546:4534",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "ipv6",
+                        "source": "1233:3432:2434:2343:3234:2345:6546:4534",
+                        "source_network": "ipv6",
+                    },
+                    {
+                        "bucket_position": "72/61",
+                        "address": "pg6mmjiyjmcrsslvykfwnntlaru7p5svn6y2ymmju6nubxndf4pscryd.onion",
+                        "port": 8333,
+                        "services": 9,
+                        "network": "onion",
+                        "source": "pg6mmjiyjmcrsslvykfwnntlaru7p5svn6y2ymmju6nubxndf4pscryd.onion",
+                        "source_network": "onion"
+                    },
+                    {
+                        "bucket_position": "139/46",
+                        "address": "nrfj6inpyf73gpkyool35hcmne5zwfmse3jl3aw23vk7chdemalyaqad.onion",
+                        "services": 9,
+                        "network": "onion",
+                        "source": "nrfj6inpyf73gpkyool35hcmne5zwfmse3jl3aw23vk7chdemalyaqad.onion",
+                        "source_network": "onion",
+                        "port": 45324,
+                    }
+            ]
+        }
+
+        self.log.debug("Test that getrawaddrman contains information about newly added addresses in each addrman table")
+        check_getrawaddrman_entries(expected)
 
 
 if __name__ == '__main__':

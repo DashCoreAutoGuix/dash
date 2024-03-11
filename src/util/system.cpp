@@ -848,6 +848,18 @@ void PrintExceptionContinue(const std::exception_ptr pex, const char* pszExcepti
     tfm::format(std::cerr, "\n\n************************\n%s\n", message);
 }
 
+const std::vector<std::string> TEST_OPTIONS_DOC{
+    "addrman (use deterministic addrman)",
+};
+
+bool HasTestOption(const ArgsManager& args, const std::string& test_option)
+{
+    const auto options = args.GetArgs("-test");
+    return std::any_of(options.begin(), options.end(), [test_option](const auto& option) {
+        return option == test_option;
+    });
+}
+
 fs::path GetDefaultDataDir()
 {
     // Windows: C:\Users\Username\AppData\Roaming\DashCore

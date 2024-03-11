@@ -272,8 +272,7 @@ std::optional<CService> GetLocalAddrForPeer(CNode& node)
             addrLocal.SetIP(node.GetAddrLocal());
         }
     }
-    if (addrLocal.IsRoutable())
-    {
+    if (addrLocal.IsRoutable()) {
         LogPrint(BCLog::NET, "Advertising address %s to peer=%d\n", addrLocal.ToStringAddrPort(), node.GetId());
         return addrLocal;
     }
