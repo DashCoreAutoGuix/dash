@@ -41,6 +41,7 @@ bench_bench_dash_SOURCES = \
   bench/mempool_stress.cpp \
   bench/nanobench.h \
   bench/nanobench.cpp \
+  bench/parse_hex.cpp \
   bench/peer_eviction.cpp \
   bench/pool.cpp \
   bench/rpc_blockchain.cpp \
