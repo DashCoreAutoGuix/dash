@@ -135,6 +135,8 @@ class ImportRescanTest(BitcoinTestFramework):
         self.num_nodes = 2 + len(IMPORT_NODES)
         self.supports_cli = False
         self.rpc_timeout = 120
+        # whitelist peers to speed up tx relay / mempool sync
+        self.noban_tx_relay = True
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()

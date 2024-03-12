@@ -1619,6 +1619,11 @@ void PeerManagerImpl::InitializeNode(CNode& node, ServiceFlags our_services) {
         LOCK(cs_main);
         m_node_states.emplace_hint(m_node_states.end(), std::piecewise_construct, std::forward_as_tuple(nodeid), std::forward_as_tuple(node.IsInboundConn()));
     }
+
+    if (NetPermissions::HasFlag(node.m_permission_flags, NetPermissionFlags::BloomFilter)) {
+        our_services = static_cast<ServiceFlags>(our_services | NODE_BLOOM);
+    }
+
     PeerRef peer = std::make_shared<Peer>(nodeid, our_services);
     {
         LOCK(m_peer_mutex);
