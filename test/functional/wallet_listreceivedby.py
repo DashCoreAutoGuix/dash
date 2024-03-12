@@ -19,8 +19,9 @@ class ReceivedByTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         # whitelist peers to speed up tx relay / mempool sync
+        self.noban_tx_relay = True
         # Test deprecated exclude coinbase on second node
-        self.extra_args = [["-whitelist=noban@127.0.0.1"], ["-whitelist=noban@127.0.0.1", "-deprecatedrpc=exclude_coinbase"]]
+        self.extra_args = [[], ["-deprecatedrpc=exclude_coinbase"]]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
