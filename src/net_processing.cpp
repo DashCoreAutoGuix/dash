@@ -708,6 +708,20 @@ private:
      */
     bool MaybeDiscourageAndDisconnect(CNode& pnode, Peer& peer);
 
+    /** Handle a transaction whose result was not MempoolAcceptResult::ResultType::VALID.
+     * @param[in]   maybe_add_extra_compact_tx    Whether this tx should be added to vExtraTxnForCompact.
+     *                                            Set to false if the tx has already been rejected before,
+     *                                            e.g. is an orphan, to avoid adding duplicate entries.
+     * Updates m_txrequest, m_recent_rejects, m_orphanage, and vExtraTxnForCompact. */
+    void ProcessInvalidTx(NodeId nodeid, const CTransactionRef& tx, const TxValidationState& result,
+                          bool maybe_add_extra_compact_tx)
+        EXCLUSIVE_LOCKS_REQUIRED(!m_peer_mutex, g_msgproc_mutex, cs_main);
+
+    /** Handle a transaction whose result was MempoolAcceptResult::ResultType::VALID.
+     * Updates m_txrequest, m_orphanage, and vExtraTxnForCompact. Also queues the tx for relay. */
+    void ProcessValidTx(NodeId nodeid, const CTransactionRef& tx, const std::list<CTransactionRef>& replaced_transactions)
+        EXCLUSIVE_LOCKS_REQUIRED(!m_peer_mutex, g_msgproc_mutex, cs_main);
+
     /**
      * Reconsider orphan transactions after a parent has been accepted to the mempool.
      *
@@ -3204,6 +3218,65 @@ void PeerManagerImpl::ProcessHeadersMessage(CNode& pfrom, Peer& peer,
     return;
 }
 
+void PeerManagerImpl::ProcessInvalidTx(NodeId nodeid, const CTransactionRef& ptx, const TxValidationState& state,
+                                       bool maybe_add_extra_compact_tx)
+{
+    AssertLockNotHeld(m_peer_mutex);
+    AssertLockHeld(g_msgproc_mutex);
+    AssertLockHeld(cs_main);
+
+    LogPrint(BCLog::MEMPOOLREJ, "%s from peer=%d was not accepted: %s\n",
+        ptx->GetHash().ToString(),
+        nodeid,
+        state.ToString());
+
+    if (state.GetResult() == TxValidationResult::TX_MISSING_INPUTS) {
+        return;
+    } else {
+        m_recent_rejects.insert(ptx->GetHash());
+        m_txrequest.ForgetTxHash(ptx->GetHash());
+        
+        if (maybe_add_extra_compact_tx && RecursiveDynamicUsage(*ptx) < 100000) {
+            AddToCompactExtraTransactions(ptx);
+        }
+    }
+
+    MaybePunishNodeForTx(nodeid, state);
+    m_llmq_ctx->isman->TransactionRemovedFromMempool(ptx);
+
+    // If the tx failed in ProcessOrphanTx, it should be removed from the orphanage unless the
+    // tx was still missing inputs. If the tx was not in the orphanage, EraseTx does nothing and returns 0.
+    if (Assume(state.GetResult() != TxValidationResult::TX_MISSING_INPUTS) && m_orphanage.EraseTx(ptx->GetHash()) > 0) {
+        LogPrint(BCLog::MEMPOOL, "   removed orphan tx %s\n", ptx->GetHash().ToString());
+    }
+}
+
+void PeerManagerImpl::ProcessValidTx(NodeId nodeid, const CTransactionRef& tx, const std::list<CTransactionRef>& replaced_transactions)
+{
+    AssertLockNotHeld(m_peer_mutex);
+    AssertLockHeld(g_msgproc_mutex);
+    AssertLockHeld(cs_main);
+
+    // As this version of the transaction was acceptable, we can forget about any requests for it.
+    // No-op if the tx is not in txrequest.
+    m_txrequest.ForgetTxHash(tx->GetHash());
+
+    m_orphanage.AddChildrenToWorkSet(*tx, nodeid);
+    // If it came from the orphanage, remove it. No-op if the tx is not in txorphanage.
+    m_orphanage.EraseTx(tx->GetHash());
+
+    LogPrint(BCLog::MEMPOOL, "AcceptToMemoryPool: peer=%d: accepted %s (poolsz %u txn, %u kB)\n",
+             nodeid,
+             tx->GetHash().ToString(),
+             m_mempool.size(), m_mempool.DynamicMemoryUsage() / 1000);
+
+    _RelayTransaction(tx->GetHash());
+
+    for (const CTransactionRef& removedTx : replaced_transactions) {
+        AddToCompactExtraTransactions(removedTx);
+    }
+}
+
 bool PeerManagerImpl::ProcessOrphanTx(NodeId node_id)
 {
     AssertLockHeld(cs_main);
@@ -3219,24 +3292,22 @@ bool PeerManagerImpl::ProcessOrphanTx(NodeId node_id)
 
         if (result.m_result_type == MempoolAcceptResult::ResultType::VALID) {
             LogPrint(BCLog::MEMPOOL, "   accepted orphan tx %s\n", orphanHash.ToString());
-            _RelayTransaction(porphanTx->GetHash());
-            m_orphanage.AddChildrenToWorkSet(*porphanTx, node_id);
-            m_orphanage.EraseTx(orphanHash);
+            Assume(result.m_replaced_transactions.has_value());
+            std::list<CTransactionRef> empty_replacement_list;
+            ProcessValidTx(node_id, porphanTx, result.m_replaced_transactions.value_or(empty_replacement_list));
             break;
         } else if (state.GetResult() != TxValidationResult::TX_MISSING_INPUTS) {
-            if (state.IsInvalid()) {
-                LogPrint(BCLog::MEMPOOL, "   invalid orphan tx %s from peer=%d. %s\n",
-                    orphanHash.ToString(),
-                    from_peer,
-                    state.ToString());
-                // Maybe punish peer that gave us an invalid orphan tx
-                MaybePunishNodeForTx(from_peer, state);
+            LogPrint(BCLog::MEMPOOL, "   invalid orphan tx %s from peer=%d. %s\n",
+                orphanHash.ToString(),
+                from_peer,
+                state.ToString());
+
+            if (Assume(state.IsInvalid() &&
+                       state.GetResult() != TxValidationResult::TX_UNKNOWN &&
+                       state.GetResult() != TxValidationResult::TX_NO_MEMPOOL &&
+                       state.GetResult() != TxValidationResult::TX_RESULT_UNSET)) {
+                ProcessInvalidTx(from_peer, porphanTx, state, /*maybe_add_extra_compact_tx=*/false);
             }
-            // Has inputs but not accepted to mempool
-            // Probably non-standard or insufficient fee
-            LogPrint(BCLog::MEMPOOL, "   removed orphan tx %s\n", orphanHash.ToString());
-            m_recent_rejects.insert(orphanHash);
-            m_orphanage.EraseTx(orphanHash);
             break;
         }
     }
@@ -4499,15 +4570,8 @@ void PeerManagerImpl::ProcessMessage(
                 m_cj_ctx->dstxman->AddDSTX(dstx);
             }
 
-            _RelayTransaction(tx.GetHash());
-            m_orphanage.AddChildrenToWorkSet(tx, peer->m_id);
-
+            ProcessValidTx(pfrom.GetId(), ptx, result.m_replaced_transactions.value());
             pfrom.m_last_tx_time = GetTime<std::chrono::seconds>();
-
-            LogPrint(BCLog::MEMPOOL, "AcceptToMemoryPool: peer=%d: accepted %s (poolsz %u txn, %u kB)\n",
-                     pfrom.GetId(),
-                     tx.GetHash().ToString(),
-                     m_mempool.size(), m_mempool.DynamicMemoryUsage() / 1000);
 
             // Recursively process any orphan transactions that depended on this one
             ProcessOrphanTx(peer->m_id);
@@ -4559,36 +4623,9 @@ void PeerManagerImpl::ProcessMessage(
                 m_recent_rejects.insert(tx.GetHash());
                 m_llmq_ctx->isman->TransactionRemovedFromMempool(ptx);
             }
-        } else {
-            m_recent_rejects.insert(tx.GetHash());
-            if (RecursiveDynamicUsage(*ptx) < 100000) {
-                AddToCompactExtraTransactions(ptx);
-            }
         }
-
-        // If a tx has been detected by m_recent_rejects, we will have reached
-        // this point and the tx will have been ignored. Because we haven't
-        // submitted the tx to our mempool, we won't have computed a DoS
-        // score for it or determined exactly why we consider it invalid.
-        //
-        // This means we won't penalize any peer subsequently relaying a DoSy
-        // tx (even if we penalized the first peer who gave it to us) because
-        // we have to account for m_recent_rejects showing false positives. In
-        // other words, we shouldn't penalize a peer if we aren't *sure* they
-        // submitted a DoSy tx.
-        //
-        // Note that m_recent_rejects doesn't just record DoSy or invalid
-        // transactions, but any tx not accepted by the m_mempool, which may be
-        // due to node policy (vs. consensus). So we can't blanket penalize a
-        // peer simply for relaying a tx that our m_recent_rejects has caught,
-        // regardless of false positives.
-
         if (state.IsInvalid()) {
-            LogPrint(BCLog::MEMPOOLREJ, "%s from peer=%d was not accepted: %s\n", tx.GetHash().ToString(),
-                pfrom.GetId(),
-                state.ToString());
-            MaybePunishNodeForTx(pfrom.GetId(), state);
-            m_llmq_ctx->isman->TransactionRemovedFromMempool(ptx);
+            ProcessInvalidTx(pfrom.GetId(), ptx, state, /*maybe_add_extra_compact_tx=*/true);
         }
         return;
     }
