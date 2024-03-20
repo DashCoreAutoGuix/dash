@@ -15,23 +15,12 @@ be of use.
 
 ## Design notes
 
-- A new block index `nStatus` flag is introduced, `BLOCK_ASSUMED_VALID`, to mark block
-  index entries that are required to be assumed-valid by a chainstate created
-  from a UTXO snapshot. This flag is mostly used as a way to modify certain
-  CheckBlockIndex() logic to account for index entries that are pending validation by a
-  chainstate running asynchronously in the background. We also use this flag to control
-  which index entries are added to setBlockIndexCandidates during LoadBlockIndex().
-
-- Indexing implementations via BaseIndex can no longer assume that indexation happens
-  sequentially, since background validation chainstates can submit BlockConnected
-  events out of order with the active chain.
-
 - The concept of UTXO snapshots is treated as an implementation detail that lives
   behind the ChainstateManager interface. The external presentation of the changes
   required to facilitate the use of UTXO snapshots is the understanding that there are
-  now certain regions of the chain that can be temporarily assumed to be valid (using
-  the nStatus flag mentioned above). In certain cases, e.g. wallet rescanning, this is
-  very similar to dealing with a pruned chain.
+  now certain regions of the chain that can be temporarily assumed to be valid.
+  In certain cases, e.g. wallet rescanning, this is very similar to dealing with
+  a pruned chain.
 
   Logic outside ChainstateManager should try not to know about snapshots, instead
   preferring to work in terms of more general states like assumed-valid.

@@ -295,7 +295,154 @@ BOOST_FIXTURE_TEST_CASE(chainstatemanager_activate_snapshot, TestChain100Setup)
             chains_tested++;
         }
 
-        BOOST_CHECK_EQUAL(chains_tested, 2);
+        Chainstate& validation_chainstate = chainman.ActiveChainstate();
+
+        // Snapshot should refuse to load at this height.
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(this));
+        BOOST_CHECK(!chainman.ActiveChainstate().m_from_snapshot_blockhash);
+        BOOST_CHECK(!chainman.SnapshotBlockhash());
+
+        // Mine 10 more blocks, putting at us height 110 where a valid assumeutxo value can
+        // be found.
+        constexpr int snapshot_height = 110;
+        mineBlocks(10);
+        initial_size += 10;
+        initial_total_coins += 10;
+
+        // Should not load malleated snapshots
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(
+            this, [](AutoFile& auto_infile, SnapshotMetadata& metadata) {
+                // A UTXO is missing but count is correct
+                metadata.m_coins_count -= 1;
+
+                COutPoint outpoint;
+                Coin coin;
+
+                auto_infile >> outpoint;
+                auto_infile >> coin;
+        }));
+
+        BOOST_CHECK(!node::FindSnapshotChainstateDir(chainman.m_options.datadir));
+
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(
+            this, [](AutoFile& auto_infile, SnapshotMetadata& metadata) {
+                // Coins count is larger than coins in file
+                metadata.m_coins_count += 1;
+        }));
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(
+            this, [](AutoFile& auto_infile, SnapshotMetadata& metadata) {
+                // Coins count is smaller than coins in file
+                metadata.m_coins_count -= 1;
+        }));
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(
+            this, [](AutoFile& auto_infile, SnapshotMetadata& metadata) {
+                // Wrong hash
+                metadata.m_base_blockhash = uint256::ZERO;
+        }));
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(
+            this, [](AutoFile& auto_infile, SnapshotMetadata& metadata) {
+                // Wrong hash
+                metadata.m_base_blockhash = uint256::ONE;
+        }));
+
+        BOOST_REQUIRE(CreateAndActivateUTXOSnapshot(this));
+        BOOST_CHECK(fs::exists(*node::FindSnapshotChainstateDir(chainman.m_options.datadir)));
+
+        // Ensure our active chain is the snapshot chainstate.
+        BOOST_CHECK(!chainman.ActiveChainstate().m_from_snapshot_blockhash->IsNull());
+        BOOST_CHECK_EQUAL(
+            *chainman.ActiveChainstate().m_from_snapshot_blockhash,
+            *chainman.SnapshotBlockhash());
+
+        Chainstate& snapshot_chainstate = chainman.ActiveChainstate();
+
+        {
+            LOCK(::cs_main);
+
+            fs::path found = *node::FindSnapshotChainstateDir(chainman.m_options.datadir);
+
+            // Note: WriteSnapshotBaseBlockhash() is implicitly tested above.
+            BOOST_CHECK_EQUAL(
+                *node::ReadSnapshotBaseBlockhash(found),
+                *chainman.SnapshotBlockhash());
+        }
+
+        const auto& au_data = ::Params().AssumeutxoForHeight(snapshot_height);
+        const CBlockIndex* tip = WITH_LOCK(chainman.GetMutex(), return chainman.ActiveTip());
+
+        BOOST_CHECK_EQUAL(tip->nChainTx, au_data->nChainTx);
+
+        // To be checked against later when we try loading a subsequent snapshot.
+        uint256 loaded_snapshot_blockhash{*chainman.SnapshotBlockhash()};
+
+        // Make some assertions about the both chainstates. These checks ensure the
+        // legacy chainstate hasn't changed and that the newly created chainstate
+        // reflects the expected content.
+        {
+            LOCK(::cs_main);
+            int chains_tested{0};
+
+            for (Chainstate* chainstate : chainman.GetAll()) {
+                BOOST_TEST_MESSAGE("Checking coins in " << chainstate->ToString());
+                CCoinsViewCache& coinscache = chainstate->CoinsTip();
+
+                // Both caches will be empty initially.
+                BOOST_CHECK_EQUAL((unsigned int)0, coinscache.GetCacheSize());
+
+                size_t total_coins{0};
+
+                for (CTransactionRef& txn : m_coinbase_txns) {
+                    COutPoint op{txn->GetHash(), 0};
+                    BOOST_CHECK(coinscache.HaveCoin(op));
+                    total_coins++;
+                }
+
+                BOOST_CHECK_EQUAL(initial_size , coinscache.GetCacheSize());
+                BOOST_CHECK_EQUAL(total_coins, initial_total_coins);
+                chains_tested++;
+            }
+
+            BOOST_CHECK_EQUAL(chains_tested, 2);
+        }
+
+        // Mine some new blocks on top of the activated snapshot chainstate.
+        constexpr size_t new_coins{100};
+        mineBlocks(new_coins);  // Defined in TestChain100Setup.
+
+        {
+            LOCK(::cs_main);
+            size_t coins_in_active{0};
+            size_t coins_in_background{0};
+            size_t coins_missing_from_background{0};
+
+            for (Chainstate* chainstate : chainman.GetAll()) {
+                BOOST_TEST_MESSAGE("Checking coins in " << chainstate->ToString());
+                CCoinsViewCache& coinscache = chainstate->CoinsTip();
+                bool is_background = chainstate != &chainman.ActiveChainstate();
+
+                for (CTransactionRef& txn : m_coinbase_txns) {
+                    COutPoint op{txn->GetHash(), 0};
+                    if (coinscache.HaveCoin(op)) {
+                        (is_background ? coins_in_background : coins_in_active)++;
+                    } else if (is_background) {
+                        coins_missing_from_background++;
+                    }
+                }
+            }
+
+            BOOST_CHECK_EQUAL(coins_in_active, initial_total_coins + new_coins);
+            BOOST_CHECK_EQUAL(coins_in_background, initial_total_coins);
+            BOOST_CHECK_EQUAL(coins_missing_from_background, new_coins);
+        }
+
+        // Snapshot should refuse to load after one has already loaded.
+        BOOST_REQUIRE(!CreateAndActivateUTXOSnapshot(this));
+
+        // Snapshot blockhash should be unchanged.
+        BOOST_CHECK_EQUAL(
+            *chainman.ActiveChainstate().m_from_snapshot_blockhash,
+            loaded_snapshot_blockhash);
+        return std::make_tuple(&validation_chainstate, &snapshot_chainstate);
     }
 
     // Mine some new blocks on top of the activated snapshot chainstate.
@@ -342,7 +489,7 @@ BOOST_FIXTURE_TEST_CASE(chainstatemanager_activate_snapshot, TestChain100Setup)
 //! - First, verfiy that setBlockIndexCandidates is as expected when using a single,
 //!   fully-validating chainstate.
 //!
-//! - Then mark a region of the chain BLOCK_ASSUMED_VALID and introduce a second chainstate
+//! - Then mark a region of the chain as missing data and introduce a second chainstate
 //!   that will tolerate assumed-valid blocks. Run LoadBlockIndex() and ensure that the first
 //!   chainstate only contains fully validated blocks and the other chainstate contains all blocks,
 //!   even those assumed-valid.
@@ -354,7 +501,8 @@ BOOST_FIXTURE_TEST_CASE(chainstatemanager_loadblockindex, TestChain100Setup)
     CChainState& cs1 = chainman.ActiveChainstate();
 
     int num_indexes{0};
-    int num_assumed_valid{0};
+    // Blocks in range [assumed_valid_start_idx, last_assumed_valid_idx) will be
+    // marked as assumed-valid and not having data.
     const int expected_assumed_valid{20};
     const int last_assumed_valid_idx{40};
     const int assumed_valid_start_idx = last_assumed_valid_idx - expected_assumed_valid;
@@ -377,29 +525,33 @@ BOOST_FIXTURE_TEST_CASE(chainstatemanager_loadblockindex, TestChain100Setup)
     reload_all_block_indexes();
     BOOST_CHECK_EQUAL(cs1.setBlockIndexCandidates.size(), cs1.m_chain.Height() + 1);
 
-    // Mark some region of the chain assumed-valid.
+    // Reset some region of the chain's nStatus, removing the HAVE_DATA flag.
     for (int i = 0; i <= cs1.m_chain.Height(); ++i) {
         LOCK(::cs_main);
         auto index = cs1.m_chain[i];
 
+        // Blocks with heights in range [91, 110] are marked as missing data.
         if (i < last_assumed_valid_idx && i >= assumed_valid_start_idx) {
-            index->nStatus = BlockStatus::BLOCK_VALID_TREE | BlockStatus::BLOCK_ASSUMED_VALID;
+            index->nStatus = BlockStatus::BLOCK_VALID_TREE;
+            index->nTx = 0;
+            index->nChainTx = 0;
         }
 
         ++num_indexes;
-        if (index->IsAssumedValid()) ++num_assumed_valid;
 
         // Note the last fully-validated block as the expected validated tip.
         if (i == (assumed_valid_start_idx - 1)) {
             validated_tip = index;
-            BOOST_CHECK(!index->IsAssumedValid());
+        }
+        // Note the last assumed valid block as the snapshot base
+        if (i == last_assumed_valid_idx - 1) {
+            assumed_base = index;
         }
     }
 
-    BOOST_CHECK_EQUAL(expected_assumed_valid, num_assumed_valid);
-
-    CChainState& cs2 = WITH_LOCK(::cs_main,
-        return chainman.InitializeChainstate(&mempool, *m_node.evodb, m_node.chain_helper, GetRandHash()));
+    // Note: cs2's tip is not set when ActivateExistingSnapshot is called.
+    Chainstate& cs2 = WITH_LOCK(::cs_main,
+        return chainman.ActivateExistingSnapshot(*assumed_base->phashBlock));
 
     reload_all_block_indexes();
 
