@@ -128,7 +128,7 @@ static const CBlockIndex* NextSyncBlock(const CBlockIndex* pindex_prev, CChain& 
     return chain.Next(chain.FindFork(pindex_prev));
 }
 
-void BaseIndex::ThreadSync()
+void BaseIndex::Sync()
 {
     const CBlockIndex* pindex = m_best_block_index.load();
     if (!m_synced) {
@@ -146,23 +146,20 @@ void BaseIndex::ThreadSync()
                 return;
             }
 
-            {
-                LOCK(cs_main);
-                const CBlockIndex* pindex_next = NextSyncBlock(pindex, m_chainstate->m_chain);
-                if (!pindex_next) {
-                    SetBestBlockIndex(pindex);
-                    // No need to handle errors in Commit. See rationale above.
-                    Commit();
-                    m_synced = true;
-                    break;
-                }
-                if (pindex_next->pprev != pindex && !Rewind(pindex, pindex_next->pprev)) {
-                    FatalError("%s: Failed to rewind index %s to a previous chain tip",
-                               __func__, GetName());
-                    return;
-                }
-                pindex = pindex_next;
+            const CBlockIndex* pindex_next = WITH_LOCK(cs_main, return NextSyncBlock(pindex, m_chainstate->m_chain));
+            if (!pindex_next) {
+                SetBestBlockIndex(pindex);
+                m_synced = true;
+                // No need to handle errors in Commit. See rationale above.
+                Commit();
+                break;
             }
+            if (pindex_next->pprev != pindex && !Rewind(pindex, pindex_next->pprev)) {
+                FatalErrorf("%s: Failed to rewind index %s to a previous chain tip", __func__, GetName());
+                return;
+            }
+            pindex = pindex_next;
+
 
             CBlock block;
             if (!ReadBlockFromDisk(block, pindex, consensus_params)) {
@@ -364,7 +361,7 @@ bool BaseIndex::Start(CChainState& active_chainstate)
         return false;
     }
 
-    m_thread_sync = std::thread(&util::TraceThread, GetName(), [this] { ThreadSync(); });
+    m_thread_sync = std::thread(&util::TraceThread, GetName(), [this] { Sync(); });
     return true;
 }
 
