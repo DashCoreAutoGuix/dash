@@ -641,8 +641,20 @@ bool BlockManager::FindBlockPos(FlatFilePos& pos, unsigned int nAddSize, unsigne
     if ((int)nFile != m_last_blockfile) {
         if (!fKnown) {
             LogPrint(BCLog::BLOCKSTORE, "Leaving block file %i: %s\n", m_last_blockfile, m_blockfile_info[m_last_blockfile].ToString());
+
+            // Do not propagate the return code. The flush concerns a previous block
+            // and undo file that has already been written to. If a flush fails
+            // here, and we crash, there is no expected additional block data
+            // inconsistency arising from the flush failure here. However, the undo
+            // data may be inconsistent after a crash if the flush is called during
+            // a reindex. A flush error might also leave some of the data files
+            // untrimmed.
+            if (!FlushBlockFile(m_last_blockfile, !fKnown, finalize_undo)) {
+                LogPrintLevel(BCLog::BLOCKSTORE, BCLog::Level::Warning,
+                              "Failed to flush previous block file %05i (finalize=%i, finalize_undo=%i) before opening new block file %05i\n",
+                              m_last_blockfile, !fKnown, finalize_undo, nFile);
+            }
         }
-        FlushBlockFile(!fKnown, finalize_undo);
         m_last_blockfile = nFile;
     }
 
