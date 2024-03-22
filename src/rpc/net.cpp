@@ -974,7 +974,7 @@ static RPCHelpMan getnodeaddresses()
 static RPCHelpMan addpeeraddress()
 {
     return RPCHelpMan{"addpeeraddress",
-        "\nAdd the address of a potential peer to the address manager. This RPC is for testing only.\n",
+        "Add the address of a potential peer to an address manager table. This RPC is for testing only.",
         {
             {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "The IP address of the peer"},
             {"port", RPCArg::Type::NUM, RPCArg::Optional::NO, "The port of the peer"},
@@ -983,7 +983,8 @@ static RPCHelpMan addpeeraddress()
         RPCResult{
             RPCResult::Type::OBJ, "", "",
             {
-                {RPCResult::Type::BOOL, "success", "whether the peer address was successfully added to the address manager"},
+                {RPCResult::Type::BOOL, "success", "whether the peer address was successfully added to the address manager table"},
+                {RPCResult::Type::STR, "error", /*optional=*/true, "error description, if the address could not be added"},
             },
         },
         RPCExamples{
@@ -1018,6 +1019,8 @@ static RPCHelpMan addpeeraddress()
                 // Attempt to move the address to the tried addresses table.
                 node.addrman->Good(address);
             }
+        } else {
+            obj.pushKV("error", "failed-adding-to-new");
         }
     }
 
