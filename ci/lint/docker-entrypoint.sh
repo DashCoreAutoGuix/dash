@@ -6,7 +6,7 @@ export LC_ALL=C
 git config --global --add safe.directory /bitcoin
 
 if [ -z "$1" ]; then
-  LOCAL_BRANCH=1 bash -ic "./ci/lint/06_script.sh"
+  bash -ic "./ci/lint/06_script.sh"
 else
   exec "$@"
 fi
