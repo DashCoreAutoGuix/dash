@@ -556,7 +556,7 @@ public:
 
         /** Parameters for child-with-unconfirmed-parents package validation. */
         static ATMPArgs PackageChildWithParents(const CChainParams& chainparams, int64_t accept_time,
-                                                std::vector<COutPoint>& coins_to_uncache) {
+                                                std::vector<COutPoint>& coins_to_uncache, const std::optional<CFeeRate>& client_maxfeerate) {
             return ATMPArgs{/* m_chainparams */ chainparams,
                             /* m_accept_time */ accept_time,
                             /* m_bypass_limits */ false,
@@ -1327,7 +1327,7 @@ MempoolAcceptResult AcceptToMemoryPool(CChainState& active_chainstate, const CTr
 }
 
 PackageMempoolAcceptResult ProcessNewPackage(CChainState& active_chainstate, CTxMemPool& pool,
-                                             const Package& package, bool test_accept)
+                                             const Package& package, bool test_accept, const std::optional<CFeeRate>& client_maxfeerate)
 {
     AssertLockHeld(cs_main);
     assert(!package.empty());
@@ -1341,7 +1341,7 @@ PackageMempoolAcceptResult ProcessNewPackage(CChainState& active_chainstate, CTx
             auto args = MemPoolAccept::ATMPArgs::PackageTestAccept(chainparams, GetTime(), coins_to_uncache);
             return MemPoolAccept(pool, active_chainstate).AcceptMultipleTransactions(package, args);
         } else {
-            auto args = MemPoolAccept::ATMPArgs::PackageChildWithParents(chainparams, GetTime(), coins_to_uncache);
+            auto args = MemPoolAccept::ATMPArgs::PackageChildWithParents(chainparams, GetTime(), coins_to_uncache, client_maxfeerate);
             return MemPoolAccept(pool, active_chainstate).AcceptPackage(package, args);
         }
     }();
