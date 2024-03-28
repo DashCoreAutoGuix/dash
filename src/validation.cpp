@@ -19,6 +19,7 @@
 #include <cuckoocache.h>
 #include <deploymentstatus.h>
 #include <flatfile.h>
+#include <fs.h>
 #include <hash.h>
 #include <logging.h>
 #include <logging/timer.h>
@@ -5365,7 +5366,7 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
     FILE* filestr{mockable_fopen_function(gArgs.GetDataDirNet() / "mempool.dat", "rb")};
     CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
     if (file.IsNull()) {
-        LogPrintf("Failed to open mempool file from disk. Continuing anyway.\n");
+        LogPrintf("Failed to open mempool file. Continuing anyway.\n");
         return false;
     }
 
@@ -5436,11 +5437,11 @@ bool LoadMempool(CTxMemPool& pool, CChainState& active_chainstate, FopenFn mocka
         }
 
     } catch (const std::exception& e) {
-        LogPrintf("Failed to deserialize mempool data on disk: %s. Continuing anyway.\n", e.what());
+        LogPrintf("Failed to deserialize mempool data on file: %s. Continuing anyway.\n", e.what());
         return false;
     }
 
-    LogPrintf("Imported mempool transactions from disk: %i succeeded, %i failed, %i expired, %i already there, %i waiting for initial broadcast\n", count, failed, expired, already_there, unbroadcast);
+    LogPrintf("Imported mempool transactions from file: %i succeeded, %i failed, %i expired, %i already there, %i waiting for initial broadcast\n", count, failed, expired, already_there, unbroadcast);
     return true;
 }
 
@@ -5477,7 +5478,9 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
         uint64_t version = MEMPOOL_DUMP_VERSION;
         file << version;
 
-        file << (uint64_t)vinfo.size();
+        uint64_t mempool_transactions_to_write = vinfo.size();
+        file << mempool_transactions_to_write;
+        LogPrintf("Writing %u mempool transactions to file...\n", mempool_transactions_to_write);
         for (const auto& i : vinfo) {
             file << *(i.tx);
             file << int64_t{count_seconds(i.m_time)};
@@ -5487,7 +5490,7 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
 
         file << mapDeltas;
 
-        LogPrintf("Writing %d unbroadcast transactions to disk.\n", unbroadcast_txids.size());
+        LogPrintf("Writing %d unbroadcast transactions to file.\n", unbroadcast_txids.size());
         file << unbroadcast_txids;
 
         if (!skip_file_commit && !FileCommit(file.Get()))
@@ -5497,7 +5500,9 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
             throw std::runtime_error("Rename failed");
         }
         int64_t last = GetTimeMicros();
-        LogPrintf("Dumped mempool: %gs to copy, %gs to dump\n", (mid-start)*MICRO, (last-mid)*MICRO);
+        std::error_code ec;
+        auto file_size = fs::file_size(gArgs.GetDataDirNet() / "mempool.dat", ec);
+        LogPrintf("Dumped mempool: %gs to copy, %gs to dump, %.2f MB dumped to file\n", (mid-start)*MICRO, (last-mid)*MICRO, file_size / 1e6);
     } catch (const std::exception& e) {
         LogPrintf("Failed to dump mempool: %s. Continuing anyway.\n", e.what());
         return false;
