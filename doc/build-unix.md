@@ -43,6 +43,18 @@ tuned to conserve memory with additional CXXFLAGS:
 ```
 
 
+Alternatively, or in addition, debugging information can be skipped for compilation. The default compile flags are
+`-g -O2`, and can be changed with:
+
+```sh
+./configure CXXFLAGS="-g0"
+```
+
+Finally, clang (often less resource hungry) can be used instead of gcc, which is used by default:
+
+```sh
+./configure CXX=clang++ CC=clang
+```
 ## Linux Distribution Specific Instructions
 
 ### Ubuntu & Debian
