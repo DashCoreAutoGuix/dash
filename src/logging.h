@@ -65,8 +65,10 @@ namespace BCLog {
 #ifdef DEBUG_LOCKCONTENTION
         LOCK        = (1 << 24),
 #endif
-        BLOCKSTORE  = (1 << 26),
-        TXRECONCILIATION = (1 << 27),
+        BLOCKSTORAGE = (1 << 25),
+        TXRECONCILIATION = (1 << 26),
+        SCAN        = (1 << 27),
+        TXPACKAGES  = (1 << 28),
 
         //Start Dash
         CHAINLOCKS  = ((uint64_t)1 << 32),
@@ -109,7 +111,7 @@ namespace BCLog {
 
         FILE* m_fileout GUARDED_BY(m_cs) = nullptr;
         std::list<std::string> m_msgs_before_open GUARDED_BY(m_cs);
-        bool m_buffering GUARDED_BY(m_cs) = true; //!< Buffer messages before logging can be started.
+        bool m_buffering GUARDED_BY(m_cs) = true; //\!< Buffer messages before logging can be started.
 
         /**
          * m_started_new_line is a state variable that will suppress printing of
@@ -118,11 +120,11 @@ namespace BCLog {
          */
         std::atomic_bool m_started_new_line{true};
 
-        //! Category-specific log level. Overrides `m_log_level`.
+        //\! Category-specific log level. Overrides `m_log_level`.
         std::unordered_map<LogFlags, Level> m_category_log_levels GUARDED_BY(m_cs);
 
-        //! If there is no category-specific log level, all logs with a severity
-        //! level lower than `m_log_level` will be ignored.
+        //\! If there is no category-specific log level, all logs with a severity
+        //\! level lower than `m_log_level` will be ignored.
         std::atomic<Level> m_log_level{DEFAULT_LOG_LEVEL};
 
         /** Log categories bitfield. */
@@ -153,7 +155,7 @@ namespace BCLog {
         bool Enabled() const
         {
             StdLockGuard scoped_lock(m_cs);
-            return m_buffering || m_print_to_console || m_print_to_file || !m_print_callbacks.empty();
+            return m_buffering || m_print_to_console || m_print_to_file || \!m_print_callbacks.empty();
         }
 
         /** Connect a slot to the print signal and return the connection */
@@ -212,10 +214,10 @@ namespace BCLog {
             return Join(LogCategoriesList(enabled_only), ", ", [&](const LogCategory& i) { return i.category; });
         };
 
-        //! Returns a string with all user-selectable log levels.
+        //\! Returns a string with all user-selectable log levels.
         std::string LogLevelsString() const;
 
-        //! Returns the string representation of a log level.
+        //\! Returns the string representation of a log level.
         std::string LogLevelToStr(BCLog::Level level) const;
 
         bool DefaultShrinkDebugFile() const;
@@ -254,7 +256,7 @@ std::string SafeStringFormat(const std::string& fmt, const Args&... args)
 }
 
 // Be conservative when using LogPrintf/error or other things which
-// unconditionally log to debug.log! It should not be the case that an inbound
+// unconditionally log to debug.log\! It should not be the case that an inbound
 // peer can fill up a user's disk with debug.log entries.
 
 template <typename... Args>
