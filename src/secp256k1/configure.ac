@@ -393,8 +393,22 @@ SECP_CFLAGS="$SECP_CFLAGS $WERROR_CFLAGS"
 ### Handle module options
 ###
 
-if test x"$enable_module_ecdh" = x"yes"; then
-  SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_ECDH=1"
+# Processing must be done in a reverse topological sorting of the dependency graph
+# (dependent module first).
+if test x"$enable_module_ellswift" = x"yes"; then
+  SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_ELLSWIFT=1"
+fi
+
+if test x"$enable_module_schnorrsig" = x"yes"; then
+  if test x"$enable_module_extrakeys" = x"no"; then
+    AC_MSG_ERROR([Module dependency error: You have disabled the extrakeys module explicitly, but it is required by the schnorrsig module.])
+  fi
+  enable_module_extrakeys=yes
+  SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_SCHNORRSIG=1"
+fi
+
+if test x"$enable_module_extrakeys" = x"yes"; then
+  SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_EXTRAKEYS=1"
 fi
 
 if test x"$enable_module_recovery" = x"yes"; then
@@ -414,6 +428,10 @@ fi
 # module to set enable_module_extrakeys=yes
 if test x"$enable_module_extrakeys" = x"yes"; then
   SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_EXTRAKEYS=1"
+fi
+
+if test x"$enable_module_ecdh" = x"yes"; then
+  SECP_CONFIG_DEFINES="$SECP_CONFIG_DEFINES -DENABLE_MODULE_ECDH=1"
 fi
 
 if test x"$enable_external_default_callbacks" = x"yes"; then
