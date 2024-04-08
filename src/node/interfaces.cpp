@@ -608,6 +608,7 @@ public:
     NodeContext* m_context{nullptr};
 };
 
+// NOLINTNEXTLINE(misc-no-recursion)
 bool FillBlock(const CBlockIndex* index, const FoundBlock& block, UniqueLock<RecursiveMutex>& lock, const CChain& active)
 {
     if (!index) return false;

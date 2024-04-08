@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <vector>
 
+// NOLINTNEXTLINE(misc-no-recursion)
 class UniValue {
 public:
     enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };

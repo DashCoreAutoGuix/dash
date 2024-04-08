@@ -1,6 +1,7 @@
 Checks: '
 -*,
 bugprone-argument-comment,
+misc-no-recursion,
 modernize-use-nullptr,
 readability-const-return-type,
 readability-redundant-declaration,
