@@ -178,7 +178,6 @@ private:
     llmq::CQuorumSnapshotManager& m_qsnapman;
     const CChainParams& chainparams;
     const CTxMemPool* const m_mempool;
-    CChainState& m_chainstate;
     const llmq::CQuorumBlockProcessor& m_quorum_block_processor;
     const llmq::CQuorumManager& m_qman;
 
