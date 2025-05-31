@@ -9,7 +9,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(validation_flush_tests, ChainTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(validation_flush_tests, TestingSetup)
 
 //! Test utilities for detecting when we need to flush the coins cache based
 //! on estimated memory usage.
