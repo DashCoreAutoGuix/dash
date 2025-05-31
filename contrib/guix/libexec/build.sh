@@ -355,11 +355,8 @@ mkdir -p "$DISTSRC"
                 ;;
         esac
 
-        # copy over the example dash.conf file. if contrib/devtools/gen-dash-conf.sh
-        # has not been run before building, this file will be a stub
-        cp "${DISTSRC}/share/examples/dash.conf" "${DISTNAME}/" 2>/dev/null || true
-
         cp -r "${DISTSRC}/share/rpcauth" "${DISTNAME}/share/"
+        
         # Finally, deterministically produce {non-,}debug binary tarballs ready
         # for release
         case "$HOST" in
