@@ -356,7 +356,7 @@ mkdir -p "$DISTSRC"
         esac
 
         cp -r "${DISTSRC}/share/rpcauth" "${DISTNAME}/share/"
-        
+
         # Finally, deterministically produce {non-,}debug binary tarballs ready
         # for release
         case "$HOST" in
