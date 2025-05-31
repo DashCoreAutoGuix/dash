@@ -136,7 +136,6 @@ task:
     cpu: 4
     memory: 12G
   env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
     HOME: /root/  # Only needed for compute_engine_instance
     FILE_ENV: "./ci/test/00_setup_env_native_asan.sh"
     MAKEJOBS: "-j4"  # Avoid excessive memory use
