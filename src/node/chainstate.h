@@ -6,7 +6,6 @@
 #define BITCOIN_NODE_CHAINSTATE_H
 
 #include <util/translation.h>
-#include <validation.h>
 
 #include <cstdint>
 #include <functional>
