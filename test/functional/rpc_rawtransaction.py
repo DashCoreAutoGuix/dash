@@ -196,8 +196,8 @@ class RawTransactionsTest(BitcoinTestFramework):
 
         # Test `createrawtransaction` invalid `inputs`
         assert_raises_rpc_error(-3, "JSON value of type string is not of expected type array", self.nodes[0].createrawtransaction, 'foo', {})
-        assert_raises_rpc_error(-1, "JSON value of type string is not of expected type object", self.nodes[0].createrawtransaction, ['foo'], {})
-        assert_raises_rpc_error(-1, "JSON value of type null is not of expected type string", self.nodes[0].createrawtransaction, [{}], {})
+        assert_raises_rpc_error(-1, "JSON value is not an object as expected", self.nodes[0].createrawtransaction, ['foo'], {})
+        assert_raises_rpc_error(-1, "JSON value is not a string as expected", self.nodes[0].createrawtransaction, [{}], {})
         assert_raises_rpc_error(-8, "txid must be of length 64 (not 3, for 'foo')", self.nodes[0].createrawtransaction, [{'txid': 'foo'}], {})
         txid = "ZZZ7bb8b1697ea987f3b223ba7819250cae33efacb068d23dc24859824a77844"
         assert_raises_rpc_error(-8, f"txid must be hexadecimal string (not '{txid}')", self.nodes[0].createrawtransaction, [{'txid': txid}], {})
