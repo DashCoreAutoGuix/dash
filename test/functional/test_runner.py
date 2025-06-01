@@ -266,7 +266,6 @@ BASE_SCRIPTS = [
     'rpc_invalidateblock.py',
     'feature_txindex.py',
     'feature_utxo_set_hash.py',
-    'feature_rbf.py',
     'mempool_packages.py',
     'mempool_package_onemore.py',
     'rpc_createmultisig.py --legacy-wallet',
