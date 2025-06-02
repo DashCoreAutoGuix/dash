@@ -234,7 +234,9 @@ void DoCheck(const std::string& prv, const std::string& pub, const std::string& 
             // For each of the produced scripts, verify solvability, and when possible, try to sign a transaction spending it.
             for (size_t n = 0; n < spks.size(); ++n) {
                 BOOST_CHECK_EQUAL(ref[n], HexStr(spks[n]));
-                BOOST_CHECK_EQUAL(IsSolvable(Merge(key_provider, script_provider), spks[n]), (flags & UNSOLVABLE) == 0);
+                FlatSigningProvider merged_provider = key_provider;
+                merged_provider.Merge(FlatSigningProvider(script_provider));
+                BOOST_CHECK_EQUAL(IsSolvable(merged_provider, spks[n]), (flags & UNSOLVABLE) == 0);
 
                 if (flags & SIGNABLE) {
                     CMutableTransaction spend;
@@ -243,9 +245,11 @@ void DoCheck(const std::string& prv, const std::string& pub, const std::string& 
                     std::vector<CTxOut> utxos(1);
                     PrecomputedTransactionData txdata;
                     txdata.Init(spend, std::move(utxos), /*force=*/true);
-                    MutableTransactionSignatureCreator creator{spend, 0, CAmount{0}, &txdata, SIGHASH_DEFAULT};
+                    MutableTransactionSignatureCreator creator{&spend, 0, CAmount{0}, &txdata, SIGHASH_ALL};
                     SignatureData sigdata;
-                    BOOST_CHECK_MESSAGE(ProduceSignature(FlatSigningProvider{keys_priv}.Merge(FlatSigningProvider{script_provider}), creator, spks[n], sigdata), prv);
+                    FlatSigningProvider signing_provider = keys_priv;
+                    signing_provider.Merge(FlatSigningProvider{script_provider});
+                    BOOST_CHECK_MESSAGE(ProduceSignature(signing_provider, creator, spks[n], sigdata), prv);
                 }
 
                 /* Infer a descriptor from the generated script, and verify its solvability and that it roundtrips. */
