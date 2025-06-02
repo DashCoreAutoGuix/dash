@@ -1893,8 +1893,12 @@ void CWallet::ResubmitWalletTransactions(bool relay, bool force)
         LOCK(cs_wallet);
 
         // First filter for the transactions we want to rebroadcast.
-        // We use a set with WalletTxOrderComparator so that rebroadcasting occurs in insertion order
-        std::set<CWalletTx*, WalletTxOrderComparator> to_submit;
+        // We use a set with a comparator so that rebroadcasting occurs in insertion order
+        // Compare by nOrderPos to maintain consistent ordering like wtxOrdered
+        auto cmp = [](const CWalletTx* a, const CWalletTx* b) {
+            return a->nOrderPos < b->nOrderPos;
+        };
+        std::set<CWalletTx*, decltype(cmp)> to_submit(cmp);
         for (auto& [txid, wtx] : mapWallet) {
             // Only rebroadcast unconfirmed txs
             if (!wtx.isUnconfirmed()) continue;
@@ -1906,7 +1910,7 @@ void CWallet::ResubmitWalletTransactions(bool relay, bool force)
         }
         // Now try submitting the transactions to the memory pool and (optionally) relay them.
         for (auto wtx : to_submit) {
-            std::string unused_err_string;
+            bilingual_str unused_err_string;
             if (SubmitTxMemoryPoolAndRelay(*wtx, unused_err_string, relay)) ++submitted_tx_count;
         }
     } // cs_wallet
@@ -3224,7 +3228,7 @@ void CWallet::postInitProcess()
 {
     // Add wallet transactions that aren't already in a block to mempool
     // Do this here as mempool requires genesis block to be loaded
-    ReacceptWalletTransactions();
+    ResubmitWalletTransactions(/*relay=*/false, /*force=*/true);
 
     // Update wallet transactions with current mempool transactions.
     WITH_LOCK(cs_wallet, chain().requestMempoolTransactions(*this));
