@@ -22,6 +22,8 @@
 #include <policy/settings.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
+#include <psbt.h>
+#include <random.h>
 #include <script/descriptor.h>
 #include <script/script.h>
 #include <script/sign.h>
@@ -1846,8 +1848,32 @@ std::set<uint256> CWallet::GetTxConflicts(const CWalletTx& wtx) const
     return result;
 }
 
-// Rebroadcast transactions from the wallet. We do this on a random timer
-// to slightly obfuscate which transactions come from our wallet.
+bool CWallet::ShouldResend() const
+{
+    // Don't attempt to resubmit if the wallet is configured to not broadcast
+    if (!fBroadcastTransactions) return false;
+
+    // During reindex, importing and IBD, old wallet transactions become
+    // unconfirmed. Don't resend them as that would spam other nodes.
+    // We only allow forcing mempool submission when not relaying to avoid this spam.
+    if (!chain().isReadyToBroadcast()) return false;
+
+    // Do this infrequently and randomly to avoid giving away
+    // that these are our transactions.
+    if (GetTime() < m_next_resend) return false;
+
+    return true;
+}
+
+int64_t CWallet::GetDefaultNextResend() { return GetTime() + (12 * 60 * 60) + GetRand(24 * 60 * 60); }
+
+// Resubmit transactions from the wallet to the mempool, optionally asking the
+// mempool to relay them. On startup, we will do this for all unconfirmed
+// transactions but will not ask the mempool to relay them. We do this on startup
+// to ensure that our own mempool is aware of our transactions. There
+// is a privacy side effect here as not broadcasting on startup also means that we won't
+// inform the world of our wallet's state, particularly if the wallet (or node) is not
+// yet synced.
 //
 // Ideally, we'd only resend transactions that we think should have been
 // mined in the most recent block. Any transaction that wasn't in the top
@@ -1855,34 +1881,37 @@ std::set<uint256> CWallet::GetTxConflicts(const CWalletTx& wtx) const
 // and so is probably just sitting in the mempool waiting to be confirmed.
 // Rebroadcasting does nothing to speed up confirmation and only damages
 // privacy.
-void CWallet::ResendWalletTransactions()
+void CWallet::ResubmitWalletTransactions(bool relay, bool force)
 {
-    // During reindex, importing and IBD, old wallet transactions become
-    // unconfirmed. Don't resend them as that would spam other nodes.
-    if (!chain().isReadyToBroadcast()) return;
-
-    // Do this infrequently and randomly to avoid giving away
-    // that these are our transactions.
-    if (GetTime() < nNextResend || !fBroadcastTransactions) return;
-    bool fFirst = (nNextResend == 0);
-    // resend 1-3 hours from now, ~2 hours on average.
-    nNextResend = GetTime() + (1 * 60 * 60) + GetRand(2 * 60 * 60);
-    if (fFirst) return;
+    // Don't attempt to resubmit if the wallet is configured to not broadcast,
+    // even if forcing.
+    if (!fBroadcastTransactions) return;
 
     int submitted_tx_count = 0;
 
     { // cs_wallet scope
         LOCK(cs_wallet);
 
-        // Relay transactions
-        for (std::pair<const uint256, CWalletTx>& item : mapWallet) {
-            CWalletTx& wtx = item.second;
+        // First filter for the transactions we want to rebroadcast.
+        // We use a set with a comparator so that rebroadcasting occurs in insertion order
+        // Compare by nOrderPos to maintain consistent ordering like wtxOrdered
+        auto cmp = [](const CWalletTx* a, const CWalletTx* b) {
+            return a->nOrderPos < b->nOrderPos;
+        };
+        std::set<CWalletTx*, decltype(cmp)> to_submit(cmp);
+        for (auto& [txid, wtx] : mapWallet) {
+            // Only rebroadcast unconfirmed txs
+            if (!wtx.isUnconfirmed()) continue;
+
             // Attempt to rebroadcast all txes more than 5 minutes older than
-            // the last block. SubmitTxMemoryPoolAndRelay() will not rebroadcast
-            // any confirmed or conflicting txs.
-            if (wtx.nTimeReceived > m_best_block_time - 5 * 60) continue;
+            // the last block, or all txs if forcing.
+            if (!force && wtx.nTimeReceived > m_best_block_time - 5 * 60) continue;
+            to_submit.insert(&wtx);
+        }
+        // Now try submitting the transactions to the memory pool and (optionally) relay them.
+        for (auto wtx : to_submit) {
             bilingual_str unused_err_string;
-            if (SubmitTxMemoryPoolAndRelay(wtx, unused_err_string, true)) ++submitted_tx_count;
+            if (SubmitTxMemoryPoolAndRelay(*wtx, unused_err_string, relay)) ++submitted_tx_count;
         }
     } // cs_wallet
 
@@ -1891,12 +1920,21 @@ void CWallet::ResendWalletTransactions()
     }
 }
 
+void CWallet::ResendWalletTransactions()
+{
+    if (!ShouldResend()) return;
+    ResubmitWalletTransactions(/*relay=*/true, /*force=*/false);
+    SetNextResend();
+}
+
 /** @} */ // end of mapWallet
 
 void MaybeResendWalletTxs(WalletContext& context)
 {
     for (const std::shared_ptr<CWallet>& pwallet : GetWallets(context)) {
-        pwallet->ResendWalletTransactions();
+        if (!pwallet->ShouldResend()) continue;
+        pwallet->ResubmitWalletTransactions(/*relay=*/true, /*force=*/false);
+        pwallet->SetNextResend();
     }
 }
 
@@ -3188,14 +3226,12 @@ const CAddressBookData* CWallet::FindAddressBookEntry(const CTxDestination& dest
 
 void CWallet::postInitProcess()
 {
-    LOCK(cs_wallet);
-
     // Add wallet transactions that aren't already in a block to mempool
     // Do this here as mempool requires genesis block to be loaded
-    ReacceptWalletTransactions();
+    ResubmitWalletTransactions(/*relay=*/false, /*force=*/true);
 
     // Update wallet transactions with current mempool transactions.
-    chain().requestMempoolTransactions(*this);
+    WITH_LOCK(cs_wallet, chain().requestMempoolTransactions(*this));
 }
 
 void CWallet::InitAutoBackup()
