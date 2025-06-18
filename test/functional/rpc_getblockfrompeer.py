@@ -9,20 +9,18 @@ from test_framework.messages import (
     CBlock,
     from_hex,
     msg_headers,
-    NODE_WITNESS,
 )
 from test_framework.p2p import (
-    P2P_SERVICES,
     P2PInterface,
 )
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import DashTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
 )
 
 
-class GetBlockFromPeerTest(BitcoinTestFramework):
+class GetBlockFromPeerTest(DashTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
 
