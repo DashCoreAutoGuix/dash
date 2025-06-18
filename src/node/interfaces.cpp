@@ -12,7 +12,6 @@
 #include <coinjoin/common.h>
 #include <deploymentstatus.h>
 #include <evo/deterministicmns.h>
-#include <external_signer.h>
 #include <governance/governance.h>
 #include <governance/object.h>
 #include <index/blockfilterindex.h>
