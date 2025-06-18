@@ -33,6 +33,7 @@
 #include <tinyformat.h>
 #include <index/txindex.h>
 #include <txmempool.h>
+#include <txmempool_entry.h>
 #include <txorphanage.h>
 #include <util/check.h>
 #include <util/system.h>
