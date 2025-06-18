@@ -23,16 +23,14 @@
 
 const std::string RemovalReasonToString(const MemPoolRemovalReason& r) noexcept;
 
-/**
- * MainSignalsImpl manages a list of shared_ptr<CValidationInterface> callbacks.
- *
- * A std::unordered_map is used to track what callbacks are currently
- * registered, and a std::list is used to store the callbacks that are
- * currently registered as well as any callbacks that are just unregistered
- * and about to be deleted when they are done executing.
- */
-class MainSignalsImpl
-{
+//! The MainSignalsInstance manages a list of shared_ptr<CValidationInterface>
+//! callbacks.
+//!
+//! A std::unordered_map is used to track what callbacks are currently
+//! registered, and a std::list is to used to store the callbacks that are
+//! currently registered as well as any callbacks that are just unregistered
+//! and about to be deleted when they are done executing.
+struct MainSignalsInstance {
 private:
     Mutex m_mutex;
     //! List entries consist of a callback pointer and reference count. The
@@ -224,9 +222,8 @@ void CMainSignals::TransactionRemovedFromMempool(const CTransactionRef& tx, MemP
     auto event = [tx, reason, mempool_sequence, this] {
         m_internals->Iterate([&](CValidationInterface& callbacks) { callbacks.TransactionRemovedFromMempool(tx, reason, mempool_sequence); });
     };
-    ENQUEUE_AND_LOG_EVENT(event, "%s: txid=%s wtxid=%s reason=%s", __func__,
+    ENQUEUE_AND_LOG_EVENT(event, "%s: txid=%s reason=%s", __func__,
                           tx->GetHash().ToString(),
-                          tx->GetWitnessHash().ToString(),
                           RemovalReasonToString(reason));
 }
 
