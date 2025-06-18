@@ -13,6 +13,7 @@
 #include <test/util/setup_common.h>
 #include <timedata.h>
 #include <uint256.h>
+#include <util/time.h>
 #include <validation.h>
 
 #include <vector>

@@ -61,6 +61,7 @@
 #include <sync.h>
 #include <timedata.h>
 #include <torcontrol.h>
+#include <util/time.h>
 #include <txdb.h>
 #include <txmempool.h>
 #include <txorphanage.h>
