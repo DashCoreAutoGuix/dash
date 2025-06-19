@@ -8,10 +8,12 @@
 #include <key.h>
 #include <key_io.h>
 #include <test/util/setup_common.h>
+#include <util/translation.h>
 #include <wallet/wallet.h>
 #include <wallet/walletdb.h>
 
 #include <memory>
+#include <stdexcept>
 
 namespace wallet {
 
@@ -77,7 +79,12 @@ std::string getnewaddress(CWallet& w)
 
 CTxDestination getNewDestination(CWallet& w, OutputType output_type)
 {
-    return *Assert(w.GetNewDestination(output_type, ""));
+    CTxDestination dest;
+    bilingual_str error;
+    if (!w.GetNewDestination("", dest, error)) {
+        throw std::runtime_error(error.original);
+    }
+    return dest;
 }
 
 } // namespace wallet
