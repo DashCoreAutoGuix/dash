@@ -58,41 +58,6 @@ bool TestLockPointValidity(CChain& active_chain, const LockPoints& lp)
     return true;
 }
 
-CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef& tx, CAmount fee,
-                                 int64_t time, unsigned int entry_height,
-                                 bool spends_coinbase, int64_t sigops_count, LockPoints lp)
-    : tx{tx},
-      nFee{fee},
-      nTxSize(tx->GetTotalSize()),
-      nUsageSize{RecursiveDynamicUsage(tx)},
-      nTime{time},
-      entryHeight{entry_height},
-      spendsCoinbase{spends_coinbase},
-      sigOpCount{sigops_count},
-      m_modified_fee{nFee},
-      lockPoints{lp},
-      nSizeWithDescendants{GetTxSize()},
-      nModFeesWithDescendants{nFee},
-      nSizeWithAncestors{GetTxSize()},
-      nModFeesWithAncestors{nFee},
-      nSigOpCountWithAncestors{sigOpCount} {}
-
-void CTxMemPoolEntry::UpdateModifiedFee(int64_t fee_diff)
-{
-    nModFeesWithDescendants = SaturatingAdd(nModFeesWithDescendants, fee_diff);
-    nModFeesWithAncestors = SaturatingAdd(nModFeesWithAncestors, fee_diff);
-    m_modified_fee = SaturatingAdd(m_modified_fee, fee_diff);
-}
-
-void CTxMemPoolEntry::UpdateLockPoints(const LockPoints& lp)
-{
-    lockPoints = lp;
-}
-
-size_t CTxMemPoolEntry::GetTxSize() const
-{
-    return GetVirtualTransactionSize(nTxSize, sigOpCount);
-}
 
 void CTxMemPool::UpdateForDescendants(txiter updateIt, cacheMap& cachedDescendants,
                                       const std::set<uint256>& setExclude, std::set<uint256>& descendants_to_remove,
@@ -421,25 +386,6 @@ void CTxMemPool::UpdateForRemoveFromMempool(const setEntries &entriesToRemove, b
     }
 }
 
-void CTxMemPoolEntry::UpdateDescendantState(int64_t modifySize, CAmount modifyFee, int64_t modifyCount)
-{
-    nSizeWithDescendants += modifySize;
-    assert(int64_t(nSizeWithDescendants) > 0);
-    nModFeesWithDescendants = SaturatingAdd(nModFeesWithDescendants, modifyFee);
-    nCountWithDescendants += modifyCount;
-    assert(int64_t(nCountWithDescendants) > 0);
-}
-
-void CTxMemPoolEntry::UpdateAncestorState(int64_t modifySize, CAmount modifyFee, int64_t modifyCount, int64_t modifySigOps)
-{
-    nSizeWithAncestors += modifySize;
-    assert(int64_t(nSizeWithAncestors) > 0);
-    nModFeesWithAncestors = SaturatingAdd(nModFeesWithAncestors, modifyFee);
-    nCountWithAncestors += modifyCount;
-    assert(int64_t(nCountWithAncestors) > 0);
-    nSigOpCountWithAncestors += modifySigOps;
-    assert(int(nSigOpCountWithAncestors) >= 0);
-}
 
 CTxMemPool::CTxMemPool(CBlockPolicyEstimator* estimator, int check_ratio)
     : m_check_ratio(check_ratio), minerPolicyEstimator(estimator)

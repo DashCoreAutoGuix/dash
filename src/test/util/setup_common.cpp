@@ -61,6 +61,7 @@
 #include <netfulfilledman.h>
 #include <spork.h>
 #include <stats/client.h>
+#include <txmempool_entry.h>
 
 #ifdef ENABLE_WALLET
 #include <interfaces/coinjoin.h>
