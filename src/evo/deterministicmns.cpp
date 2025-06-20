@@ -1099,8 +1099,8 @@ bool CheckProUpServTx(CDeterministicMNManager& dmnman, const CTransaction& tx, g
     }
 
     auto mnList = dmnman.GetListForBlock(pindexPrev);
-    auto mn = mnList.GetMN(opt_ptx->proTxHash);
-    if (!mn) {
+    auto dmn = mnList.GetMN(opt_ptx->proTxHash);
+    if (!dmn) {
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-hash");
     }
 
@@ -1124,7 +1124,7 @@ bool CheckProUpServTx(CDeterministicMNManager& dmnman, const CTransaction& tx, g
     }
 
     if (opt_ptx->scriptOperatorPayout != CScript()) {
-        if (mn->nOperatorReward == 0) {
+        if (dmn->nOperatorReward == 0) {
             // don't allow setting operator reward payee in case no operatorReward was set
             return state.Invalid(TxValidationResult::TX_BAD_SPECIAL, "bad-protx-operator-payee");
         }
@@ -1138,7 +1138,7 @@ bool CheckProUpServTx(CDeterministicMNManager& dmnman, const CTransaction& tx, g
         // pass the state returned by the function above
         return false;
     }
-    if (check_sigs && !CheckHashSig(*opt_ptx, mn->pdmnState->pubKeyOperator.Get(), state)) {
+    if (check_sigs && !CheckHashSig(*opt_ptx, dmn->pdmnState->pubKeyOperator.Get(), state)) {
         // pass the state returned by the function above
         return false;
     }
@@ -1221,8 +1221,9 @@ bool CheckProUpRevTx(CDeterministicMNManager& dmnman, const CTransaction& tx, gs
 
     auto mnList = dmnman.GetListForBlock(pindexPrev);
     auto dmn = mnList.GetMN(opt_ptx->proTxHash);
-    if (!dmn)
+    if (!dmn) {
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-hash");
+    }
 
     if (!CheckInputsHash(tx, *opt_ptx, state)) {
         // pass the state returned by the function above
