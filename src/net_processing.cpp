@@ -14,7 +14,7 @@
 #include <consensus/validation.h>
 #include <hash.h>
 #include <index/blockfilterindex.h>
-#include <validation.h>
+#include <kernel/mempool_entry.h>
 #include <merkleblock.h>
 #include <netmessagemaker.h>
 #include <netbase.h>
@@ -38,6 +38,7 @@
 #include <util/system.h>
 #include <util/strencodings.h>
 #include <util/trace.h>
+#include <validation.h>
 
 #include <algorithm>
 #include <atomic>

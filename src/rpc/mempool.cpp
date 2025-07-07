@@ -7,6 +7,7 @@
 
 #include <core_io.h>
 #include <fs.h>
+#include <kernel/mempool_entry.h>
 #include <policy/settings.h>
 #include <primitives/transaction.h>
 #include <rpc/server.h>

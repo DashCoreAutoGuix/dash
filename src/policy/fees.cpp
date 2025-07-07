@@ -8,6 +8,7 @@
 #include <clientversion.h>
 #include <consensus/amount.h>
 #include <fs.h>
+#include <kernel/mempool_entry.h>
 #include <logging.h>
 #include <policy/feerate.h>
 #include <primitives/transaction.h>

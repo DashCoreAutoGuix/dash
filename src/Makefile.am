@@ -230,6 +230,7 @@ BITCOIN_CORE_H = \
   interfaces/ipc.h \
   interfaces/node.h \
   interfaces/wallet.h \
+  kernel/mempool_entry.h \
   key.h \
   key_io.h \
   limitedmap.h \
