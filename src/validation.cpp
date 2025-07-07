@@ -47,6 +47,7 @@
 #include <util/trace.h>
 #include <util/translation.h>
 #include <util/system.h>
+#include <util/time.h>
 #include <validationinterface.h>
 #include <warnings.h>
 
@@ -1604,7 +1605,7 @@ bool CChainState::IsInitialBlockDownload() const
         return true;
     if (m_chain.Tip()->nChainWork < nMinimumChainWork)
         return true;
-    if (m_chain.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))
+    if (m_chain.Tip()->GetBlockTime() < (Now<NodeSeconds>().time_since_epoch().count() - nMaxTipAge))
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     m_cached_finished_ibd.store(true, std::memory_order_relaxed);
