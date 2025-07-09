@@ -960,13 +960,14 @@ static std::optional<ProTx> GetValidatedPayload(const CTransaction& tx, gsl::not
 /**
  * Validates potential changes to masternode state version by ProTx transaction version
  * @param[in]  pindexPrev    Previous block index to validate DEPLOYMENT_V23 activation
+ * @param[in]  tx_type       Special transaction type
  * @param[in]  state_version Current masternode state version
  * @param[in]  tx_version    Proposed transaction version
  * @param[out] state         This may be set to an Error state if any error occurred processing them
  * @returns                  true if version change is valid or DEPLOYMENT_V23 is not active
  */
-bool IsVersionChangeValid(gsl::not_null<const CBlockIndex*> pindexPrev, const uint16_t state_version, const uint16_t tx_version,
-                          TxValidationState& state)
+bool IsVersionChangeValid(gsl::not_null<const CBlockIndex*> pindexPrev, const uint16_t tx_type,
+                          const uint16_t state_version, const uint16_t tx_version, TxValidationState& state)
 {
     if (!DeploymentActiveAfter(pindexPrev, Params().GetConsensus(), Consensus::DEPLOYMENT_V23)) {
         // New restrictions only apply after v23 deployment
@@ -981,6 +982,11 @@ bool IsVersionChangeValid(gsl::not_null<const CBlockIndex*> pindexPrev, const ui
     if (state_version == ProTxVersion::LegacyBLS && tx_version > ProTxVersion::BasicBLS) {
         // Nodes using the legacy scheme must first upgrade to the basic scheme before upgrading further
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-version-upgrade");
+    }
+
+    if (tx_type != TRANSACTION_PROVIDER_UPDATE_SERVICE && tx_version == ProTxVersion::ExtAddr) {
+        // Only new entries (ProRegTx) and service updates (ProUpServTx) can use ExtAddr versioning
+        return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-version-tx-type");
     }
 
     return true;
@@ -1133,7 +1139,7 @@ bool CheckProUpServTx(CDeterministicMNManager& dmnman, const CTransaction& tx, g
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-hash");
     }
 
-    if (!IsVersionChangeValid(pindexPrev, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
+    if (!IsVersionChangeValid(pindexPrev, tx.nType, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
         // pass the state returned by the function above
         return false;
     }
@@ -1200,7 +1206,7 @@ bool CheckProUpRegTx(CDeterministicMNManager& dmnman, const CTransaction& tx, gs
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-hash");
     }
 
-    if (!IsVersionChangeValid(pindexPrev, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
+    if (!IsVersionChangeValid(pindexPrev, tx.nType, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
         // pass the state returned by the function above
         return false;
     }
@@ -1264,7 +1270,7 @@ bool CheckProUpRevTx(CDeterministicMNManager& dmnman, const CTransaction& tx, gs
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-protx-hash");
     }
 
-    if (!IsVersionChangeValid(pindexPrev, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
+    if (!IsVersionChangeValid(pindexPrev, tx.nType, dmn->pdmnState->nVersion, opt_ptx->nVersion, state)) {
         // pass the state returned by the function above
         return false;
     }
