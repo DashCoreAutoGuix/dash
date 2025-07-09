@@ -353,7 +353,6 @@ public:
     std::map<std::pair<uint256, CKeyID>, CKey> m_descriptor_keys;
     std::map<std::pair<uint256, CKeyID>, std::pair<CPubKey, std::vector<unsigned char>>> m_descriptor_crypt_keys;
     bool tx_corrupt{false};
-    bool descriptor_unknown{false};
     bool unexpected_legacy_entry{false};
 
     CWalletScanState() {

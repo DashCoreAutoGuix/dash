@@ -56,8 +56,6 @@ enum class DBErrors
     TOO_NEW,
     LOAD_FAIL,
     NEED_REWRITE,
-    NEED_RESCAN,
-    UNKNOWN_DESCRIPTOR,
     UNEXPECTED_LEGACY_ENTRY
 };
 
