@@ -2,13 +2,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#if defined(HAVE_CONFIG_H)
+#include <config/bitcoin-config.h>
+#endif
+
 #include <util/check.h>
 
 #include <tinyformat.h>
 
 #include <cstdio>
 #include <cstdlib>
-#include <string>
 
 std::string StrFormatInternalBug(const char* msg, const char* file, int line, const char* func)
 {
