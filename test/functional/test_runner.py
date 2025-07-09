@@ -100,6 +100,7 @@ BASE_SCRIPTS = [
     'wallet_backup.py --legacy-wallet',
     'wallet_backup.py --descriptors',
     # vv Tests less than 5m vv
+    'feature_fee_estimation.py',
     'mining_getblocktemplate_longpoll.py', # FIXME: "socket.error: [Errno 54] Connection reset by peer" on my Mac, same as https://github.com/bitcoin/bitcoin/issues/6651
     'feature_maxuploadtarget.py',
     'feature_block.py', # NOTE: needs dash_hash to pass
@@ -161,7 +162,6 @@ BASE_SCRIPTS = [
     'rpc_quorum.py',
     'wallet_keypool_topup.py --legacy-wallet',
     'wallet_keypool_topup.py --descriptors',
-    'feature_fee_estimation.py',
     'interface_zmq_dash.py --legacy-wallet',
     'interface_zmq.py',
     'rpc_invalid_address_message.py',
