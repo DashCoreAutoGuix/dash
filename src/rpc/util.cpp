@@ -537,7 +537,8 @@ UniValue RPCHelpMan::HandleRequest(const JSONRPCRequest& request) const
     if (request.mode == JSONRPCRequest::GET_HELP || !IsValidNumArgs(request.params.size())) {
         throw std::runtime_error(ToString());
     }
-    return m_fun(*this, request);
+    UniValue ret = m_fun(*this, request);
+    return ret;
 }
 
 bool RPCHelpMan::IsValidNumArgs(size_t num_args) const

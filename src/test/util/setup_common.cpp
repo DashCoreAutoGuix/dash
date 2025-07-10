@@ -466,7 +466,7 @@ CBlock TestChainSetup::CreateAndProcessBlock(
     }
 
     const CChainParams& chainparams = Params();
-    auto block = this->CreateBlock(txns, scriptPubKey, *chainstate);
+    CBlock block = this->CreateBlock(txns, scriptPubKey, *chainstate);
 
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(block);
     Assert(m_node.chainman)->ProcessNewBlock(chainparams, shared_pblock, true, nullptr);

@@ -2,12 +2,14 @@ Checks: '
 -*,
 bugprone-argument-comment,
 modernize-use-nullptr,
+performance-no-automatic-move,
 readability-redundant-declaration,
 readability-redundant-string-init,
 '
 WarningsAsErrors: '
 bugprone-argument-comment,
 modernize-use-nullptr,
+performance-no-automatic-move,
 readability-redundant-declaration,
 readability-redundant-string-init,
 '
