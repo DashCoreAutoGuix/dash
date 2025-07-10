@@ -164,7 +164,6 @@ BITCOIN_CORE_H = \
   coinjoin/util.h \
   coins.h \
   common/bloom.h \
-  common/run_command.h \
   common/url.h \
   compat/assumptions.h \
   compat/byteswap.h \
@@ -870,7 +869,6 @@ libbitcoin_util_a_SOURCES = \
   util/tokenpipe.cpp \
   util/wpipe.cpp \
   $(BITCOIN_CORE_H)
-#
 
 # cli: shared between dash-cli and dash-qt
 libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
