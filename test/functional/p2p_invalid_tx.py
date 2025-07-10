@@ -63,7 +63,6 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         block.solve()
         # Save the coinbase for later
         block1 = block
-        tip = block.sha256
 
         # Create a second one to test orphan resolution via block receival
         height += 1
@@ -72,7 +71,6 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         block.solve()
         # Save the coinbase for later
         block2 = block
-        tip = block.sha256
         node.p2ps[0].send_blocks_and_test([block1, block2], node, success=True)
 
         self.log.info("Mature the block.")
@@ -202,9 +200,8 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         rejected_parent.vin.append(CTxIn(outpoint=COutPoint(tx_orphan_2_invalid.sha256, 0)))
         rejected_parent.vout.append(CTxOut(nValue=11 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
         rejected_parent.rehash()
-        # TODO: somehow it fails on `block` stage without 'not keeping orphan'
-        #with node.assert_debug_log(['not keeping orphan with rejected parents {}'.format(rejected_parent.hash)]):
-        node.p2ps[0].send_txs_and_test([rejected_parent], node, success=False)
+        with node.assert_debug_log(['not keeping orphan with rejected parents {}'.format(rejected_parent.hash)]):
+            node.p2ps[0].send_txs_and_test([rejected_parent], node, success=False)
 
         self.log.info('Test that a peer disconnection causes erase its transactions from the orphan pool')
         with node.assert_debug_log(['Erased 100 orphan tx from peer=25']):
