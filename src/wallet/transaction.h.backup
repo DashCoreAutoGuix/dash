@@ -16,7 +16,12 @@
 #include <util/overloaded.h>
 #include <util/strencodings.h>
 #include <util/string.h>
+#include <wallet/types.h>
 
+#include <bitset>
+#include <cstdint>
+#include <map>
+#include <utility>
 #include <variant>
 #include <vector>
 

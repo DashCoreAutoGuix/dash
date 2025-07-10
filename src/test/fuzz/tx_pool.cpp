@@ -335,7 +335,7 @@ FUZZ_TARGET(tx_pool, .init = initialize_tx_pool)
         }
         if (fuzzed_data_provider.ConsumeBool()) {
             const auto txid = fuzzed_data_provider.ConsumeBool() ?
-                                   mut_tx.GetHash().ToUint256() :
+                                   mut_tx.GetHash() :
                                    PickValue(fuzzed_data_provider, txids);
             const auto delta = fuzzed_data_provider.ConsumeIntegralInRange<CAmount>(-50 * COIN, +50 * COIN);
             tx_pool.PrioritiseTransaction(txid, delta);
