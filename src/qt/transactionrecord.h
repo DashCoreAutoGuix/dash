@@ -94,14 +94,12 @@ public:
     TransactionRecord():
             hash(), time(0), type(Other), debit(0), credit(0), idx(0)
     {
-        txDest = DecodeDestination(strAddress);
     }
 
     TransactionRecord(uint256 _hash, qint64 _time):
             hash(_hash), time(_time), type(Other), debit(0),
             credit(0), idx(0)
     {
-        txDest = DecodeDestination(strAddress);
     }
 
     TransactionRecord(uint256 _hash, qint64 _time,
