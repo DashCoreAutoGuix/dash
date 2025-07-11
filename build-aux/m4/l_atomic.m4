@@ -21,6 +21,7 @@ m4_define([_CHECK_ATOMIC_testbody], [[
   int main() {
     std::atomic<bool> lock{true};
     lock.exchange(false);
+    std::atomic_exchange(&lock, false);
 
     std::atomic<std::chrono::seconds> t{0s};
     t.store(2s);
