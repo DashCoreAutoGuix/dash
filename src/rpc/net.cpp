@@ -143,16 +143,16 @@ static RPCHelpMan getpeerinfo()
                     {RPCResult::Type::BOOL, "bip152_hb_from", "Whether peer selected us as (compact blocks) high-bandwidth peer"},
                     {RPCResult::Type::BOOL, "masternode", "Whether connection was due to masternode connection attempt"},
                     {RPCResult::Type::NUM, "banscore", "The ban score (DEPRECATED, returned only if config option -deprecatedrpc=banscore is passed)"},
-                    {RPCResult::Type::NUM, "startingheight", /*optional=*/true, "The starting height (block) of the peer"},
-                    {RPCResult::Type::NUM, "synced_headers", /*optional=*/true, "The last header we have in common with this peer"},
-                    {RPCResult::Type::NUM, "synced_blocks", /*optional=*/true, "The last block we have in common with this peer"},
-                    {RPCResult::Type::ARR, "inflight", /*optional=*/true, "",
+                    {RPCResult::Type::NUM, "startingheight", "The starting height (block) of the peer"},
+                    {RPCResult::Type::NUM, "synced_headers", "The last header we have in common with this peer"},
+                    {RPCResult::Type::NUM, "synced_blocks", "The last block we have in common with this peer"},
+                    {RPCResult::Type::ARR, "inflight", "",
                     {
                         {RPCResult::Type::NUM, "n", "The heights of blocks we're currently asking from this peer"},
                     }},
-                    {RPCResult::Type::BOOL, "addr_relay_enabled", /*optional=*/true, "Whether we participate in address relay with this peer"},
-                    {RPCResult::Type::NUM, "addr_processed", /*optional=*/true, "The total number of addresses processed, excluding those dropped due to rate limiting"},
-                    {RPCResult::Type::NUM, "addr_rate_limited", /*optional=*/true, "The total number of addresses dropped due to rate limiting"},
+                    {RPCResult::Type::BOOL, "addr_relay_enabled", "Whether we participate in address relay with this peer"},
+                    {RPCResult::Type::NUM, "addr_processed", "The total number of addresses processed, excluding those dropped due to rate limiting"},
+                    {RPCResult::Type::NUM, "addr_rate_limited", "The total number of addresses dropped due to rate limiting"},
                     {RPCResult::Type::ARR, "permissions", "Any special permissions that have been granted to this peer",
                     {
                         {RPCResult::Type::STR, "permission_type", Join(NET_PERMISSIONS_DOC, ",\n") + ".\n"},
@@ -195,7 +195,7 @@ static RPCHelpMan getpeerinfo()
     for (const CNodeStats& stats : vstats) {
         UniValue obj(UniValue::VOBJ);
         CNodeStateStats statestats;
-        bool fStateStats = peerman.GetNodeStateStats(stats.nodeid, statestats);
+        [[maybe_unused]] bool fStateStats = peerman.GetNodeStateStats(stats.nodeid, statestats);
         obj.pushKV("id", stats.nodeid);
         obj.pushKV("addr", stats.m_addr_name);
         if (stats.addrBind.IsValid()) {
@@ -208,7 +208,7 @@ static RPCHelpMan getpeerinfo()
         if (stats.m_mapped_as != 0) {
             obj.pushKV("mapped_as", uint64_t(stats.m_mapped_as));
         }
-        ServiceFlags services{fStateStats ? statestats.their_services : ServiceFlags::NODE_NONE};
+        ServiceFlags services{statestats.their_services};
         obj.pushKV("services", strprintf("%016x", services));
         obj.pushKV("servicesnames", GetServicesNames(services));
         if (!stats.verifiedProRegTxHash.IsNull()) {
@@ -231,7 +231,7 @@ static RPCHelpMan getpeerinfo()
         if (stats.m_min_ping_time < std::chrono::microseconds::max()) {
             obj.pushKV("minping", Ticks<SecondsDouble>(stats.m_min_ping_time));
         }
-        if (fStateStats && statestats.m_ping_wait > 0s) {
+        if (statestats.m_ping_wait > 0s) {
             obj.pushKV("pingwait", Ticks<SecondsDouble>(statestats.m_ping_wait));
         }
         obj.pushKV("version", stats.nVersion);
@@ -243,24 +243,22 @@ static RPCHelpMan getpeerinfo()
         obj.pushKV("bip152_hb_to", stats.m_bip152_highbandwidth_to);
         obj.pushKV("bip152_hb_from", stats.m_bip152_highbandwidth_from);
         obj.pushKV("masternode", stats.m_masternode_connection);
-        if (fStateStats) {
-            if (IsDeprecatedRPCEnabled("banscore")) {
-                // TODO: banscore is deprecated in v21 for removal in v22, maybe impossible due to usages in p2p_quorum_data.py
-                obj.pushKV("banscore", statestats.m_misbehavior_score);
-            }
-            obj.pushKV("startingheight", statestats.m_starting_height);
-            obj.pushKV("synced_headers", statestats.nSyncHeight);
-            obj.pushKV("synced_blocks", statestats.nCommonHeight);
-            UniValue heights(UniValue::VARR);
-            for (const int height : statestats.vHeightInFlight) {
-                heights.push_back(height);
-            }
-            obj.pushKV("inflight", heights);
-            obj.pushKV("relaytxes", statestats.m_relay_txs);
-            obj.pushKV("addr_relay_enabled", statestats.m_addr_relay_enabled);
-            obj.pushKV("addr_processed", statestats.m_addr_processed);
-            obj.pushKV("addr_rate_limited", statestats.m_addr_rate_limited);
+        if (IsDeprecatedRPCEnabled("banscore")) {
+            // TODO: banscore is deprecated in v21 for removal in v22, maybe impossible due to usages in p2p_quorum_data.py
+            obj.pushKV("banscore", statestats.m_misbehavior_score);
         }
+        obj.pushKV("startingheight", statestats.m_starting_height);
+        obj.pushKV("synced_headers", statestats.nSyncHeight);
+        obj.pushKV("synced_blocks", statestats.nCommonHeight);
+        UniValue heights(UniValue::VARR);
+        for (const int height : statestats.vHeightInFlight) {
+            heights.push_back(height);
+        }
+        obj.pushKV("inflight", heights);
+        obj.pushKV("relaytxes", statestats.m_relay_txs);
+        obj.pushKV("addr_relay_enabled", statestats.m_addr_relay_enabled);
+        obj.pushKV("addr_processed", statestats.m_addr_processed);
+        obj.pushKV("addr_rate_limited", statestats.m_addr_rate_limited);
         UniValue permissions(UniValue::VARR);
         for (const auto& permission : NetPermissions::ToStrings(stats.m_permission_flags)) {
             permissions.push_back(permission);
