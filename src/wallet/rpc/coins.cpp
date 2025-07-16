@@ -296,7 +296,10 @@ RPCHelpMan lockunspent()
 
     LOCK(pwallet->cs_wallet);
 
-    RPCTypeCheckArgument(request.params[0], UniValue::VBOOL);
+    if (request.params[0].type() != UniValue::VBOOL) {
+        throw JSONRPCError(RPC_TYPE_ERROR,
+                           strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[0].type()), uvTypeName(UniValue::VBOOL)));
+    }
 
     bool fUnlock = request.params[0].get_bool();
 
@@ -310,7 +313,10 @@ RPCHelpMan lockunspent()
         return true;
     }
 
-    RPCTypeCheckArgument(request.params[1], UniValue::VARR);
+    if (request.params[1].type() != UniValue::VARR) {
+        throw JSONRPCError(RPC_TYPE_ERROR,
+                           strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[1].type()), uvTypeName(UniValue::VARR)));
+    }
 
     const UniValue& output_params = request.params[1];
 
@@ -567,19 +573,28 @@ RPCHelpMan listunspent()
 
     int nMinDepth = 1;
     if (!request.params[0].isNull()) {
-        RPCTypeCheckArgument(request.params[0], UniValue::VNUM);
+        if (request.params[0].type() != UniValue::VNUM) {
+            throw JSONRPCError(RPC_TYPE_ERROR,
+                               strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[0].type()), uvTypeName(UniValue::VNUM)));
+        }
         nMinDepth = request.params[0].get_int();
     }
 
     int nMaxDepth = 9999999;
     if (!request.params[1].isNull()) {
-        RPCTypeCheckArgument(request.params[1], UniValue::VNUM);
+        if (request.params[1].type() != UniValue::VNUM) {
+            throw JSONRPCError(RPC_TYPE_ERROR,
+                               strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[1].type()), uvTypeName(UniValue::VNUM)));
+        }
         nMaxDepth = request.params[1].get_int();
     }
 
     std::set<CTxDestination> destinations;
     if (!request.params[2].isNull()) {
-        RPCTypeCheckArgument(request.params[2], UniValue::VARR);
+        if (request.params[2].type() != UniValue::VARR) {
+            throw JSONRPCError(RPC_TYPE_ERROR,
+                               strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[2].type()), uvTypeName(UniValue::VARR)));
+        }
         UniValue inputs = request.params[2].get_array();
         for (unsigned int idx = 0; idx < inputs.size(); idx++) {
             const UniValue& input = inputs[idx];
@@ -595,7 +610,10 @@ RPCHelpMan listunspent()
 
     bool include_unsafe = true;
     if (!request.params[3].isNull()) {
-        RPCTypeCheckArgument(request.params[3], UniValue::VBOOL);
+        if (request.params[3].type() != UniValue::VBOOL) {
+            throw JSONRPCError(RPC_TYPE_ERROR,
+                               strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[3].type()), uvTypeName(UniValue::VBOOL)));
+        }
         include_unsafe = request.params[3].get_bool();
     }
 

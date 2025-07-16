@@ -65,7 +65,10 @@ static RPCHelpMan estimatesmartfee()
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     RPCTypeCheck(request.params, {UniValue::VNUM, UniValue::VSTR});
-    RPCTypeCheckArgument(request.params[0], UniValue::VNUM);
+    if (request.params[0].type() != UniValue::VNUM) {
+        throw JSONRPCError(RPC_TYPE_ERROR,
+                           strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[0].type()), uvTypeName(UniValue::VNUM)));
+    }
 
     CBlockPolicyEstimator& fee_estimator = EnsureAnyFeeEstimator(request.context);
     const NodeContext& node = EnsureAnyNodeContext(request.context);
@@ -157,7 +160,10 @@ static RPCHelpMan estimaterawfee()
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     RPCTypeCheck(request.params, {UniValue::VNUM, UniValue::VNUM}, true);
-    RPCTypeCheckArgument(request.params[0], UniValue::VNUM);
+    if (request.params[0].type() != UniValue::VNUM) {
+        throw JSONRPCError(RPC_TYPE_ERROR,
+                           strprintf("JSON value of type %s is not of expected type %s", uvTypeName(request.params[0].type()), uvTypeName(UniValue::VNUM)));
+    }
 
     CBlockPolicyEstimator& fee_estimator = EnsureAnyFeeEstimator(request.context);
 
