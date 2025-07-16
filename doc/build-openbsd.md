@@ -37,17 +37,18 @@ BerkeleyDB is only necessary for the wallet functionality. To skip this, pass
 
 It is recommended to use Berkeley DB 4.8. You cannot use the BerkeleyDB library
 from ports, for the same reason as boost above (g++/libstd++ incompatibility).
-If you have to build it yourself, you can use [the installation script included
-in contrib/](/contrib/install_db4.sh) like so:
+However you can build it yourself, [using depends](/depends).
 
 ```bash
-./contrib/install_db4.sh `pwd` CC=cc CXX=c++
+gmake -C depends NO_BOOST=1 NO_LIBEVENT=1 NO_QT=1 NO_SQLITE=1 NO_NATPMP=1 NO_UPNP=1 NO_ZMQ=1 NO_USDT=1
+...
+to: /path/to/dash/depends/x86_64-unknown-openbsd
 ```
 
-from the root of the repository. Then set `BDB_PREFIX` for the next section:
+Then set `BDB_PREFIX`:
 
 ```bash
-export BDB_PREFIX="$PWD/db4"
+export BDB_PREFIX="/path/to/dash/depends/x86_64-unknown-openbsd"
 ```
 
 ### Building Dash Core
