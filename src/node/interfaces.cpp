@@ -483,7 +483,7 @@ public:
     {
         return m_context->mn_activeman != nullptr;
     }
-    bool isLoadingBlocks() override { return node::fReindex || node::fImporting; }
+    bool isLoadingBlocks() override { return m_context->chainman->m_blockman.LoadingBlocks(); }
     void setNetworkActive(bool active) override
     {
         if (m_context->connman) {
@@ -960,7 +960,7 @@ public:
         LOCK(::cs_main);
         return m_node.chainman->m_blockman.m_have_pruned;
     }
-    bool isReadyToBroadcast() override { return !node::fImporting && !node::fReindex && !isInitialBlockDownload(); }
+    bool isReadyToBroadcast() override { return !m_context->chainman->m_blockman.LoadingBlocks() && !isInitialBlockDownload(); }
     bool isInitialBlockDownload() override {
         return chainman().ActiveChainstate().IsInitialBlockDownload();
     }

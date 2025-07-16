@@ -1598,7 +1598,7 @@ bool CChainState::IsInitialBlockDownload() const
     LOCK(cs_main);
     if (m_cached_finished_ibd.load(std::memory_order_relaxed))
         return false;
-    if (fImporting || fReindex)
+    if (m_blockman.LoadingBlocks())
         return true;
     if (m_chain.Tip() == nullptr)
         return true;

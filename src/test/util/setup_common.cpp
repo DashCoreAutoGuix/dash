@@ -300,7 +300,7 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
                                            m_node.mnhf_manager,
                                            m_node.llmq_ctx,
                                            Assert(m_node.mempool.get()),
-                                           fPruneMode,
+                                           Assert(m_node.chainman.get())->m_blockman.IsPruneMode(),
                                            m_args.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX),
                                            !m_args.GetBoolArg("-disablegovernance", !DEFAULT_GOVERNANCE_ENABLE),
                                            m_args.GetBoolArg("-spentindex", DEFAULT_SPENTINDEX),
