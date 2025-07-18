@@ -1485,7 +1485,7 @@ if test "$use_natpmp" != "no"; then
   CPPFLAGS="$TEMP_CPPFLAGS"
 fi
 
-if test "$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$use_tests$use_bench$enable_fuzz_binary" = "nononononononono"; then
+if test "$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoin_util$build_bitcoind$bitcoin_enable_qt$use_tests$use_bench$enable_fuzz_binary" = "nonononononononono"; then
     use_boost=no
 else
     use_boost=yes
@@ -1816,7 +1816,7 @@ else
 fi
 AC_MSG_RESULT($dsymutil_needs_flat)
 
-if test "$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$enable_fuzz_binary$use_bench$use_tests" = "nononononononono"; then
+if test "$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoin_util$build_bitcoind$bitcoin_enable_qt$enable_fuzz_binary$use_bench$use_tests" = "nonononononononono"; then
   AC_MSG_ERROR([No targets! Please specify at least one of: --with-utils --with-libs --with-daemon --with-gui --enable-fuzz(-binary) --enable-bench or --enable-tests])
 fi
 
