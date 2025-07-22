@@ -740,7 +740,7 @@ static RPCHelpMan setban()
     if (strCommand != "add" && strCommand != "remove") {
         throw std::runtime_error(help.ToString());
     }
-    NodeContext& node = EnsureAnyNodeContext(request.context);
+    const NodeContext& node = EnsureAnyNodeContext(request.context);
     BanMan& banman = EnsureBanman(node);
 
     CSubNet subNet;
