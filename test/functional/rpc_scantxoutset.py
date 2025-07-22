@@ -17,6 +17,7 @@ from decimal import Decimal
 def descriptors(out):
     return sorted(u['desc'] for u in out['unspents'])
 
+
 class ScantxoutsetTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
@@ -44,18 +45,18 @@ class ScantxoutsetTest(BitcoinTestFramework):
         self.sendtodestination(spk3, 0.004)
 
         #send to child keys of tprv8ZgxMBicQKsPd7Uf69XL1XwhmjHopUGep8GuEiJDZmbQz6o58LninorQAfcKZWARbtRtfnLcJ5MQ2AtHcQJCCRUcMRvmDUjyEmNUWwx8UbK
-        self.sendtodestination("yR5yZLjevw5kX3UxGiQN1g96LXGJni2wSS", 0.008) # (m/0'/0'/0')
-        self.sendtodestination("yPcxzaQekxTjaJVSaZ58r22o37H8moWPK2", 0.016) # (m/0'/0'/1')
-        self.sendtodestination("yhv7iRHSx4SgyvCPmkm6Js8gTuJTtJH9ec", 0.032) # (m/0'/0'/1500')
-        self.sendtodestination("yWEdyyKVNbmaiXHkg3LVPqgoXpMA3S6Xt7", 0.064) # (m/0'/0'/0)
-        self.sendtodestination("yTGAdq8sSHJ1QrcqSUaMHs8RMj3Bqz3bkb", 0.128) # (m/0'/0'/1)
-        self.sendtodestination("yRTNkmjXjhatND4Dv3V4GwBzYJQ4o9ukQr", 0.256) # (m/0'/0'/1500)
-        self.sendtodestination("yPwUp9Vwmr4zE6rSuZg3TBxeyRerdRAbNd", 0.512) # (m/1/1/0')
-        self.sendtodestination("yLapNU3bG8E8JNGXRhZbRHHDifrqTucGcg", 1.024) # (m/1/1/1')
-        self.sendtodestination("yUhbAKf7AcTC5sPXb2dkABKm3FYENqdzv2", 2.048) # (m/1/1/1500')
-        self.sendtodestination("yZTyMdEJjZWJi6CwY6g3WurLESH3UsWrrM", 4.096) # (m/1/1/0)
-        self.sendtodestination("ydccVGNV2EcEouAxbbgdu8pi8gkdaqkiav", 8.192) # (m/1/1/1)
-        self.sendtodestination("yVCdQxPXJ3SrtTLv8FuLXDNaynz6kmjPNq", 16.384) # (m/1/1/1500)
+        self.sendtodestination("yR5yZLjevw5kX3UxGiQN1g96LXGJni2wSS", 0.008)  # (m/0'/0'/0')
+        self.sendtodestination("yPcxzaQekxTjaJVSaZ58r22o37H8moWPK2", 0.016)  # (m/0'/0'/1')
+        self.sendtodestination("yhv7iRHSx4SgyvCPmkm6Js8gTuJTtJH9ec", 0.032)  # (m/0'/0'/1500')
+        self.sendtodestination("yWEdyyKVNbmaiXHkg3LVPqgoXpMA3S6Xt7", 0.064)  # (m/0'/0'/0)
+        self.sendtodestination("yTGAdq8sSHJ1QrcqSUaMHs8RMj3Bqz3bkb", 0.128)  # (m/0'/0'/1)
+        self.sendtodestination("yRTNkmjXjhatND4Dv3V4GwBzYJQ4o9ukQr", 0.256)  # (m/0'/0'/1500)
+        self.sendtodestination("yPwUp9Vwmr4zE6rSuZg3TBxeyRerdRAbNd", 0.512)  # (m/1/1/0')
+        self.sendtodestination("yLapNU3bG8E8JNGXRhZbRHHDifrqTucGcg", 1.024)  # (m/1/1/1')
+        self.sendtodestination("yUhbAKf7AcTC5sPXb2dkABKm3FYENqdzv2", 2.048)  # (m/1/1/1500')
+        self.sendtodestination("yZTyMdEJjZWJi6CwY6g3WurLESH3UsWrrM", 4.096)  # (m/1/1/0)
+        self.sendtodestination("ydccVGNV2EcEouAxbbgdu8pi8gkdaqkiav", 8.192)  # (m/1/1/1)
+        self.sendtodestination("yVCdQxPXJ3SrtTLv8FuLXDNaynz6kmjPNq", 16.384)  # (m/1/1/1500)
 
 
         self.generate(self.nodes[0], 1)
@@ -125,6 +126,7 @@ class ScantxoutsetTest(BitcoinTestFramework):
 
         # Check that second arg is needed for start
         assert_raises_rpc_error(-1, "scanobjects argument is required for the start action", self.nodes[0].scantxoutset, "start")
+
 
 if __name__ == '__main__':
     ScantxoutsetTest().main()
