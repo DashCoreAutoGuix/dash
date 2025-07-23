@@ -971,6 +971,14 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
         result = DBErrors::CORRUPT;
     }
 
+    // After loading all tx records, abandon any coinbase that is no longer in the active chain.
+    // This could happen during an external wallet load, or if the user replaced the chain data.
+    for (auto& [id, wtx] : pwallet->mapWallet) {
+        if (wtx.IsCoinBase() && wtx.isInactive()) {
+            pwallet->AbandonTransaction(wtx);
+        }
+    }
+
     return result;
 }
 

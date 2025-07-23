@@ -1201,6 +1201,11 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
     return true;
 }
 
+bool CWallet::AbandonTransaction(CWalletTx& tx)
+{
+    return AbandonTransaction(tx.GetHash());
+}
+
 bool CWallet::ResendTransaction(const uint256& hashTx)
 {
     LOCK(cs_wallet);
