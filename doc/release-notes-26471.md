@@ -1,5 +1,4 @@
-Updated settings
-----------------
+# Updated settings
 
 - Setting `-blocksonly` will now reduce the maximum mempool memory
   to 5MB (users may still use `-maxmempool` to override). Previously,
