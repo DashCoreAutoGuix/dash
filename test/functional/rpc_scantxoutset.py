@@ -27,7 +27,8 @@ class ScantxoutsetTest(BitcoinTestFramework):
         # interpret strings as addresses, assume scriptPubKey otherwise
         if isinstance(destination, str):
             destination = address_to_scriptpubkey(destination)
-        self.wallet.send_to(from_node=self.nodes[0], scriptPubKey=destination, amount=int(COIN * amount))
+        txid, n = self.wallet.send_to(from_node=self.nodes[0], scriptPubKey=destination, amount=int(COIN * amount))
+        return txid
 
     def run_test(self):
         self.wallet = MiniWallet(self.nodes[0])
@@ -40,9 +41,12 @@ class ScantxoutsetTest(BitcoinTestFramework):
         pubk1, spk1, addr1 = getnewdestination("legacy")
         pubk2, spk2, addr2 = getnewdestination("legacy")
         pubk3, spk3, addr3 = getnewdestination("legacy")
-        self.sendtodestination(spk1, 0.001)
-        self.sendtodestination(spk2, 0.002)
-        self.sendtodestination(spk3, 0.004)
+        txid = self.sendtodestination(spk1, 0.001)
+        self.nodes[0].lockunspent(unlock=False, transactions=[{"txid": txid, "vout": 0}, {"txid": txid, "vout": 1}])
+        txid = self.sendtodestination(spk2, 0.002)
+        self.nodes[0].lockunspent(unlock=False, transactions=[{"txid": txid, "vout": 0}, {"txid": txid, "vout": 1}])
+        txid = self.sendtodestination(spk3, 0.004)
+        self.nodes[0].lockunspent(unlock=False, transactions=[{"txid": txid, "vout": 0}, {"txid": txid, "vout": 1}])
 
         #send to child keys of tprv8ZgxMBicQKsPd7Uf69XL1XwhmjHopUGep8GuEiJDZmbQz6o58LninorQAfcKZWARbtRtfnLcJ5MQ2AtHcQJCCRUcMRvmDUjyEmNUWwx8UbK
         self.sendtodestination("yR5yZLjevw5kX3UxGiQN1g96LXGJni2wSS", 0.008)  # (m/0'/0'/0')
