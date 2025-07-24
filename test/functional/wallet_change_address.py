@@ -58,15 +58,15 @@ class WalletChangeAddressTest(BitcoinTestFramework):
         addr2 = [self.nodes[2].getnewaddress() for _ in range(3)]
         addrs = addr1 + addr2
 
-        # Send 1 + 0.5 coin to each address
-        [self.nodes[0].sendtoaddress(addr, 1.0) for addr in addrs]
-        [self.nodes[0].sendtoaddress(addr, 0.5) for addr in addrs]
+        # Send 10 + 5 coin to each address
+        [self.nodes[0].sendtoaddress(addr, 10) for addr in addrs]
+        [self.nodes[0].sendtoaddress(addr, 5) for addr in addrs]
         self.generate(self.nodes[0], 1)
 
         for i in range(20):
             for n in [1, 2]:
                 self.log.debug(f"Send transaction from node {n}: expected change index {i}")
-                txid = self.nodes[n].sendtoaddress(self.nodes[0].getnewaddress(), 0.2)
+                txid = self.nodes[n].sendtoaddress(self.nodes[0].getnewaddress(), 2)
                 tx = self.nodes[n].getrawtransaction(txid, True)
                 # find the change output and ensure that expected change index was used
                 self.assert_change_index(self.nodes[n], tx, i)
