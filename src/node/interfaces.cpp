@@ -606,7 +606,6 @@ public:
         m_masternodeSync.setContext(context);
     }
     ArgsManager& args() { return *Assert(Assert(m_context)->args); }
-    ChainstateManager& chainman() { return *Assert(m_context->chainman); }
     NodeContext* m_context{nullptr};
 };
 
