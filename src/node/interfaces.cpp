@@ -1039,7 +1039,6 @@ public:
     }
 
     ArgsManager& args() { return *Assert(m_node.args); }
-    ChainstateManager& chainman() { return *Assert(m_node.chainman); }
     NodeContext& m_node;
 };
 } // namespace

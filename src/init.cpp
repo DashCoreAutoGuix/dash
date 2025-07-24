@@ -1905,7 +1905,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     // ********************************************************* Step 7a: Load sporks
 
     if (!node.sporkman->LoadCache()) {
-        auto file_path = fs::PathToString(gArgs.GetDataDirNet() / "sporks.dat");
+        auto file_path = fs::PathToString(args.GetDataDirNet() / "sporks.dat");
         return InitError(strprintf(_("Failed to load sporks cache from %s"), file_path));
     }
 
@@ -2153,7 +2153,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     bool fLoadCacheFiles = !(fReindex || fReindexChainState) && (chainman.ActiveChain().Tip() != nullptr);
 
     if (!node.netfulfilledman->LoadCache(fLoadCacheFiles)) {
-        auto file_path = fs::PathToString(gArgs.GetDataDirNet() / "netfulfilled.dat");
+        auto file_path = fs::PathToString(args.GetDataDirNet() / "netfulfilled.dat");
         if (fLoadCacheFiles) {
             return InitError(strprintf(_("Failed to load fulfilled requests cache from %s"), file_path));
         }
@@ -2161,7 +2161,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     }
 
     if (!node.mn_metaman->LoadCache(fLoadCacheFiles)) {
-        auto file_path = fs::PathToString(gArgs.GetDataDirNet() / "mncache.dat");
+        auto file_path = fs::PathToString(args.GetDataDirNet() / "mncache.dat");
         if (fLoadCacheFiles) {
             return InitError(strprintf(_("Failed to load masternode cache from %s"), file_path));
         }
@@ -2170,7 +2170,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     if (is_governance_enabled) {
         if (!node.govman->LoadCache(fLoadCacheFiles)) {
-            auto file_path = fs::PathToString(gArgs.GetDataDirNet() / "governance.dat");
+            auto file_path = fs::PathToString(args.GetDataDirNet() / "governance.dat");
             if (fLoadCacheFiles) {
                 return InitError(strprintf(_("Failed to load governance cache from %s"), file_path));
             }
