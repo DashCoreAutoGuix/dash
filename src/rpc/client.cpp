@@ -9,7 +9,6 @@
 #include <util/system.h>
 
 #include <set>
-#include <stdint.h>
 #include <string>
 #include <string_view>
 

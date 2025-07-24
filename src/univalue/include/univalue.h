@@ -11,7 +11,6 @@
 
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 #include <map>
 #include <cassert>
