@@ -12,7 +12,6 @@
 #include <QWidget>
 #include <QKeyEvent>
 
-class PlatformStyle;
 class TransactionDescDialog;
 class TransactionFilterProxy;
 class WalletModel;
@@ -87,8 +86,6 @@ private:
     void changeEvent(QEvent* e) override;
 
     bool eventFilter(QObject *obj, QEvent *event) override;
-
-    const PlatformStyle* m_platform_style;
 
     QList<TransactionDescDialog*> m_opened_dialogs;
 
