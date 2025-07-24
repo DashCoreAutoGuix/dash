@@ -16,6 +16,7 @@ variants.
   and test the values returned."""
 
 from test_framework.address import key_to_p2pkh
+from test_framework.blocktools import COINBASE_MATURITY
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.descriptors import descsum_create
 from test_framework.util import (
@@ -611,10 +612,10 @@ class ImportDescriptorsTest(BitcoinTestFramework):
         self.log.info("Test importing a descriptor to an encrypted wallet")
 
         descriptor = {"desc": descsum_create("pkh(" + xpriv + "/1h/*h)"),
-                              "timestamp": "now",
-                              "active": True,
-                              "range": [0,4000],
-                              "next_index": 4000}
+                      "timestamp": "now",
+                      "active": True,
+                      "range": [0,4000],
+                      "next_index": 4000}
 
         self.nodes[0].createwallet("temp_wallet", blank=True, descriptors=True)
         temp_wallet = self.nodes[0].get_wallet_rpc("temp_wallet")

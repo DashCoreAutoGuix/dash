@@ -26,7 +26,7 @@ class TransactionTimeRescanTest(BitcoinTestFramework):
         self.num_nodes = 3
         self.extra_args = [["-keypool=400"],
                            ["-keypool=400"],
-                           []
+                           [],
                           ]
 
     def skip_test_if_missing_module(self):
@@ -185,7 +185,7 @@ class TransactionTimeRescanTest(BitcoinTestFramework):
             temp_wallet = usernode.get_wallet_rpc("temp_wallet")
             temp_wallet.sethdseed(seed=hd_seed)
 
-            for i in range(399):
+            for _ in range(399):
                 temp_wallet.getnewaddress()
 
             self.generatetoaddress(usernode, COINBASE_MATURITY + 1, temp_wallet.getnewaddress())
