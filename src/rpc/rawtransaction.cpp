@@ -1050,6 +1050,10 @@ RPCHelpMan sendrawtransaction()
                             "/kB.\nSet to 0 to accept any fee rate.\n"},
                     {"instantsend", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED, "Deprecated and ignored"},
                     {"bypasslimits", RPCArg::Type::BOOL, RPCArg::Default{false}, "Bypass transaction policy limits"},
+                    {"maxburnamount", RPCArg::Type::AMOUNT, RPCArg::Default{FormatMoney(0)},
+                     "Reject transactions with provably unspendable outputs (e.g. 'datacarrier' outputs that use the OP_RETURN opcode) greater than the specified value, expressed in " + CURRENCY_UNIT + ".\n"
+                     "If burning funds through unspendable outputs is desired, increase this value.\n"
+                     "This check is based on heuristics and does not guarantee spendability of outputs.\n"},
                 },
                 RPCResult{
                     RPCResult::Type::STR_HEX, "", "The transaction hash in hex"
@@ -1069,13 +1073,24 @@ RPCHelpMan sendrawtransaction()
     RPCTypeCheck(request.params, {
         UniValue::VSTR,
         UniValueType(), // VNUM or VSTR, checked inside AmountFromValue()
-        UniValue::VBOOL
+        UniValue::VBOOL,
+        UniValue::VBOOL,
+        UniValueType() // VNUM or VSTR, checked inside AmountFromValue()
     });
+
+    const CAmount max_burn_amount = request.params[4].isNull() ? 0 : AmountFromValue(request.params[4]);
 
     CMutableTransaction mtx;
     if (!DecodeHexTx(mtx, request.params[0].get_str())) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed. Make sure the tx has at least one input.");
     }
+
+    for (const auto& out : mtx.vout) {
+        if((out.scriptPubKey.IsUnspendable() || !out.scriptPubKey.HasValidOps()) && out.nValue > max_burn_amount) {
+            throw JSONRPCTransactionError(TransactionError::MAX_BURN_EXCEEDED);
+        }
+    }
+
     CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
 
     const CFeeRate max_raw_tx_fee_rate = request.params[1].isNull() ?
