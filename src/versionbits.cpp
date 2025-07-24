@@ -141,7 +141,7 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
     if (pindex == nullptr)
         return stats;
 
-    // Find beginning of period
+    // Find how many blocks are in the current period
     const CBlockIndex* pindexEndOfPrevPeriod = pindex->GetAncestor(pindex->nHeight - ((pindex->nHeight + 1) % stats.period));
     stats.elapsed = pindex->nHeight - pindexEndOfPrevPeriod->nHeight;
 
