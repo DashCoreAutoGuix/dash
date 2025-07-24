@@ -11,39 +11,53 @@ from test_framework.util import (
     assert_raises_rpc_error,
 )
 
-
 BASE58_VALID = 'yjQ5gLvGRtmq1cwc4kePLCrzQ8GVCh9Gaz'
 BASE58_INVALID_PREFIX = 'XpG61qAVhdyN7AqVZQsHfJL7AEk4dPVinc'
+BASE58_INVALID_CHECKSUM = 'yjQ5gLvGRtmq1cwc4kePLCrzQ8GVCh9GZz'
+BASE58_INVALID_LENGTH = '2VKf7XKMrp4bVNVmuRbyCewkP8FhGLP2E54LHDPakr9Sq5mtU2'
 
 INVALID_ADDRESS = 'asfah14i8fajz0123f'
+INVALID_ADDRESS_2 = '1q049ldschfnwystcqnsvyfpj23mpsg3jcedq9xv'
 
 class InvalidAddressErrorMessageTest(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1
 
-    def test_validateaddress(self):
-        node = self.nodes[0]
-
-        # Base58
-        info = node.validateaddress(BASE58_INVALID_PREFIX)
-        assert not info['isvalid']
-        assert_equal(info['error'], 'Invalid prefix for Base58-encoded address')
-
-        info = node.validateaddress(BASE58_VALID)
+    def check_valid(self, addr):
+        info = self.nodes[0].validateaddress(addr)
         assert info['isvalid']
         assert 'error' not in info
+        assert 'error_locations' not in info
+
+    def check_invalid(self, addr, error_str, error_locations=None):
+        res = self.nodes[0].validateaddress(addr)
+        assert not res['isvalid']
+        assert_equal(res['error'], error_str)
+        if error_locations:
+            assert_equal(res['error_locations'], error_locations)
+        else:
+            assert_equal(res['error_locations'], [])
+
+    def test_validateaddress(self):
+        # Invalid Base58
+        self.check_invalid(BASE58_INVALID_PREFIX, 'Invalid prefix for Base58-encoded address')
+        self.check_invalid(BASE58_INVALID_CHECKSUM, 'Invalid checksum or length of Base58 address')
+        self.check_invalid(BASE58_INVALID_LENGTH, 'Invalid checksum or length of Base58 address')
+
+        # Valid Base58
+        self.check_valid(BASE58_VALID)
 
         # Invalid address format
-        info = node.validateaddress(INVALID_ADDRESS)
-        assert not info['isvalid']
-        assert_equal(info['error'], 'Invalid address format')
+        self.check_invalid(INVALID_ADDRESS, 'Invalid HRP or Base58 character in address')
+        self.check_invalid(INVALID_ADDRESS_2, 'Invalid HRP or Base58 character in address')
 
     def test_getaddressinfo(self):
         node = self.nodes[0]
 
         assert_raises_rpc_error(-5, "Invalid prefix for Base58-encoded address", node.getaddressinfo, BASE58_INVALID_PREFIX)
-        assert_raises_rpc_error(-5, "Invalid address format", node.getaddressinfo, INVALID_ADDRESS)
+
+        assert_raises_rpc_error(-5, "Invalid HRP or Base58 character in address", node.getaddressinfo, INVALID_ADDRESS)
 
     def run_test(self):
         self.test_validateaddress()
