@@ -578,8 +578,6 @@ WalletModel::UnlockContext::~UnlockContext()
     }
 }
 
-}
-
 bool WalletModel::isWalletEnabled()
 {
    return !gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET);
