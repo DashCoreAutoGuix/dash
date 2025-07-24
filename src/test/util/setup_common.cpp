@@ -316,6 +316,8 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
                                            /*coins_db_in_memory=*/true);
     assert(!maybe_load_error.has_value());
 
+    node::ChainstateLoadOptions options;
+    options.require_full_verification = m_args.IsArgSet("-checkblocks") || m_args.IsArgSet("-checklevel");
     auto maybe_verify_error = VerifyLoadedChainstate(
         *Assert(m_node.chainman),
         *Assert(m_node.evodb.get()),
@@ -327,7 +329,8 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
         /*get_unix_time_seconds=*/static_cast<int64_t(*)()>(GetTime),
         [](bool bls_state) {
             LogPrintf("%s: bls_legacy_scheme=%d\n", __func__, bls_state);
-        });
+        },
+        options);
     assert(!maybe_verify_error.has_value());
 
     m_node.banman = std::make_unique<BanMan>(m_args.GetDataDirBase() / "banlist", nullptr, DEFAULT_MISBEHAVING_BANTIME);
