@@ -19,7 +19,7 @@ from test_framework.util import (
     assert_greater_than,
     check_node_connections,
 )
-from test_framework.crypto.chacha20 import REKEY_INTERVAL
+from test_framework.crypto.chacha20 import REKEY_INTERVAL #type:ignore
 
 
 class P2PEncrypted(BitcoinTestFramework):
