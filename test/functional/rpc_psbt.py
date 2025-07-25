@@ -8,10 +8,13 @@
 from decimal import Decimal
 from itertools import product
 
+from test_framework.descriptors import descsum_create
+from test_framework.key import ECKey, bytes_to_wif
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_approx,
     assert_equal,
+    assert_greater_than,
     assert_raises_rpc_error,
     find_output
 )
