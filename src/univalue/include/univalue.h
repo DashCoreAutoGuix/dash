@@ -25,7 +25,6 @@ public:
               std::enable_if_t<std::is_floating_point_v<T> ||                      // setFloat
                                    std::is_same_v<bool, T> ||                      // setBool
                                    std::is_signed_v<T> || std::is_unsigned_v<T> || // setInt
-                                   std::is_enum_v<T> ||                            // setInt (for enums)
                                    std::is_constructible_v<std::string, T>,        // setStr
                                bool> = true>
     UniValue(Ref&& val)
@@ -38,8 +37,6 @@ public:
             setInt(int64_t{val});
         } else if constexpr (std::is_unsigned_v<T>) {
             setInt(uint64_t{val});
-        } else if constexpr (std::is_enum_v<T>) {
-            setInt(static_cast<std::underlying_type_t<T>>(val));
         } else {
             setStr(std::string{std::forward<Ref>(val)});
         }
