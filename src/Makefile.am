@@ -150,6 +150,7 @@ BITCOIN_CORE_H = \
   cachemultimap.h \
   blockfilter.h \
   chain.h \
+  chainlock/clsig.h \
   chainparams.h \
   chainparamsbase.h \
   chainparamsseeds.h \
@@ -240,7 +241,6 @@ BITCOIN_CORE_H = \
   limitedmap.h \
   llmq/blockprocessor.h \
   llmq/chainlocks.h \
-  llmq/clsig.h \
   llmq/commitment.h \
   llmq/context.h \
   llmq/debug.h \
@@ -456,6 +456,7 @@ libbitcoin_node_a_SOURCES = \
   blockencodings.cpp \
   blockfilter.cpp \
   chain.cpp \
+  chainlock/clsig.cpp \
   coinjoin/coinjoin.cpp \
   coinjoin/context.cpp \
   coinjoin/server.cpp \
@@ -500,7 +501,6 @@ libbitcoin_node_a_SOURCES = \
   instantsend/signing.cpp \
   llmq/blockprocessor.cpp \
   llmq/chainlocks.cpp \
-  llmq/clsig.cpp \
   llmq/commitment.cpp \
   llmq/context.cpp \
   llmq/debug.cpp \
