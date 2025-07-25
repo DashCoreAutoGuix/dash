@@ -597,7 +597,7 @@ BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup)
     BOOST_CHECK_EQUAL(list.begin()->second.size(), 1U);
 
     // Check initial balance from one mature coinbase transaction.
-    BOOST_CHECK_EQUAL(500 * COIN, GetAvailableBalance(*wallet));
+    BOOST_CHECK_EQUAL(500 * COIN, WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()));
 
     // Add a transaction creating a change address, and confirm ListCoins still
     // returns the coin associated with the change address underneath the
@@ -1431,7 +1431,7 @@ BOOST_FIXTURE_TEST_CASE(CreateTransactionTest, CreateTransactionTestSetup)
 BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup)
 {
     // Check initial balance from one mature coinbase transaction.
-    BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), 500 * COIN);
+    BOOST_CHECK_EQUAL(WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()), 500 * COIN);
 
     {
         std::vector<CompactTallyItem> vecTally = wallet->SelectCoinsGroupedByAddresses(/*fSkipDenominated=*/false,
