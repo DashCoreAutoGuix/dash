@@ -179,11 +179,14 @@ class TransactionTimeRescanTest(BitcoinTestFramework):
 
         if not self.options.descriptors:
             self.log.info("Test rescanning an encrypted wallet")
-            hd_seed = get_generate_key().privkey
+            # Generate a proper HD seed by getting a private key from an existing wallet
+            temp_seed_wallet = usernode.createwallet(wallet_name="temp_seed_wallet")
+            hd_seed = usernode.get_wallet_rpc("temp_seed_wallet").dumpprivkey(usernode.get_wallet_rpc("temp_seed_wallet").getnewaddress())
+            usernode.unloadwallet("temp_seed_wallet")
 
             usernode.createwallet(wallet_name="temp_wallet", blank=True, descriptors=False)
             temp_wallet = usernode.get_wallet_rpc("temp_wallet")
-            temp_wallet.sethdseed(seed=hd_seed)
+            temp_wallet.sethdseed(False, hd_seed)
 
             for _ in range(399):
                 temp_wallet.getnewaddress()
@@ -195,7 +198,7 @@ class TransactionTimeRescanTest(BitcoinTestFramework):
             encrypted_wallet = minernode.get_wallet_rpc("encrypted_wallet")
 
             encrypted_wallet.walletpassphrase("passphrase", 1)
-            encrypted_wallet.sethdseed(seed=hd_seed)
+            encrypted_wallet.sethdseed(False, hd_seed)
 
             batch = []
             batch.append(encrypted_wallet.walletpassphrase.get_request("passphrase", 3))
