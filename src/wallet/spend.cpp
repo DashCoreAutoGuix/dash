@@ -450,8 +450,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
     // calculate value from preset inputs and store them
     std::set<COutPoint> preset_coins;
 
-    std::vector<COutPoint> vPresetInputs;
-    coin_control.ListSelected(vPresetInputs);
+    auto vPresetInputs{coin_control.ListSelected()};
     for (const COutPoint& outpoint : vPresetInputs) {
         int input_bytes = -1;
         CTxOut txout;
@@ -465,9 +464,11 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
             input_bytes = CalculateMaximumSignedInputSize(txout, &wallet, &coin_control);
         } else {
             // The input is external. We did not find the tx in mapWallet.
-            if (!coin_control.GetExternalOutput(outpoint, txout)) {
+            const auto out{coin_control.GetExternalOutput(outpoint)};
+            if (!out) {
                 return std::nullopt;
             }
+            txout = *out;
             input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, &coin_control);
         }
         if (nCoinType == CoinType::ONLY_FULLY_MIXED) {
