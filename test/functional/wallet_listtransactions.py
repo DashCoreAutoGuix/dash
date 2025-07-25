@@ -26,7 +26,6 @@ class ListTransactionsTest(BitcoinTestFramework):
     def run_test(self):
         self.log.info("Test simple send from node0 to node1")
         txid = self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), 0.1)
-        self.sync_all()
         assert_array_result(self.nodes[0].listtransactions(),
                             {"txid": txid},
                             {"category": "send", "amount": Decimal("-0.1"), "confirmations": 0})
@@ -58,7 +57,6 @@ class ListTransactionsTest(BitcoinTestFramework):
                    self.nodes[0].getnewaddress(): 0.33,
                    self.nodes[1].getnewaddress(): 0.44}
         txid = self.nodes[1].sendmany("", send_to)
-        self.sync_all()
         assert_array_result(self.nodes[1].listtransactions(),
                             {"category": "send", "amount": Decimal("-0.11")},
                             {"txid": txid})
