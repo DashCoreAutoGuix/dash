@@ -14,6 +14,7 @@ import logging
 import os
 import random
 import re
+import shutil
 import time
 import unittest
 
@@ -222,6 +223,56 @@ def count_bytes(hex_string):
 
 def str_to_b64str(string):
     return b64encode(string.encode('utf-8')).decode('ascii')
+
+
+def random_bitflip(data):
+    """Flip a random bit in the provided data."""
+    data = list(data)
+    data[random.randrange(len(data))] ^= (1 << (random.randrange(8)))
+    return bytes(data)
+
+
+def copy_datadir(from_node, to_node, dirname, chain):
+    """Copy datadir from one node to another."""
+    from_datadir = os.path.join(dirname, "node"+str(from_node), chain)
+    to_datadir = os.path.join(dirname, "node"+str(to_node), chain)
+
+    dirs = ["blocks", "chainstate", "evodb", "llmq"]
+    for d in dirs:
+        try:
+            src = os.path.join(from_datadir, d)
+            dst = os.path.join(to_datadir, d)
+            shutil.copytree(src, dst)
+        except:
+            pass
+
+
+def force_finish_mnsync(node):
+    """
+    Masternodes won't accept incoming connections while IsSynced is false.
+    Force them to switch to this state to speed things up.
+    """
+    while not node.mnsync("status")['IsSynced']:
+        node.mnsync("next")
+
+
+def get_chain_conf_names(chain):
+    """
+    Translate chain name to config names
+    """
+    if chain == 'testnet3':
+        arg = 'testnet'
+        value = '1'
+        section = 'test'
+    elif chain == 'devnet':
+        arg = 'devnet'
+        value = 'devnet1'
+        section = 'devnet'
+    else:
+        arg = chain
+        value = '1'
+        section = chain
+    return (arg, value, section)
 
 
 def ceildiv(a, b):
