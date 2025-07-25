@@ -757,7 +757,10 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(utxos[0]['confirmations'], 1)
 
         # spend confirmed UTXO to ourselves
-        zeroconf_wallet.sendall(recipients=[zeroconf_wallet.getnewaddress()])
+        balance = zeroconf_wallet.getbalance()
+        new_addr = zeroconf_wallet.getnewaddress()
+        # Use sendtoaddress with max amount (balance minus fee)
+        zeroconf_wallet.sendtoaddress(new_addr, balance, "", "", True)
         utxos = zeroconf_wallet.listunspent(minconf=0)
         assert_equal(len(utxos), 1)
         assert_equal(utxos[0]['confirmations'], 0)
