@@ -116,6 +116,7 @@ class AvoidReuseTest(BitcoinTestFramework):
         assert_raises_rpc_error(-8, "Wallet flag is already set to true", self.nodes[1].setwalletflag, 'avoid_reuse', True)
 
         assert_raises_rpc_error(-8, "Unknown wallet flag: abc", self.nodes[0].setwalletflag, 'abc', True)
+
     def test_immutable(self):
         '''Test immutable wallet flags'''
         self.log.info("Test immutable wallet flags")
