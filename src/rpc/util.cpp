@@ -5,8 +5,6 @@
 #include <chainparamsbase.h>
 #include <clientversion.h>
 #include <consensus/amount.h>
-
-static constexpr bool DEFAULT_RPC_DOC_CHECK{false};
 #include <key_io.h>
 #include <outputtype.h>
 #include <pubkey.h>
@@ -542,7 +540,7 @@ UniValue RPCHelpMan::HandleRequest(const JSONRPCRequest& request) const
         throw std::runtime_error(ToString());
     }
     UniValue ret = m_fun(*this, request);
-    if (gArgs.GetBoolArg("-rpcdoccheck", DEFAULT_RPC_DOC_CHECK)) {
+    if (gArgs.GetBoolArg("-rpcdoccheck", false)) {
         UniValue mismatch{UniValue::VARR};
         for (const auto& res : m_results.m_results) {
             UniValue match{res.MatchesType(ret)};
