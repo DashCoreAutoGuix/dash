@@ -261,6 +261,27 @@ std::map<CTxDestination, std::vector<COutput>> ListCoins(const CWallet& wallet)
             result[address].emplace_back(coin);
         }
     }
+
+    // Include watch-only for LegacyScriptPubKeyMan wallets without private keys
+    const bool include_watch_only = wallet.GetLegacyScriptPubKeyMan() && wallet.IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS);
+    const isminetype is_mine_filter = include_watch_only ? ISMINE_WATCH_ONLY : ISMINE_SPENDABLE;
+    for (const COutPoint& output : wallet.setLockedCoins) {
+        auto it = wallet.mapWallet.find(output.hash);
+        if (it != wallet.mapWallet.end()) {
+            const auto& wtx = it->second;
+            int depth = wallet.GetTxDepthInMainChain(wtx);
+            if (depth >= 0 && output.n < wtx.tx->vout.size() &&
+                wallet.IsMine(wtx.tx->vout[output.n]) == is_mine_filter
+            ) {
+                CTxDestination address;
+                if (ExtractDestination(FindNonChangeParentOutput(wallet, output).scriptPubKey, address)) {
+                    result[address].emplace_back(
+                        COutPoint(wtx.GetHash(), output.n), wtx.tx->vout.at(output.n), depth, GetTxSpendSize(wallet, wtx, output.n), /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ false, wtx.GetTxTime(), CachedTxIsFromMe(wallet, wtx, ISMINE_ALL));
+                }
+            }
+        }
+    }
+
     return result;
 }
 
