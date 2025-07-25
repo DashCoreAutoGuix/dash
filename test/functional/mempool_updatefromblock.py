@@ -36,7 +36,7 @@ class MempoolUpdateFromBlockTest(BitcoinTestFramework):
         More details: https://en.wikipedia.org/wiki/Tournament_(graph_theory)
         """
         wallet = MiniWallet(self.nodes[0])
-        self.generatetoaddress(self.nodes[0], 1, wallet.get_address())  # Fund the wallet with initial UTXOs
+        wallet.generate(1)  # Fund the wallet with initial UTXOs
         first_block_hash = ''
         tx_id = []
         tx_size = []
