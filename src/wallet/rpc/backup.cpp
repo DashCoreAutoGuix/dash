@@ -2135,11 +2135,7 @@ RPCHelpMan restorewallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-<<<<<<< HEAD
     if (request.context.GetIntArg("-deprecatedrpc", 0) != 0) {
-=======
-    if (wallet->chain().rpcEnableDeprecated("walletwarningfield")) {
->>>>>>> 6a167325f0 (Merge bitcoin/bitcoin#27279: Add "warnings", deprecate "warning" in {create,load,unload,restore}wallet)
         obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
     }
     PushWarnings(warnings, obj);

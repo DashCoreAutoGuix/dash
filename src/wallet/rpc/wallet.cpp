@@ -14,6 +14,11 @@
 #include <wallet/rpc/util.h>
 #include <wallet/wallet.h>
 #include <wallet/walletutil.h>
+#include <key_io.h>
+
+#include <coinjoin/client.h>
+#include <coinjoin/options.h>
+#include <llmq/chainlocks.h>
 
 #include <optional>
 
@@ -206,7 +211,7 @@ static RPCHelpMan loadwallet()
 {
     return RPCHelpMan{"loadwallet",
                 "\nLoads a wallet from a wallet file or directory."
-                "\nNote that all wallet command-line options used when starting bitcoind will be"
+                "\nNote that all wallet command-line options used when starting dashd will be"
                 "\napplied to the new wallet.\n",
                 {
                     {"filename", RPCArg::Type::STR, RPCArg::Optional::NO, "The wallet directory or .dat file."},
