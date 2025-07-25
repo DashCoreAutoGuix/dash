@@ -1455,7 +1455,6 @@ static void SoftForkDescPushBack(const CBlockIndex* blockindex, const std::unord
 
 namespace {
 /* TODO: when -deprecatedrpc=softforks is removed, drop these */
-UniValue DeploymentInfo(const CBlockIndex* tip, const Consensus::Params& consensusParams);
 extern const std::vector<RPCResult> RPCHelpForDeployment;
 }
 
@@ -1619,68 +1618,8 @@ const std::vector<RPCResult> RPCHelpForDeployment{
     }},
 };
 
-UniValue DeploymentInfo(const CBlockIndex* blockindex, const Consensus::Params& consensusParams)
-{
-    UniValue softforks(UniValue::VOBJ);
-    std::unordered_map<uint8_t, int> signals{};  // Empty signals map for now
-    // Buried deployments
-    SoftForkDescPushBack(blockindex, softforks, consensusParams, Consensus::DEPLOYMENT_HEIGHTINCB);
-    SoftForkDescPushBack(blockindex, softforks, consensusParams, Consensus::DEPLOYMENT_DERSIG);
-    SoftForkDescPushBack(blockindex, softforks, consensusParams, Consensus::DEPLOYMENT_CLTV);
-    SoftForkDescPushBack(blockindex, softforks, consensusParams, Consensus::DEPLOYMENT_CSV);
-    SoftForkDescPushBack(blockindex, softforks, consensusParams, Consensus::DEPLOYMENT_SEGWIT);
-    // BIP9 deployments
-    SoftForkDescPushBack(blockindex, signals, softforks, consensusParams, Consensus::DEPLOYMENT_TESTDUMMY);
-    SoftForkDescPushBack(blockindex, signals, softforks, consensusParams, Consensus::DEPLOYMENT_TAPROOT);
-    return softforks;
-}
 } // anon namespace
 
-static RPCHelpMan getdeploymentinfo()
-{
-    return RPCHelpMan{"getdeploymentinfo",
-        "Returns an object containing various state info regarding deployments of consensus changes.",
-        {
-            {"blockhash", RPCArg::Type::STR_HEX, RPCArg::Default{"hash of current chain tip"}, "The block hash at which to query deployment state"},
-        },
-        RPCResult{
-            RPCResult::Type::OBJ, "", "", {
-                {RPCResult::Type::STR, "hash", "requested block hash (or tip)"},
-                {RPCResult::Type::NUM, "height", "requested block height (or tip)"},
-                {RPCResult::Type::OBJ, "deployments", "", {
-                    {RPCResult::Type::OBJ, "xxxx", "name of the deployment", RPCHelpForDeployment}
-                }},
-            }
-        },
-        RPCExamples{ HelpExampleCli("getdeploymentinfo", "") + HelpExampleRpc("getdeploymentinfo", "") },
-        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
-        {
-            const ChainstateManager& chainman = EnsureAnyChainman(request.context);
-            LOCK(cs_main);
-            const CChainState& active_chainstate = chainman.ActiveChainstate();
-
-            const CBlockIndex* blockindex;
-            if (request.params[0].isNull()) {
-                blockindex = active_chainstate.m_chain.Tip();
-                CHECK_NONFATAL(blockindex);
-            } else {
-                const uint256 hash(ParseHashV(request.params[0], "blockhash"));
-                blockindex = chainman.m_blockman.LookupBlockIndex(hash);
-                if (!blockindex) {
-                    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
-                }
-            }
-
-            const Consensus::Params& consensusParams = Params().GetConsensus();
-
-            UniValue deploymentinfo(UniValue::VOBJ);
-            deploymentinfo.pushKV("hash", blockindex->GetBlockHash().ToString());
-            deploymentinfo.pushKV("height", blockindex->nHeight);
-            deploymentinfo.pushKV("deployments", DeploymentInfo(blockindex, consensusParams));
-            return deploymentinfo;
-        },
-    };
-}
 
 /** Comparison function for sorting the getchaintips heads.  */
 struct CompareBlocksByHeight
