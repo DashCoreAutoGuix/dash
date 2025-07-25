@@ -933,7 +933,7 @@ CWalletTx* CWallet::AddToWallet(CTransactionRef tx, const TxState& state, const 
         wtx.nOrderPos = IncOrderPosNext(&batch);
         wtx.m_it_wtxOrdered = wtxOrdered.insert(std::make_pair(wtx.nOrderPos, &wtx));
         wtx.nTimeSmart = ComputeTimeSmart(wtx, rescanning_old_block);
-        AddToSpends(hash, &batch);
+        AddToSpends(wtx, &batch);
         candidates = AddWalletUTXOs(wtx.tx, /*ret_dups=*/true);
     }
 

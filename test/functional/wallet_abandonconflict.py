@@ -76,7 +76,7 @@ class AbandonConflictTest(BitcoinTestFramework):
         # Identify the 14.99998btc output
         nAB = next(tx_out["vout"] for tx_out in alice.gettransaction(txAB1)["details"] if tx_out["amount"] == Decimal("14.99998"))
 
-        #Create a child tx spending AB1 and C
+        # Create a child tx spending AB1 and C
         inputs = []
         inputs.append({"txid": txAB1, "vout": nAB})
         inputs.append({"txid": txC, "vout": nC})
@@ -117,7 +117,7 @@ class AbandonConflictTest(BitcoinTestFramework):
         balances = alice.getbalances()['mine']
         assert_equal(balances['untrusted_pending'] + balances['trusted'], newbalance)
         # Also shouldn't show up in listunspent
-        assert not txABC2 in [utxo["txid"] for utxo in alice.listunspent(0)]
+        assert txABC2 not in [utxo["txid"] for utxo in alice.listunspent(0)]
         balance = newbalance
 
         # Abandon original transaction and verify inputs are available again
