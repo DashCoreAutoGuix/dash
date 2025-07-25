@@ -500,35 +500,6 @@ if platform.system() == "Darwin":
 if config.zip is not None:
     shutil.make_archive('{}'.format(appname), format='zip', root_dir='dist', base_dir='Dash-Qt.app')
 
-    print("+ Preparing .dmg disk image +")
-
-    if verbose:
-        print("Determining size of \"dist\"...")
-    size = 0
-    for path, dirs, files in os.walk("dist"):
-        for file in files:
-            size += os.path.getsize(os.path.join(path, file))
-    size += int(size * 0.15)
-
-    if verbose:
-        print("Creating temp image for modification...")
-
-    tempname: str = appname + ".temp.dmg"
-
-    run(["hdiutil", "create", tempname, "-srcfolder", "dist", "-format", "UDRW", "-size", str(size), "-volname", appname], check=True, text=True)
-
-    if verbose:
-        print("Attaching temp image...")
-    output = run(["hdiutil", "attach", tempname, "-readwrite"], check=True, text=True, stdout=PIPE).stdout
-
-    print("+ Finalizing .dmg disk image +")
-
-    run(["hdiutil", "detach", f"/Volumes/{appname}"], text=True)
-
-    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", appname, "-imagekey", "zlib-level=9"], check=True, text=True)
-
-    os.unlink(tempname)
-
 # ------------------------------------------------
 
 print("+ Done +")
