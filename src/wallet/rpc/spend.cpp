@@ -374,10 +374,7 @@ void FundTransaction(CWallet& wallet, CMutableTransaction& tx, CAmount& fee_out,
         coinControl.fAllowWatchOnly = options.get_bool();
       }
       else {
-        if (options.type() != UniValue::VOBJ) {
-            throw JSONRPCError(RPC_TYPE_ERROR,
-                               strprintf("JSON value of type %s is not of expected type %s", uvTypeName(options.type()), uvTypeName(UniValue::VOBJ)));
-        }
+        RPCTypeCheckArgument(options, UniValue::VOBJ);
         RPCTypeCheckObj(options,
             {
                 {"add_inputs", UniValueType(UniValue::VBOOL)},
