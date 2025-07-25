@@ -348,6 +348,18 @@ def rpc_port(n):
     return PORT_MIN + PORT_RANGE + n + (MAX_NODES * PortSeed.n) % (PORT_RANGE - 1 - MAX_NODES)
 
 
+def get_chain_folder(datadir, chain):
+    # if try fails the directory doesn't exist
+    try:
+        for i in range(len(os.listdir(datadir))):
+            if chain in os.listdir(datadir)[i]:
+                chain = os.listdir(datadir)[i]
+                break
+    except:
+        pass
+    return chain
+
+
 def rpc_url(datadir, i, chain, rpchost):
     rpc_u, rpc_p = get_auth_cookie(datadir, chain)
     host = '127.0.0.1'
