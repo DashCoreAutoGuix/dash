@@ -456,26 +456,41 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, const std::vec
     coin_control.ListSelected(vPresetInputs);
     for (const COutPoint& outpoint : vPresetInputs)
     {
+        int input_bytes = -1;
+        CTxOut txout;
         std::map<uint256, CWalletTx>::const_iterator it = wallet.mapWallet.find(outpoint.hash);
-        if (it == wallet.mapWallet.end()) return std::nullopt; // TODO: Allow non-wallet inputs
-        const CWalletTx& wtx = it->second;
-        // Clearly invalid input, fail
-        if (wtx.tx->vout.size() <= outpoint.n) {
-            return std::nullopt;
+        if (it != wallet.mapWallet.end()) {
+            const CWalletTx& wtx = it->second;
+            // Clearly invalid input, fail
+            if (wtx.tx->vout.size() <= outpoint.n) {
+                return std::nullopt;
+            }
+            if (nCoinType == CoinType::ONLY_FULLY_MIXED) {
+                // Make sure to include mixed preset inputs only,
+                // even if some non-mixed inputs were manually selected via CoinControl
+                if (!wallet.IsFullyMixed(outpoint)) continue;
+            }
+            input_bytes = GetTxSpendSize(wallet, wtx, outpoint.n, false);
+            txout = wtx.tx->vout.at(outpoint.n);
+        } else {
+            // The input is external. We did not find the tx in mapWallet.
+            if (!coin_control.GetExternalOutput(outpoint, txout)) {
+                return std::nullopt;
+            }
+            input_bytes = CalculateMaximumSignedInputSize(txout, &coin_control.m_external_provider, /* use_max_sig */ true);
         }
-        if (nCoinType == CoinType::ONLY_FULLY_MIXED) {
-            // Make sure to include mixed preset inputs only,
-            // even if some non-mixed inputs were manually selected via CoinControl
-            if (!wallet.IsFullyMixed(outpoint)) continue;
+        // If available, override calculated size with coin control specified size
+        if (coin_control.HasInputWeight(outpoint)) {
+            input_bytes = GetVirtualTransactionSize(coin_control.GetInputWeight(outpoint), 0, 0);
         }
-        // Just to calculate the marginal byte size
-        int input_bytes = GetTxSpendSize(wallet, wtx, outpoint.n, false);
-        if (input_bytes <= 0) {
+
+        CInputCoin coin(outpoint, txout, input_bytes);
+        if (coin.m_input_bytes == -1) {
             return std::nullopt; // Not solvable, can't estimate size for fee
         }
 
         /* Set some defaults for depth, spendable, solvable, safe, time, and from_me as these don't matter for preset inputs since no selection is being done. */
-        COutput output(outpoint, wtx.tx->vout.at(outpoint.n), /*depth=*/ 0, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false);
+        COutput output(outpoint, txout, /*depth=*/ 0, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false);
         output.effective_value = output.txout.nValue - coin_selection_params.m_effective_feerate.GetFee(output.input_bytes);
         if (coin_selection_params.m_subtract_fee_outputs) {
             value_to_select -= output.txout.nValue;

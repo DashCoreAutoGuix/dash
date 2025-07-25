@@ -1544,13 +1544,25 @@ bool CWallet::DummySignInput(CTxIn &tx_in, const CTxOut &txout, bool use_max_sig
     return true;
 }
 
+
 // Helper for producing a bunch of max-sized low-S low-R signatures (eg 71 bytes)
-bool CWallet::DummySignTx(CMutableTransaction &txNew, const std::vector<CTxOut> &txouts, bool use_max_sig) const
+bool CWallet::DummySignTx(CMutableTransaction &txNew, const std::vector<CTxOut> &txouts, const CCoinControl* coin_control) const
 {
     // Fill in dummy signatures for fee calculation.
     int nIn = 0;
     for (const auto& txout : txouts)
     {
+        CTxIn& txin = txNew.vin[nIn];
+        // If weight was provided, we cannot fill the input to that weight in Dash
+        // as we don't have witness functionality. Skip this input as the weight
+        // was already accounted for in coin selection.
+        if (coin_control && coin_control->HasInputWeight(txin.prevout)) {
+            nIn++;
+            continue;
+        }
+        // Use max sig if watch only inputs were used or if this particular input is an external input
+        // to ensure a sufficient fee is attained for the requested feerate.
+        const bool use_max_sig = coin_control && (coin_control->fAllowWatchOnly || coin_control->IsExternalSelected(txin.prevout));
         if (!DummySignInput(txNew.vin[nIn], txout, use_max_sig)) {
             return false;
         }

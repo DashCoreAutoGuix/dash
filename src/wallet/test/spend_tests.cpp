@@ -60,5 +60,8 @@ BOOST_FIXTURE_TEST_CASE(SubtractFee, TestChain100Setup)
     BOOST_CHECK_EQUAL(fee, check_tx(fee + 123));
 }
 
+// Note: FillInputToWeight function and its tests removed as they use scriptWitness
+// which is Bitcoin-specific witness functionality not supported in Dash
+
 BOOST_AUTO_TEST_SUITE_END()
 } // namespace wallet
