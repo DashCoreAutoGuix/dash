@@ -14,10 +14,15 @@ import random
 import unittest
 
 from test_framework.crypto import secp256k1
-from test_framework.util import random_bitflip
 
 # Order of the secp256k1 curve
 ORDER = secp256k1.GE.ORDER
+
+def random_bitflip(data):
+    """Flip a random bit in the provided data."""
+    data = list(data)
+    data[random.randrange(len(data))] ^= (1 << (random.randrange(8)))
+    return bytes(data)
 
 def TaggedHash(tag, data):
     ss = hashlib.sha256(tag.encode('utf-8')).digest()
