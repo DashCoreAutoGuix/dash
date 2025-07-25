@@ -568,17 +568,11 @@ std::set<uint256> CWallet::GetConflicts(const uint256& txid) const
     return result;
 }
 
-bool CWallet::HasWalletSpend(const CTransactionRef& tx) const
+bool CWallet::HasWalletSpend(const uint256& txid) const
 {
     AssertLockHeld(cs_wallet);
-    const uint256& txid = tx->GetHash();
-    for (unsigned int i = 0; i < tx->vout.size(); ++i) {
-        auto iter = mapTxSpends.find(COutPoint(txid, i));
-        if (iter != mapTxSpends.end()) {
-            return true;
-        }
-    }
-    return false;
+    auto iter = mapTxSpends.lower_bound(COutPoint(txid, 0));
+    return (iter != mapTxSpends.end() && iter->first.hash == txid);
 }
 
 void CWallet::Flush()
