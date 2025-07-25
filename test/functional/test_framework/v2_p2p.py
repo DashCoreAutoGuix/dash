@@ -6,10 +6,10 @@
 
 import random
 
-from .crypto.bip324_cipher import FSChaCha20Poly1305
-from .crypto.chacha20 import FSChaCha20
-from .crypto.ellswift import ellswift_create, ellswift_ecdh_xonly
-from .crypto.hkdf import hkdf_sha256
+from .crypto.bip324_cipher import FSChaCha20Poly1305 #type:ignore
+from .crypto.chacha20 import FSChaCha20 #type:ignore
+from .crypto.ellswift import ellswift_create, ellswift_ecdh_xonly #type:ignore
+from .crypto.hkdf import hkdf_sha256 #type:ignore
 from .key import TaggedHash
 from .messages import MAGIC_BYTES
 from .util import random_bytes
