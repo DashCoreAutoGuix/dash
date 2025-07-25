@@ -597,7 +597,7 @@ BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup)
     BOOST_CHECK_EQUAL(list.begin()->second.size(), 1U);
 
     // Check initial balance from one mature coinbase transaction.
-    BOOST_CHECK_EQUAL(500 * COIN, GetAvailableBalance(*wallet));
+    BOOST_CHECK_EQUAL(500 * COIN, WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()));
 
     // Add a transaction creating a change address, and confirm ListCoins still
     // returns the coin associated with the change address underneath the
@@ -1431,7 +1431,7 @@ BOOST_FIXTURE_TEST_CASE(CreateTransactionTest, CreateTransactionTestSetup)
 BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup)
 {
     // Check initial balance from one mature coinbase transaction.
-    BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), 500 * COIN);
+    BOOST_CHECK_EQUAL(WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()), 500 * COIN);
 
     {
         std::vector<CompactTallyItem> vecTally = wallet->SelectCoinsGroupedByAddresses(/*fSkipDenominated=*/false,
@@ -1454,7 +1454,7 @@ BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup
                                   RANDOM_CHANGE_POSITION, error, dummy, fee_calc_out);
     BOOST_CHECK(txr2.has_value());
     wallet->CommitTransaction(txr1->tx, {}, {});
-    BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), 0);
+    BOOST_CHECK_EQUAL(WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()), 0);
     CreateAndProcessBlock({CMutableTransaction(*txr2->tx)}, GetScriptForRawPubKey({}));
     {
         LOCK(wallet->cs_wallet);
@@ -1484,7 +1484,7 @@ BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup
     BOOST_CHECK_EQUAL(vecTally.at(0).outpoints.size(), 1);
     BOOST_CHECK_EQUAL(vecTally.at(1).outpoints.size(), 1);
     BOOST_CHECK_EQUAL(vecTally.at(0).nAmount + vecTally.at(1).nAmount, (500 + 499) * COIN);
-    BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), (500 + 499) * COIN);
+    BOOST_CHECK_EQUAL(WITH_LOCK(wallet->cs_wallet, return AvailableCoins(*wallet).GetTotalAmount()), (500 + 499) * COIN);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
