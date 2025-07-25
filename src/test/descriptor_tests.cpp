@@ -242,14 +242,9 @@ void DoCheck(const std::string& prv, const std::string& pub, const std::string& 
                     CMutableTransaction spend;
                     spend.vin.resize(1);
                     spend.vout.resize(1);
-                    std::vector<CTxOut> utxos(1);
-                    PrecomputedTransactionData txdata;
-                    txdata.Init(spend, std::move(utxos), /*force=*/true);
-                    MutableTransactionSignatureCreator creator{&spend, 0, CAmount{0}, &txdata, SIGHASH_ALL};
-                    SignatureData sigdata;
                     FlatSigningProvider signing_provider = keys_priv;
                     signing_provider.Merge(FlatSigningProvider{script_provider});
-                    BOOST_CHECK_MESSAGE(ProduceSignature(signing_provider, creator, spks[n], sigdata), prv);
+                    BOOST_CHECK_MESSAGE(SignSignature(signing_provider, spks[n], spend, 0, 1, SIGHASH_ALL), prv);
                 }
 
                 /* Infer a descriptor from the generated script, and verify its solvability and that it roundtrips. */
