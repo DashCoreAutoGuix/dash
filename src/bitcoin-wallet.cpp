@@ -62,7 +62,7 @@ static std::optional<int> WalletAppInit(ArgsManager& args, int argc, char* argv[
         std::string strUsage = strprintf("%s dash-wallet version", PACKAGE_NAME) + " " + FormatFullVersion() + "\n";
 
         if (args.IsArgSet("-version")) {
-            strUsage += "\nCopyright (C) 2014-2025 The Dash Core developers\n\nThis is experimental software.\n\nDistributed under the MIT software license, see the accompanying file COPYING or <http://www.opensource.org/licenses/mit-license.php>.\n";
+            strUsage += FormatParagraph(LicenseInfo());
         } else {
             strUsage += "\n"
                     "dash-wallet is an offline tool for creating and interacting with " PACKAGE_NAME " wallet files.\n"
