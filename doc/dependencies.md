@@ -28,12 +28,12 @@ You can find installation instructions in the `build-*.md` file for your platfor
 | [libgmp](https://gmplib.org/download/gmp/)<sup>[ \* ](#note1)</sup> | 6.3.0 | [6.2.0](https://github.com/dashpay/bls-signatures/pull/92) | No |
 
 ### GUI
-| Dependency | Version used | Minimum required | Runtime |
-| --- | --- | --- | --- |
-| [Fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/) | 2.12.6 | 2.6 | Yes |
-| [FreeType](https://freetype.org) | 2.11.0 | 2.3.0 | Yes |
-| [qrencode](https://fukuchi.org/works/qrencode/) | [4.1.1](https://fukuchi.org/works/qrencode) | | No |
-| [Qt](https://www.qt.io) | [5.15.13](https://download.qt.io/official_releases/qt/) | [5.11.3](https://github.com/bitcoin/bitcoin/pull/24132) | No |
+| Dependency | Releases | Version used | Minimum required | Runtime |
+| --- | --- | --- | --- | --- |
+| [Fontconfig](../depends/packages/fontconfig.mk) | [link](https://www.freedesktop.org/wiki/Software/fontconfig/) | [2.12.6](https://github.com/bitcoin/bitcoin/pull/23495) | 2.6 | Yes |
+| [FreeType](../depends/packages/freetype.mk) | [link](https://freetype.org) | [2.11.0](https://github.com/bitcoin/bitcoin/commit/01544dd78ccc0b0474571da854e27adef97137fb) | 2.3.0 | Yes |
+| [qrencode](../depends/packages/qrencode.mk) | [link](https://fukuchi.org/works/qrencode/) | [4.1.1](https://github.com/bitcoin/bitcoin/pull/27312) | | No |
+| [Qt](../depends/packages/qt.mk) | [link](https://download.qt.io/official_releases/qt/) | [5.15.13](https://download.qt.io/official_releases/qt/) | [5.11.3](https://github.com/bitcoin/bitcoin/pull/24132) | No |
 
 ### Networking
 | Dependency | Version used | Minimum required | Runtime |
@@ -47,9 +47,9 @@ You can find installation instructions in the `build-*.md` file for your platfor
 | [ZeroMQ](https://zeromq.org) | 4.3.5 | 4.0.0 | No |
 
 ### Wallet
-| Dependency | Version used | Minimum required | Runtime |
-| --- | --- | --- | --- |
-| [Berkeley DB](https://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/index.html) (legacy wallet) | 4.8.30 | 4.8.x | No |
-| [SQLite](https://sqlite.org) | 3.38.5 | [3.7.17](https://github.com/bitcoin/bitcoin/pull/19077) | No |
+| Dependency | Releases | Version used | Minimum required | Runtime |
+| --- | --- | --- | --- | --- |
+| [Berkeley DB](../depends/packages/bdb.mk) (legacy wallet) | [link](https://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/index.html) | 4.8.30 | 4.8.x | No |
+| [SQLite](../depends/packages/sqlite.mk) | [link](https://sqlite.org) | [3.38.5](https://github.com/bitcoin/bitcoin/pull/25378) | [3.7.17](https://github.com/bitcoin/bitcoin/pull/19077) | No |
 
 <a name="note1">Note \*</a> : The minimum supported version on macOS is 6.3.0
