@@ -159,7 +159,7 @@ def main():
                     print("git v2.38+ is required for this functionality.", file=sys.stderr)
                     sys.exit(1)
                 else:
-                    raise e
+                    raise
             if current_tree != recreated_tree:
                 print("Merge commit {} is not clean".format(current_commit), file=sys.stderr)
                 subprocess.call([GIT, 'diff', current_commit])
