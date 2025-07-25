@@ -80,6 +80,15 @@ def check_key(key):
     assert False
 
 
+def program_to_witness_script(version, program):
+    """Convert a segwit program to a witness script."""
+    if version == 0:
+        assert len(program) in [20, 32]
+        return CScript([version, program])
+    else:
+        return CScript([version, program])
+
+
 def check_script(script):
     if isinstance(script, str):
         script = bytes.fromhex(script)  # Assuming this is hex string
