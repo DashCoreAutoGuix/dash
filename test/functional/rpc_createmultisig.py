@@ -8,6 +8,7 @@ import itertools
 import json
 import os
 
+from test_framework.address import address_to_scriptpubkey
 from test_framework.authproxy import JSONRPCException
 from test_framework.descriptors import descsum_create, drop_origins
 from test_framework.key import ECPubKey, ECKey
@@ -158,7 +159,7 @@ class RpcCreateMultiSigTest(BitcoinTestFramework):
             assert mredeemw == mredeem
             wmulti.unloadwallet()
 
-        spk = bytes.fromhex(node0.validateaddress(madd)["scriptPubKey"])
+        spk = address_to_scriptpubkey(madd)
         txid, _ = self.wallet.send_to(from_node=self.nodes[0], scriptPubKey=spk, amount=2000)
         tx = node0.getrawtransaction(txid, True)
         vout = [v["n"] for v in tx["vout"] if madd == v["scriptPubKey"]["address"]]
