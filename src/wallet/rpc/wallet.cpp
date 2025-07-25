@@ -479,7 +479,10 @@ static RPCHelpMan loadwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    if (request.context.GetIntArg("-deprecatedrpc", 0) != 0) {
+        obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    }
+    PushWarnings(warnings, obj);
 
     return obj;
 },
@@ -639,7 +642,10 @@ static RPCHelpMan createwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    if (request.context.GetIntArg("-deprecatedrpc", 0) != 0) {
+        obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    }
+    PushWarnings(warnings, obj);
 
     return obj;
 },
@@ -698,7 +704,10 @@ static RPCHelpMan unloadwallet()
     UnloadWallet(std::move(wallet));
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    if (request.context.GetIntArg("-deprecatedrpc", 0) != 0) {
+        result.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    }
+    PushWarnings(warnings, result);
     return result;
 },
     };

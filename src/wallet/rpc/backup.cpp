@@ -2131,7 +2131,10 @@ RPCHelpMan restorewallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    if (request.context.GetIntArg("-deprecatedrpc", 0) != 0) {
+        obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    }
+    PushWarnings(warnings, obj);
 
     return obj;
 

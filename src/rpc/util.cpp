@@ -1039,3 +1039,24 @@ std::vector<CScript> EvalDescriptorStringOrObject(const UniValue& scanobject, Fl
     }
     return ret;
 }
+
+UniValue BilingualStringsToUniValue(const std::vector<bilingual_str>& bilingual_strings)
+{
+    UniValue result(UniValue::VARR);
+    for (const auto& s : bilingual_strings) {
+        result.push_back(s.original);
+    }
+    return result;
+}
+
+void PushWarnings(const UniValue& warnings, UniValue& obj)
+{
+    if (warnings.empty()) return;
+    obj.pushKV("warnings", warnings);
+}
+
+void PushWarnings(const std::vector<bilingual_str>& warnings, UniValue& obj)
+{
+    if (warnings.empty()) return;
+    obj.pushKV("warnings", BilingualStringsToUniValue(warnings));
+}
