@@ -97,5 +97,17 @@ class ListTransactionsTest(BitcoinTestFramework):
                                 {"category": "receive", "amount": Decimal("0.1")},
                                 {"txid": txid, "label": "watchonly"})
 
+        self.test_op_return()
+
+    def test_op_return(self):
+        """Test if OP_RETURN outputs will be displayed correctly."""
+        raw_tx = self.nodes[0].createrawtransaction([], [{'data': 'aa'}])
+        signed_raw_tx = self.nodes[0].signrawtransactionwithwallet(raw_tx)
+        tx_id = self.nodes[0].sendrawtransaction(signed_raw_tx['hex'])
+
+        op_ret_tx = [tx for tx in self.nodes[0].listtransactions() if tx['txid'] == tx_id][0]
+
+        assert 'address' not in op_ret_tx
+
 if __name__ == '__main__':
     ListTransactionsTest().main()
