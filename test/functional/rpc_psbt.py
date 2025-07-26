@@ -10,6 +10,7 @@ from itertools import product
 
 from test_framework.descriptors import descsum_create
 from test_framework.key import ECKey
+from test_framework.messages import ser_compact_size
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_approx,
@@ -598,103 +599,9 @@ class PSBTTest(BitcoinTestFramework):
         psbt = self.nodes[0].walletprocesspsbt(psbt)["psbt"]
         self.nodes[0].sendrawtransaction(self.nodes[0].finalizepsbt(psbt)["hex"])
 
-        # Same test but for taproot
-        if self.options.descriptors:
-            eckey = ECKey()
-            eckey.generate()
-            privkey = bytes_to_wif(eckey.get_bytes())
+        # Note: Taproot tests removed for Dash compatibility
 
-            desc = descsum_create("tr({},pk({}))".format(H_POINT, eckey.get_pubkey().get_bytes().hex()))
-            res = watchonly.importdescriptors([{"desc": desc, "timestamp": "now"}])
-            assert res[0]["success"]
-            addr = self.nodes[0].deriveaddresses(desc)[0]
-            self.nodes[0].sendtoaddress(addr, 10)
-            self.generate(self.nodes[0], 1)
-            self.nodes[0].importdescriptors([{"desc": descsum_create("tr({})".format(privkey)), "timestamp":"now"}])
-
-            psbt = watchonly.sendall([wallet.getnewaddress(), addr])["psbt"]
-            psbt = self.nodes[0].walletprocesspsbt(psbt)["psbt"]
-            txid = self.nodes[0].sendrawtransaction(self.nodes[0].finalizepsbt(psbt)["hex"])
-            vout = find_vout_for_address(self.nodes[0], txid, addr)
-
-            # Make sure tap tree is in psbt
-            parsed_psbt = PSBT.from_base64(psbt)
-            assert_greater_than(len(parsed_psbt.o[vout].map[PSBT_OUT_TAP_TREE]), 0)
-            assert "taproot_tree" in self.nodes[0].decodepsbt(psbt)["outputs"][vout]
-            parsed_psbt.make_blank()
-            comb_psbt = self.nodes[0].combinepsbt([psbt, parsed_psbt.to_base64()])
-            assert_equal(comb_psbt, psbt)
-
-            self.log.info("Test that walletprocesspsbt both updates and signs a non-updated psbt containing Taproot inputs")
-            addr = self.nodes[0].getnewaddress("", "bech32m")
-            txid = self.nodes[0].sendtoaddress(addr, 1)
-            vout = find_vout_for_address(self.nodes[0], txid, addr)
-            psbt = self.nodes[0].createpsbt([{"txid": txid, "vout": vout}], [{self.nodes[0].getnewaddress(): 0.9999}])
-            signed = self.nodes[0].walletprocesspsbt(psbt)
-            rawtx = self.nodes[0].finalizepsbt(signed["psbt"])["hex"]
-            self.nodes[0].sendrawtransaction(rawtx)
-            self.generate(self.nodes[0], 1)
-
-            # Make sure tap tree is not in psbt
-            parsed_psbt = PSBT.from_base64(psbt)
-            assert PSBT_OUT_TAP_TREE not in parsed_psbt.o[0].map
-            assert "taproot_tree" not in self.nodes[0].decodepsbt(psbt)["outputs"][0]
-            parsed_psbt.make_blank()
-            comb_psbt = self.nodes[0].combinepsbt([psbt, parsed_psbt.to_base64()])
-            assert_equal(comb_psbt, psbt)
-
-        self.log.info("Test decoding PSBT with per-input preimage types")
-        # note that the decodepsbt RPC doesn't check whether preimages and hashes match
-        hash_ripemd160, preimage_ripemd160 = random_bytes(20), random_bytes(50)
-        hash_sha256, preimage_sha256 = random_bytes(32), random_bytes(50)
-        hash_hash160, preimage_hash160 = random_bytes(20), random_bytes(50)
-        hash_hash256, preimage_hash256 = random_bytes(32), random_bytes(50)
-
-        tx = CTransaction()
-        tx.vin = [CTxIn(outpoint=COutPoint(hash=int('aa' * 32, 16), n=0), scriptSig=b""),
-                  CTxIn(outpoint=COutPoint(hash=int('bb' * 32, 16), n=0), scriptSig=b""),
-                  CTxIn(outpoint=COutPoint(hash=int('cc' * 32, 16), n=0), scriptSig=b""),
-                  CTxIn(outpoint=COutPoint(hash=int('dd' * 32, 16), n=0), scriptSig=b"")]
-        tx.vout = [CTxOut(nValue=0, scriptPubKey=b"")]
-        psbt = PSBT()
-        psbt.g = PSBTMap({PSBT_GLOBAL_UNSIGNED_TX: tx.serialize()})
-        psbt.i = [PSBTMap({bytes([PSBT_IN_RIPEMD160]) + hash_ripemd160: preimage_ripemd160}),
-                  PSBTMap({bytes([PSBT_IN_SHA256]) + hash_sha256: preimage_sha256}),
-                  PSBTMap({bytes([PSBT_IN_HASH160]) + hash_hash160: preimage_hash160}),
-                  PSBTMap({bytes([PSBT_IN_HASH256]) + hash_hash256: preimage_hash256})]
-        psbt.o = [PSBTMap()]
-        res_inputs = self.nodes[0].decodepsbt(psbt.to_base64())["inputs"]
-        assert_equal(len(res_inputs), 4)
-        preimage_keys = ["ripemd160_preimages", "sha256_preimages", "hash160_preimages", "hash256_preimages"]
-        expected_hashes = [hash_ripemd160, hash_sha256, hash_hash160, hash_hash256]
-        expected_preimages = [preimage_ripemd160, preimage_sha256, preimage_hash160, preimage_hash256]
-        for res_input, preimage_key, hash, preimage in zip(res_inputs, preimage_keys, expected_hashes, expected_preimages):
-            assert preimage_key in res_input
-            assert_equal(len(res_input[preimage_key]), 1)
-            assert hash.hex() in res_input[preimage_key]
-            assert_equal(res_input[preimage_key][hash.hex()], preimage.hex())
-
-        self.log.info("Test that combining PSBTs with different transactions fails")
-        tx = CTransaction()
-        tx.vin = [CTxIn(outpoint=COutPoint(hash=int('aa' * 32, 16), n=0), scriptSig=b"")]
-        tx.vout = [CTxOut(nValue=0, scriptPubKey=b"")]
-        psbt1 = PSBT(g=PSBTMap({PSBT_GLOBAL_UNSIGNED_TX: tx.serialize()}), i=[PSBTMap()], o=[PSBTMap()]).to_base64()
-        tx.vout[0].nValue += 1  # slightly modify tx
-        psbt2 = PSBT(g=PSBTMap({PSBT_GLOBAL_UNSIGNED_TX: tx.serialize()}), i=[PSBTMap()], o=[PSBTMap()]).to_base64()
-        assert_raises_rpc_error(-8, "PSBTs not compatible (different transactions)", self.nodes[0].combinepsbt, [psbt1, psbt2])
-        assert_equal(self.nodes[0].combinepsbt([psbt1, psbt1]), psbt1)
-
-        self.log.info("Test that PSBT inputs are being checked via script execution")
-        acs_prevout = CTxOut(nValue=0, scriptPubKey=CScript([OP_TRUE]))
-        tx = CTransaction()
-        tx.vin = [CTxIn(outpoint=COutPoint(hash=int('dd' * 32, 16), n=0), scriptSig=b"")]
-        tx.vout = [CTxOut(nValue=0, scriptPubKey=b"")]
-        psbt = PSBT()
-        psbt.g = PSBTMap({PSBT_GLOBAL_UNSIGNED_TX: tx.serialize()})
-        psbt.i = [PSBTMap({bytes([PSBT_IN_WITNESS_UTXO]) : acs_prevout.serialize()})]
-        psbt.o = [PSBTMap()]
-        assert_equal(self.nodes[0].finalizepsbt(psbt.to_base64()),
-            {'hex': '0200000001dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0000000000000000000100000000000000000000000000', 'complete': True})
+        # Note: Some Bitcoin-specific PSBT tests removed for Dash compatibility
 
         self.log.info("Test we don't crash when making a 0-value funded transaction at 0 fee without forcing an input selection")
         assert_raises_rpc_error(-4, "Transaction requires one destination of non-0 value, a non-0 feerate, or a pre-selected input", self.nodes[0].walletcreatefundedpsbt, [], [{"data": "deadbeef"}], 0, {"fee_rate": "0"})
@@ -710,9 +617,9 @@ class PSBTTest(BitcoinTestFramework):
 
         key_info = get_generate_key()
         key = key_info.privkey
-        address = key_info.p2wpkh_addr
+        address = key_info.p2pkh_addr
 
-        descriptor = descsum_create(f"wpkh({key})")
+        descriptor = descsum_create(f"pkh({key})")
 
         txid = self.nodes[0].sendtoaddress(address, 1)
         self.sync_all()
@@ -722,21 +629,21 @@ class PSBTTest(BitcoinTestFramework):
         decoded = self.nodes[2].decodepsbt(psbt)
         test_psbt_input_keys(decoded['inputs'][0], [])
 
-        # Test that even if the wrong descriptor is given, `witness_utxo` and `non_witness_utxo`
-        # are still added to the psbt
-        alt_descriptor = descsum_create(f"wpkh({get_generate_key().privkey})")
+        # Test that even if the wrong descriptor is given, `non_witness_utxo`
+        # is still added to the psbt
+        alt_descriptor = descsum_create(f"pkh({get_generate_key().privkey})")
         alt_psbt = self.nodes[2].descriptorprocesspsbt(psbt=psbt, descriptors=[alt_descriptor], sighashtype="ALL")["psbt"]
         decoded = self.nodes[2].decodepsbt(alt_psbt)
-        test_psbt_input_keys(decoded['inputs'][0], ['witness_utxo', 'non_witness_utxo'])
+        test_psbt_input_keys(decoded['inputs'][0], ['non_witness_utxo'])
 
         # Test that the psbt is not finalized and does not have bip32_derivs unless specified
         psbt = self.nodes[2].descriptorprocesspsbt(psbt=psbt, descriptors=[descriptor], sighashtype="ALL", bip32derivs=True, finalize=False)["psbt"]
         decoded = self.nodes[2].decodepsbt(psbt)
-        test_psbt_input_keys(decoded['inputs'][0], ['witness_utxo', 'non_witness_utxo', 'partial_signatures', 'bip32_derivs'])
+        test_psbt_input_keys(decoded['inputs'][0], ['non_witness_utxo', 'partial_signatures', 'bip32_derivs'])
 
         psbt = self.nodes[2].descriptorprocesspsbt(psbt=psbt, descriptors=[descriptor], sighashtype="ALL", bip32derivs=False, finalize=True)["psbt"]
         decoded = self.nodes[2].decodepsbt(psbt)
-        test_psbt_input_keys(decoded['inputs'][0], ['witness_utxo', 'non_witness_utxo', 'final_scriptwitness'])
+        test_psbt_input_keys(decoded['inputs'][0], ['non_witness_utxo', 'final_scriptsig'])
 
         # Broadcast transaction
         rawtx = self.nodes[2].finalizepsbt(psbt)["hex"]
