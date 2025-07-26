@@ -19,6 +19,7 @@ from test_framework.util import (
 from test_framework.wallet_util import bytes_to_wif
 from test_framework.wallet import (
     MiniWallet,
+    address_to_scriptpubkey,
     getnewdestination,
 )
 
