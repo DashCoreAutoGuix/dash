@@ -51,7 +51,15 @@ namespace tinyformat {
 template <typename... Args>
 bilingual_str format(const bilingual_str& fmt, const Args&... args)
 {
-    return bilingual_str{format(fmt.original, args...), format(fmt.translated, args...)};
+    const auto translate_arg{[](const auto& arg, bool translated) -> const auto& {
+        if constexpr (std::is_same_v<decltype(arg), const bilingual_str&>) {
+            return translated ? arg.translated : arg.original;
+        } else {
+            return arg;
+        }
+    }};
+    return bilingual_str{tfm::format(fmt.original, translate_arg(args, false)...),
+                         tfm::format(fmt.translated, translate_arg(args, true)...)};
 }
 } // namespace tinyformat
 
