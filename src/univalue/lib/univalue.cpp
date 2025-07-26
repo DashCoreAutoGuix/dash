@@ -115,7 +115,7 @@ void UniValue::push_backV(const std::vector<UniValue>& vec)
     values.insert(values.end(), vec.begin(), vec.end());
 }
 
-void UniValue::__pushKV(const std::string& key, const UniValue& val_)
+void UniValue::pushKVEnd(const std::string& key, const UniValue& val_)
 {
     if (typ != VOBJ) throw std::runtime_error{"JSON value is not an object as expected"};
 
@@ -131,7 +131,7 @@ void UniValue::pushKV(const std::string& key, const UniValue& val_)
     if (findKey(key, idx))
         values[idx] = val_;
     else
-        __pushKV(key, val_);
+        pushKVEnd(key, val_);
 }
 
 void UniValue::pushKVs(const UniValue& obj)
@@ -139,7 +139,7 @@ void UniValue::pushKVs(const UniValue& obj)
     if (typ != VOBJ || obj.typ != VOBJ) throw std::runtime_error{"JSON value is not an object as expected"};
 
     for (size_t i = 0; i < obj.keys.size(); i++)
-        __pushKV(obj.keys[i], obj.values.at(i));
+        pushKVEnd(obj.keys[i], obj.values.at(i));
 }
 
 void UniValue::getObjMap(std::map<std::string,UniValue>& kv) const

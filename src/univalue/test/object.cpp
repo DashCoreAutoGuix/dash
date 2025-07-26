@@ -364,7 +364,7 @@ void univalue_object()
     obj.setObject();
     UniValue uv;
     uv.setInt(42);
-    obj.__pushKV("age", uv);
+    obj.pushKVEnd("age", uv);
     BOOST_CHECK_EQUAL(obj.size(), 1);
     BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
 
