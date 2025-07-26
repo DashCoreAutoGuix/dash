@@ -395,7 +395,9 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
 {
     qDebug() << __func__ << ": Initialization result: " << success;
 
-    if (success) {
+    // Set exit result.
+    returnValue = success ? EXIT_SUCCESS : EXIT_FAILURE;
+    if(success) {
         delete m_splash;
         m_splash = nullptr;
 
@@ -764,6 +766,7 @@ int GuiMain(int argc, char* argv[])
 
     app.createNode(*init);
 
+    int rv = EXIT_SUCCESS;
     try
     {
         app.createWindow(networkStyle.data());
@@ -776,13 +779,14 @@ int GuiMain(int argc, char* argv[])
             WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("%1 didn't yet exit safely…").arg(PACKAGE_NAME), (HWND)app.getMainWinId());
 #endif
             app.exec();
+            rv = app.getReturnValue();
         } else {
             // A dialog with detailed error will have been shown by InitError()
-            return EXIT_FAILURE;
+            rv = EXIT_FAILURE;
         }
     } catch (...) {
         PrintExceptionContinue(std::current_exception(), "Runaway exception");
         app.handleRunawayException(QString::fromStdString(app.node().getWarnings().translated));
     }
-    return app.node().getExitStatus();
+    return rv;
 }

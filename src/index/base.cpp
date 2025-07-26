@@ -25,7 +25,11 @@ constexpr auto SYNC_LOCATOR_WRITE_INTERVAL{30s};
 template <typename... Args>
 static void FatalError(const char* fmt, const Args&... args)
 {
-    AbortNode(tfm::format(fmt, args...));
+    std::string strMessage = tfm::format(fmt, args...);
+    SetMiscWarning(Untranslated(strMessage));
+    LogPrintf("*** %s\n", strMessage);
+    AbortError(_("A fatal internal error occurred, see debug.log for details"));
+    StartShutdown();
 }
 
 BaseIndex::DB::DB(const fs::path& path, size_t n_cache_size, bool f_memory, bool f_wipe, bool f_obfuscate) :
