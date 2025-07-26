@@ -28,6 +28,7 @@
 #include <uint256.h>
 #include <util/check.h>
 #include <util/hasher.h>
+#include <versionbits.h>
 #include <util/translation.h>
 
 #include <atomic>
@@ -891,6 +892,8 @@ private:
         const CChainParams& chainparams,
         CBlockIndex** ppindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
     friend CChainState;
+
+    std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> m_warningcache GUARDED_BY(::cs_main);
 
 public:
     std::thread m_load_block;
