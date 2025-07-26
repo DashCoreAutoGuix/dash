@@ -188,7 +188,7 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
         // Set this early so that parameter interactions go to console
         InitLogging(args);
         InitParameterInteraction(args);
-        if (!AppInitBasicSetup(args)) {
+        if (!AppInitBasicSetup(args, node.exit_status)) {
             // InitError will have been called with detailed error, which ends up on console
             return false;
         }
