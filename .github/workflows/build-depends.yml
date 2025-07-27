@@ -85,7 +85,7 @@ jobs:
 
       - name: Save depends cache
         uses: actions/cache/save@v4
-        if: steps.restore.outputs.cache-hit != 'true'
+        if: steps.restore.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
         with:
           path: |
             depends/built

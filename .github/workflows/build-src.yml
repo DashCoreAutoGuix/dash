@@ -65,8 +65,8 @@ jobs:
           key: ${{ inputs.depends-key }}
           fail-on-cache-miss: true
 
-      - name: Manage ccache
-        uses: actions/cache@v4
+      - name: Restore ccache
+        uses: actions/cache/restore@v4
         with:
           path: |
             /cache
@@ -120,3 +120,11 @@ jobs:
           compression-level: 0
           overwrite: true
           retention-days: 3
+
+      - name: Save ccache
+        uses: actions/cache/save@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: |
+            /cache
+          key: ccache-${{ hashFiles('contrib/containers/ci/ci.Dockerfile', 'depends/packages/*') }}-${{ inputs.build-target }}-${{ github.sha }}
