@@ -279,5 +279,5 @@ MAIN_FUNCTION
     // Connect dashd signal handlers
     noui_connect();
 
-    return (AppInit(node, argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE);
+    return AppInit(node, argc, argv) ? node.exit_status.load() : EXIT_FAILURE;
 }
