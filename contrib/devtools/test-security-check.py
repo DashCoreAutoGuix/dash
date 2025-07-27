@@ -39,7 +39,7 @@ def env_flags() -> List[str]:
         flags += filter(None, os.environ.get(var, '').split(' '))
     return flags
 
-def call_security_check(cc: str, source: str, executable: str, options) -> tuple:
+def call_security_check(cc: str, source: str, executable: str, options: List[str]) -> tuple:
     subprocess.run([*cc,source,'-o',executable] + env_flags() + options, check=True)
     p = subprocess.run([os.path.join(os.path.dirname(__file__), 'security-check.py'), executable], stdout=subprocess.PIPE, universal_newlines=True)
     return (p.returncode, p.stdout.rstrip())
