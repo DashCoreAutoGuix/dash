@@ -26,6 +26,7 @@
 #include <optional>
 
 namespace wallet {
+class CWallet;          // forward declaration
 struct MigrationData;
 
 // Wallet storage things that ScriptPubKeyMans need in order to be able to store things to the wallet database.
