@@ -29,7 +29,6 @@ from test_framework.wallet import (
     MiniWallet,
     getnewdestination,
 )
-from typing import Optional
 
 
 INVALID_PARAM = "abc"
@@ -77,6 +76,9 @@ class RESTTest (BitcoinTestFramework):
             rest_uri += '.bin'
         elif req_type == ReqType.HEX:
             rest_uri += '.hex'
+
+        if query_params:
+            rest_uri += '?' + urllib.parse.urlencode(query_params)
 
         conn = http.client.HTTPConnection(self.url.hostname, self.url.port)
         self.log.debug(f'{http_method} {rest_uri} {body}')
