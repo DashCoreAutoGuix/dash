@@ -1,0 +1,954 @@
+﻿2025-07-11T04:23:17.5342021Z Current runner version: '2.326.0'
+2025-07-11T04:23:17.5365903Z ##[group]Runner Image Provisioner
+2025-07-11T04:23:17.5366764Z Hosted Compute Agent
+2025-07-11T04:23:17.5367264Z Version: 20250710.361
+2025-07-11T04:23:17.5367922Z Commit: 1aa91963755b73deaa955e512f5de173acfde7a8
+2025-07-11T04:23:17.5368618Z Build Date: 2025-07-10T18:39:53Z
+2025-07-11T04:23:17.5369158Z ##[endgroup]
+2025-07-11T04:23:17.5369906Z ##[group]Operating System
+2025-07-11T04:23:17.5370454Z Ubuntu
+2025-07-11T04:23:17.5370925Z 24.04.2
+2025-07-11T04:23:17.5371330Z LTS
+2025-07-11T04:23:17.5371840Z ##[endgroup]
+2025-07-11T04:23:17.5372285Z ##[group]Runner Image
+2025-07-11T04:23:17.5372835Z Image: ubuntu-24.04
+2025-07-11T04:23:17.5373395Z Version: 20250629.1.0
+2025-07-11T04:23:17.5374352Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250629.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-11T04:23:17.5375853Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250629.1
+2025-07-11T04:23:17.5376800Z ##[endgroup]
+2025-07-11T04:23:17.5377950Z ##[group]GITHUB_TOKEN Permissions
+2025-07-11T04:23:17.5379928Z Contents: read
+2025-07-11T04:23:17.5380435Z Metadata: read
+2025-07-11T04:23:17.5381011Z Packages: write
+2025-07-11T04:23:17.5381467Z ##[endgroup]
+2025-07-11T04:23:17.5383521Z Secret source: Actions
+2025-07-11T04:23:17.5384242Z Prepare workflow directory
+2025-07-11T04:23:17.5940794Z Prepare all required actions
+2025-07-11T04:23:17.5977560Z Getting action download info
+2025-07-11T04:23:18.0350705Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-11T04:23:18.0351839Z Version: 4.2.2
+2025-07-11T04:23:18.0352833Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-11T04:23:18.0353939Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-11T04:23:18.0354721Z ##[endgroup]
+2025-07-11T04:23:18.1424939Z ##[group]Download immutable action package 'actions/download-artifact@v4'
+2025-07-11T04:23:18.1425819Z Version: 4.3.0
+2025-07-11T04:23:18.1426611Z Digest: sha256:552a5b9ad918f62ec0c2e8f42f3c694d4ebd1b4036b18c39b14168fcdfc0e4f2
+2025-07-11T04:23:18.1427557Z Source commit SHA: d3f86a106a0bac45b974a628896c90dbdf5c8093
+2025-07-11T04:23:18.1428254Z ##[endgroup]
+2025-07-11T04:23:18.4325055Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-07-11T04:23:18.4325785Z Version: 4.2.3
+2025-07-11T04:23:18.4326596Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-07-11T04:23:18.4327545Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-07-11T04:23:18.4328238Z ##[endgroup]
+2025-07-11T04:23:18.5735021Z ##[group]Download immutable action package 'actions/upload-artifact@v4'
+2025-07-11T04:23:18.5735893Z Version: 4.6.2
+2025-07-11T04:23:18.5736597Z Digest: sha256:290722aa3281d5caf23d0acdc3dbeb3424786a1a01a9cc97e72f147225e37c38
+2025-07-11T04:23:18.5737557Z Source commit SHA: ea165f8d65b6e75b540449e92b4886f43607fa02
+2025-07-11T04:23:18.5738173Z ##[endgroup]
+2025-07-11T04:23:18.8349286Z Uses: DashCoreAutoGuix/dash/.github/workflows/test-src.yml@refs/heads/backport-0.25-batch-327-pr-25093 (f825f69ac898d8ab231a83cf1a00f16c7b333a28)
+2025-07-11T04:23:18.8356409Z ##[group] Inputs
+2025-07-11T04:23:18.8357421Z   bundle-key: build-linux64_nowallet-f825f69a
+2025-07-11T04:23:18.8358604Z   build-target: linux64_nowallet
+2025-07-11T04:23:18.8360598Z   container-path: ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:18.8362475Z ##[endgroup]
+2025-07-11T04:23:18.8363432Z Complete job name: linux64_nowallet-test / Test source
+2025-07-11T04:23:18.8873789Z ##[group]Checking docker version
+2025-07-11T04:23:18.8887557Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-07-11T04:23:19.9412092Z '1.48'
+2025-07-11T04:23:19.9426453Z Docker daemon API version: '1.48'
+2025-07-11T04:23:19.9426948Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-07-11T04:23:19.9585490Z '1.48'
+2025-07-11T04:23:19.9598760Z Docker client API version: '1.48'
+2025-07-11T04:23:19.9604854Z ##[endgroup]
+2025-07-11T04:23:19.9608087Z ##[group]Clean up resources from previous jobs
+2025-07-11T04:23:19.9613730Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=0c1d9f"
+2025-07-11T04:23:19.9752263Z ##[command]/usr/bin/docker network prune --force --filter "label=0c1d9f"
+2025-07-11T04:23:19.9883040Z ##[endgroup]
+2025-07-11T04:23:19.9883528Z ##[group]Create local container network
+2025-07-11T04:23:19.9893688Z ##[command]/usr/bin/docker network create --label 0c1d9f github_network_17573df712074beebf6b1384a5124d85
+2025-07-11T04:23:20.0557195Z 68daa8aafd0ce8a679f0f3d11f8faf29ab75c24e70f865b1a1337b82501c7496
+2025-07-11T04:23:20.0579441Z ##[endgroup]
+2025-07-11T04:23:20.0603446Z ##[group]Starting job container
+2025-07-11T04:23:20.0624657Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_30195faf-c267-4d0a-a1f7-b07585940e43 login ghcr.io -u DashCoreAutoGuix --password-stdin
+2025-07-11T04:23:20.6077170Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_30195faf-c267-4d0a-a1f7-b07585940e43 pull ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:21.2943939Z backport-0.25-batch-327-pr-25093: Pulling from dashcoreautoguix/dash/dashcore-ci-slim
+2025-07-11T04:23:21.4640726Z b08e2ff4391e: Pulling fs layer
+2025-07-11T04:23:21.4641143Z ea048b5d78eb: Pulling fs layer
+2025-07-11T04:23:21.4641504Z cca6389f3ca1: Pulling fs layer
+2025-07-11T04:23:21.4642643Z d1c8ed7d5fac: Pulling fs layer
+2025-07-11T04:23:21.4642936Z ddccebdb0a3b: Pulling fs layer
+2025-07-11T04:23:21.4643228Z a8d481f7150f: Pulling fs layer
+2025-07-11T04:23:21.4643540Z 8631dae0516f: Pulling fs layer
+2025-07-11T04:23:21.4643794Z 5aea26a209be: Pulling fs layer
+2025-07-11T04:23:21.4644091Z a0a192527c64: Pulling fs layer
+2025-07-11T04:23:21.4644374Z 6505a1fa27f9: Pulling fs layer
+2025-07-11T04:23:21.4644639Z 4f4fb700ef54: Pulling fs layer
+2025-07-11T04:23:21.4644900Z d1c8ed7d5fac: Waiting
+2025-07-11T04:23:21.4645148Z ddccebdb0a3b: Waiting
+2025-07-11T04:23:21.4645433Z a8d481f7150f: Waiting
+2025-07-11T04:23:21.4645663Z 8631dae0516f: Waiting
+2025-07-11T04:23:21.4645888Z 5aea26a209be: Waiting
+2025-07-11T04:23:21.4646104Z a0a192527c64: Waiting
+2025-07-11T04:23:21.4646328Z 6505a1fa27f9: Waiting
+2025-07-11T04:23:21.4646544Z 4f4fb700ef54: Waiting
+2025-07-11T04:23:21.7258464Z cca6389f3ca1: Verifying Checksum
+2025-07-11T04:23:21.7259384Z cca6389f3ca1: Download complete
+2025-07-11T04:23:21.7314274Z b08e2ff4391e: Verifying Checksum
+2025-07-11T04:23:21.7314727Z b08e2ff4391e: Download complete
+2025-07-11T04:23:21.8565136Z ea048b5d78eb: Verifying Checksum
+2025-07-11T04:23:21.8565671Z ea048b5d78eb: Download complete
+2025-07-11T04:23:22.5165853Z a8d481f7150f: Verifying Checksum
+2025-07-11T04:23:22.5166542Z a8d481f7150f: Download complete
+2025-07-11T04:23:22.7304276Z 8631dae0516f: Verifying Checksum
+2025-07-11T04:23:22.7304867Z 8631dae0516f: Download complete
+2025-07-11T04:23:22.8120884Z b08e2ff4391e: Pull complete
+2025-07-11T04:23:22.8637247Z ddccebdb0a3b: Verifying Checksum
+2025-07-11T04:23:22.8637720Z ddccebdb0a3b: Download complete
+2025-07-11T04:23:22.9501114Z 5aea26a209be: Verifying Checksum
+2025-07-11T04:23:22.9502072Z 5aea26a209be: Download complete
+2025-07-11T04:23:23.4292593Z 6505a1fa27f9: Download complete
+2025-07-11T04:23:23.5797261Z 4f4fb700ef54: Verifying Checksum
+2025-07-11T04:23:23.5797686Z 4f4fb700ef54: Download complete
+2025-07-11T04:23:24.1057124Z d1c8ed7d5fac: Verifying Checksum
+2025-07-11T04:23:24.1057528Z d1c8ed7d5fac: Download complete
+2025-07-11T04:23:24.5147147Z ea048b5d78eb: Pull complete
+2025-07-11T04:23:24.6143265Z cca6389f3ca1: Pull complete
+2025-07-11T04:23:26.5962315Z a0a192527c64: Verifying Checksum
+2025-07-11T04:23:26.5963019Z a0a192527c64: Download complete
+2025-07-11T04:23:29.2154211Z d1c8ed7d5fac: Pull complete
+2025-07-11T04:23:32.7933934Z ddccebdb0a3b: Pull complete
+2025-07-11T04:23:33.8248570Z a8d481f7150f: Pull complete
+2025-07-11T04:23:33.8899747Z 8631dae0516f: Pull complete
+2025-07-11T04:23:33.9342137Z 5aea26a209be: Pull complete
+2025-07-11T04:23:39.9102814Z a0a192527c64: Pull complete
+2025-07-11T04:23:39.9283712Z 6505a1fa27f9: Pull complete
+2025-07-11T04:23:39.9410024Z 4f4fb700ef54: Pull complete
+2025-07-11T04:23:39.9453396Z Digest: sha256:959ca5571704b22e1c6d3e6f81e9eb5b7faddb83e9daec238071003e043f66cf
+2025-07-11T04:23:39.9506118Z Status: Downloaded newer image for ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:39.9518541Z ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:39.9603863Z ##[command]/usr/bin/docker create --name 12ba2077f1c14a5da0b8cee72f3998a5_ghcriodashcoreautoguixdashdashcorecislimbackport025batch327pr25093_642249 --label 0c1d9f --workdir /__w/dash/dash --network github_network_17573df712074beebf6b1384a5124d85 --user root -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.25-batch-327-pr-25093 "-f" "/dev/null"
+2025-07-11T04:23:39.9914490Z 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:23:39.9939097Z ##[command]/usr/bin/docker start 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:23:40.6207292Z 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:23:40.6227622Z ##[command]/usr/bin/docker ps --all --filter id=986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-07-11T04:23:40.6343583Z 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59 Up Less than a second
+2025-07-11T04:23:40.6363490Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:23:40.6482031Z HOME=/github/home
+2025-07-11T04:23:40.6482388Z GITHUB_ACTIONS=true
+2025-07-11T04:23:40.6482710Z CI=true
+2025-07-11T04:23:40.6483580Z PATH=/opt/shellcheck:/usr/local/pyenv/shims:/usr/local/pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2025-07-11T04:23:40.6484619Z DEBIAN_FRONTEND=noninteractive
+2025-07-11T04:23:40.6484984Z TZ=Europe/London
+2025-07-11T04:23:40.6485412Z APT_ARGS=-y --no-install-recommends --no-upgrade
+2025-07-11T04:23:40.6485915Z PYENV_ROOT=/usr/local/pyenv
+2025-07-11T04:23:40.6504833Z ##[endgroup]
+2025-07-11T04:23:40.6513749Z ##[group]Waiting for all services to be ready
+2025-07-11T04:23:40.6515443Z ##[endgroup]
+2025-07-11T04:23:40.6737821Z ##[group]Run actions/checkout@v4
+2025-07-11T04:23:40.6738341Z with:
+2025-07-11T04:23:40.6738523Z   fetch-depth: 1
+2025-07-11T04:23:40.6738753Z   repository: DashCoreAutoGuix/dash
+2025-07-11T04:23:40.6739142Z   token: ***
+2025-07-11T04:23:40.6739317Z   ssh-strict: true
+2025-07-11T04:23:40.6739497Z   ssh-user: git
+2025-07-11T04:23:40.6739848Z   persist-credentials: true
+2025-07-11T04:23:40.6740055Z   clean: true
+2025-07-11T04:23:40.6740246Z   sparse-checkout-cone-mode: true
+2025-07-11T04:23:40.6740468Z   fetch-tags: false
+2025-07-11T04:23:40.6740649Z   show-progress: true
+2025-07-11T04:23:40.6740822Z   lfs: false
+2025-07-11T04:23:40.6740983Z   submodules: false
+2025-07-11T04:23:40.6741156Z   set-safe-directory: true
+2025-07-11T04:23:40.6741547Z env:
+2025-07-11T04:23:40.6741832Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-11T04:23:40.6742179Z ##[endgroup]
+2025-07-11T04:23:40.6796105Z ##[command]/usr/bin/docker exec  986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59 sh -c "cat /etc/*release | grep ^ID"
+2025-07-11T04:23:40.9000743Z Syncing repository: DashCoreAutoGuix/dash
+2025-07-11T04:23:40.9002800Z ##[group]Getting Git version info
+2025-07-11T04:23:40.9003275Z Working directory is '/__w/dash/dash'
+2025-07-11T04:23:40.9003992Z [command]/usr/bin/git version
+2025-07-11T04:23:40.9004430Z git version 2.43.0
+2025-07-11T04:23:40.9005728Z ##[endgroup]
+2025-07-11T04:23:40.9009949Z Temporarily overriding HOME='/__w/_temp/34a9c013-83ea-444e-a593-8a8917f428b1' before making global git config changes
+2025-07-11T04:23:40.9010613Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-11T04:23:40.9011109Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-11T04:23:40.9020245Z Deleting the contents of '/__w/dash/dash'
+2025-07-11T04:23:40.9023950Z ##[group]Initializing the repository
+2025-07-11T04:23:40.9028325Z [command]/usr/bin/git init /__w/dash/dash
+2025-07-11T04:23:40.9059911Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-11T04:23:40.9060862Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-11T04:23:40.9061735Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-11T04:23:40.9062349Z hint: 
+2025-07-11T04:23:40.9062810Z hint: 	git config --global init.defaultBranch <name>
+2025-07-11T04:23:40.9063309Z hint: 
+2025-07-11T04:23:40.9063813Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-11T04:23:40.9064639Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-11T04:23:40.9065258Z hint: 
+2025-07-11T04:23:40.9065601Z hint: 	git branch -m <name>
+2025-07-11T04:23:40.9067636Z Initialized empty Git repository in /__w/dash/dash/.git/
+2025-07-11T04:23:40.9080330Z [command]/usr/bin/git remote add origin https://github.com/DashCoreAutoGuix/dash
+2025-07-11T04:23:40.9108257Z ##[endgroup]
+2025-07-11T04:23:40.9108742Z ##[group]Disabling automatic garbage collection
+2025-07-11T04:23:40.9112870Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-11T04:23:40.9140385Z ##[endgroup]
+2025-07-11T04:23:40.9140793Z ##[group]Setting up auth
+2025-07-11T04:23:40.9147384Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-11T04:23:40.9411947Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-11T04:23:40.9416075Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-11T04:23:40.9444819Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-11T04:23:40.9672162Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-11T04:23:40.9710167Z ##[endgroup]
+2025-07-11T04:23:40.9710862Z ##[group]Fetching the repository
+2025-07-11T04:23:40.9718306Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f825f69ac898d8ab231a83cf1a00f16c7b333a28:refs/remotes/origin/backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:42.5653550Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-11T04:23:42.5654392Z  * [new ref]         f825f69ac898d8ab231a83cf1a00f16c7b333a28 -> origin/backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:42.5674480Z ##[endgroup]
+2025-07-11T04:23:42.5675057Z ##[group]Determining the checkout info
+2025-07-11T04:23:42.5677413Z ##[endgroup]
+2025-07-11T04:23:42.5682415Z [command]/usr/bin/git sparse-checkout disable
+2025-07-11T04:23:42.5717054Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-11T04:23:42.5743951Z ##[group]Checking out the ref
+2025-07-11T04:23:42.5747642Z [command]/usr/bin/git checkout --progress --force -B backport-0.25-batch-327-pr-25093 refs/remotes/origin/backport-0.25-batch-327-pr-25093
+2025-07-11T04:23:42.9455861Z Switched to a new branch 'backport-0.25-batch-327-pr-25093'
+2025-07-11T04:23:42.9456999Z branch 'backport-0.25-batch-327-pr-25093' set up to track 'origin/backport-0.25-batch-327-pr-25093'.
+2025-07-11T04:23:42.9474008Z ##[endgroup]
+2025-07-11T04:23:42.9514261Z [command]/usr/bin/git log -1 --format=%H
+2025-07-11T04:23:42.9535473Z f825f69ac898d8ab231a83cf1a00f16c7b333a28
+2025-07-11T04:23:42.9741572Z ##[group]Run actions/download-artifact@v4
+2025-07-11T04:23:42.9741847Z with:
+2025-07-11T04:23:42.9742043Z   name: build-linux64_nowallet-f825f69a
+2025-07-11T04:23:42.9742293Z   merge-multiple: false
+2025-07-11T04:23:42.9742510Z   repository: DashCoreAutoGuix/dash
+2025-07-11T04:23:42.9742735Z   run-id: 16209583720
+2025-07-11T04:23:42.9742909Z env:
+2025-07-11T04:23:42.9743187Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-11T04:23:42.9743557Z ##[endgroup]
+2025-07-11T04:23:42.9746409Z ##[command]/usr/bin/docker exec  986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59 sh -c "cat /etc/*release | grep ^ID"
+2025-07-11T04:23:43.2796591Z Downloading single artifact
+2025-07-11T04:23:43.5689201Z Preparing to download the following artifacts:
+2025-07-11T04:23:43.5690823Z - build-linux64_nowallet-f825f69a (ID: 3510151807, Size: 221659332, Expected Digest: sha256:28909677bbdbe6653d2bae7d4f2a87925f7e553ead77ed4297a8d2026538dcf8)
+2025-07-11T04:23:43.7518103Z Redirecting to blob download url: https://productionresultssa16.blob.core.windows.net/actions-results/116a7a72-9b63-45bf-9a50-5989302dd155/workflow-job-run-af5bc862-f25e-54ba-bfce-2bf07ecc813d/artifacts/3cd1b247a136333dbfaedc1fbd3730cd9244bd12190349291cd74367ca15a86d.zip
+2025-07-11T04:23:43.7520480Z Starting download of artifact to: /__w/dash/dash
+2025-07-11T04:23:44.0972530Z (node:117) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2025-07-11T04:23:44.0974042Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2025-07-11T04:23:53.3107583Z SHA256 digest of downloaded artifact is 28909677bbdbe6653d2bae7d4f2a87925f7e553ead77ed4297a8d2026538dcf8
+2025-07-11T04:23:53.3108453Z Artifact download completed successfully.
+2025-07-11T04:23:53.3108816Z Total of 1 artifact(s) downloaded
+2025-07-11T04:23:53.3119033Z Download artifact has finished successfully
+2025-07-11T04:23:53.3312399Z ##[group]Run git config --global --add safe.directory "$PWD"
+2025-07-11T04:23:53.3312872Z [36;1mgit config --global --add safe.directory "$PWD"[0m
+2025-07-11T04:23:53.3313208Z [36;1mexport BUILD_TARGET="linux64_nowallet"[0m
+2025-07-11T04:23:53.3313555Z [36;1mexport BUNDLE_KEY="build-linux64_nowallet-f825f69a"[0m
+2025-07-11T04:23:53.3313892Z [36;1m./ci/dash/bundle-artifacts.sh extract[0m
+2025-07-11T04:23:53.3314163Z [36;1m./ci/dash/slim-workspace.sh[0m
+2025-07-11T04:23:53.3314412Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-11T04:23:53.3314734Z [36;1m./ci/dash/test_integrationtests.sh ${INTEGRATION_TESTS_ARGS}[0m
+2025-07-11T04:23:53.3318567Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-11T04:23:53.3318858Z env:
+2025-07-11T04:23:53.3319155Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-11T04:23:53.3319714Z ##[endgroup]
+2025-07-11T04:23:55.4578777Z Setting specific values in env
+2025-07-11T04:23:55.4579476Z Fallback to default values in env (if not yet set)
+2025-07-11T04:23:55.5012426Z Setting specific values in env
+2025-07-11T04:23:55.5012762Z Fallback to default values in env (if not yet set)
+2025-07-11T04:23:55.5019198Z Using socketevents mode: select
+2025-07-11T04:23:55.6229967Z Temporary test directory at /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355
+2025-07-11T04:24:05.3644212Z ...................
+2025-07-11T04:24:05.3644998Z ----------------------------------------------------------------------
+2025-07-11T04:24:05.3645664Z Ran 19 tests in 9.638s
+2025-07-11T04:24:05.3645956Z 
+2025-07-11T04:24:05.3646127Z OK
+2025-07-11T04:24:06.8681937Z Running Unit Tests for Test Framework Modules
+2025-07-11T04:24:06.8682679Z 
+2025-07-11T04:24:06.8689294Z 
+2025-07-11T04:24:06.8689809Z 
+2025-07-11T04:24:06.8694550Z 1/290 - [1mfeature_llmq_data_recovery.py[0m skipped
+2025-07-11T04:24:06.8696253Z 2/290 - [1mwallet_hd.py --descriptors[0m skipped
+2025-07-11T04:24:07.3761505Z 
+2025-07-11T04:24:07.3762346Z 
+2025-07-11T04:24:07.3763284Z 
+2025-07-11T04:24:07.3763493Z 
+2025-07-11T04:24:07.3768383Z 3/290 - [1mwallet_hd.py --legacy-wallet[0m skipped
+2025-07-11T04:24:07.3769084Z 4/290 - [1mwallet_backup.py --descriptors[0m skipped
+2025-07-11T04:24:07.8842412Z 
+2025-07-11T04:24:07.8842767Z 
+2025-07-11T04:24:07.8871026Z 5/290 - [1mwallet_backup.py --legacy-wallet[0m skipped
+2025-07-11T04:24:08.3883648Z 
+2025-07-11T04:24:45.9526151Z ...........................................................................
+2025-07-11T04:24:45.9533656Z 6/290 - [1mfeature_maxuploadtarget.py[0m passed, Duration: 38 s
+2025-07-11T04:24:46.4645734Z                                                                            
+2025-07-11T04:24:46.4648073Z 
+2025-07-11T04:24:46.4649298Z 7/290 - [1mrpc_fundrawtransaction.py --legacy-wallet[0m skipped
+2025-07-11T04:24:46.9743090Z 
+2025-07-11T04:24:46.9744120Z 
+2025-07-11T04:24:46.9747202Z 8/290 - [1mrpc_fundrawtransaction.py --legacy-wallet --nohd[0m skipped
+2025-07-11T04:24:47.4808973Z 
+2025-07-11T04:24:47.4810365Z 
+2025-07-11T04:24:47.4813054Z 9/290 - [1mrpc_fundrawtransaction.py --descriptors[0m skipped
+2025-07-11T04:24:47.9873533Z 
+2025-07-11T04:24:47.9875044Z 
+2025-07-11T04:24:47.9880990Z 10/290 - [1mp2p_quorum_data.py[0m skipped
+2025-07-11T04:24:48.4960714Z 
+2025-07-11T04:24:48.4960980Z 
+2025-07-11T04:24:48.4963477Z 11/290 - [1mp2p_instantsend.py[0m skipped
+2025-07-11T04:24:49.0025329Z 
+2025-07-11T04:24:49.0025774Z 
+2025-07-11T04:24:49.0035611Z 12/290 - [1mwallet_basic.py --legacy-wallet[0m skipped
+2025-07-11T04:24:49.5103233Z 
+2025-07-11T04:24:49.5103599Z 
+2025-07-11T04:24:49.5123010Z 13/290 - [1mwallet_basic.py --descriptors[0m skipped
+2025-07-11T04:24:50.0181512Z 
+2025-07-11T04:24:50.0181893Z 
+2025-07-11T04:24:50.0185908Z 14/290 - [1mwallet_labels.py --legacy-wallet[0m skipped
+2025-07-11T04:24:50.5225987Z 
+2025-07-11T04:24:50.5226241Z 
+2025-07-11T04:24:50.5241025Z 15/290 - [1mwallet_labels.py --descriptors[0m skipped
+2025-07-11T04:24:51.0279196Z 
+2025-07-11T04:24:52.5315365Z ...
+2025-07-11T04:24:52.5322983Z 16/290 - [1mp2p_timeouts.py --v1transport[0m passed, Duration: 2 s
+2025-07-11T04:24:53.0422926Z    
+2025-07-11T04:24:55.0443050Z ....
+2025-07-11T04:24:55.0445679Z 17/290 - [1mp2p_timeouts.py --v2transport[0m passed, Duration: 2 s
+2025-07-11T04:24:55.5528155Z     
+2025-07-11T04:25:08.0771579Z 18/290 - [1mfeature_bip68_sequence.py[0m passed, Duration: 13 s
+2025-07-11T04:25:08.0772717Z .........................
+2025-07-11T04:25:08.5795022Z                          
+2025-07-11T04:25:08.5795647Z 
+2025-07-11T04:25:08.5798008Z 19/290 - [1mmempool_updatefromblock.py[0m skipped
+2025-07-11T04:25:09.0830801Z 
+2025-07-11T04:25:15.5954379Z .............
+2025-07-11T04:25:15.5956576Z 20/290 - [1mmining_getblocktemplate_longpoll.py[0m passed, Duration: 68 s
+2025-07-11T04:25:16.0985793Z              
+2025-07-11T04:25:16.0986142Z 
+2025-07-11T04:25:16.0987372Z 21/290 - [1mwallet_dump.py --legacy-wallet[0m skipped
+2025-07-11T04:25:16.6012982Z 
+2025-07-11T04:25:19.1045871Z .....
+2025-07-11T04:25:19.1047606Z 22/290 - [1mfeature_index_prune.py[0m passed, Duration: 72 s
+2025-07-11T04:25:19.6074347Z      
+2025-07-11T04:25:19.6075265Z 
+2025-07-11T04:25:19.6077772Z 23/290 - [1mfeature_dip3_v19.py[0m skipped
+2025-07-11T04:25:20.1103690Z 
+2025-07-11T04:25:20.1103706Z 
+2025-07-11T04:25:20.1106813Z 24/290 - [1mfeature_asset_locks.py[0m skipped
+2025-07-11T04:25:20.6134521Z 
+2025-07-11T04:25:20.6134668Z 
+2025-07-11T04:25:20.6137245Z 25/290 - [1mfeature_llmq_connections.py[0m skipped
+2025-07-11T04:25:21.1164056Z 
+2025-07-11T04:25:21.1164118Z 
+2025-07-11T04:25:21.1167203Z 26/290 - [1mfeature_llmq_is_retroactive.py[0m skipped
+2025-07-11T04:25:21.6195290Z 
+2025-07-11T04:25:21.6195309Z 
+2025-07-11T04:25:21.6198232Z 27/290 - [1mfeature_llmq_chainlocks.py[0m skipped
+2025-07-11T04:25:22.1225411Z 
+2025-07-11T04:25:22.1225426Z 
+2025-07-11T04:25:22.1228206Z 28/290 - [1mfeature_llmq_simplepose.py[0m skipped
+2025-07-11T04:25:22.6255070Z 
+2025-07-11T04:25:22.6255171Z 
+2025-07-11T04:25:22.6258999Z 29/290 - [1mfeature_llmq_simplepose.py --disable-spork23[0m skipped
+2025-07-11T04:25:23.1284831Z 
+2025-07-11T04:25:23.1284846Z 
+2025-07-11T04:25:23.1288935Z 30/290 - [1mfeature_dip3_deterministicmns.py --legacy-wallet[0m skipped
+2025-07-11T04:25:23.6316078Z 
+2025-07-11T04:25:23.6316095Z 
+2025-07-11T04:25:23.6319992Z 31/290 - [1mfeature_dip3_deterministicmns.py --descriptors[0m skipped
+2025-07-11T04:25:24.1346042Z 
+2025-07-11T04:25:24.1346056Z 
+2025-07-11T04:25:24.1349191Z 32/290 - [1mfeature_llmq_signing.py[0m skipped
+2025-07-11T04:25:24.6375192Z 
+2025-07-11T04:25:24.6375205Z 
+2025-07-11T04:25:24.6378768Z 33/290 - [1mfeature_llmq_signing.py --spork21[0m skipped
+2025-07-11T04:25:25.1405834Z 
+2025-07-11T04:25:25.1406087Z 
+2025-07-11T04:25:25.1409231Z 34/290 - [1mfeature_llmq_rotation.py[0m skipped
+2025-07-11T04:25:25.6439438Z 35/290 - [1mfeature_llmq_evo.py[0m skipped
+2025-07-11T04:25:25.6442638Z 
+2025-07-11T04:25:25.6442654Z 
+2025-07-11T04:25:26.1468697Z 
+2025-07-11T04:25:26.1468856Z 
+2025-07-11T04:25:26.1471908Z 36/290 - [1mfeature_llmq_is_cl_conflicts.py[0m skipped
+2025-07-11T04:25:26.6502837Z 37/290 - [1mfeature_llmq_dkgerrors.py[0m skipped
+2025-07-11T04:25:26.6503257Z 
+2025-07-11T04:25:26.6503803Z 
+2025-07-11T04:25:27.1531917Z 
+2025-07-11T04:25:27.1531930Z 
+2025-07-11T04:25:27.1535338Z 38/290 - [1mfeature_llmq_singlenode.py[0m skipped
+2025-07-11T04:25:27.6563947Z 
+2025-07-11T04:25:27.6563961Z 
+2025-07-11T04:25:27.6567559Z 39/290 - [1mfeature_dip4_coinbasemerkleroots.py[0m skipped
+2025-07-11T04:25:28.1592594Z 
+2025-07-11T04:25:28.1592609Z 
+2025-07-11T04:25:28.1595660Z 40/290 - [1mfeature_mnehf.py[0m skipped
+2025-07-11T04:25:28.6623366Z 
+2025-07-11T04:25:28.6623390Z 
+2025-07-11T04:25:28.6627769Z 41/290 - [1mfeature_governance.py --legacy-wallet[0m skipped
+2025-07-11T04:25:29.1655840Z 
+2025-07-11T04:25:29.1655855Z 
+2025-07-11T04:25:29.1659132Z 42/290 - [1mfeature_governance.py --descriptors[0m skipped
+2025-07-11T04:25:29.6687796Z 
+2025-07-11T04:25:29.6689006Z 
+2025-07-11T04:25:29.6691600Z 43/290 - [1mfeature_governance_cl.py --legacy-wallet[0m skipped
+2025-07-11T04:25:30.1722487Z 
+2025-07-11T04:25:30.1722884Z 
+2025-07-11T04:25:30.1730601Z 44/290 - [1mfeature_governance_cl.py --descriptors[0m skipped
+2025-07-11T04:25:30.6756688Z 
+2025-07-11T04:25:30.6756701Z 
+2025-07-11T04:25:30.6760031Z 45/290 - [1mrpc_verifyislock.py[0m skipped
+2025-07-11T04:25:31.1795458Z 46/290 - [1mfeature_notifications.py[0m skipped
+2025-07-11T04:25:31.1795849Z 
+2025-07-11T04:25:31.1796517Z 
+2025-07-11T04:25:31.6825231Z 
+2025-07-11T04:25:48.7047024Z ..................................
+2025-07-11T04:25:48.7052807Z 47/290 - [1mp2p_tx_download.py[0m passed, Duration: 40 s
+2025-07-11T04:25:49.2075930Z                                   
+2025-07-11T04:25:49.7094423Z .
+2025-07-11T04:25:49.7099432Z 48/290 - [1mfeature_multikeysporks.py[0m passed, Duration: 33 s
+2025-07-11T04:25:50.2119067Z  
+2025-07-11T04:25:50.2119320Z 
+2025-07-11T04:25:50.2119326Z 
+2025-07-11T04:25:50.2119332Z 
+2025-07-11T04:25:50.2121062Z 49/290 - [1mp2p_sendheaders.py[0m passed, Duration: 19 s
+2025-07-11T04:25:50.2123296Z 50/290 - [1mwallet_importmulti.py --legacy-wallet[0m skipped
+2025-07-11T04:25:50.7168865Z 
+2025-07-11T04:25:52.2192005Z ...
+2025-07-11T04:25:52.2193582Z 51/290 - [1mmempool_limit.py[0m passed, Duration: 2 s
+2025-07-11T04:25:52.7226954Z    
+2025-07-11T04:25:52.7227212Z 
+2025-07-11T04:25:52.7231203Z 52/290 - [1mrpc_txoutproof.py[0m passed, Duration: 2 s
+2025-07-11T04:25:53.2255451Z 
+2025-07-11T04:25:53.2255671Z 
+2025-07-11T04:25:53.2259005Z 53/290 - [1mwallet_listreceivedby.py --legacy-wallet[0m skipped
+2025-07-11T04:25:53.7286446Z 
+2025-07-11T04:25:53.7287575Z 
+2025-07-11T04:25:53.7298038Z 54/290 - [1mwallet_listreceivedby.py --descriptors[0m skipped
+2025-07-11T04:25:54.2321830Z 
+2025-07-11T04:25:54.2321907Z 
+2025-07-11T04:25:54.2324775Z 55/290 - [1mwallet_abandonconflict.py --legacy-wallet[0m skipped
+2025-07-11T04:25:54.7350760Z 
+2025-07-11T04:25:54.7351299Z 
+2025-07-11T04:25:54.7358051Z 56/290 - [1mwallet_abandonconflict.py --descriptors[0m skipped
+2025-07-11T04:25:55.2381611Z 
+2025-07-11T04:25:59.7427193Z .........
+2025-07-11T04:25:59.7430900Z 57/290 - [1mfeature_block.py[0m passed, Duration: 111 s
+2025-07-11T04:26:00.2454506Z          
+2025-07-11T04:26:02.2480941Z ....
+2025-07-11T04:26:02.2483664Z 58/290 - [1mfeature_reindex.py[0m passed, Duration: 7 s
+2025-07-11T04:26:02.7509877Z     
+2025-07-11T04:26:02.7510111Z 
+2025-07-11T04:26:02.7511662Z 59/290 - [1mrpc_quorum.py[0m skipped
+2025-07-11T04:26:03.2537560Z 
+2025-07-11T04:26:03.2537581Z 
+2025-07-11T04:26:03.2540671Z 60/290 - [1mwallet_keypool_topup.py --legacy-wallet[0m skipped
+2025-07-11T04:26:03.7566117Z 
+2025-07-11T04:26:03.7566131Z 
+2025-07-11T04:26:03.7569401Z 61/290 - [1mwallet_keypool_topup.py --descriptors[0m skipped
+2025-07-11T04:26:04.2593522Z 
+2025-07-11T04:26:04.7602018Z .
+2025-07-11T04:26:04.7604588Z 62/290 - [1mp2p_sendheaders_compressed.py[0m passed, Duration: 16 s
+2025-07-11T04:26:05.2631404Z  
+2025-07-11T04:26:05.2631632Z 
+2025-07-11T04:26:05.2634223Z 63/290 - [1minterface_zmq_dash.py --legacy-wallet[0m skipped
+2025-07-11T04:26:05.7660286Z 
+2025-07-11T04:26:05.7660300Z 
+2025-07-11T04:26:05.7663551Z 64/290 - [1minterface_zmq.py[0m skipped
+2025-07-11T04:26:06.2687054Z 
+2025-07-11T04:26:06.7714445Z .
+2025-07-11T04:26:06.7777658Z  
+2025-07-11T04:26:06.7778326Z rpc_invalid_address_message.py failed at attempt 1/3, Duration: 1 s
+2025-07-11T04:26:07.7798238Z ..
+2025-07-11T04:26:07.7864365Z   
+2025-07-11T04:26:07.7865048Z rpc_invalid_address_message.py failed at attempt 2/3, Duration: 1 s
+2025-07-11T04:26:08.7884596Z ..
+2025-07-11T04:26:08.8505410Z   
+2025-07-11T04:26:08.8506352Z 65/290 - [1mrpc_invalid_address_message.py[0m failed, Duration: 1 s
+2025-07-11T04:26:08.8506812Z 
+2025-07-11T04:26:08.8506982Z [1mstdout:
+2025-07-11T04:26:08.8507652Z [0m2025-07-11T04:26:07.914000Z TestFramework (INFO): PRNG seed is: 8175617715734890723
+2025-07-11T04:26:08.8515764Z 2025-07-11T04:26:07.914000Z TestFramework (INFO): Initializing test directory /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222
+2025-07-11T04:26:08.8517283Z 2025-07-11T04:26:08.175000Z TestFramework (ERROR): Assertion failed
+2025-07-11T04:26:08.8517831Z Traceback (most recent call last):
+2025-07-11T04:26:08.8518644Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 152, in try_rpc
+2025-07-11T04:26:08.8519460Z     fun(*args, **kwds)
+2025-07-11T04:26:08.8520431Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/coverage.py", line 49, in __call__
+2025-07-11T04:26:08.8521486Z     return_val = self.auth_service_proxy_instance.__call__(*args, **kwargs)
+2025-07-11T04:26:08.8522519Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/authproxy.py", line 143, in __call__
+2025-07-11T04:26:08.8523483Z     raise JSONRPCException(response['error'], status)
+2025-07-11T04:26:08.8524171Z test_framework.authproxy.JSONRPCException: validateaddress "address"
+2025-07-11T04:26:08.8524637Z 
+2025-07-11T04:26:08.8524825Z Return information about the given Dash address.
+2025-07-11T04:26:08.8525164Z 
+2025-07-11T04:26:08.8525279Z Arguments:
+2025-07-11T04:26:08.8525668Z 1. address    (string, required) The Dash address to validate
+2025-07-11T04:26:08.8526049Z 
+2025-07-11T04:26:08.8526299Z Early exiting after test failure
+2025-07-11T04:26:08.8526663Z Result:
+2025-07-11T04:26:08.8526944Z {                             (json object)
+2025-07-11T04:26:08.8527475Z   "isvalid" : true|false,     (boolean) If the address is valid or not
+2025-07-11T04:26:08.8528329Z   "address" : "str",          (string, optional) The Dash address validated
+2025-07-11T04:26:08.8529141Z   "scriptPubKey" : "hex",     (string, optional) The hex-encoded scriptPubKey generated by the address
+2025-07-11T04:26:08.8530158Z   "isscript" : true|false,    (boolean, optional) If the key is a script
+2025-07-11T04:26:08.8530814Z   "error" : "str"             (string, optional) Error message, if any
+2025-07-11T04:26:08.8531276Z }
+2025-07-11T04:26:08.8531413Z 
+2025-07-11T04:26:08.8531515Z Examples:
+2025-07-11T04:26:08.8531926Z > dash-cli validateaddress "XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"
+2025-07-11T04:26:08.8533357Z > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "validateaddress", "params": ["XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"]}' -H 'content-type: text/plain;' http://127.0.0.1:9998/
+2025-07-11T04:26:08.8534581Z  (-1)
+2025-07-11T04:26:08.8534742Z 
+2025-07-11T04:26:08.8535020Z During handling of the above exception, another exception occurred:
+2025-07-11T04:26:08.8535452Z 
+2025-07-11T04:26:08.8535596Z Traceback (most recent call last):
+2025-07-11T04:26:08.8536482Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/test_framework.py", line 161, in main
+2025-07-11T04:26:08.8537366Z     self.run_test()
+2025-07-11T04:26:08.8538175Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/rpc_invalid_address_message.py", line 56, in run_test
+2025-07-11T04:26:08.8539092Z     self.test_validateaddress()
+2025-07-11T04:26:08.8561969Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/rpc_invalid_address_message.py", line 45, in test_validateaddress
+2025-07-11T04:26:08.8563409Z     assert_raises_rpc_error(-1, "Return information about the given dash address.", node.validateaddress)
+2025-07-11T04:26:08.8564732Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 143, in assert_raises_rpc_error
+2025-07-11T04:26:08.8565805Z     assert try_rpc(code, message, fun, *args, **kwds), "No exception raised"
+2025-07-11T04:26:08.8566801Z   File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 158, in try_rpc
+2025-07-11T04:26:08.8567642Z     raise AssertionError(
+2025-07-11T04:26:08.8568135Z AssertionError: Expected substring not found in error message:
+2025-07-11T04:26:08.8569014Z substring: 'Return information about the given dash address.'
+2025-07-11T04:26:08.8569726Z error message: 'validateaddress "address"
+2025-07-11T04:26:08.8570031Z 
+2025-07-11T04:26:08.8570224Z Return information about the given Dash address.
+2025-07-11T04:26:08.8570560Z 
+2025-07-11T04:26:08.8570673Z Arguments:
+2025-07-11T04:26:08.8571052Z 1. address    (string, required) The Dash address to validate
+2025-07-11T04:26:08.8571437Z 
+2025-07-11T04:26:08.8571545Z Result:
+2025-07-11T04:26:08.8571822Z {                             (json object)
+2025-07-11T04:26:08.8572332Z   "isvalid" : true|false,     (boolean) If the address is valid or not
+2025-07-11T04:26:08.8572985Z   "address" : "str",          (string, optional) The Dash address validated
+2025-07-11T04:26:08.8573787Z   "scriptPubKey" : "hex",     (string, optional) The hex-encoded scriptPubKey generated by the address
+2025-07-11T04:26:08.8574618Z   "isscript" : true|false,    (boolean, optional) If the key is a script
+2025-07-11T04:26:08.8575266Z   "error" : "str"             (string, optional) Error message, if any
+2025-07-11T04:26:08.8575745Z }
+2025-07-11T04:26:08.8575882Z 
+2025-07-11T04:26:08.8576000Z Examples:
+2025-07-11T04:26:08.8576430Z > dash-cli validateaddress "XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"
+2025-07-11T04:26:08.8577822Z > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "validateaddress", "params": ["XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"]}' -H 'content-type: text/plain;' http://127.0.0.1:9998/
+2025-07-11T04:26:08.8579013Z '.
+2025-07-11T04:26:08.8579388Z 2025-07-11T04:26:08.227000Z TestFramework (INFO): Stopping nodes
+2025-07-11T04:26:08.8581504Z 2025-07-11T04:26:08.629000Z TestFramework (WARNING): Not cleaning up dir /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222
+2025-07-11T04:26:08.8584127Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): Test failed. Test logging available at /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/test_framework.log
+2025-07-11T04:26:08.8585775Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): 
+2025-07-11T04:26:08.8588047Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): Hint: Call /__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/combine_logs.py '/__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222' to consolidate all logs
+2025-07-11T04:26:08.8613449Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): 
+2025-07-11T04:26:08.8614707Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): If this failure happened unexpectedly or intermittently, please file a bug and provide a link or upload of the combined log.
+2025-07-11T04:26:08.8616153Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): https://github.com/dashpay/dash/issues
+2025-07-11T04:26:08.8616881Z 2025-07-11T04:26:08.629000Z TestFramework (ERROR): 
+2025-07-11T04:26:08.8617223Z 
+2025-07-11T04:26:08.8617237Z 
+2025-07-11T04:26:08.8617431Z [1mstderr:
+2025-07-11T04:26:08.8617728Z [0m
+2025-07-11T04:26:08.8617871Z 
+2025-07-11T04:26:08.8618187Z [1mCombine the logs and print the last 4000 lines ...[0m
+2025-07-11T04:26:08.8618562Z 
+2025-07-11T04:26:08.8618667Z ============
+2025-07-11T04:26:08.8620028Z [1mCombined log for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222:[0m
+2025-07-11T04:26:08.8621072Z ============
+2025-07-11T04:26:08.8621245Z 
+2025-07-11T04:26:08.8621808Z [0;36m test  2025-07-11T04:26:07.914000Z TestFramework (INFO): PRNG seed is: 8175617715734890723 [0m
+2025-07-11T04:26:08.8622935Z [0;36m test  2025-07-11T04:26:07.914000Z TestFramework (DEBUG): Setting up network thread [0m
+2025-07-11T04:26:08.8625161Z [0;36m test  2025-07-11T04:26:07.914000Z TestFramework (INFO): Initializing test directory /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222 [0m
+2025-07-11T04:26:08.8627159Z [0;36m test  2025-07-11T04:26:07.917000Z TestFramework.node0 (DEBUG): dashd started, waiting for RPC to come up [0m
+2025-07-11T04:26:08.8628680Z [0;34m node0 2025-07-11T04:26:08.022295Z [      init] [init/common.cpp:182] [LogPackageVersion] Dash Core version v23.0.0-unk (release build) [0m
+2025-07-11T04:26:08.8640943Z [0;34m node0 2025-07-11T04:26:08.022302Z [      init] [init.cpp:924] [InitParameterInteraction] InitParameterInteraction: parameter interaction: -bind set -> setting -listen=1 [0m
+2025-07-11T04:26:08.8642933Z [0;34m node0 2025-07-11T04:26:08.022401Z [      init] [init.cpp:1240] [AppInitParameterInteraction] Validating signatures for all blocks. [0m
+2025-07-11T04:26:08.8644849Z [0;34m node0 2025-07-11T04:26:08.022405Z [      init] [init.cpp:1251] [AppInitParameterInteraction] Setting nMinimumChainWork=0000000000000000000000000000000000000000000000000000000000000000 [0m
+2025-07-11T04:26:08.8646803Z [0;34m node0 2025-07-11T04:26:08.022429Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init/common.cpp:30] [SetGlobals] Using the 'standard' SHA256 implementation [0m
+2025-07-11T04:26:08.8648529Z [0;34m node0 2025-07-11T04:26:08.022434Z (mocktime: 2014-12-04T17:15:37Z) [      init] [random.cpp:103] [ReportHardwareRand] Using RdSeed as an additional entropy source [0m
+2025-07-11T04:26:08.8650498Z [0;34m node0 2025-07-11T04:26:08.022437Z (mocktime: 2014-12-04T17:15:37Z) [      init] [random.cpp:106] [ReportHardwareRand] Using RdRand as an additional entropy source [0m
+2025-07-11T04:26:08.8652264Z [0;34m node0 2025-07-11T04:26:08.024056Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init/common.cpp:153] [StartLogging] Default data directory /github/home/.dashcore [0m
+2025-07-11T04:26:08.8655092Z [0;34m node0 2025-07-11T04:26:08.024064Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init/common.cpp:154] [StartLogging] Using data directory /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest [0m
+2025-07-11T04:26:08.8658325Z [0;34m node0 2025-07-11T04:26:08.024078Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init/common.cpp:159] [StartLogging] Config file: /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/dash.conf [0m
+2025-07-11T04:26:08.8660942Z [0;34m node0 2025-07-11T04:26:08.024087Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: regtest="1" [0m
+2025-07-11T04:26:08.8662699Z [0;34m node0 2025-07-11T04:26:08.024097Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] bind="127.0.0.1" [0m
+2025-07-11T04:26:08.8664514Z [0;34m node0 2025-07-11T04:26:08.024105Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] discover="0" [0m
+2025-07-11T04:26:08.8666176Z [0;34m node0 2025-07-11T04:26:08.024112Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] dnsseed="0" [0m
+2025-07-11T04:26:08.8667916Z [0;34m node0 2025-07-11T04:26:08.024121Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] fallbackfee="0.00001" [0m
+2025-07-11T04:26:08.8669842Z [0;34m node0 2025-07-11T04:26:08.024128Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] fixedseeds="0" [0m
+2025-07-11T04:26:08.8671566Z [0;34m node0 2025-07-11T04:26:08.024136Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] keypool="1" [0m
+2025-07-11T04:26:08.8673274Z [0;34m node0 2025-07-11T04:26:08.024144Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] listenonion="0" [0m
+2025-07-11T04:26:08.8675165Z [0;34m node0 2025-07-11T04:26:08.024151Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] natpmp="0" [0m
+2025-07-11T04:26:08.8677060Z [0;34m node0 2025-07-11T04:26:08.024159Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] peertimeout="999999999" [0m
+2025-07-11T04:26:08.8678919Z [0;34m node0 2025-07-11T04:26:08.024167Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] port="15440" [0m
+2025-07-11T04:26:08.8681199Z [0;34m node0 2025-07-11T04:26:08.024176Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] printtoconsole="0" [0m
+2025-07-11T04:26:08.8683025Z [0;34m node0 2025-07-11T04:26:08.024182Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] rpcport="20440" [0m
+2025-07-11T04:26:08.8684822Z [0;34m node0 2025-07-11T04:26:08.024187Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] server="1" [0m
+2025-07-11T04:26:08.8686595Z [0;34m node0 2025-07-11T04:26:08.024191Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] shrinkdebugfile="0" [0m
+2025-07-11T04:26:08.8688359Z [0;34m node0 2025-07-11T04:26:08.024196Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] unsafesqlitesync="1" [0m
+2025-07-11T04:26:08.8690279Z [0;34m node0 2025-07-11T04:26:08.024205Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] upnp="0" [0m
+2025-07-11T04:26:08.8692226Z [0;34m node0 2025-07-11T04:26:08.024214Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: createwalletbackups="0" [0m
+2025-07-11T04:26:08.8694845Z [0;34m node0 2025-07-11T04:26:08.024222Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: datadir="/__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0" [0m
+2025-07-11T04:26:08.8696784Z [0;34m node0 2025-07-11T04:26:08.024227Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debug="" [0m
+2025-07-11T04:26:08.8697785Z [0;34m node0 2025-07-11T04:26:08.024233Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debugexclude="libevent" [0m
+2025-07-11T04:26:08.8698773Z [0;34m node0 2025-07-11T04:26:08.024242Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debugexclude="leveldb" [0m
+2025-07-11T04:26:08.8699918Z [0;34m node0 2025-07-11T04:26:08.024250Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: loglevel="trace" [0m
+2025-07-11T04:26:08.8700870Z [0;34m node0 2025-07-11T04:26:08.024258Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logsourcelocations="" [0m
+2025-07-11T04:26:08.8701804Z [0;34m node0 2025-07-11T04:26:08.024265Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logthreadnames="" [0m
+2025-07-11T04:26:08.8702734Z [0;34m node0 2025-07-11T04:26:08.024273Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logtimemicros="" [0m
+2025-07-11T04:26:08.8703665Z [0;34m node0 2025-07-11T04:26:08.024280Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: mocktime="1417713337" [0m
+2025-07-11T04:26:08.8704775Z [0;34m node0 2025-07-11T04:26:08.024284Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: mocktime="1417713337" [0m
+2025-07-11T04:26:08.8705750Z [0;34m node0 2025-07-11T04:26:08.024289Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: socketevents="select" [0m
+2025-07-11T04:26:08.8706701Z [0;34m node0 2025-07-11T04:26:08.024293Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: uacomment="testnode0" [0m
+2025-07-11T04:26:08.8707640Z [0;34m node0 2025-07-11T04:26:08.024297Z (mocktime: 2014-12-04T17:15:37Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: v2transport="0" [0m
+2025-07-11T04:26:08.8708670Z [0;34m node0 2025-07-11T04:26:08.024302Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1478] [AppInitMain] Using at most 125 automatic connections (1048576 file descriptors available) [0m
+2025-07-11T04:26:08.8710115Z [0;34m node0 2025-07-11T04:26:08.027045Z (mocktime: 2014-12-04T17:15:37Z) [      init] [script/sigcache.cpp:87] [InitSignatureCache] Using 16 MiB out of 32/2 requested for signature cache, able to store 524288 elements [0m
+2025-07-11T04:26:08.8711453Z [0;34m node0 2025-07-11T04:26:08.029670Z (mocktime: 2014-12-04T17:15:37Z) [      init] [validation.cpp:1746] [InitScriptExecutionCache] Using 16 MiB out of 32/2 requested for script execution cache, able to store 524288 elements [0m
+2025-07-11T04:26:08.8712583Z [0;34m node0 2025-07-11T04:26:08.029726Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1505] [AppInitMain] Script verification uses 3 additional threads [0m
+2025-07-11T04:26:08.8713483Z [0;34m node0 2025-07-11T04:26:08.031437Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dummywallet.cpp:33] [Construct] No wallet support compiled in! [0m
+2025-07-11T04:26:08.8714498Z [0;34m node0 2025-07-11T04:26:08.031466Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [util/thread.cpp:18] [TraceThread] scheduler thread start [0m
+2025-07-11T04:26:08.8722218Z [0;34m node0 2025-07-11T04:26:08.034156Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:195] [InitHTTPAllowList] [http] Allowing HTTP connections from: 127.0.0.0/8 ::1/128 [0m
+2025-07-11T04:26:08.8723461Z [0;34m node0 2025-07-11T04:26:08.034208Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:353] [HTTPBindAddresses] Binding RPC on address ::1 port 20440 [0m
+2025-07-11T04:26:08.8724604Z [0;34m node0 2025-07-11T04:26:08.034265Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:393] [libevent_log_cb] [libevent:warning] getaddrinfo: address family for nodename not supported [0m
+2025-07-11T04:26:08.8725752Z [0;34m node0 2025-07-11T04:26:08.034271Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:362] [HTTPBindAddresses] Binding RPC on address ::1 port 20440 failed. [0m
+2025-07-11T04:26:08.8726761Z [0;34m node0 2025-07-11T04:26:08.034280Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:353] [HTTPBindAddresses] Binding RPC on address 127.0.0.1 port 20440 [0m
+2025-07-11T04:26:08.8727699Z [0;34m node0 2025-07-11T04:26:08.034354Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:432] [InitHTTPServer] [http] Initialized HTTP server [0m
+2025-07-11T04:26:08.8728659Z [0;34m node0 2025-07-11T04:26:08.034362Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:439] [InitHTTPServer] [http] creating work queue of depth 16 external_depth 0 [0m
+2025-07-11T04:26:08.8729747Z [0;34m node0 2025-07-11T04:26:08.034367Z (mocktime: 2014-12-04T17:15:37Z) [      init] [rpc/server.cpp:310] [StartRPC] [rpc] Starting RPC [0m
+2025-07-11T04:26:08.8730602Z [0;34m node0 2025-07-11T04:26:08.034379Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httprpc.cpp:332] [StartHTTPRPC] [rpc] Starting HTTP RPC server [0m
+2025-07-11T04:26:08.8731513Z [0;34m node0 2025-07-11T04:26:08.034384Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httprpc.cpp:283] [InitRPCAuthentication] Using random cookie authentication. [0m
+2025-07-11T04:26:08.8733266Z [0;34m node0 2025-07-11T04:26:08.034490Z (mocktime: 2014-12-04T17:15:37Z) [      init] [rpc/request.cpp:106] [GenerateAuthCookie] Generated RPC authentication cookie /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/.cookie [0m
+2025-07-11T04:26:08.8734837Z [0;34m node0 2025-07-11T04:26:08.034499Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:675] [RegisterHTTPHandler] [http] Registering HTTP handler for / (exactmatch 1) [0m
+2025-07-11T04:26:08.8735814Z [0;34m node0 2025-07-11T04:26:08.034505Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:460] [StartHTTPServer] [http] Starting HTTP server [0m
+2025-07-11T04:26:08.8736712Z [0;34m node0 2025-07-11T04:26:08.034509Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:462] [StartHTTPServer] [http] starting 4 worker threads [0m
+2025-07-11T04:26:08.8737616Z [0;34m node0 2025-07-11T04:26:08.034945Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:317] [ThreadHTTP] [http] Entering http event loop [0m
+2025-07-11T04:26:08.8739070Z [0;34m node0 2025-07-11T04:26:08.036748Z (mocktime: 2014-12-04T17:15:37Z) [      init] [stats/client.cpp:60] [StatsdClient] Transmitting stats are disabled, will not init StatsdClient [0m
+2025-07-11T04:26:08.8740402Z [0;34m node0 2025-07-11T04:26:08.036762Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1615] [AppInitMain] Using /16 prefix for IP bucketing [0m
+2025-07-11T04:26:08.8741398Z [0;34m node0 2025-07-11T04:26:08.036773Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading P2P addresses… [0m
+2025-07-11T04:26:08.8743015Z [0;34m node0 2025-07-11T04:26:08.037287Z (mocktime: 2014-12-04T17:15:37Z) [      init] [addrdb.cpp:198] [LoadAddrman] Creating peers.dat because the file was not found ("/__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/peers.dat") [0m
+2025-07-11T04:26:08.8744572Z [0;34m node0 2025-07-11T04:26:08.038827Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading banlist… [0m
+2025-07-11T04:26:08.8745422Z [0;34m node0 2025-07-11T04:26:08.038857Z (mocktime: 2014-12-04T17:15:37Z) [      init] [banman.cpp:41] [LoadBanlist] Recreating the banlist database [0m
+2025-07-11T04:26:08.8746347Z [0;34m node0 2025-07-11T04:26:08.038915Z (mocktime: 2014-12-04T17:15:37Z) [      init] [banman.cpp:66] [DumpBanlist] [net] Flushed 0 banned node addresses/subnets to disk  0ms [0m
+2025-07-11T04:26:08.8747343Z [0;34m node0 2025-07-11T04:26:08.038941Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:2815] [SetTryNewOutboundPeer] [net] setting try another outbound peer=false [0m
+2025-07-11T04:26:08.8748248Z [0;34m node0 2025-07-11T04:26:08.038947Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:3856] [SetNetworkActive] SetNetworkActive: true [0m
+2025-07-11T04:26:08.8750232Z [0;34m node0 2025-07-11T04:26:08.039716Z (mocktime: 2014-12-04T17:15:37Z) [      init] [policy/fees.cpp:567] [CBlockPolicyEstimator] Failed to read fee estimates from /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/fee_estimates.dat. Continue anyway. [0m
+2025-07-11T04:26:08.8751823Z [0;34m node0 2025-07-11T04:26:08.039799Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:186] [Load] Reading info from sporks.dat... [0m
+2025-07-11T04:26:08.8752725Z [0;34m node0 2025-07-11T04:26:08.039824Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:162] [Read] Missing file sporks.dat, will try to recreate [0m
+2025-07-11T04:26:08.8753580Z [0;34m node0 2025-07-11T04:26:08.039837Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1921] [AppInitMain] Cache configuration: [0m
+2025-07-11T04:26:08.8754432Z [0;34m node0 2025-07-11T04:26:08.039859Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1922] [AppInitMain] * Using 2.0 MiB for block index database [0m
+2025-07-11T04:26:08.8755486Z [0;34m node0 2025-07-11T04:26:08.039872Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1924] [AppInitMain] * Using 37.2 MiB for transaction index database [0m
+2025-07-11T04:26:08.8756404Z [0;34m node0 2025-07-11T04:26:08.039881Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1930] [AppInitMain] * Using 8.0 MiB for chain state database [0m
+2025-07-11T04:26:08.8757434Z [0;34m node0 2025-07-11T04:26:08.039891Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:1931] [AppInitMain] * Using 252.8 MiB for in-memory UTXO set (plus up to 286.1 MiB of unused mempool space) [0m
+2025-07-11T04:26:08.8758433Z [0;34m node0 2025-07-11T04:26:08.039914Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading block index… [0m
+2025-07-11T04:26:08.8760189Z [0;34m node0 2025-07-11T04:26:08.040020Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/evodb [0m
+2025-07-11T04:26:08.8761510Z [0;34m node0 2025-07-11T04:26:08.042530Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8762957Z [0;34m node0 2025-07-11T04:26:08.042548Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/evodb: 0000000000000000 [0m
+2025-07-11T04:26:08.8764505Z [0;34m node0 2025-07-11T04:26:08.042559Z (mocktime: 2014-12-04T17:15:37Z) [      init] [validation.cpp:5570] [InitializeChainstate] Switching active chainstate to Chainstate [ibd] @ height -1 (null) [0m
+2025-07-11T04:26:08.8766222Z [0;34m node0 2025-07-11T04:26:08.042623Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/blocks/index [0m
+2025-07-11T04:26:08.8767521Z [0;34m node0 2025-07-11T04:26:08.044821Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8768990Z [0;34m node0 2025-07-11T04:26:08.044835Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/blocks/index: 0000000000000000 [0m
+2025-07-11T04:26:08.8771116Z [0;34m node0 2025-07-11T04:26:08.044934Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/dkgdb [0m
+2025-07-11T04:26:08.8772411Z [0;34m node0 2025-07-11T04:26:08.048324Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8773869Z [0;34m node0 2025-07-11T04:26:08.048343Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/dkgdb: 0000000000000000 [0m
+2025-07-11T04:26:08.8775799Z [0;34m node0 2025-07-11T04:26:08.048433Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/quorumdb [0m
+2025-07-11T04:26:08.8777242Z [0;34m node0 2025-07-11T04:26:08.050746Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8778734Z [0;34m node0 2025-07-11T04:26:08.050765Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/quorumdb: 0000000000000000 [0m
+2025-07-11T04:26:08.8780534Z [0;34m node0 2025-07-11T04:26:08.050780Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1155] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- start [0m
+2025-07-11T04:26:08.8801388Z [0;34m node0 2025-07-11T04:26:08.050807Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1198] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- q_Qqvvec moved 0 [0m
+2025-07-11T04:26:08.8802868Z [0;34m node0 2025-07-11T04:26:08.050814Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1198] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- q_Qsk moved 0 [0m
+2025-07-11T04:26:08.8804105Z [0;34m node0 2025-07-11T04:26:08.052016Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1079] [DataCleanupHelper] [llmq] CQuorumManager::DataCleanupHelper -- q_Qqvvec removed 0 [0m
+2025-07-11T04:26:08.8805293Z [0;34m node0 2025-07-11T04:26:08.052028Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1079] [DataCleanupHelper] [llmq] CQuorumManager::DataCleanupHelper -- q_Qsk removed 0 [0m
+2025-07-11T04:26:08.8806442Z [0;34m node0 2025-07-11T04:26:08.052035Z (mocktime: 2014-12-04T17:15:37Z) [      init] [llmq/quorums.cpp:1207] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- done [0m
+2025-07-11T04:26:08.8808180Z [0;34m node0 2025-07-11T04:26:08.052106Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/recsigdb [0m
+2025-07-11T04:26:08.8809662Z [0;34m node0 2025-07-11T04:26:08.054340Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8811310Z [0;34m node0 2025-07-11T04:26:08.054355Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/recsigdb: 0000000000000000 [0m
+2025-07-11T04:26:08.8812709Z [0;34m node0 2025-07-11T04:26:08.054891Z (mocktime: 2014-12-04T17:15:37Z) [ cl-schdlr] [util/thread.cpp:18] [TraceThread] cl-schdlr thread start [0m
+2025-07-11T04:26:08.8814109Z [0;34m node0 2025-07-11T04:26:08.054943Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/isdb [0m
+2025-07-11T04:26:08.8815392Z [0;34m node0 2025-07-11T04:26:08.057104Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8816837Z [0;34m node0 2025-07-11T04:26:08.057119Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/isdb: 0000000000000000 [0m
+2025-07-11T04:26:08.8818683Z [0;34m node0 2025-07-11T04:26:08.057146Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:133] [CDBWrapper] Wiping LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/isdb [0m
+2025-07-11T04:26:08.8820752Z [0;34m node0 2025-07-11T04:26:08.057331Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/isdb [0m
+2025-07-11T04:26:08.8822049Z [0;34m node0 2025-07-11T04:26:08.059586Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8823502Z [0;34m node0 2025-07-11T04:26:08.059599Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/llmq/isdb: 0000000000000000 [0m
+2025-07-11T04:26:08.8824946Z [0;34m node0 2025-07-11T04:26:08.072413Z (mocktime: 2014-12-04T17:15:37Z) [      init] [node/blockstorage.cpp:358] [LoadBlockIndexDB] LoadBlockIndexDB: last block file = 0 [0m
+2025-07-11T04:26:08.8826263Z [0;34m node0 2025-07-11T04:26:08.072441Z (mocktime: 2014-12-04T17:15:37Z) [      init] [node/blockstorage.cpp:362] [LoadBlockIndexDB] LoadBlockIndexDB: last block file info: CBlockFileInfo(blocks=0, size=0, heights=0...0, time=1970-01-01...1970-01-01) [0m
+2025-07-11T04:26:08.8827532Z [0;34m node0 2025-07-11T04:26:08.072451Z (mocktime: 2014-12-04T17:15:37Z) [      init] [node/blockstorage.cpp:373] [LoadBlockIndexDB] Checking all blk files are present... [0m
+2025-07-11T04:26:08.8828499Z [0;34m node0 2025-07-11T04:26:08.072464Z (mocktime: 2014-12-04T17:15:37Z) [      init] [validation.cpp:4876] [LoadBlockIndex] Initializing databases... [0m
+2025-07-11T04:26:08.8829786Z [0;34m node0 2025-07-11T04:26:08.072700Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flatfile.cpp:69] [Allocate] [validation] Pre-allocating up to position 0x1000000 in blk00000.dat [0m
+2025-07-11T04:26:08.8831473Z [0;34m node0 2025-07-11T04:26:08.072849Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/chainstate [0m
+2025-07-11T04:26:08.8832785Z [0;34m node0 2025-07-11T04:26:08.075438Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8834275Z [0;34m node0 2025-07-11T04:26:08.075475Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:168] [CDBWrapper] Wrote new obfuscate key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/chainstate: 9339d006eaee0e36 [0m
+2025-07-11T04:26:08.8836268Z [0;34m node0 2025-07-11T04:26:08.075484Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/chainstate: 9339d006eaee0e36 [0m
+2025-07-11T04:26:08.8837665Z [0;34m node0 2025-07-11T04:26:08.075533Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2052] [AppInitMain] AppInitMain: address index disabled [0m
+2025-07-11T04:26:08.8838545Z [0;34m node0 2025-07-11T04:26:08.075541Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2053] [AppInitMain] AppInitMain: timestamp index disabled [0m
+2025-07-11T04:26:08.8839413Z [0;34m node0 2025-07-11T04:26:08.075548Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2054] [AppInitMain] AppInitMain: spent index disabled [0m
+2025-07-11T04:26:08.8840390Z [0;34m node0 2025-07-11T04:26:08.075561Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Verifying blocks… [0m
+2025-07-11T04:26:08.8841269Z [0;34m node0 2025-07-11T04:26:08.075573Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2098] [AppInitMain]  block index              35ms [0m
+2025-07-11T04:26:08.8842251Z [0;34m node0 2025-07-11T04:26:08.076579Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:192] [Store] Verifying netfulfilled.dat format... [0m
+2025-07-11T04:26:08.8843200Z [0;34m node0 2025-07-11T04:26:08.076600Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:162] [Read] Missing file netfulfilled.dat, will try to recreate [0m
+2025-07-11T04:26:08.8844112Z [0;34m node0 2025-07-11T04:26:08.076604Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:198] [Store] Writing info to netfulfilled.dat... [0m
+2025-07-11T04:26:08.8845009Z [0;34m node0 2025-07-11T04:26:08.076647Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:68] [CoreWrite] Written info to netfulfilled.dat  0ms [0m
+2025-07-11T04:26:08.8845904Z [0;34m node0 2025-07-11T04:26:08.076652Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:69] [CoreWrite]      Nodes with fulfilled requests: 0 [0m
+2025-07-11T04:26:08.8846797Z [0;34m node0 2025-07-11T04:26:08.076657Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:200] [Store] netfulfilled.dat dump finished  0ms [0m
+2025-07-11T04:26:08.8847671Z [0;34m node0 2025-07-11T04:26:08.076662Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:192] [Store] Verifying mncache.dat format... [0m
+2025-07-11T04:26:08.8848560Z [0;34m node0 2025-07-11T04:26:08.076674Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:162] [Read] Missing file mncache.dat, will try to recreate [0m
+2025-07-11T04:26:08.8849438Z [0;34m node0 2025-07-11T04:26:08.076678Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:198] [Store] Writing info to mncache.dat... [0m
+2025-07-11T04:26:08.8850638Z [0;34m node0 2025-07-11T04:26:08.076715Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:68] [CoreWrite] Written info to mncache.dat  0ms [0m
+2025-07-11T04:26:08.8851764Z [0;34m node0 2025-07-11T04:26:08.076721Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:69] [CoreWrite]      Masternodes: meta infos object count: 0, nDsqCount: 0 [0m
+2025-07-11T04:26:08.8852698Z [0;34m node0 2025-07-11T04:26:08.076725Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:200] [Store] mncache.dat dump finished  0ms [0m
+2025-07-11T04:26:08.8853560Z [0;34m node0 2025-07-11T04:26:08.076733Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:192] [Store] Verifying governance.dat format... [0m
+2025-07-11T04:26:08.8854478Z [0;34m node0 2025-07-11T04:26:08.076744Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:162] [Read] Missing file governance.dat, will try to recreate [0m
+2025-07-11T04:26:08.8855386Z [0;34m node0 2025-07-11T04:26:08.076748Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:198] [Store] Writing info to governance.dat... [0m
+2025-07-11T04:26:08.8856272Z [0;34m node0 2025-07-11T04:26:08.076788Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:68] [CoreWrite] Written info to governance.dat  0ms [0m
+2025-07-11T04:26:08.8857314Z [0;34m node0 2025-07-11T04:26:08.076794Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:69] [CoreWrite]      Governance Objects: 0 (Proposals: 0, Triggers: 0, Other: 0; Erased: 0), Votes: 0 [0m
+2025-07-11T04:26:08.8858316Z [0;34m node0 2025-07-11T04:26:08.076799Z (mocktime: 2014-12-04T17:15:37Z) [      init] [flat-database.h:200] [Store] governance.dat dump finished  0ms [0m
+2025-07-11T04:26:08.8859868Z [0;34m node0 2025-07-11T04:26:08.076890Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/indexes/txindex [0m
+2025-07-11T04:26:08.8861191Z [0;34m node0 2025-07-11T04:26:08.079920Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-11T04:26:08.8862842Z [0;34m node0 2025-07-11T04:26:08.079939Z (mocktime: 2014-12-04T17:15:37Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/node0/regtest/indexes/txindex: 0000000000000000 [0m
+2025-07-11T04:26:08.8864259Z [0;34m node0 2025-07-11T04:26:08.080619Z (mocktime: 2014-12-04T17:15:37Z) [   txindex] [util/thread.cpp:18] [TraceThread] txindex thread start [0m
+2025-07-11T04:26:08.8865093Z [0;34m node0 2025-07-11T04:26:08.080637Z (mocktime: 2014-12-04T17:15:37Z) [   txindex] [index/base.cpp:198] [ThreadSync] txindex is enabled [0m
+2025-07-11T04:26:08.8865929Z [0;34m node0 2025-07-11T04:26:08.080645Z (mocktime: 2014-12-04T17:15:37Z) [   txindex] [util/thread.cpp:20] [TraceThread] txindex thread exit [0m
+2025-07-11T04:26:08.8866790Z [0;34m node0 2025-07-11T04:26:08.094821Z (mocktime: 2014-12-04T17:15:37Z) [ sigshares] [util/thread.cpp:18] [TraceThread] sigshares thread start [0m
+2025-07-11T04:26:08.8867664Z [0;34m node0 2025-07-11T04:26:08.094887Z (mocktime: 2014-12-04T17:15:37Z) [ sigshares] [util/thread.cpp:18] [TraceThread] sigshares thread start [0m
+2025-07-11T04:26:08.8868502Z [0;34m node0 2025-07-11T04:26:08.095652Z (mocktime: 2014-12-04T17:15:37Z) [     isman] [util/thread.cpp:18] [TraceThread] isman thread start [0m
+2025-07-11T04:26:08.8869333Z [0;34m node0 2025-07-11T04:26:08.095941Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [util/thread.cpp:18] [TraceThread] loadblk thread start [0m
+2025-07-11T04:26:08.8870433Z [0;34m node0 2025-07-11T04:26:08.096193Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3072] [ConnectTip] [bench]   - Load block from disk: 0.19ms [0.00s (infms/blk)] [0m
+2025-07-11T04:26:08.8871810Z [0;34m node0 2025-07-11T04:26:08.096338Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validationinterface.cpp:249] [BlockChecked] [validation] BlockChecked: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e state=Valid [0m
+2025-07-11T04:26:08.8873234Z [0;34m node0 2025-07-11T04:26:08.096390Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3086] [ConnectTip] [bench]   - Connect total: 0.20ms [0.00s (0.20ms/blk)] [0m
+2025-07-11T04:26:08.8874235Z [0;34m node0 2025-07-11T04:26:08.096413Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3092] [ConnectTip] [bench]   - Flush: 0.03ms [0.00s (0.03ms/blk)] [0m
+2025-07-11T04:26:08.8875258Z [0;34m node0 2025-07-11T04:26:08.096426Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3098] [ConnectTip] [bench]   - Writing chainstate: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-11T04:26:08.8876947Z [0;34m node0 2025-07-11T04:26:08.096458Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:2847] [UpdateTipLog] UpdateTip: new best=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e height=0 version=0x00000001 log2_work=1.000000 tx=1 date='2014-12-04T17:15:37Z' progress=1.000000 cache=0.3MiB(0txo) evodb_cache=0.0MiB [0m
+2025-07-11T04:26:08.8878517Z [0;34m node0 2025-07-11T04:26:08.096469Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3110] [ConnectTip] [bench]   - Connect postprocess: 0.04ms [0.00s (0.04ms/blk)] [0m
+2025-07-11T04:26:08.8879660Z [0;34m node0 2025-07-11T04:26:08.096478Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:3111] [ConnectTip] [bench] - Connect block: 0.47ms [0.00s (0.47ms/blk)] [0m
+2025-07-11T04:26:08.8880696Z [0;34m node0 2025-07-11T04:26:08.096488Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [txmempool.cpp:1131] [check] [mempool] Checking mempool with 0 transactions and 0 inputs [0m
+2025-07-11T04:26:08.8882111Z [0;34m node0 2025-07-11T04:26:08.096540Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validationinterface.cpp:226] [BlockConnected] [validation] Enqueuing BlockConnected: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e block height=0 [0m
+2025-07-11T04:26:08.8884052Z [0;34m node0 2025-07-11T04:26:08.096573Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validationinterface.cpp:196] [UpdatedBlockTip] [validation] Enqueuing UpdatedBlockTip: new block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e fork block hash=null (in IBD=true) [0m
+2025-07-11T04:26:08.8885520Z [0;34m node0 2025-07-11T04:26:08.096619Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:5368] [LoadMempool] Failed to open mempool file from disk. Continuing anyway. [0m
+2025-07-11T04:26:08.8886628Z [0;34m node0 2025-07-11T04:26:08.096629Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [validation.cpp:1609] [IsInitialBlockDownload] Leaving InitialBlockDownload (latching to false) [0m
+2025-07-11T04:26:08.8887981Z [0;34m node0 2025-07-11T04:26:08.096647Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [masternode/sync.cpp:332] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 0 fInitialDownload=0 [0m
+2025-07-11T04:26:08.8889390Z [0;34m node0 2025-07-11T04:26:08.096660Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [masternode/sync.cpp:50] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::UpdatedBlockTip [0m
+2025-07-11T04:26:08.8891269Z [0;34m node0 2025-07-11T04:26:08.096674Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [masternode/sync.cpp:365] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 0 pindexTip->nHeight: 0 fInitialDownload=0 fReachedBestHeader=1 [0m
+2025-07-11T04:26:08.8892935Z [0;34m node0 2025-07-11T04:26:08.096692Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [validationinterface.cpp:226] [operator()] [validation] BlockConnected: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e block height=0 [0m
+2025-07-11T04:26:08.8894121Z [0;34m node0 2025-07-11T04:26:08.096707Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2379] [AppInitMain] block tree size = 1 [0m
+2025-07-11T04:26:08.8895077Z [0;34m node0 2025-07-11T04:26:08.096715Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:2392] [AppInitMain] nBestHeight = 0 [0m
+2025-07-11T04:26:08.8896418Z [0;34m node0 2025-07-11T04:26:08.096726Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [validationinterface.cpp:196] [operator()] [validation] UpdatedBlockTip: new block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e fork block hash=null (in IBD=true) [0m
+2025-07-11T04:26:08.8898051Z [0;34m node0 2025-07-11T04:26:08.096735Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [masternode/sync.cpp:332] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 0 fInitialDownload=1 [0m
+2025-07-11T04:26:08.8899479Z [0;34m node0 2025-07-11T04:26:08.096743Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [masternode/sync.cpp:50] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::UpdatedBlockTip [0m
+2025-07-11T04:26:08.8900672Z [0;34m node0 2025-07-11T04:26:08.096796Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:3787] [BindListenPort] Bound to 127.0.0.1:15440 [0m
+2025-07-11T04:26:08.8901739Z [0;34m node0 2025-07-11T04:26:08.096827Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:3784] [BindListenPort] [net:error] Unable to bind to 127.0.0.1:19896 on this computer. Dash Core is probably already running. [0m
+2025-07-11T04:26:08.8902833Z [0;34m node0 2025-07-11T04:26:08.096890Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:3983] [Start] 0 block-relay-only anchors will be tried for connections. [0m
+2025-07-11T04:26:08.8903774Z [0;34m node0 2025-07-11T04:26:08.096903Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Starting network threads… [0m
+2025-07-11T04:26:08.8904615Z [0;34m node0 2025-07-11T04:26:08.097468Z (mocktime: 2014-12-04T17:15:37Z) [      init] [net.cpp:4027] [Start] DNS seeding disabled [0m
+2025-07-11T04:26:08.8905408Z [0;34m node0 2025-07-11T04:26:08.097688Z (mocktime: 2014-12-04T17:15:37Z) [       net] [util/thread.cpp:18] [TraceThread] net thread start [0m
+2025-07-11T04:26:08.8906229Z [0;34m node0 2025-07-11T04:26:08.098098Z (mocktime: 2014-12-04T17:15:37Z) [    addcon] [util/thread.cpp:18] [TraceThread] addcon thread start [0m
+2025-07-11T04:26:08.8907527Z [0;34m node0 2025-07-11T04:26:08.098979Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [governance/governance.cpp:1534] [UpdatedBlockTip] [gobject] CGovernanceManager::UpdatedBlockTip -- nCachedBlockHeight: 0 [0m
+2025-07-11T04:26:08.8908642Z [0;34m node0 2025-07-11T04:26:08.098993Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [init.cpp:2331] [operator()] Filling coin cache with masternode UTXOs... [0m
+2025-07-11T04:26:08.8909707Z [0;34m node0 2025-07-11T04:26:08.099001Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [init.cpp:2339] [operator()] Filling coin cache with masternode UTXOs: done in 0ms [0m
+2025-07-11T04:26:08.8910617Z [0;34m node0 2025-07-11T04:26:08.099009Z (mocktime: 2014-12-04T17:15:37Z) [   loadblk] [util/thread.cpp:20] [TraceThread] loadblk thread exit [0m
+2025-07-11T04:26:08.8911458Z [0;34m node0 2025-07-11T04:26:08.099058Z (mocktime: 2014-12-04T17:15:37Z) [   opencon] [util/thread.cpp:18] [TraceThread] opencon thread start [0m
+2025-07-11T04:26:08.8912324Z [0;34m node0 2025-07-11T04:26:08.099084Z (mocktime: 2014-12-04T17:15:37Z) [   opencon] [net.cpp:2938] [ThreadOpenConnections] Fixed seeds are disabled [0m
+2025-07-11T04:26:08.8913181Z [0;34m node0 2025-07-11T04:26:08.099986Z (mocktime: 2014-12-04T17:15:37Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Done loading [0m
+2025-07-11T04:26:08.8914025Z [0;34m node0 2025-07-11T04:26:08.100029Z (mocktime: 2014-12-04T17:15:37Z) [   msghand] [util/thread.cpp:18] [TraceThread] msghand thread start [0m
+2025-07-11T04:26:08.8914861Z [0;34m node0 2025-07-11T04:26:08.100058Z (mocktime: 2014-12-04T17:15:37Z) [     mncon] [util/thread.cpp:18] [TraceThread] mncon thread start [0m
+2025-07-11T04:26:08.8915966Z [0;34m node0 2025-07-11T04:26:08.171651Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8917040Z [0;34m node0 2025-07-11T04:26:08.171713Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getblockcount user=__cookie__ [0m
+2025-07-11T04:26:08.8918341Z [0;34m node0 2025-07-11T04:26:08.171745Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getblockcount external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8919343Z [0;36m test  2025-07-11T04:26:08.172000Z TestFramework.node0 (DEBUG): RPC successfully started [0m
+2025-07-11T04:26:08.8920350Z [0;34m node0 2025-07-11T04:26:08.172292Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8921414Z [0;34m node0 2025-07-11T04:26:08.172349Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getmempoolinfo user=__cookie__ [0m
+2025-07-11T04:26:08.8922712Z [0;34m node0 2025-07-11T04:26:08.172452Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getmempoolinfo external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8923956Z [0;34m node0 2025-07-11T04:26:08.172935Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8925026Z [0;34m node0 2025-07-11T04:26:08.172995Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.2] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getbestblockhash user=__cookie__ [0m
+2025-07-11T04:26:08.8926333Z [0;34m node0 2025-07-11T04:26:08.173028Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.2] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getbestblockhash external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8927698Z [0;34m node0 2025-07-11T04:26:08.173363Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8928767Z [0;34m node0 2025-07-11T04:26:08.173409Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.3] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getrawmempool user=__cookie__ [0m
+2025-07-11T04:26:08.8930160Z [0;34m node0 2025-07-11T04:26:08.173484Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.3] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getrawmempool external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8931408Z [0;34m node0 2025-07-11T04:26:08.173809Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8932548Z [0;34m node0 2025-07-11T04:26:08.173848Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=syncwithvalidationinterfacequeue user=__cookie__ [0m
+2025-07-11T04:26:08.8934003Z [0;34m node0 2025-07-11T04:26:08.173966Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=syncwithvalidationinterfacequeue external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8935321Z [0;34m node0 2025-07-11T04:26:08.174283Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8936381Z [0;34m node0 2025-07-11T04:26:08.174323Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=validateaddress user=__cookie__ [0m
+2025-07-11T04:26:08.8937798Z [0;34m node0 2025-07-11T04:26:08.174363Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=validateaddress external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8939043Z [0;34m node0 2025-07-11T04:26:08.174702Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8940196Z [0;34m node0 2025-07-11T04:26:08.174743Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.2] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=validateaddress user=__cookie__ [0m
+2025-07-11T04:26:08.8941507Z [0;34m node0 2025-07-11T04:26:08.174788Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.2] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=validateaddress external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8942457Z [0;36m test  2025-07-11T04:26:08.175000Z TestFramework (ERROR): Assertion failed [0m
+2025-07-11T04:26:08.8942901Z [0;36m                                   Traceback (most recent call last):[0m
+2025-07-11T04:26:08.8943578Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 152, in try_rpc[0m
+2025-07-11T04:26:08.8944179Z [0;36m                                       fun(*args, **kwds)[0m
+2025-07-11T04:26:08.8944832Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/coverage.py", line 49, in __call__[0m
+2025-07-11T04:26:08.8945562Z [0;36m                                       return_val = self.auth_service_proxy_instance.__call__(*args, **kwargs)[0m
+2025-07-11T04:26:08.8946317Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/authproxy.py", line 143, in __call__[0m
+2025-07-11T04:26:08.8946993Z [0;36m                                       raise JSONRPCException(response['error'], status)[0m
+2025-07-11T04:26:08.8947511Z [0;36m                                   test_framework.authproxy.JSONRPCException: validateaddress "address"[0m
+2025-07-11T04:26:08.8948129Z [0;36m                                   Return information about the given Dash address.[0m
+2025-07-11T04:26:08.8948501Z [0;36m                                   Arguments:[0m
+2025-07-11T04:26:08.8948911Z [0;36m                                   1. address    (string, required) The Dash address to validate[0m
+2025-07-11T04:26:08.8949292Z [0;36m                                   Result:[0m
+2025-07-11T04:26:08.8949732Z [0;36m                                   {                             (json object)[0m
+2025-07-11T04:26:08.8950180Z [0;36m                                     "isvalid" : true|false,     (boolean) If the address is valid or not[0m
+2025-07-11T04:26:08.8950689Z [0;36m                                     "address" : "str",          (string, optional) The Dash address validated[0m
+2025-07-11T04:26:08.8951286Z [0;36m                                     "scriptPubKey" : "hex",     (string, optional) The hex-encoded scriptPubKey generated by the address[0m
+2025-07-11T04:26:08.8951895Z [0;36m                                     "isscript" : true|false,    (boolean, optional) If the key is a script[0m
+2025-07-11T04:26:08.8952384Z [0;36m                                     "error" : "str"             (string, optional) Error message, if any[0m
+2025-07-11T04:26:08.8952745Z [0;36m                                   }[0m
+2025-07-11T04:26:08.8953045Z [0;36m                                   Examples:[0m
+2025-07-11T04:26:08.8953485Z [0;36m                                   > dash-cli validateaddress "XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"[0m
+2025-07-11T04:26:08.8954508Z [0;36m                                   > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "validateaddress", "params": ["XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"]}' -H 'content-type: text/plain;' http://127.0.0.1:9998/[0m
+2025-07-11T04:26:08.8955413Z [0;36m                                    (-1)[0m
+2025-07-11T04:26:08.8955851Z [0;36m                                   During handling of the above exception, another exception occurred:[0m
+2025-07-11T04:26:08.8956293Z [0;36m                                   Traceback (most recent call last):[0m
+2025-07-11T04:26:08.8956981Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/test_framework.py", line 161, in main[0m
+2025-07-11T04:26:08.8957589Z [0;36m                                       self.run_test()[0m
+2025-07-11T04:26:08.8958252Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/rpc_invalid_address_message.py", line 56, in run_test[0m
+2025-07-11T04:26:08.8958882Z [0;36m                                       self.test_validateaddress()[0m
+2025-07-11T04:26:08.8959716Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/rpc_invalid_address_message.py", line 45, in test_validateaddress[0m
+2025-07-11T04:26:08.8960611Z [0;36m                                       assert_raises_rpc_error(-1, "Return information about the given dash address.", node.validateaddress)[0m
+2025-07-11T04:26:08.8961488Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 143, in assert_raises_rpc_error[0m
+2025-07-11T04:26:08.8962248Z [0;36m                                       assert try_rpc(code, message, fun, *args, **kwds), "No exception raised"[0m
+2025-07-11T04:26:08.8962979Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/test_framework/util.py", line 158, in try_rpc[0m
+2025-07-11T04:26:08.8963582Z [0;36m                                       raise AssertionError([0m
+2025-07-11T04:26:08.8964027Z [0;36m                                   AssertionError: Expected substring not found in error message:[0m
+2025-07-11T04:26:08.8964649Z [0;36m                                   substring: 'Return information about the given dash address.'[0m
+2025-07-11T04:26:08.8965098Z [0;36m                                   error message: 'validateaddress "address"[0m
+2025-07-11T04:26:08.8965512Z [0;36m                                   Return information about the given Dash address.[0m
+2025-07-11T04:26:08.8965869Z [0;36m                                   Arguments:[0m
+2025-07-11T04:26:08.8966271Z [0;36m                                   1. address    (string, required) The Dash address to validate[0m
+2025-07-11T04:26:08.8966650Z [0;36m                                   Result:[0m
+2025-07-11T04:26:08.8966976Z [0;36m                                   {                             (json object)[0m
+2025-07-11T04:26:08.8967417Z [0;36m                                     "isvalid" : true|false,     (boolean) If the address is valid or not[0m
+2025-07-11T04:26:08.8967922Z [0;36m                                     "address" : "str",          (string, optional) The Dash address validated[0m
+2025-07-11T04:26:08.8968526Z [0;36m                                     "scriptPubKey" : "hex",     (string, optional) The hex-encoded scriptPubKey generated by the address[0m
+2025-07-11T04:26:08.8969119Z [0;36m                                     "isscript" : true|false,    (boolean, optional) If the key is a script[0m
+2025-07-11T04:26:08.8969709Z [0;36m                                     "error" : "str"             (string, optional) Error message, if any[0m
+2025-07-11T04:26:08.8970072Z [0;36m                                   }[0m
+2025-07-11T04:26:08.8970370Z [0;36m                                   Examples:[0m
+2025-07-11T04:26:08.8970805Z [0;36m                                   > dash-cli validateaddress "XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"[0m
+2025-07-11T04:26:08.8971935Z [0;36m                                   > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id": "curltest", "method": "validateaddress", "params": ["XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0"]}' -H 'content-type: text/plain;' http://127.0.0.1:9998/[0m
+2025-07-11T04:26:08.8972715Z [0;36m                                   '.[0m
+2025-07-11T04:26:08.8973444Z [0;34m node0 2025-07-11T04:26:08.175132Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8974517Z [0;34m node0 2025-07-11T04:26:08.175172Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.3] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=validateaddress user=__cookie__ [0m
+2025-07-11T04:26:08.8975829Z [0;34m node0 2025-07-11T04:26:08.175204Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.3] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=validateaddress external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8977082Z [0;34m node0 2025-07-11T04:26:08.175523Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8978147Z [0;34m node0 2025-07-11T04:26:08.175557Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=validateaddress user=__cookie__ [0m
+2025-07-11T04:26:08.8979453Z [0;34m node0 2025-07-11T04:26:08.175666Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=validateaddress external=false status=500 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8980535Z [0;36m test  2025-07-11T04:26:08.176000Z TestFramework (DEBUG): Closing down network thread [0m
+2025-07-11T04:26:08.8981064Z [0;36m test  2025-07-11T04:26:08.227000Z TestFramework (INFO): Stopping nodes [0m
+2025-07-11T04:26:08.8981587Z [0;36m test  2025-07-11T04:26:08.227000Z TestFramework.node0 (DEBUG): Stopping node [0m
+2025-07-11T04:26:08.8982514Z [0;34m node0 2025-07-11T04:26:08.227719Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:44698 [0m
+2025-07-11T04:26:08.8983545Z [0;34m node0 2025-07-11T04:26:08.227773Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=stop user=__cookie__ [0m
+2025-07-11T04:26:08.8984530Z [0;34m node0 2025-07-11T04:26:08.227824Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httpserver.cpp:472] [InterruptHTTPServer] [http] Interrupting HTTP server [0m
+2025-07-11T04:26:08.8985724Z [0;34m node0 2025-07-11T04:26:08.227850Z (mocktime: 2014-12-04T17:15:37Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=stop external=false status=200 elapsed_time_ms=0 [0m
+2025-07-11T04:26:08.8986870Z [0;34m node0 2025-07-11T04:26:08.227875Z (mocktime: 2014-12-04T17:15:37Z) [      init] [httprpc.cpp:350] [InterruptHTTPRPC] [rpc] Interrupting HTTP RPC server [0m
+2025-07-11T04:26:08.8987739Z [0;34m node0 2025-07-11T04:26:08.227886Z (mocktime: 2014-12-04T17:15:37Z) [      init] [rpc/server.cpp:320] [operator()] [rpc] Interrupting RPC [0m
+2025-07-11T04:26:08.8988572Z [0;34m node0 2025-07-11T04:26:08.227930Z (mocktime: 2014-12-04T17:15:37Z) [   opencon] [util/thread.cpp:20] [TraceThread] opencon thread exit [0m
+2025-07-11T04:26:08.8989391Z [0;34m node0 2025-07-11T04:26:08.227995Z (mocktime: 2014-12-04T17:15:37Z) [     isman] [util/thread.cpp:20] [TraceThread] isman thread exit [0m
+2025-07-11T04:26:08.8990339Z [0;34m node0 2025-07-11T04:26:08.228025Z (mocktime: 2014-12-04T17:15:37Z) [    addcon] [util/thread.cpp:20] [TraceThread] addcon thread exit [0m
+2025-07-11T04:26:08.8991174Z [0;34m node0 2025-07-11T04:26:08.228041Z (mocktime: 2014-12-04T17:15:37Z) [ sigshares] [util/thread.cpp:20] [TraceThread] sigshares thread exit [0m
+2025-07-11T04:26:08.8992123Z [0;34m node0 2025-07-11T04:26:08.228064Z (mocktime: 2014-12-04T17:15:37Z) [     mncon] [util/thread.cpp:20] [TraceThread] mncon thread exit [0m
+2025-07-11T04:26:08.8992967Z [0;34m node0 2025-07-11T04:26:08.228083Z (mocktime: 2014-12-04T17:15:37Z) [      init] [init.cpp:255] [PrepareShutdown] PrepareShutdown: In progress... [0m
+2025-07-11T04:26:08.8993848Z [0;34m node0 2025-07-11T04:26:08.228094Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httprpc.cpp:355] [StopHTTPRPC] [rpc] Stopping HTTP RPC server [0m
+2025-07-11T04:26:08.8994872Z [0;34m node0 2025-07-11T04:26:08.228107Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httpserver.cpp:690] [UnregisterHTTPHandler] [http] Unregistering HTTP handler for / (exactmatch 1) [0m
+2025-07-11T04:26:08.8995838Z [0;34m node0 2025-07-11T04:26:08.228121Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [rpc/server.cpp:332] [operator()] [rpc] Stopping RPC [0m
+2025-07-11T04:26:08.8996681Z [0;34m node0 2025-07-11T04:26:08.228132Z (mocktime: 2014-12-04T17:15:37Z) [ sigshares] [util/thread.cpp:20] [TraceThread] sigshares thread exit [0m
+2025-07-11T04:26:08.8997502Z [0;34m node0 2025-07-11T04:26:08.228193Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [init.cpp:480] [OnRPCStopped] [rpc] RPC stopped. [0m
+2025-07-11T04:26:08.8998359Z [0;34m node0 2025-07-11T04:26:08.228206Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httpserver.cpp:484] [StopHTTPServer] [http] Stopping HTTP server [0m
+2025-07-11T04:26:08.8999325Z [0;34m node0 2025-07-11T04:26:08.228210Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httpserver.cpp:486] [StopHTTPServer] [http] Waiting for HTTP worker threads to exit [0m
+2025-07-11T04:26:08.9000437Z [0;34m node0 2025-07-11T04:26:08.228380Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httpserver.cpp:499] [StopHTTPServer] [http] Waiting for HTTP event thread to exit [0m
+2025-07-11T04:26:08.9001369Z [0;34m node0 2025-07-11T04:26:08.228403Z (mocktime: 2014-12-04T17:15:37Z) [      http] [httpserver.cpp:320] [ThreadHTTP] [http] Exited http event loop [0m
+2025-07-11T04:26:08.9002259Z [0;34m node0 2025-07-11T04:26:08.228518Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [httpserver.cpp:511] [StopHTTPServer] [http] Stopped HTTP server [0m
+2025-07-11T04:26:08.9003240Z [0;34m node0 2025-07-11T04:26:08.228622Z (mocktime: 2014-12-04T17:15:37Z) [ cl-schdlr] [util/thread.cpp:20] [TraceThread] cl-schdlr thread exit [0m
+2025-07-11T04:26:08.9004097Z [0;34m node0 2025-07-11T04:26:08.300193Z (mocktime: 2014-12-04T17:15:37Z) [   msghand] [util/thread.cpp:20] [TraceThread] msghand thread exit [0m
+2025-07-11T04:26:08.9004917Z [0;34m node0 2025-07-11T04:26:08.598253Z (mocktime: 2014-12-04T17:15:37Z) [       net] [util/thread.cpp:20] [TraceThread] net thread exit [0m
+2025-07-11T04:26:08.9005785Z [0;34m node0 2025-07-11T04:26:08.599606Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [net.cpp:2782] [DumpAddresses] [net] Flushed 0 addresses to peers.dat  1ms [0m
+2025-07-11T04:26:08.9006867Z [0;34m node0 2025-07-11T04:26:08.599622Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] DumpAnchors: Flush 0 outbound block-relay-only peer addresses to anchors.dat started [0m
+2025-07-11T04:26:08.9008098Z [0;34m node0 2025-07-11T04:26:08.600169Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] DumpAnchors: Flush 0 outbound block-relay-only peer addresses to anchors.dat completed (0.00s) [0m
+2025-07-11T04:26:08.9009145Z [0;34m node0 2025-07-11T04:26:08.600218Z (mocktime: 2014-12-04T17:15:37Z) [ scheduler] [util/thread.cpp:20] [TraceThread] scheduler thread exit [0m
+2025-07-11T04:26:08.9010188Z [0;34m node0 2025-07-11T04:26:08.600996Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [validation.cpp:5490] [DumpMempool] Writing 0 unbroadcast transactions to disk. [0m
+2025-07-11T04:26:08.9011206Z [0;34m node0 2025-07-11T04:26:08.601606Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [validation.cpp:5500] [DumpMempool] Dumped mempool: 2e-06s to copy, 0.000669s to dump [0m
+2025-07-11T04:26:08.9012432Z [0;34m node0 2025-07-11T04:26:08.601615Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [policy/fees.cpp:1028] [FlushUnconfirmed] [estimatefee] Recorded 0 unconfirmed txs from mempool in 0 micros [0m
+2025-07-11T04:26:08.9013566Z [0;34m node0 2025-07-11T04:26:08.602335Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk started [0m
+2025-07-11T04:26:08.9014675Z [0;34m node0 2025-07-11T04:26:08.603243Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk completed (0.00ms) [0m
+2025-07-11T04:26:08.9015746Z [0;34m node0 2025-07-11T04:26:08.603255Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk started [0m
+2025-07-11T04:26:08.9016794Z [0;34m node0 2025-07-11T04:26:08.603722Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk completed (0.00ms) [0m
+2025-07-11T04:26:08.9017904Z [0;34m node0 2025-07-11T04:26:08.603731Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) started [0m
+2025-07-11T04:26:08.9018909Z [0;34m node0 2025-07-11T04:26:08.603750Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [txdb.cpp:164] [BatchWrite] [coindb] Writing final batch of 0.00 MiB [0m
+2025-07-11T04:26:08.9020067Z [0;34m node0 2025-07-11T04:26:08.603763Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [txdb.cpp:166] [BatchWrite] [coindb] Committed 0 changed transaction outputs (out of 0) to coin database... [0m
+2025-07-11T04:26:08.9021249Z [0;34m node0 2025-07-11T04:26:08.603773Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) completed (0.00ms) [0m
+2025-07-11T04:26:08.9022317Z [0;34m node0 2025-07-11T04:26:08.603778Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk started [0m
+2025-07-11T04:26:08.9023467Z [0;34m node0 2025-07-11T04:26:08.603788Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk completed (0.00s) [0m
+2025-07-11T04:26:08.9024864Z [0;34m node0 2025-07-11T04:26:08.603795Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [validationinterface.cpp:244] [ChainStateFlushed] [validation] Enqueuing ChainStateFlushed: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e [0m
+2025-07-11T04:26:08.9026464Z [0;34m node0 2025-07-11T04:26:08.603807Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [validationinterface.cpp:244] [operator()] [validation] ChainStateFlushed: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e [0m
+2025-07-11T04:26:08.9027651Z [0;34m node0 2025-07-11T04:26:08.603826Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:192] [Store] Verifying sporks.dat format... [0m
+2025-07-11T04:26:08.9028573Z [0;34m node0 2025-07-11T04:26:08.603836Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:162] [Read] Missing file sporks.dat, will try to recreate [0m
+2025-07-11T04:26:08.9029481Z [0;34m node0 2025-07-11T04:26:08.603840Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:198] [Store] Writing info to sporks.dat... [0m
+2025-07-11T04:26:08.9030472Z [0;34m node0 2025-07-11T04:26:08.603882Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to sporks.dat  0ms [0m
+2025-07-11T04:26:08.9031314Z [0;34m node0 2025-07-11T04:26:08.603887Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Sporks: 0 [0m
+2025-07-11T04:26:08.9032143Z [0;34m node0 2025-07-11T04:26:08.603892Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:200] [Store] sporks.dat dump finished  0ms [0m
+2025-07-11T04:26:08.9033142Z [0;34m node0 2025-07-11T04:26:08.603900Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:192] [Store] Verifying governance.dat format... [0m
+2025-07-11T04:26:08.9034129Z [0;34m node0 2025-07-11T04:26:08.603931Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [governance/governance.cpp:1447] [Clear] [gobject] Governance object manager was cleared [0m
+2025-07-11T04:26:08.9035108Z [0;34m node0 2025-07-11T04:26:08.603939Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:152] [CoreRead] Loaded info from governance.dat  0ms [0m
+2025-07-11T04:26:08.9036185Z [0;34m node0 2025-07-11T04:26:08.603945Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:153] [CoreRead]      Governance Objects: 0 (Proposals: 0, Triggers: 0, Other: 0; Erased: 0), Votes: 0 [0m
+2025-07-11T04:26:08.9037210Z [0;34m node0 2025-07-11T04:26:08.603949Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:198] [Store] Writing info to governance.dat... [0m
+2025-07-11T04:26:08.9038117Z [0;34m node0 2025-07-11T04:26:08.604039Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to governance.dat  0ms [0m
+2025-07-11T04:26:08.9039192Z [0;34m node0 2025-07-11T04:26:08.604046Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Governance Objects: 0 (Proposals: 0, Triggers: 0, Other: 0; Erased: 0), Votes: 0 [0m
+2025-07-11T04:26:08.9040325Z [0;34m node0 2025-07-11T04:26:08.604050Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:200] [Store] governance.dat dump finished  0ms [0m
+2025-07-11T04:26:08.9041229Z [0;34m node0 2025-07-11T04:26:08.604057Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:192] [Store] Verifying netfulfilled.dat format... [0m
+2025-07-11T04:26:08.9042146Z [0;34m node0 2025-07-11T04:26:08.604084Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:152] [CoreRead] Loaded info from netfulfilled.dat  0ms [0m
+2025-07-11T04:26:08.9043075Z [0;34m node0 2025-07-11T04:26:08.604089Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:153] [CoreRead]      Nodes with fulfilled requests: 0 [0m
+2025-07-11T04:26:08.9044090Z [0;34m node0 2025-07-11T04:26:08.604093Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:198] [Store] Writing info to netfulfilled.dat... [0m
+2025-07-11T04:26:08.9045009Z [0;34m node0 2025-07-11T04:26:08.604146Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to netfulfilled.dat  0ms [0m
+2025-07-11T04:26:08.9045915Z [0;34m node0 2025-07-11T04:26:08.604151Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Nodes with fulfilled requests: 0 [0m
+2025-07-11T04:26:08.9046816Z [0;34m node0 2025-07-11T04:26:08.604155Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:200] [Store] netfulfilled.dat dump finished  0ms [0m
+2025-07-11T04:26:08.9047710Z [0;34m node0 2025-07-11T04:26:08.604161Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:192] [Store] Verifying mncache.dat format... [0m
+2025-07-11T04:26:08.9048605Z [0;34m node0 2025-07-11T04:26:08.604187Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:152] [CoreRead] Loaded info from mncache.dat  0ms [0m
+2025-07-11T04:26:08.9049675Z [0;34m node0 2025-07-11T04:26:08.604193Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:153] [CoreRead]      Masternodes: meta infos object count: 0, nDsqCount: 0 [0m
+2025-07-11T04:26:08.9050624Z [0;34m node0 2025-07-11T04:26:08.604197Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:198] [Store] Writing info to mncache.dat... [0m
+2025-07-11T04:26:08.9051510Z [0;34m node0 2025-07-11T04:26:08.604250Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to mncache.dat  0ms [0m
+2025-07-11T04:26:08.9052479Z [0;34m node0 2025-07-11T04:26:08.604259Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Masternodes: meta infos object count: 0, nDsqCount: 0 [0m
+2025-07-11T04:26:08.9053540Z [0;34m node0 2025-07-11T04:26:08.604263Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [flat-database.h:200] [Store] mncache.dat dump finished  0ms [0m
+2025-07-11T04:26:08.9054527Z [0;34m node0 2025-07-11T04:26:08.604400Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk started [0m
+2025-07-11T04:26:08.9055632Z [0;34m node0 2025-07-11T04:26:08.604822Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk completed (0.00ms) [0m
+2025-07-11T04:26:08.9056702Z [0;34m node0 2025-07-11T04:26:08.604829Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk started [0m
+2025-07-11T04:26:08.9057756Z [0;34m node0 2025-07-11T04:26:08.605156Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk completed (0.00ms) [0m
+2025-07-11T04:26:08.9058862Z [0;34m node0 2025-07-11T04:26:08.605168Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) started [0m
+2025-07-11T04:26:08.9059955Z [0;34m node0 2025-07-11T04:26:08.605184Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [txdb.cpp:164] [BatchWrite] [coindb] Writing final batch of 0.00 MiB [0m
+2025-07-11T04:26:08.9060998Z [0;34m node0 2025-07-11T04:26:08.605194Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [txdb.cpp:166] [BatchWrite] [coindb] Committed 0 changed transaction outputs (out of 0) to coin database... [0m
+2025-07-11T04:26:08.9062174Z [0;34m node0 2025-07-11T04:26:08.605204Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) completed (0.00ms) [0m
+2025-07-11T04:26:08.9063241Z [0;34m node0 2025-07-11T04:26:08.605209Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk started [0m
+2025-07-11T04:26:08.9064370Z [0;34m node0 2025-07-11T04:26:08.605218Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk completed (0.00s) [0m
+2025-07-11T04:26:08.9065765Z [0;34m node0 2025-07-11T04:26:08.605223Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [validationinterface.cpp:244] [ChainStateFlushed] [validation] Enqueuing ChainStateFlushed: block hash=000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e [0m
+2025-07-11T04:26:08.9066939Z [0;34m node0 2025-07-11T04:26:08.605837Z (mocktime: 2014-12-04T17:15:37Z) [   shutoff] [init.cpp:431] [Shutdown] Shutdown: done [0m
+2025-07-11T04:26:08.9067574Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework.node0 (DEBUG): Node stopped [0m
+2025-07-11T04:26:08.9068588Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (WARNING): Not cleaning up dir /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222 [0m
+2025-07-11T04:26:08.9070207Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): Test failed. Test logging available at /__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222/test_framework.log [0m
+2025-07-11T04:26:08.9071180Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): [0m
+2025-07-11T04:26:08.9072497Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): Hint: Call /__w/dash/dash/build-ci/dashcore-linux64_nowallet/test/functional/combine_logs.py '/__w/dash/dash/build-ci/dashcore-linux64_nowallet/testdatadirs/test_runner_∋_🏃_20250711_052355/rpc_invalid_address_message_222' to consolidate all logs [0m
+2025-07-11T04:26:08.9073675Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): [0m
+2025-07-11T04:26:08.9074637Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): If this failure happened unexpectedly or intermittently, please file a bug and provide a link or upload of the combined log. [0m
+2025-07-11T04:26:08.9075551Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): https://github.com/dashpay/dash/issues [0m
+2025-07-11T04:26:08.9076071Z [0;36m test  2025-07-11T04:26:08.629000Z TestFramework (ERROR): [0m
+2025-07-11T04:26:08.9087591Z ##[error]Process completed with exit code 137.
+2025-07-11T04:26:08.9142310Z ##[group]Run export BUILD_TARGET="linux64_nowallet"
+2025-07-11T04:26:08.9142747Z [36;1mexport BUILD_TARGET="linux64_nowallet"[0m
+2025-07-11T04:26:08.9143148Z [36;1mecho "short-sha=$(git rev-parse --short=8 HEAD)" >> "${GITHUB_OUTPUT}"[0m
+2025-07-11T04:26:08.9143676Z [36;1m( [ -d "testlogs" ] && echo "upload-logs=true" >> "${GITHUB_OUTPUT}" && ./ci/dash/bundle-logs.sh ) \[0m
+2025-07-11T04:26:08.9144143Z [36;1m                    || echo "upload-logs=false" >> "${GITHUB_OUTPUT}"[0m
+2025-07-11T04:26:08.9144604Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-11T04:26:08.9144870Z env:
+2025-07-11T04:26:08.9145157Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-11T04:26:08.9145511Z ##[endgroup]
+2025-07-11T04:26:08.9858195Z Post job cleanup.
+2025-07-11T04:26:08.9862193Z ##[command]/usr/bin/docker exec  986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59 sh -c "cat /etc/*release | grep ^ID"
+2025-07-11T04:26:09.1813811Z [command]/usr/bin/git version
+2025-07-11T04:26:09.1848828Z git version 2.43.0
+2025-07-11T04:26:09.1886757Z Copying '/github/home/.gitconfig' to '/__w/_temp/09707778-5110-4c00-8092-d1bcb6148137/.gitconfig'
+2025-07-11T04:26:09.1898391Z Temporarily overriding HOME='/__w/_temp/09707778-5110-4c00-8092-d1bcb6148137' before making global git config changes
+2025-07-11T04:26:09.1899692Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-11T04:26:09.1904609Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-11T04:26:09.1936790Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-11T04:26:09.1974169Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-11T04:26:09.2204665Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-11T04:26:09.2224303Z http.https://github.com/.extraheader
+2025-07-11T04:26:09.2236734Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-11T04:26:09.2267838Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-11T04:26:09.2611320Z Stop and remove container: 12ba2077f1c14a5da0b8cee72f3998a5_ghcriodashcoreautoguixdashdashcorecislimbackport025batch327pr25093_642249
+2025-07-11T04:26:09.2615921Z ##[command]/usr/bin/docker rm --force 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:26:09.3697766Z 986f019fe506508919bd3672cd2c6866a816f66c929b78ec5ae8124f6164da59
+2025-07-11T04:26:09.3727952Z Remove container network: github_network_17573df712074beebf6b1384a5124d85
+2025-07-11T04:26:09.3732885Z ##[command]/usr/bin/docker network rm github_network_17573df712074beebf6b1384a5124d85
+2025-07-11T04:26:09.5024364Z github_network_17573df712074beebf6b1384a5124d85
+2025-07-11T04:26:09.5089079Z Cleaning up orphan processes
