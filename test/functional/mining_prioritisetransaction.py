@@ -36,23 +36,26 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         assert_equal(node.getprioritisedtransactions(), {})
 
     def test_replacement(self):
-        self.log.info("Test tx prioritisation stays after a tx is replaced")
+        self.log.info("Test tx prioritisation persistence (Dash: prioritisation tracking only)")
+        # Dash doesn't support RBF (Replace-by-Fee) like Bitcoin, so we test prioritisation persistence differently
+        
+        # Test 1: Prioritisation for transaction not in mempool
         conflicting_input = self.wallet.get_utxo()
-        tx_replacee = self.wallet.create_self_transfer(utxo_to_spend=conflicting_input, fee_rate=Decimal("0.0001"))
-        tx_replacement = self.wallet.create_self_transfer(utxo_to_spend=conflicting_input, fee_rate=Decimal("0.005"))
-        # Add 1 satoshi fee delta to replacee
-        self.nodes[0].prioritisetransaction(tx_replacee["txid"], 100)
-        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : False}})
-        self.nodes[0].sendrawtransaction(tx_replacee["hex"])
-        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : True}})
-        self.nodes[0].sendrawtransaction(tx_replacement["hex"])
-        assert tx_replacee["txid"] not in self.nodes[0].getrawmempool()
-        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : False}})
+        tx_test = self.wallet.create_self_transfer(utxo_to_spend=conflicting_input, fee_rate=Decimal("0.0001"))
+        
+        # Add priority delta to transaction not in mempool
+        self.nodes[0].prioritisetransaction(tx_test["txid"], 100)
+        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_test["txid"] : { "fee_delta" : 100, "in_mempool" : False}})
+        
+        # Send transaction to mempool
+        self.nodes[0].sendrawtransaction(tx_test["hex"])
+        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_test["txid"] : { "fee_delta" : 100, "in_mempool" : True}})
 
-        # PrioritiseTransaction is additive
-        self.nodes[0].prioritisetransaction(tx_replacee["txid"], COIN)
-        self.nodes[0].sendrawtransaction(tx_replacee["hex"])
-        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : COIN + 100, "in_mempool" : True}})
+        # Test 2: PrioritiseTransaction is additive
+        self.nodes[0].prioritisetransaction(tx_test["txid"], COIN)
+        assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_test["txid"] : { "fee_delta" : COIN + 100, "in_mempool" : True}})
+        
+        # Test 3: Prioritisation cleared when transaction is mined
         self.generate(self.nodes[0], 1)
         assert_equal(self.nodes[0].getprioritisedtransactions(), {})
 
