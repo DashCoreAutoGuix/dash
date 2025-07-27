@@ -332,7 +332,7 @@ void CTxMemPool::UpdateAncestorsOf(bool add, txiter it, setEntries &setAncestors
 void CTxMemPool::UpdateEntryForAncestors(txiter it, const setEntries &setAncestors)
 {
     int64_t updateCount = setAncestors.size();
-    int64_t updateSize = 0;
+    int32_t updateSize = 0;
     CAmount updateFee = 0;
     int updateSigOps = 0;
     for (txiter ancestorIt : setAncestors) {
