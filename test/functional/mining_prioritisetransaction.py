@@ -153,8 +153,8 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction)
         assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction, '')
 
-        # Test `prioritisetransaction` invalid extra parameters
-        assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction, '', 0)
+        # Test `prioritisetransaction` invalid extra parameters (Dash uses 2-parameter format)
+        assert_raises_rpc_error(-8, "txid must be of length 64", self.nodes[0].prioritisetransaction, '', 0)
 
         # Test `getprioritisedtransactions` invalid parameters
         assert_raises_rpc_error(-1, "getprioritisedtransactions",
