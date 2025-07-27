@@ -553,7 +553,6 @@ class RawTransactionsTest(BitcoinTestFramework):
 
         # This test is not meant to exercise fee estimation. Making sure all txs are sent at a consistent fee rate.
         self.nodes[1].settxfee(self.min_relay_tx_fee)
-        
         self.nodes[1].encryptwallet("test")
 
         if self.options.descriptors:
@@ -578,7 +577,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         # bnb doesn't work same way as in bitcoin, so, `value` is also calculated by different way
         inputs = self.nodes[1].listunspent()
         # Deduce exact fee to produce a changeless transaction
-        # Using 2 inputs in Dash vs 1 in Bitcoin, so adjusting tx_size  
+        # Using 2 inputs in Dash vs 1 in Bitcoin, so adjusting tx_size
         tx_size = 150  # Approximate tx size for 2 inputs
         value = sum(inp["amount"] for inp in inputs) - get_fee(tx_size, self.min_relay_tx_fee)
         outputs = {self.nodes[0].getnewaddress():value}
