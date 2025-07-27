@@ -142,8 +142,8 @@ BOOST_AUTO_TEST_CASE(commitment_json_test)
     BOOST_CHECK(json.exists("signersCount"));
     BOOST_CHECK(json.exists("validMembersCount"));
 
-    BOOST_CHECK_EQUAL(json["signersCount"].getInt(), commitment.CountSigners());
-    BOOST_CHECK_EQUAL(json["validMembersCount"].getInt(), commitment.CountValidMembers());
+    BOOST_CHECK_EQUAL(json["signersCount"].getInt<int>(), commitment.CountSigners());
+    BOOST_CHECK_EQUAL(json["validMembersCount"].getInt<int>(), commitment.CountValidMembers());
 }
 
 BOOST_AUTO_TEST_CASE(commitment_bitvector_json_test)
