@@ -7,11 +7,8 @@
 Tests correspond to code in rpc/net.cpp.
 """
 
-from decimal import Decimal
 from itertools import product
-import time
 
-from test_framework.blocktools import COINBASE_MATURITY
 import test_framework.messages
 from test_framework.messages import (
     MAX_PROTOCOL_MESSAGE_LENGTH,
@@ -20,8 +17,6 @@ from test_framework.p2p import (
     P2PInterface,
     P2P_SERVICES,
 )
-
-from itertools import product
 
 from test_framework.test_framework import DashTestFramework
 from test_framework.util import (

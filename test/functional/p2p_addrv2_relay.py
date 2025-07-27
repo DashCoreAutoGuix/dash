@@ -6,6 +6,7 @@
 Test addrv2 relay
 """
 
+import time
 from typing import List
 
 from test_framework.messages import (
