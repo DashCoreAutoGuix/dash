@@ -216,8 +216,8 @@ PartiallySignedTransaction ProcessPSBT(const std::string& psbt_string, const Cor
 
             // If there are still missing utxos, add them if they were found in the utxo set
             if (!input.non_witness_utxo) {
-                const CTxIn& tx_in = psbtx.tx->vin.at(i);
                 // Dash doesn't have SegWit, so we don't need witness_utxo handling
+                // const CTxIn& tx_in = psbtx.tx->vin.at(i);
                 // const Coin& coin = coins.at(tx_in.prevout);
                 // if (!coin.out.IsNull() && IsSegWitOutput(provider, coin.out.scriptPubKey)) {
                 //     input.witness_utxo = coin.out;
