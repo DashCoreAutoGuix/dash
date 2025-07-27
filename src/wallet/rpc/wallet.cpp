@@ -270,7 +270,6 @@ static RPCHelpMan getwalletinfo()
         obj.pushKV("scanning", false);
     }
     obj.pushKV("descriptors", pwallet->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS));
-    obj.pushKV("external_signer", pwallet->IsWalletFlagSet(WALLET_FLAG_EXTERNAL_SIGNER));
 
     AppendLastProcessedBlock(obj, *pwallet);
     return obj;
