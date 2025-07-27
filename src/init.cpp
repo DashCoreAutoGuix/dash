@@ -144,7 +144,6 @@ using node::DashChainstateSetupClose;
 using node::DEFAULT_ADDRESSINDEX;
 using node::DEFAULT_PRINTPRIORITY;
 using node::DEFAULT_SPENTINDEX;
-using node::DEFAULT_STOPAFTERBLOCKIMPORT;
 using node::DEFAULT_TIMESTAMPINDEX;
 using node::LoadChainstate;
 using node::NodeContext;
