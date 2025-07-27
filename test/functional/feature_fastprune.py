@@ -5,23 +5,26 @@
 """Test fastprune mode."""
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
-    assert_equal
+    assert_equal,
 )
 from test_framework.blocktools import (
     create_block,
-    create_coinbase
+    create_coinbase,
 )
 from test_framework.wallet import MiniWallet
 
 
 class FeatureFastpruneTest(BitcoinTestFramework):
-    def set_test_params(self):
+    def set_test_params(self) -> None:
         self.num_nodes = 1
         self.extra_args = [["-fastprune"]]
 
-    def run_test(self):
+    def run_test(self) -> None:
         self.log.info("ensure that large blocks don't crash or freeze in -fastprune")
         wallet = MiniWallet(self.nodes[0])
+
+        # Generate blocks to get some UTXOs for the wallet
+        self.generate(wallet, 101)
 
         # Create multiple transactions to make the block large (>64KB)
         # This tests the same fastprune logic without requiring witness data
