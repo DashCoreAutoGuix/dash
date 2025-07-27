@@ -23,6 +23,7 @@
 #include <boost/signals2/signal.hpp>
 
 #include <functional>
+#include <memory>
 #include <optional>
 
 namespace wallet {
