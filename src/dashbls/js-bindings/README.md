@@ -125,7 +125,7 @@ npm i bls-signatures --save # or yarn add bls-signatures
 
 ### HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
 ```javascript
-  // You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indices are used.
+  // You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
   // Hardened (more secure, but no parent pk -> child pk)
   var masterSk = BLS.AugSchemeMPL.key_gen(seed);
   var child = BLS.AugSchemeMPL.derive_child_sk(masterSk, 152);

@@ -159,7 +159,7 @@ ok = (PopSchemeMPL().Sign(aggSk, message) == popSigAgg);
 ## HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
 
 ```c++
-// You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indices are used.
+// You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
 // Hardened (more secure, but no parent pk -> child pk)
 PrivateKey masterSk = AugSchemeMPL().KeyGen(seed);
 PrivateKey child = AugSchemeMPL().DeriveChildSk(masterSk, 152);
