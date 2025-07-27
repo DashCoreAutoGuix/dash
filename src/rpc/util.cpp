@@ -20,6 +20,8 @@
 const std::string UNIX_EPOCH_TIME = "UNIX epoch time";
 const std::string EXAMPLE_ADDRESS[2] = {"XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0", "XwQQkwA4FYkq2XERzMY2CiAZhJTEDAbtc0"};
 
+static const bool DEFAULT_RPC_DOC_CHECK = false;
+
 std::string GetAllOutputTypes()
 {
     std::vector<std::string> ret;
@@ -900,7 +902,16 @@ std::string RPCArg::ToStringObj(const bool oneline) const
 
 std::string RPCArg::ToString(const bool oneline) const
 {
-    if (oneline && !m_oneline_description.empty()) return m_oneline_description;
+    if (oneline && !m_oneline_description.empty()) {
+        if (m_oneline_description[0] == '\"' && m_type != Type::STR_HEX && m_type != Type::STR && gArgs.GetBoolArg("-rpcdoccheck", DEFAULT_RPC_DOC_CHECK)) {
+            throw std::runtime_error{
+                strprintf("Internal bug detected: non-string RPC arg \"%s\" quotes oneline_description:\n%s\n%s %s\nPlease report this issue here: %s\n",
+                          m_names, m_oneline_description,
+                          PACKAGE_NAME, FormatFullVersion(),
+                          PACKAGE_BUGREPORT)};
+        }
+        return m_oneline_description;
+    }
 
     switch (m_type) {
     case Type::STR_HEX:

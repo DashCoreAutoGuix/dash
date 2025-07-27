@@ -564,7 +564,7 @@ static RPCHelpMan getblocktemplate()
                         },
                         },
                 },
-                "\"template_request\""},
+                "template_request"},
         },
         {
             RPCResult{"If the proposal was accepted with mode=='proposal'", RPCResult::Type::NONE, "", ""},

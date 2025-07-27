@@ -1514,12 +1514,12 @@ RPCHelpMan importmulti()
                         },
                     },
                 },
-                "\"requests\""},
+                "requests"},
             {"options", RPCArg::Type::OBJ, RPCArg::Optional::OMITTED_NAMED_ARG, "",
                 {
                     {"rescan", RPCArg::Type::BOOL, RPCArg::Default{true}, "Stating if should rescan the blockchain after all imports"},
                 },
-                "\"options\""},
+                "options"},
         },
         RPCResult{
                 RPCResult::Type::ARR, "", "Response is an array with the same size as the input that has the execution result",
@@ -1826,7 +1826,7 @@ RPCHelpMan importdescriptors() {
                                 },
                             },
                         },
-                        "\"requests\""},
+                        "requests"},
                 },
                 RPCResult{
                     RPCResult::Type::ARR, "", "Response is an array with the same size as the input that has the execution result",
