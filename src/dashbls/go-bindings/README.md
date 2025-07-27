@@ -159,7 +159,7 @@ if !ok {
 ### HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
 
 ```go
-// You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
+// You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indices are used.
 // Hardened (more secure, but no parent pk -> child pk)
 masterSk, _ := augScheme.KeyGen(seed)
 
