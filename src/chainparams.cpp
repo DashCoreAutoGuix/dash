@@ -280,7 +280,6 @@ public:
         consensus.llmqTypeMnhf = Consensus::LLMQType::LLMQ_400_85;
 
         fDefaultConsistencyChecks = false;
-        fRequireStandard = true;
         fRequireRoutableExternalIP = true;
         m_is_test_chain = false;
         fAllowMultipleAddressesFromGroup = false;
@@ -472,7 +471,6 @@ public:
         consensus.llmqTypeMnhf = Consensus::LLMQType::LLMQ_50_60;
 
         fDefaultConsistencyChecks = false;
-        fRequireStandard = false;
         fRequireRoutableExternalIP = true;
         m_is_test_chain = true;
         fAllowMultipleAddressesFromGroup = false;
@@ -655,7 +653,6 @@ public:
         UpdateDevnetPowTargetSpacingFromArgs(args);
 
         fDefaultConsistencyChecks = false;
-        fRequireStandard = false;
         fRequireRoutableExternalIP = true;
         m_is_test_chain = true;
         fAllowMultipleAddressesFromGroup = true;
@@ -856,7 +853,6 @@ public:
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
 
         fDefaultConsistencyChecks = true;
-        fRequireStandard = true;
         fRequireRoutableExternalIP = false;
         m_is_test_chain = true;
         fAllowMultipleAddressesFromGroup = true;
