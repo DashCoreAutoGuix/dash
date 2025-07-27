@@ -1,0 +1,1650 @@
+﻿2025-07-26T13:58:05.9505991Z Current runner version: '2.326.0'
+2025-07-26T13:58:05.9528604Z ##[group]Runner Image Provisioner
+2025-07-26T13:58:05.9529858Z Hosted Compute Agent
+2025-07-26T13:58:05.9530424Z Version: 20250711.363
+2025-07-26T13:58:05.9531012Z Commit: 6785254374ce925a23743850c1cb91912ce5c14c
+2025-07-26T13:58:05.9531842Z Build Date: 2025-07-11T20:04:25Z
+2025-07-26T13:58:05.9532435Z ##[endgroup]
+2025-07-26T13:58:05.9532983Z ##[group]Operating System
+2025-07-26T13:58:05.9533629Z Ubuntu
+2025-07-26T13:58:05.9534153Z 24.04.2
+2025-07-26T13:58:05.9534620Z LTS
+2025-07-26T13:58:05.9535202Z ##[endgroup]
+2025-07-26T13:58:05.9535701Z ##[group]Runner Image
+2025-07-26T13:58:05.9536328Z Image: ubuntu-24.04
+2025-07-26T13:58:05.9536923Z Version: 20250720.1.0
+2025-07-26T13:58:05.9537919Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250720.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-26T13:58:05.9539855Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250720.1
+2025-07-26T13:58:05.9540799Z ##[endgroup]
+2025-07-26T13:58:05.9541961Z ##[group]GITHUB_TOKEN Permissions
+2025-07-26T13:58:05.9543778Z Contents: read
+2025-07-26T13:58:05.9544286Z Metadata: read
+2025-07-26T13:58:05.9544891Z Packages: write
+2025-07-26T13:58:05.9545408Z ##[endgroup]
+2025-07-26T13:58:05.9547893Z Secret source: Actions
+2025-07-26T13:58:05.9548627Z Prepare workflow directory
+2025-07-26T13:58:06.0081121Z Prepare all required actions
+2025-07-26T13:58:06.0118779Z Getting action download info
+2025-07-26T13:58:06.2934230Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-26T13:58:06.2935215Z Version: 4.2.2
+2025-07-26T13:58:06.2936196Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-26T13:58:06.2937856Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-26T13:58:06.2938618Z ##[endgroup]
+2025-07-26T13:58:06.4001969Z ##[group]Download immutable action package 'actions/download-artifact@v4'
+2025-07-26T13:58:06.4002940Z Version: 4.3.0
+2025-07-26T13:58:06.4003756Z Digest: sha256:552a5b9ad918f62ec0c2e8f42f3c694d4ebd1b4036b18c39b14168fcdfc0e4f2
+2025-07-26T13:58:06.4004677Z Source commit SHA: d3f86a106a0bac45b974a628896c90dbdf5c8093
+2025-07-26T13:58:06.4005424Z ##[endgroup]
+2025-07-26T13:58:06.6031483Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-07-26T13:58:06.6032342Z Version: 4.2.3
+2025-07-26T13:58:06.6033051Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-07-26T13:58:06.6034028Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-07-26T13:58:06.6034715Z ##[endgroup]
+2025-07-26T13:58:06.8142956Z ##[group]Download immutable action package 'actions/upload-artifact@v4'
+2025-07-26T13:58:06.8144116Z Version: 4.6.2
+2025-07-26T13:58:06.8145081Z Digest: sha256:290722aa3281d5caf23d0acdc3dbeb3424786a1a01a9cc97e72f147225e37c38
+2025-07-26T13:58:06.8146538Z Source commit SHA: ea165f8d65b6e75b540449e92b4886f43607fa02
+2025-07-26T13:58:06.8147441Z ##[endgroup]
+2025-07-26T13:58:07.0684227Z Uses: DashCoreAutoGuix/dash/.github/workflows/test-src.yml@refs/heads/backport-0.26-batch-427-pr-27625 (2ee6b2b33dd2e255cce66fefbecea3b6d1fae64c)
+2025-07-26T13:58:07.0690743Z ##[group] Inputs
+2025-07-26T13:58:07.0691645Z   bundle-key: build-linux64-2ee6b2b3
+2025-07-26T13:58:07.0692643Z   build-target: linux64
+2025-07-26T13:58:07.0694251Z   container-path: ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:07.0696000Z ##[endgroup]
+2025-07-26T13:58:07.0696791Z Complete job name: linux64-test / Test source
+2025-07-26T13:58:07.1191171Z ##[group]Checking docker version
+2025-07-26T13:58:07.1205041Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-07-26T13:58:08.1478065Z '1.48'
+2025-07-26T13:58:08.1492470Z Docker daemon API version: '1.48'
+2025-07-26T13:58:08.1492988Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-07-26T13:58:08.1693956Z '1.48'
+2025-07-26T13:58:08.1706904Z Docker client API version: '1.48'
+2025-07-26T13:58:08.1712428Z ##[endgroup]
+2025-07-26T13:58:08.1714923Z ##[group]Clean up resources from previous jobs
+2025-07-26T13:58:08.1720480Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=efabcf"
+2025-07-26T13:58:08.1852746Z ##[command]/usr/bin/docker network prune --force --filter "label=efabcf"
+2025-07-26T13:58:08.2008655Z ##[endgroup]
+2025-07-26T13:58:08.2009240Z ##[group]Create local container network
+2025-07-26T13:58:08.2018730Z ##[command]/usr/bin/docker network create --label efabcf github_network_907c1ac4b3fe4fa5aac0f13f7f41057f
+2025-07-26T13:58:08.2525788Z 9c55babc20a49455a04fbb725ea8cb75a6293fb6100602c45de68dfb4dc1a8ab
+2025-07-26T13:58:08.2545581Z ##[endgroup]
+2025-07-26T13:58:08.2568204Z ##[group]Starting job container
+2025-07-26T13:58:08.2587306Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_bfb4656d-2b03-49a0-b25b-363e17abd53c login ghcr.io -u DashCoreAutoGuix --password-stdin
+2025-07-26T13:58:08.4019776Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_bfb4656d-2b03-49a0-b25b-363e17abd53c pull ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:08.6164152Z backport-0.26-batch-427-pr-27625: Pulling from dashcoreautoguix/dash/dashcore-ci-slim
+2025-07-26T13:58:08.6762893Z 32f112e3802c: Pulling fs layer
+2025-07-26T13:58:08.6763629Z c1d6e7894736: Pulling fs layer
+2025-07-26T13:58:08.6764073Z cdbfc178bb9f: Pulling fs layer
+2025-07-26T13:58:08.6764496Z ee023916fab5: Pulling fs layer
+2025-07-26T13:58:08.6764911Z 9cdca7c6380b: Pulling fs layer
+2025-07-26T13:58:08.6765320Z 4161aadeae6e: Pulling fs layer
+2025-07-26T13:58:08.6765718Z 70a9ac6034a1: Pulling fs layer
+2025-07-26T13:58:08.6766101Z 49cbdb9e902d: Pulling fs layer
+2025-07-26T13:58:08.6766488Z 7675a234a5ff: Pulling fs layer
+2025-07-26T13:58:08.6766878Z d6a01b6e446c: Pulling fs layer
+2025-07-26T13:58:08.6767279Z 4f4fb700ef54: Pulling fs layer
+2025-07-26T13:58:08.6767719Z 70a9ac6034a1: Waiting
+2025-07-26T13:58:08.6768096Z 49cbdb9e902d: Waiting
+2025-07-26T13:58:08.6768464Z 7675a234a5ff: Waiting
+2025-07-26T13:58:08.6768814Z d6a01b6e446c: Waiting
+2025-07-26T13:58:08.6769373Z 4f4fb700ef54: Waiting
+2025-07-26T13:58:08.6769711Z 9cdca7c6380b: Waiting
+2025-07-26T13:58:08.6770076Z ee023916fab5: Waiting
+2025-07-26T13:58:08.7232290Z cdbfc178bb9f: Download complete
+2025-07-26T13:58:08.7388583Z c1d6e7894736: Verifying Checksum
+2025-07-26T13:58:08.7389241Z c1d6e7894736: Download complete
+2025-07-26T13:58:08.8091520Z 32f112e3802c: Verifying Checksum
+2025-07-26T13:58:08.8092391Z 32f112e3802c: Download complete
+2025-07-26T13:58:09.0004696Z 4161aadeae6e: Verifying Checksum
+2025-07-26T13:58:09.0005570Z 4161aadeae6e: Download complete
+2025-07-26T13:58:09.0175520Z 9cdca7c6380b: Verifying Checksum
+2025-07-26T13:58:09.0177494Z 9cdca7c6380b: Download complete
+2025-07-26T13:58:09.0603553Z 70a9ac6034a1: Verifying Checksum
+2025-07-26T13:58:09.0624485Z 70a9ac6034a1: Download complete
+2025-07-26T13:58:09.0741136Z 49cbdb9e902d: Verifying Checksum
+2025-07-26T13:58:09.0750122Z 49cbdb9e902d: Download complete
+2025-07-26T13:58:09.1188623Z d6a01b6e446c: Verifying Checksum
+2025-07-26T13:58:09.1198517Z d6a01b6e446c: Download complete
+2025-07-26T13:58:09.1631342Z 4f4fb700ef54: Verifying Checksum
+2025-07-26T13:58:09.1632962Z 4f4fb700ef54: Download complete
+2025-07-26T13:58:09.2645442Z ee023916fab5: Verifying Checksum
+2025-07-26T13:58:09.2648505Z ee023916fab5: Download complete
+2025-07-26T13:58:09.8053423Z 7675a234a5ff: Verifying Checksum
+2025-07-26T13:58:09.8053942Z 7675a234a5ff: Download complete
+2025-07-26T13:58:10.1358127Z 32f112e3802c: Pull complete
+2025-07-26T13:58:11.8210529Z c1d6e7894736: Pull complete
+2025-07-26T13:58:11.8667070Z cdbfc178bb9f: Pull complete
+2025-07-26T13:58:15.9631827Z ee023916fab5: Pull complete
+2025-07-26T13:58:19.5143368Z 9cdca7c6380b: Pull complete
+2025-07-26T13:58:20.5482944Z 4161aadeae6e: Pull complete
+2025-07-26T13:58:20.6071356Z 70a9ac6034a1: Pull complete
+2025-07-26T13:58:20.6599095Z 49cbdb9e902d: Pull complete
+2025-07-26T13:58:26.6666361Z 7675a234a5ff: Pull complete
+2025-07-26T13:58:26.6862540Z d6a01b6e446c: Pull complete
+2025-07-26T13:58:26.7012256Z 4f4fb700ef54: Pull complete
+2025-07-26T13:58:26.7075998Z Digest: sha256:a98897e50cbf457ca082f01b60595632023e33dc3777308745595ef30ddf9b72
+2025-07-26T13:58:26.7092860Z Status: Downloaded newer image for ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:26.7104399Z ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:26.7195959Z ##[command]/usr/bin/docker create --name 4424605a84604cfd84961c3afc3a66ed_ghcriodashcoreautoguixdashdashcorecislimbackport026batch427pr27625_28b535 --label efabcf --workdir /__w/dash/dash --network github_network_907c1ac4b3fe4fa5aac0f13f7f41057f --user root -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" ghcr.io/dashcoreautoguix/dash/dashcore-ci-slim:backport-0.26-batch-427-pr-27625 "-f" "/dev/null"
+2025-07-26T13:58:26.7520826Z 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T13:58:26.7545223Z ##[command]/usr/bin/docker start 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T13:58:27.4314370Z 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T13:58:27.4335375Z ##[command]/usr/bin/docker ps --all --filter id=80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-07-26T13:58:27.4452598Z 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 Up Less than a second
+2025-07-26T13:58:27.4473515Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T13:58:27.4596342Z HOME=/github/home
+2025-07-26T13:58:27.4596738Z GITHUB_ACTIONS=true
+2025-07-26T13:58:27.4597054Z CI=true
+2025-07-26T13:58:27.4598100Z PATH=/opt/shellcheck:/usr/local/pyenv/shims:/usr/local/pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2025-07-26T13:58:27.4599249Z DEBIAN_FRONTEND=noninteractive
+2025-07-26T13:58:27.4599608Z TZ=Europe/London
+2025-07-26T13:58:27.4600042Z APT_ARGS=-y --no-install-recommends --no-upgrade
+2025-07-26T13:58:27.4600498Z PYENV_ROOT=/usr/local/pyenv
+2025-07-26T13:58:27.4620589Z ##[endgroup]
+2025-07-26T13:58:27.4629516Z ##[group]Waiting for all services to be ready
+2025-07-26T13:58:27.4631078Z ##[endgroup]
+2025-07-26T13:58:27.4848666Z ##[group]Run actions/checkout@v4
+2025-07-26T13:58:27.4849527Z with:
+2025-07-26T13:58:27.4849724Z   fetch-depth: 1
+2025-07-26T13:58:27.4849929Z   repository: DashCoreAutoGuix/dash
+2025-07-26T13:58:27.4850302Z   token: ***
+2025-07-26T13:58:27.4850505Z   ssh-strict: true
+2025-07-26T13:58:27.4850681Z   ssh-user: git
+2025-07-26T13:58:27.4850874Z   persist-credentials: true
+2025-07-26T13:58:27.4851076Z   clean: true
+2025-07-26T13:58:27.4851269Z   sparse-checkout-cone-mode: true
+2025-07-26T13:58:27.4851490Z   fetch-tags: false
+2025-07-26T13:58:27.4851670Z   show-progress: true
+2025-07-26T13:58:27.4851852Z   lfs: false
+2025-07-26T13:58:27.4852014Z   submodules: false
+2025-07-26T13:58:27.4852202Z   set-safe-directory: true
+2025-07-26T13:58:27.4852625Z env:
+2025-07-26T13:58:27.4852934Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-26T13:58:27.4853284Z ##[endgroup]
+2025-07-26T13:58:27.4907768Z ##[command]/usr/bin/docker exec  80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T13:58:27.7051489Z Syncing repository: DashCoreAutoGuix/dash
+2025-07-26T13:58:27.7052970Z ##[group]Getting Git version info
+2025-07-26T13:58:27.7053545Z Working directory is '/__w/dash/dash'
+2025-07-26T13:58:27.7054001Z [command]/usr/bin/git version
+2025-07-26T13:58:27.7054249Z git version 2.43.0
+2025-07-26T13:58:27.7055407Z ##[endgroup]
+2025-07-26T13:58:27.7060433Z Temporarily overriding HOME='/__w/_temp/b7c683d9-d649-4bd1-a827-09a37adaac96' before making global git config changes
+2025-07-26T13:58:27.7061573Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-26T13:58:27.7062485Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-26T13:58:27.7067952Z Deleting the contents of '/__w/dash/dash'
+2025-07-26T13:58:27.7072257Z ##[group]Initializing the repository
+2025-07-26T13:58:27.7076265Z [command]/usr/bin/git init /__w/dash/dash
+2025-07-26T13:58:27.7107264Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-26T13:58:27.7108072Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-26T13:58:27.7108805Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-26T13:58:27.7109526Z hint: 
+2025-07-26T13:58:27.7109940Z hint: 	git config --global init.defaultBranch <name>
+2025-07-26T13:58:27.7110339Z hint: 
+2025-07-26T13:58:27.7110635Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-26T13:58:27.7111113Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-26T13:58:27.7111455Z hint: 
+2025-07-26T13:58:27.7111633Z hint: 	git branch -m <name>
+2025-07-26T13:58:27.7114867Z Initialized empty Git repository in /__w/dash/dash/.git/
+2025-07-26T13:58:27.7127245Z [command]/usr/bin/git remote add origin https://github.com/DashCoreAutoGuix/dash
+2025-07-26T13:58:27.7156576Z ##[endgroup]
+2025-07-26T13:58:27.7157069Z ##[group]Disabling automatic garbage collection
+2025-07-26T13:58:27.7160794Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-26T13:58:27.7187245Z ##[endgroup]
+2025-07-26T13:58:27.7187738Z ##[group]Setting up auth
+2025-07-26T13:58:27.7194139Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-26T13:58:27.7222299Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-26T13:58:27.7446473Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-26T13:58:27.7475657Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-26T13:58:27.7695204Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-26T13:58:27.7727332Z ##[endgroup]
+2025-07-26T13:58:27.7727992Z ##[group]Fetching the repository
+2025-07-26T13:58:27.7736733Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +2ee6b2b33dd2e255cce66fefbecea3b6d1fae64c:refs/remotes/origin/backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:29.1250836Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-26T13:58:29.1251779Z  * [new ref]         2ee6b2b33dd2e255cce66fefbecea3b6d1fae64c -> origin/backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:29.1271062Z ##[endgroup]
+2025-07-26T13:58:29.1271674Z ##[group]Determining the checkout info
+2025-07-26T13:58:29.1273793Z ##[endgroup]
+2025-07-26T13:58:29.1278742Z [command]/usr/bin/git sparse-checkout disable
+2025-07-26T13:58:29.1313587Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-26T13:58:29.1345493Z ##[group]Checking out the ref
+2025-07-26T13:58:29.1349774Z [command]/usr/bin/git checkout --progress --force -B backport-0.26-batch-427-pr-27625 refs/remotes/origin/backport-0.26-batch-427-pr-27625
+2025-07-26T13:58:29.5039539Z Switched to a new branch 'backport-0.26-batch-427-pr-27625'
+2025-07-26T13:58:29.5040182Z branch 'backport-0.26-batch-427-pr-27625' set up to track 'origin/backport-0.26-batch-427-pr-27625'.
+2025-07-26T13:58:29.5055411Z ##[endgroup]
+2025-07-26T13:58:29.5091479Z [command]/usr/bin/git log -1 --format=%H
+2025-07-26T13:58:29.5114471Z 2ee6b2b33dd2e255cce66fefbecea3b6d1fae64c
+2025-07-26T13:58:29.5317679Z ##[group]Run actions/download-artifact@v4
+2025-07-26T13:58:29.5317957Z with:
+2025-07-26T13:58:29.5318134Z   name: build-linux64-2ee6b2b3
+2025-07-26T13:58:29.5318361Z   merge-multiple: false
+2025-07-26T13:58:29.5318571Z   repository: DashCoreAutoGuix/dash
+2025-07-26T13:58:29.5318800Z   run-id: 16539901953
+2025-07-26T13:58:29.5319122Z env:
+2025-07-26T13:58:29.5319411Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-26T13:58:29.5319759Z ##[endgroup]
+2025-07-26T13:58:29.5322819Z ##[command]/usr/bin/docker exec  80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T13:58:29.8273550Z Downloading single artifact
+2025-07-26T13:58:29.9161621Z Preparing to download the following artifacts:
+2025-07-26T13:58:29.9162772Z - build-linux64-2ee6b2b3 (ID: 3621246562, Size: 225389874, Expected Digest: sha256:15259d12957de977f6dbc812c0317b41411a5adf7726a651ac413b83dee2a9c5)
+2025-07-26T13:58:29.9610628Z Redirecting to blob download url: https://productionresultssa7.blob.core.windows.net/actions-results/c708e94a-1dfe-4644-af00-514770eab367/workflow-job-run-9c48119a-a511-5d70-ad90-917bd4ffad28/artifacts/9c71bba3705a3a4a610eef9905b2e18fdcfe415864b93892edae9b8c149134c1.zip
+2025-07-26T13:58:29.9612944Z Starting download of artifact to: /__w/dash/dash
+2025-07-26T13:58:30.0728668Z (node:117) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2025-07-26T13:58:30.0730032Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2025-07-26T13:58:32.6802673Z SHA256 digest of downloaded artifact is 15259d12957de977f6dbc812c0317b41411a5adf7726a651ac413b83dee2a9c5
+2025-07-26T13:58:32.6803617Z Artifact download completed successfully.
+2025-07-26T13:58:32.6804091Z Total of 1 artifact(s) downloaded
+2025-07-26T13:58:32.6806623Z Download artifact has finished successfully
+2025-07-26T13:58:32.7588099Z ##[group]Run actions/cache@v4
+2025-07-26T13:58:32.7588358Z with:
+2025-07-26T13:58:32.7588534Z   path: releases
+
+2025-07-26T13:58:32.7589076Z   key: releases-a9cd76dd8affe632f12d97872a1733f562fb534f8a3a1a301e98dbd11fc7de80
+2025-07-26T13:58:32.7589520Z   enableCrossOsArchive: false
+2025-07-26T13:58:32.7589756Z   fail-on-cache-miss: false
+2025-07-26T13:58:32.7589967Z   lookup-only: false
+2025-07-26T13:58:32.7590148Z   save-always: false
+2025-07-26T13:58:32.7590331Z env:
+2025-07-26T13:58:32.7590621Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-26T13:58:32.7590968Z ##[endgroup]
+2025-07-26T13:58:32.7593728Z ##[command]/usr/bin/docker exec  80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T13:58:33.1204377Z Cache not found for input keys: releases-a9cd76dd8affe632f12d97872a1733f562fb534f8a3a1a301e98dbd11fc7de80
+2025-07-26T13:58:33.1315732Z ##[group]Run git config --global --add safe.directory "$PWD"
+2025-07-26T13:58:33.1316227Z [36;1mgit config --global --add safe.directory "$PWD"[0m
+2025-07-26T13:58:33.1316558Z [36;1mexport BUILD_TARGET="linux64"[0m
+2025-07-26T13:58:33.1316867Z [36;1mexport BUNDLE_KEY="build-linux64-2ee6b2b3"[0m
+2025-07-26T13:58:33.1317175Z [36;1m./ci/dash/bundle-artifacts.sh extract[0m
+2025-07-26T13:58:33.1317464Z [36;1m./ci/dash/slim-workspace.sh[0m
+2025-07-26T13:58:33.1317716Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-26T13:58:33.1318040Z [36;1m./ci/dash/test_integrationtests.sh ${INTEGRATION_TESTS_ARGS}[0m
+2025-07-26T13:58:33.1322666Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-26T13:58:33.1322976Z env:
+2025-07-26T13:58:33.1323281Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-26T13:58:33.1323896Z ##[endgroup]
+2025-07-26T13:58:34.8297124Z Setting specific values in env
+2025-07-26T13:58:34.8297753Z Fallback to default values in env (if not yet set)
+2025-07-26T13:58:34.8729689Z Setting specific values in env
+2025-07-26T13:58:34.8730220Z Fallback to default values in env (if not yet set)
+2025-07-26T13:58:34.8735935Z Downloading previous releases: v0.12.1.5 v0.15.0.0 v0.16.1.1 v0.17.0.3 v18.2.2 v19.3.0 v20.0.1
+2025-07-26T13:58:35.0205813Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:35.0206520Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:35.0206886Z 
+2025-07-26T13:58:35.1094214Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.1094915Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.1179731Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:35.1180499Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:35.1180879Z 
+2025-07-26T13:58:35.1490530Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.1491199Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.3302657Z 
+2025-07-26T13:58:35.3303176Z 100 26.8M  100 26.8M    0     0   126M      0 --:--:-- --:--:-- --:--:--  126M
+2025-07-26T13:58:35.8101267Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:35.8101956Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:35.8102333Z 
+2025-07-26T13:58:35.8993982Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.8994771Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.9074783Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:35.9075469Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:35.9075848Z 
+2025-07-26T13:58:35.9382314Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:35.9382893Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:36.0964452Z 
+2025-07-26T13:58:36.0965101Z 100 32.6M  100 32.6M    0     0   172M      0 --:--:-- --:--:-- --:--:--  172M
+2025-07-26T13:58:36.7162895Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:36.7163566Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:36.7163829Z 
+2025-07-26T13:58:36.8090478Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:36.8091165Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:36.8175927Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:36.8179289Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:36.8179553Z 
+2025-07-26T13:58:36.8480128Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:36.8480709Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:36.9761234Z 
+2025-07-26T13:58:36.9761759Z 100 35.5M  100 35.5M    0     0   223M      0 --:--:-- --:--:-- --:--:--  223M
+2025-07-26T13:58:37.6383482Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:37.6384205Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:37.6384531Z 
+2025-07-26T13:58:37.7351843Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:37.7352497Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:37.7437089Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:37.7437894Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:37.7438233Z 
+2025-07-26T13:58:37.7751945Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:37.7752676Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:37.9337590Z 
+2025-07-26T13:58:37.9338099Z 100 36.4M  100 36.4M    0     0   191M      0 --:--:-- --:--:-- --:--:--  191M
+2025-07-26T13:58:38.6186807Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:38.6187446Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:38.6187793Z 
+2025-07-26T13:58:38.7123104Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:38.7123523Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:38.7208681Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:38.7209670Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:38.7209978Z 
+2025-07-26T13:58:38.7521130Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:38.7521739Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:39.0411448Z 
+2025-07-26T13:58:39.0412062Z 100 41.9M  100 41.9M    0     0   131M      0 --:--:-- --:--:-- --:--:--  131M
+2025-07-26T13:58:39.8296330Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:39.8297098Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:39.8297442Z 
+2025-07-26T13:58:39.9297230Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:39.9297978Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:39.9376486Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:39.9377177Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:39.9377515Z 
+2025-07-26T13:58:39.9689391Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:39.9689759Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:40.1364437Z 
+2025-07-26T13:58:40.1365032Z 100 44.7M  100 44.7M    0     0   224M      0 --:--:-- --:--:-- --:--:--  224M
+2025-07-26T13:58:40.9858340Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:40.9859206Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:40.9859499Z 
+2025-07-26T13:58:41.0855315Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:41.0855818Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:41.0940186Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-26T13:58:41.0940972Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-26T13:58:41.0941313Z 
+2025-07-26T13:58:41.1247862Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:41.1248394Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-26T13:58:41.3385050Z 
+2025-07-26T13:58:41.3385696Z 100 46.3M  100 46.3M    0     0   189M      0 --:--:-- --:--:-- --:--:--  189M
+2025-07-26T13:58:42.1915178Z Releases directory: /__w/dash/dash/releases/x86_64-pc-linux-gnu
+2025-07-26T13:58:42.1916126Z Fetching: https://github.com/dashpay/dash/releases/download/v0.12.1.5/dashcore-0.12.1.5-linux64.tar.gz
+2025-07-26T13:58:42.1916874Z Checksum matched
+2025-07-26T13:58:42.1917904Z Fetching: https://github.com/dashpay/dash/releases/download/v0.15.0.0/dashcore-0.15.0.0-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1918669Z Checksum matched
+2025-07-26T13:58:42.1919561Z Fetching: https://github.com/dashpay/dash/releases/download/v0.16.1.1/dashcore-0.16.1.1-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1920301Z Checksum matched
+2025-07-26T13:58:42.1920963Z Fetching: https://github.com/dashpay/dash/releases/download/v0.17.0.3/dashcore-0.17.0.3-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1921693Z Checksum matched
+2025-07-26T13:58:42.1922308Z Fetching: https://github.com/dashpay/dash/releases/download/v18.2.2/dashcore-18.2.2-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1922988Z Checksum matched
+2025-07-26T13:58:42.1923593Z Fetching: https://github.com/dashpay/dash/releases/download/v19.3.0/dashcore-19.3.0-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1924308Z Checksum matched
+2025-07-26T13:58:42.1924922Z Fetching: https://github.com/dashpay/dash/releases/download/v20.0.1/dashcore-20.0.1-x86_64-linux-gnu.tar.gz
+2025-07-26T13:58:42.1925611Z Checksum matched
+2025-07-26T13:58:42.1978460Z Using socketevents mode: poll
+2025-07-26T13:58:42.3181656Z Temporary test directory at /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842
+2025-07-26T13:58:52.6616349Z ...................
+2025-07-26T13:58:52.6616848Z ----------------------------------------------------------------------
+2025-07-26T13:58:52.6617273Z Ran 19 tests in 10.244s
+2025-07-26T13:58:52.6617430Z 
+2025-07-26T13:58:52.6617506Z OK
+2025-07-26T13:58:52.6620558Z Initializing coverage directory at /tmp/coverage5ht74m42
+2025-07-26T13:58:54.1939486Z Running Unit Tests for Test Framework Modules
+2025-07-26T13:59:04.2199782Z ....................
+2025-07-26T13:59:04.2201875Z 1/295 - [1mwallet_hd.py --descriptors[0m passed, Duration: 10 s
+2025-07-26T13:59:04.7225960Z                     
+2025-07-26T13:59:08.7282629Z ........
+2025-07-26T13:59:08.7284660Z 2/295 - [1mwallet_hd.py --legacy-wallet[0m passed, Duration: 15 s
+2025-07-26T13:59:09.2309966Z         
+2025-07-26T13:59:30.7640679Z ...........................................
+2025-07-26T13:59:30.7642775Z 3/295 - [1mwallet_backup.py --legacy-wallet[0m passed, Duration: 26 s
+2025-07-26T13:59:31.2669288Z                                            
+2025-07-26T13:59:36.2735560Z ..........
+2025-07-26T13:59:36.2742786Z 4/295 - [1mwallet_backup.py --descriptors[0m passed, Duration: 27 s
+2025-07-26T13:59:36.7786007Z           
+2025-07-26T14:00:06.8261844Z ............................................................
+2025-07-26T14:00:06.8264004Z 5/295 - [1mfeature_index_prune.py[0m passed, Duration: 73 s
+2025-07-26T14:00:07.3289009Z                                                             
+2025-07-26T14:00:18.8427571Z .......................
+2025-07-26T14:00:18.8429269Z 6/295 - [1mfeature_maxuploadtarget.py[0m passed, Duration: 42 s
+2025-07-26T14:00:19.3453169Z                        
+2025-07-26T14:00:37.8731117Z 7/295 - [1mrpc_fundrawtransaction.py --legacy-wallet[0m passed, Duration: 19 s
+2025-07-26T14:00:37.8731837Z .....................................
+2025-07-26T14:00:38.3751634Z                                      
+2025-07-26T14:00:38.8772382Z .
+2025-07-26T14:00:38.8777167Z 8/295 - [1mmining_getblocktemplate_longpoll.py[0m passed, Duration: 68 s
+2025-07-26T14:00:39.3837923Z  
+2025-07-26T14:00:56.4036439Z ..................................
+2025-07-26T14:00:56.4176816Z                                   
+2025-07-26T14:00:56.4177470Z rpc_fundrawtransaction.py --descriptors failed at attempt 1/3, Duration: 17 s
+2025-07-26T14:00:59.9220719Z .......
+2025-07-26T14:00:59.9222799Z 9/295 - [1mrpc_fundrawtransaction.py --legacy-wallet --nohd[0m passed, Duration: 22 s
+2025-07-26T14:01:00.4243404Z        
+2025-07-26T14:01:11.4364425Z ......................
+2025-07-26T14:01:11.4367837Z 10/295 - [1mrpc_fundrawtransaction.py --descriptors[0m passed, Duration: 15 s
+2025-07-26T14:01:11.9392890Z                       
+2025-07-26T14:01:45.0041516Z ..................................................................
+2025-07-26T14:01:45.0042850Z 11/295 - [1mfeature_block.py[0m passed, Duration: 98 s
+2025-07-26T14:01:45.5072938Z                                                                   
+2025-07-26T14:01:57.5271458Z ........................
+2025-07-26T14:01:57.5274118Z 12/295 - [1mp2p_instantsend.py[0m passed, Duration: 46 s
+2025-07-26T14:01:58.0298443Z                         
+2025-07-26T14:02:11.0435035Z ..........................
+2025-07-26T14:02:11.0438182Z 13/295 - [1mwallet_basic.py --legacy-wallet[0m passed, Duration: 26 s
+2025-07-26T14:02:11.5462942Z                           
+2025-07-26T14:02:13.0487514Z ...
+2025-07-26T14:02:13.0489079Z 14/295 - [1mfeature_llmq_data_recovery.py[0m passed, Duration: 199 s
+2025-07-26T14:02:13.5511398Z    
+2025-07-26T14:02:14.5531794Z ..
+2025-07-26T14:02:14.5534317Z 15/295 - [1mwallet_labels.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:02:15.0563779Z   
+2025-07-26T14:02:16.0574623Z ..
+2025-07-26T14:02:16.0576879Z 16/295 - [1mwallet_labels.py --descriptors[0m passed, Duration: 3 s
+2025-07-26T14:02:16.5601253Z   
+2025-07-26T14:02:17.0635193Z .
+2025-07-26T14:02:17.0635978Z 17/295 - [1mp2p_timeouts.py --v1transport[0m passed, Duration: 2 s
+2025-07-26T14:02:17.5638680Z  
+2025-07-26T14:02:18.5650983Z ..
+2025-07-26T14:02:18.5654931Z 18/295 - [1mp2p_timeouts.py --v2transport[0m passed, Duration: 2 s
+2025-07-26T14:02:19.0680027Z   
+2025-07-26T14:02:23.5734858Z .........
+2025-07-26T14:02:23.5740241Z 19/295 - [1mwallet_basic.py --descriptors[0m passed, Duration: 26 s
+2025-07-26T14:02:24.0764414Z          
+2025-07-26T14:02:26.0793191Z ....
+2025-07-26T14:02:26.0794801Z 20/295 - [1mfeature_bip68_sequence.py[0m passed, Duration: 9 s
+2025-07-26T14:02:26.5820638Z     
+2025-07-26T14:02:31.0866548Z .........
+2025-07-26T14:02:31.0869832Z 21/295 - [1mwallet_dump.py --legacy-wallet[0m passed, Duration: 5 s
+2025-07-26T14:02:31.5913188Z          
+2025-07-26T14:02:46.1094481Z .............................
+2025-07-26T14:02:46.1097214Z 22/295 - [1mmempool_updatefromblock.py[0m passed, Duration: 27 s
+2025-07-26T14:02:46.6121573Z                              
+2025-07-26T14:02:59.1280683Z .........................
+2025-07-26T14:02:59.1283305Z 23/295 - [1mp2p_tx_download.py[0m passed, Duration: 35 s
+2025-07-26T14:02:59.6303440Z                          
+2025-07-26T14:03:03.6354298Z ........
+2025-07-26T14:03:03.6356901Z 24/295 - [1mfeature_multikeysporks.py[0m passed, Duration: 32 s
+2025-07-26T14:03:04.1381444Z         
+2025-07-26T14:03:19.1595708Z ..............................
+2025-07-26T14:03:19.1597633Z 25/295 - [1mp2p_quorum_data.py[0m passed, Duration: 139 s
+2025-07-26T14:03:19.6623576Z                               
+2025-07-26T14:04:34.3263338Z .....................................................................................................................................................
+2025-07-26T14:04:34.3265247Z 26/295 - [1mfeature_llmq_connections.py[0m passed, Duration: 90 s
+2025-07-26T14:04:34.8286703Z                                                                                                                                                      
+2025-07-26T14:04:46.3597672Z .......................
+2025-07-26T14:04:46.3600124Z 27/295 - [1mfeature_dip3_v19.py[0m passed, Duration: 120 s
+2025-07-26T14:04:46.8623788Z                        
+2025-07-26T14:06:26.4931021Z .......................................................................................................................................................................................................
+2025-07-26T14:06:26.4932550Z 28/295 - [1mfeature_asset_locks.py[0m passed, Duration: 207 s
+2025-07-26T14:06:26.9953231Z                                                                                                                                                                                                        
+2025-07-26T14:07:43.6009612Z .........................................................................................................................................................
+2025-07-26T14:07:43.6011526Z 29/295 - [1mfeature_llmq_is_retroactive.py[0m passed, Duration: 264 s
+2025-07-26T14:07:44.1037170Z                                                                                                                                                          
+2025-07-26T14:08:05.1277652Z ..........................................
+2025-07-26T14:08:05.1279207Z 30/295 - [1mfeature_llmq_simplepose.py --disable-spork23[0m passed, Duration: 98 s
+2025-07-26T14:08:05.6303871Z                                           
+2025-07-26T14:08:06.6318387Z ..
+2025-07-26T14:08:06.6320325Z 31/295 - [1mfeature_llmq_simplepose.py[0m passed, Duration: 200 s
+2025-07-26T14:08:07.1345836Z   
+2025-07-26T14:08:46.1740591Z ..............................................................................
+2025-07-26T14:08:46.1743913Z 32/295 - [1mfeature_dip3_deterministicmns.py --legacy-wallet[0m passed, Duration: 62 s
+2025-07-26T14:08:46.6767050Z                                                                               
+2025-07-26T14:08:49.6801105Z ......
+2025-07-26T14:08:49.6806554Z 33/295 - [1mfeature_llmq_chainlocks.py[0m passed, Duration: 255 s
+2025-07-26T14:08:50.1832699Z       
+2025-07-26T14:09:05.6992913Z ...............................
+2025-07-26T14:09:05.6995177Z 34/295 - [1mfeature_dip3_deterministicmns.py --descriptors[0m passed, Duration: 60 s
+2025-07-26T14:09:06.2018392Z                                
+2025-07-26T14:09:50.3006331Z 35/295 - [1mfeature_llmq_signing.py[0m passed, Duration: 103 s
+2025-07-26T14:09:50.3007006Z ........................................................................................
+2025-07-26T14:09:50.8025258Z                                                                                         
+2025-07-26T14:10:30.3965597Z ...............................................................................
+2025-07-26T14:10:30.3967493Z 36/295 - [1mfeature_llmq_is_cl_conflicts.py[0m passed, Duration: 40 s
+2025-07-26T14:10:30.9051688Z                                                                                
+2025-07-26T14:10:34.4125412Z .......
+2025-07-26T14:10:34.4132090Z 37/295 - [1mfeature_llmq_evo.py[0m passed, Duration: 88 s
+2025-07-26T14:10:34.9152648Z        
+2025-07-26T14:10:53.9424457Z ......................................
+2025-07-26T14:10:53.9426521Z 38/295 - [1mfeature_llmq_rotation.py[0m passed, Duration: 124 s
+2025-07-26T14:10:54.4447408Z                                       
+2025-07-26T14:10:58.4529455Z ........
+2025-07-26T14:10:58.4532007Z 39/295 - [1mfeature_llmq_signing.py --spork21[0m passed, Duration: 132 s
+2025-07-26T14:10:58.9554070Z         
+2025-07-26T14:11:17.4781529Z .....................................
+2025-07-26T14:11:17.4788054Z 40/295 - [1mfeature_llmq_singlenode.py[0m passed, Duration: 43 s
+2025-07-26T14:11:17.9835203Z                                      
+2025-07-26T14:11:17.9835595Z 
+2025-07-26T14:11:17.9837233Z 41/295 - [1mfeature_llmq_dkgerrors.py[0m passed, Duration: 47 s
+2025-07-26T14:11:18.4900390Z 
+2025-07-26T14:11:48.0217819Z ...........................................................
+2025-07-26T14:11:48.0221676Z 42/295 - [1mfeature_mnehf.py[0m passed, Duration: 49 s
+2025-07-26T14:11:48.5243190Z                                                            
+2025-07-26T14:12:19.5640924Z ..............................................................
+2025-07-26T14:12:19.5642812Z 43/295 - [1mfeature_governance_cl.py --legacy-wallet[0m passed, Duration: 31 s
+2025-07-26T14:12:20.0667240Z                                                               
+2025-07-26T14:12:20.5675051Z .
+2025-07-26T14:12:20.5677015Z 44/295 - [1mfeature_dip4_coinbasemerkleroots.py[0m passed, Duration: 86 s
+2025-07-26T14:12:21.0701204Z  
+2025-07-26T14:12:52.6119583Z ...............................................................
+2025-07-26T14:12:52.6121526Z 45/295 - [1mfeature_governance_cl.py --descriptors[0m passed, Duration: 33 s
+2025-07-26T14:12:53.1143108Z                                                                
+2025-07-26T14:13:02.6257208Z ...................
+2025-07-26T14:13:02.6259338Z 46/295 - [1mrpc_verifyislock.py[0m passed, Duration: 42 s
+2025-07-26T14:13:03.1283787Z                    
+2025-07-26T14:13:23.1510034Z ........................................
+2025-07-26T14:13:23.1511996Z 47/295 - [1mfeature_notifications.py[0m passed, Duration: 30 s
+2025-07-26T14:13:23.6532835Z                                         
+2025-07-26T14:13:29.1601714Z ...........
+2025-07-26T14:13:29.1603488Z 48/295 - [1mp2p_sendheaders.py[0m passed, Duration: 26 s
+2025-07-26T14:13:29.6625571Z            
+2025-07-26T14:13:33.1657704Z .......
+2025-07-26T14:13:33.1660328Z 49/295 - [1mwallet_importmulti.py --legacy-wallet[0m passed, Duration: 4 s
+2025-07-26T14:13:33.6686971Z        
+2025-07-26T14:13:34.6705902Z ..
+2025-07-26T14:13:34.6707570Z 50/295 - [1mmempool_limit.py[0m passed, Duration: 1 s
+2025-07-26T14:13:35.1727584Z   
+2025-07-26T14:13:35.6735794Z .
+2025-07-26T14:13:35.6739272Z 51/295 - [1mfeature_governance.py --legacy-wallet[0m passed, Duration: 138 s
+2025-07-26T14:13:36.1765317Z  
+2025-07-26T14:13:36.1765564Z 
+2025-07-26T14:13:36.1766954Z 52/295 - [1mrpc_txoutproof.py[0m passed, Duration: 1 s
+2025-07-26T14:13:36.6787968Z 
+2025-07-26T14:13:38.1806953Z ...
+2025-07-26T14:13:38.1808507Z 53/295 - [1mp2p_sendheaders_compressed.py[0m passed, Duration: 15 s
+2025-07-26T14:13:38.6830490Z    
+2025-07-26T14:13:42.6875479Z ........
+2025-07-26T14:13:42.6880306Z 54/295 - [1mwallet_listreceivedby.py --legacy-wallet[0m passed, Duration: 7 s
+2025-07-26T14:13:43.1903217Z         
+2025-07-26T14:13:43.6911267Z .
+2025-07-26T14:13:43.6914137Z 55/295 - [1mwallet_listreceivedby.py --descriptors[0m passed, Duration: 7 s
+2025-07-26T14:13:44.1938666Z  
+2025-07-26T14:13:44.6945496Z .
+2025-07-26T14:13:44.7476913Z  
+2025-07-26T14:13:44.7477580Z feature_governance.py --descriptors failed at attempt 1/3, Duration: 146 s
+2025-07-26T14:13:45.2485939Z .
+2025-07-26T14:13:45.2492699Z 56/295 - [1mwallet_abandonconflict.py --legacy-wallet[0m passed, Duration: 7 s
+2025-07-26T14:13:45.7521960Z  
+2025-07-26T14:13:49.7564856Z ........
+2025-07-26T14:13:49.7568128Z 57/295 - [1mwallet_abandonconflict.py --descriptors[0m passed, Duration: 7 s
+2025-07-26T14:13:50.2591713Z         
+2025-07-26T14:13:53.2625192Z ......
+2025-07-26T14:13:53.2627811Z 58/295 - [1mfeature_reindex.py[0m passed, Duration: 8 s
+2025-07-26T14:13:53.7653834Z       
+2025-07-26T14:14:03.2764164Z ...................
+2025-07-26T14:14:03.2767058Z 59/295 - [1mfeature_csv_activation.py[0m passed, Duration: 19 s
+2025-07-26T14:14:03.7788404Z                    
+2025-07-26T14:14:05.2808831Z ...
+2025-07-26T14:14:05.2811132Z 60/295 - [1mrpc_quorum.py[0m passed, Duration: 12 s
+2025-07-26T14:14:05.7833307Z    
+2025-07-26T14:14:11.7904375Z ............
+2025-07-26T14:14:11.7906952Z 61/295 - [1mwallet_keypool_topup.py --legacy-wallet[0m passed, Duration: 8 s
+2025-07-26T14:14:12.2934115Z             
+2025-07-26T14:14:12.2934417Z 
+2025-07-26T14:14:12.2939543Z 62/295 - [1mwallet_keypool_topup.py --descriptors[0m passed, Duration: 7 s
+2025-07-26T14:14:12.7961535Z 
+2025-07-26T14:14:21.3083456Z .................
+2025-07-26T14:14:21.3088340Z 63/295 - [1mfeature_abortnode.py[0m passed, Duration: 31 s
+2025-07-26T14:14:21.8113110Z                  
+2025-07-26T14:14:37.3281432Z ...............................
+2025-07-26T14:14:37.3283281Z 64/295 - [1mfeature_fee_estimation.py[0m passed, Duration: 25 s
+2025-07-26T14:14:37.8307803Z                                
+2025-07-26T14:14:38.3315200Z .
+2025-07-26T14:14:38.3317421Z 65/295 - [1mrpc_invalid_address_message.py[0m passed, Duration: 1 s
+2025-07-26T14:14:38.8342195Z  
+2025-07-26T14:14:47.3465598Z .................
+2025-07-26T14:14:47.3468270Z 66/295 - [1minterface_zmq.py[0m passed, Duration: 26 s
+2025-07-26T14:14:47.8495949Z                  
+2025-07-26T14:14:47.8496284Z 
+2025-07-26T14:14:47.8498244Z 67/295 - [1minterface_bitcoin_cli.py[0m passed, Duration: 9 s
+2025-07-26T14:14:48.3519885Z 
+2025-07-26T14:14:48.8529099Z .
+2025-07-26T14:14:48.8531204Z 68/295 - [1mmempool_resurrect.py[0m passed, Duration: 1 s
+2025-07-26T14:14:49.3554945Z  
+2025-07-26T14:14:49.3555172Z 
+2025-07-26T14:14:49.3557733Z 69/295 - [1mfeature_bind_extra.py[0m passed, Duration: 2 s
+2025-07-26T14:14:49.8582196Z 
+2025-07-26T14:14:52.8626770Z ......
+2025-07-26T14:14:52.8629650Z 70/295 - [1mwallet_txn_doublespend.py --mineblock[0m passed, Duration: 4 s
+2025-07-26T14:14:53.3654640Z       
+2025-07-26T14:14:59.3723026Z ............
+2025-07-26T14:14:59.3723841Z             
+2025-07-26T14:14:59.3724068Z 
+2025-07-26T14:14:59.3726821Z 71/295 - [1minterface_zmq_dash.py --legacy-wallet[0m passed, Duration: 47 s
+2025-07-26T14:14:59.3739622Z 72/295 - [1mtool_wallet.py --descriptors[0m passed, Duration: 6 s
+2025-07-26T14:14:59.8772408Z 
+2025-07-26T14:15:00.3786330Z .
+2025-07-26T14:15:00.3788620Z 73/295 - [1mtool_wallet.py --legacy-wallet[0m passed, Duration: 11 s
+2025-07-26T14:15:00.8813215Z  
+2025-07-26T14:15:02.8839215Z ....
+2025-07-26T14:15:02.8842491Z 74/295 - [1mwallet_txn_clone.py[0m passed, Duration: 3 s
+2025-07-26T14:15:03.3864306Z     
+2025-07-26T14:15:03.3864548Z 
+2025-07-26T14:15:03.3867022Z 75/295 - [1mrpc_getchaintips.py[0m passed, Duration: 4 s
+2025-07-26T14:15:03.8893546Z 
+2025-07-26T14:15:03.8893795Z 
+2025-07-26T14:15:03.8896161Z 76/295 - [1mrpc_misc.py[0m passed, Duration: 3 s
+2025-07-26T14:15:04.3922911Z 
+2025-07-26T14:15:04.3923418Z 
+2025-07-26T14:15:04.3928241Z 77/295 - [1mmempool_spend_coinbase.py[0m passed, Duration: 1 s
+2025-07-26T14:15:04.8952795Z 
+2025-07-26T14:15:07.3981393Z .....
+2025-07-26T14:15:07.3983905Z 78/295 - [1minterface_rest.py[0m passed, Duration: 4 s
+2025-07-26T14:15:07.9009214Z      
+2025-07-26T14:15:10.4031130Z .....
+2025-07-26T14:15:10.4034167Z 79/295 - [1mmempool_reorg.py[0m passed, Duration: 3 s
+2025-07-26T14:15:10.9054113Z      
+2025-07-26T14:15:14.4087447Z .......
+2025-07-26T14:15:14.4088623Z 80/295 - [1mwallet_avoidreuse.py --descriptors[0m passed, Duration: 10 s
+2025-07-26T14:15:14.9115614Z        
+2025-07-26T14:15:14.9115941Z 
+2025-07-26T14:15:14.9119190Z 81/295 - [1mwallet_avoidreuse.py --legacy-wallet[0m passed, Duration: 11 s
+2025-07-26T14:15:15.4142860Z 
+2025-07-26T14:15:16.4157576Z ..
+2025-07-26T14:15:16.4160391Z 82/295 - [1mp2p_block_sync.py --v1transport[0m passed, Duration: 2 s
+2025-07-26T14:15:16.9184765Z   
+2025-07-26T14:15:17.4192413Z .
+2025-07-26T14:15:17.4194939Z 83/295 - [1mp2p_block_sync.py --v2transport[0m passed, Duration: 2 s
+2025-07-26T14:15:17.9219670Z  
+2025-07-26T14:15:20.9250886Z ......
+2025-07-26T14:15:20.9252987Z 84/295 - [1mmempool_persist.py[0m passed, Duration: 10 s
+2025-07-26T14:15:21.4279508Z       
+2025-07-26T14:15:33.9413176Z .........................
+2025-07-26T14:15:33.9414890Z 85/295 - [1mwallet_multiwallet.py --usecli[0m passed, Duration: 13 s
+2025-07-26T14:15:34.4438541Z                          
+2025-07-26T14:15:36.9470673Z .....
+2025-07-26T14:15:36.9472938Z 86/295 - [1mwallet_createwallet.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:15:37.4497259Z      
+2025-07-26T14:15:39.9528185Z .....
+2025-07-26T14:15:39.9530122Z 87/295 - [1mwallet_createwallet.py --usecli[0m passed, Duration: 3 s
+2025-07-26T14:15:40.4553047Z      
+2025-07-26T14:15:42.4580229Z ....
+2025-07-26T14:15:42.4581553Z 88/295 - [1mwallet_createwallet.py --descriptors[0m passed, Duration: 2 s
+2025-07-26T14:15:42.9603232Z     
+2025-07-26T14:15:49.9684866Z ..............
+2025-07-26T14:15:49.9686362Z 89/295 - [1mwallet_reorgsrestore.py[0m passed, Duration: 7 s
+2025-07-26T14:15:50.4711175Z               
+2025-07-26T14:15:56.4782391Z ............
+2025-07-26T14:15:56.4784674Z 90/295 - [1mwallet_multiwallet.py --descriptors[0m passed, Duration: 39 s
+2025-07-26T14:15:56.9810159Z             
+2025-07-26T14:15:56.9810426Z 
+2025-07-26T14:15:56.9812799Z 91/295 - [1mwallet_multiwallet.py --legacy-wallet[0m passed, Duration: 40 s
+2025-07-26T14:15:57.4837799Z 
+2025-07-26T14:15:58.4852579Z ..
+2025-07-26T14:15:58.4855529Z 92/295 - [1mwallet_watchonly.py --legacy-wallet[0m passed, Duration: 1 s
+2025-07-26T14:15:58.9879592Z   
+2025-07-26T14:15:59.9890457Z ..
+2025-07-26T14:15:59.9892809Z   
+2025-07-26T14:15:59.9892992Z 
+2025-07-26T14:15:59.9894447Z 93/295 - [1mwallet_listtransactions.py --legacy-wallet[0m passed, Duration: 10 s
+2025-07-26T14:15:59.9895800Z 94/295 - [1mwallet_watchonly.py --usecli --legacy-wallet[0m passed, Duration: 1 s
+2025-07-26T14:16:00.4938362Z 
+2025-07-26T14:16:00.9947010Z .
+2025-07-26T14:16:00.9950925Z 95/295 - [1minterface_http.py[0m passed, Duration: 1 s
+2025-07-26T14:16:01.4982116Z  
+2025-07-26T14:16:01.4982727Z 
+2025-07-26T14:16:01.4988115Z 96/295 - [1minterface_usdt_coinselection.py[0m skipped (bcc python module not available)
+2025-07-26T14:16:02.0019481Z 
+2025-07-26T14:16:02.0019496Z 
+2025-07-26T14:16:02.0022924Z 97/295 - [1minterface_usdt_net.py[0m skipped (bcc python module not available)
+2025-07-26T14:16:02.5048017Z 
+2025-07-26T14:16:02.5048028Z 
+2025-07-26T14:16:02.5050981Z 98/295 - [1minterface_rpc.py[0m passed, Duration: 2 s
+2025-07-26T14:16:03.0077725Z 
+2025-07-26T14:16:03.0077785Z 
+2025-07-26T14:16:03.0078756Z 
+2025-07-26T14:16:03.0078765Z 
+2025-07-26T14:16:03.0083333Z 99/295 - [1mwallet_listtransactions.py --descriptors[0m passed, Duration: 6 s
+2025-07-26T14:16:03.0084435Z 100/295 - [1minterface_usdt_validation.py[0m skipped (bcc python module not available)
+2025-07-26T14:16:03.5124874Z 
+2025-07-26T14:16:03.5124886Z 
+2025-07-26T14:16:03.5131146Z 101/295 - [1minterface_usdt_utxocache.py[0m skipped (bcc python module not available)
+2025-07-26T14:16:04.0153613Z 
+2025-07-26T14:16:10.0226702Z ............
+2025-07-26T14:16:10.0229299Z 102/295 - [1mrpc_users.py[0m passed, Duration: 6 s
+2025-07-26T14:16:10.5253665Z             
+2025-07-26T14:16:11.0262953Z .
+2025-07-26T14:16:11.0267734Z 103/295 - [1mrpc_whitelist.py[0m passed, Duration: 1 s
+2025-07-26T14:16:11.5287348Z  
+2025-07-26T14:16:13.0306992Z ...
+2025-07-26T14:16:13.0309401Z 104/295 - [1mfeature_governance.py --descriptors[0m passed, Duration: 148 s
+2025-07-26T14:16:13.5333420Z    
+2025-07-26T14:16:14.0342048Z .
+2025-07-26T14:16:14.0344412Z 105/295 - [1mrpc_signrawtransaction.py --legacy-wallet[0m passed, Duration: 1 s
+2025-07-26T14:16:14.5370762Z  
+2025-07-26T14:16:15.0375308Z .
+2025-07-26T14:16:15.0378736Z 106/295 - [1mrpc_signrawtransaction.py --descriptors[0m passed, Duration: 1 s
+2025-07-26T14:16:15.5402768Z  
+2025-07-26T14:16:18.0431631Z .....
+2025-07-26T14:16:18.0433938Z 107/295 - [1mfeature_proxy.py[0m passed, Duration: 7 s
+2025-07-26T14:16:18.5460653Z      
+2025-07-26T14:16:18.5462252Z 108/295 - [1mrpc_psbt.py --descriptors[0m passed, Duration: 15 s
+2025-07-26T14:16:18.5462686Z 
+2025-07-26T14:16:19.0486125Z 
+2025-07-26T14:16:23.5537714Z .........
+2025-07-26T14:16:23.5540942Z 109/295 - [1mwallet_transactiontime_rescan.py --descriptors[0m passed, Duration: 5 s
+2025-07-26T14:16:24.0566142Z          
+2025-07-26T14:16:24.0566381Z 
+2025-07-26T14:16:24.0569914Z 110/295 - [1mrpc_psbt.py --legacy-wallet[0m passed, Duration: 21 s
+2025-07-26T14:16:24.5610012Z 
+2025-07-26T14:16:25.5613796Z ..
+2025-07-26T14:16:25.5616412Z 111/295 - [1mrpc_rawtransaction.py --descriptors[0m passed, Duration: 7 s
+2025-07-26T14:16:26.0640672Z   
+2025-07-26T14:16:27.0650282Z ..
+2025-07-26T14:16:27.0653044Z 112/295 - [1mwallet_transactiontime_rescan.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:16:27.5676873Z   
+2025-07-26T14:16:29.5700817Z ....
+2025-07-26T14:16:29.5704167Z 113/295 - [1mrpc_rawtransaction.py --legacy-wallet[0m passed, Duration: 14 s
+2025-07-26T14:16:30.0731076Z     
+2025-07-26T14:16:30.0731375Z 
+2025-07-26T14:16:30.0733833Z 114/295 - [1mp2p_addrv2_relay.py[0m passed, Duration: 6 s
+2025-07-26T14:16:30.5757058Z 
+2025-07-26T14:16:42.0892083Z .......................
+2025-07-26T14:16:42.0894527Z 115/295 - [1mwallet_groups.py --legacy-wallet[0m passed, Duration: 16 s
+2025-07-26T14:16:42.5918677Z                        
+2025-07-26T14:16:43.0926743Z .
+2025-07-26T14:16:43.0929799Z 116/295 - [1mwallet_groups.py --descriptors[0m passed, Duration: 16 s
+2025-07-26T14:16:43.5952375Z  
+2025-07-26T14:16:45.5976774Z ....
+2025-07-26T14:16:45.5979721Z 117/295 - [1mp2p_disconnect_ban.py --v1transport[0m passed, Duration: 3 s
+2025-07-26T14:16:46.1002689Z     
+2025-07-26T14:16:47.6023849Z ...
+2025-07-26T14:16:47.6026374Z 118/295 - [1mp2p_disconnect_ban.py --v2transport[0m passed, Duration: 4 s
+2025-07-26T14:16:48.1049546Z    
+2025-07-26T14:16:54.1112731Z ............
+2025-07-26T14:16:54.1115486Z 119/295 - [1mfeature_timestampindex.py[0m passed, Duration: 6 s
+2025-07-26T14:16:54.6139865Z             
+2025-07-26T14:16:57.1169258Z .....
+2025-07-26T14:16:57.1172160Z 120/295 - [1mp2p_compactblocks_hb.py --v1transport[0m passed, Duration: 27 s
+2025-07-26T14:16:57.6193521Z      
+2025-07-26T14:16:58.1200440Z .
+2025-07-26T14:16:58.1203011Z 121/295 - [1mrpc_decodescript.py[0m passed, Duration: 1 s
+2025-07-26T14:16:58.6227335Z  
+2025-07-26T14:17:00.1246298Z ...
+2025-07-26T14:17:00.1248304Z 122/295 - [1mp2p_compactblocks_hb.py --v2transport[0m passed, Duration: 30 s
+2025-07-26T14:17:00.6272138Z    
+2025-07-26T14:17:01.1281719Z .
+2025-07-26T14:17:01.1286030Z 123/295 - [1mfeature_addressindex.py[0m passed, Duration: 15 s
+2025-07-26T14:17:01.6310407Z  
+2025-07-26T14:17:02.1318533Z .
+2025-07-26T14:17:02.1322025Z 124/295 - [1mrpc_deprecated.py[0m passed, Duration: 1 s
+2025-07-26T14:17:02.6346914Z  
+2025-07-26T14:17:03.1354070Z .
+2025-07-26T14:17:03.1356057Z 125/295 - [1mwallet_disable.py[0m passed, Duration: 1 s
+2025-07-26T14:17:03.6380860Z  
+2025-07-26T14:17:04.1387578Z .
+2025-07-26T14:17:04.1391157Z 126/295 - [1mfeature_spentindex.py[0m passed, Duration: 10 s
+2025-07-26T14:17:04.6413943Z  
+2025-07-26T14:17:06.1433800Z ...
+2025-07-26T14:17:06.1436174Z 127/295 - [1mwallet_change_address.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:17:06.6460660Z    
+2025-07-26T14:17:07.1467173Z .
+2025-07-26T14:17:07.1470261Z 128/295 - [1mwallet_change_address.py --descriptors[0m passed, Duration: 3 s
+2025-07-26T14:17:07.6493024Z  
+2025-07-26T14:17:14.1560639Z .............
+2025-07-26T14:17:14.1563752Z 129/295 - [1mrpc_blockchain.py --v1transport[0m passed, Duration: 16 s
+2025-07-26T14:17:14.6587841Z              
+2025-07-26T14:17:15.6601407Z ..
+2025-07-26T14:17:15.6604037Z 130/295 - [1mp2p_getdata.py[0m passed, Duration: 1 s
+2025-07-26T14:17:16.1632300Z   
+2025-07-26T14:17:16.1632551Z 
+2025-07-26T14:17:16.1635827Z 131/295 - [1mrpc_blockchain.py --v2transport[0m passed, Duration: 16 s
+2025-07-26T14:17:16.6659779Z 
+2025-07-26T14:17:18.6687463Z ....
+2025-07-26T14:17:18.6689668Z 132/295 - [1mp2p_getaddr_caching.py[0m passed, Duration: 11 s
+2025-07-26T14:17:19.1713411Z     
+2025-07-26T14:17:21.6746352Z .....
+2025-07-26T14:17:21.6748457Z 133/295 - [1mp2p_addrfetch.py[0m passed, Duration: 6 s
+2025-07-26T14:17:22.1772688Z      
+2025-07-26T14:17:28.6854793Z .............
+2025-07-26T14:17:28.6856680Z 134/295 - [1mrpc_netinfo.py[0m passed, Duration: 7 s
+2025-07-26T14:17:29.1880225Z              
+2025-07-26T14:17:31.1905868Z ....
+2025-07-26T14:17:31.1908710Z 135/295 - [1mwallet_keypool.py --legacy-wallet[0m passed, Duration: 2 s
+2025-07-26T14:17:31.6934289Z     
+2025-07-26T14:17:34.1968362Z .....
+2025-07-26T14:17:34.1971255Z 136/295 - [1mwallet_keypool_hd.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:17:34.7010871Z      
+2025-07-26T14:17:37.2044646Z .....
+2025-07-26T14:17:37.2046651Z 137/295 - [1mwallet_keypool_hd.py --descriptors[0m passed, Duration: 3 s
+2025-07-26T14:17:37.7120907Z 138/295 - [1mp2p_addr_relay.py[0m passed, Duration: 31 s
+2025-07-26T14:17:37.7121619Z      
+2025-07-26T14:17:37.7121894Z 
+2025-07-26T14:17:38.2113383Z 
+2025-07-26T14:17:40.2137735Z ....
+2025-07-26T14:17:40.2140364Z 139/295 - [1mwallet_descriptor.py --descriptors[0m passed, Duration: 3 s
+2025-07-26T14:17:40.7163661Z     
+2025-07-26T14:17:43.2196099Z .....
+2025-07-26T14:17:43.2197509Z 140/295 - [1mfeature_maxtipage.py[0m passed, Duration: 5 s
+2025-07-26T14:17:43.7221947Z      
+2025-07-26T14:17:44.2231604Z .
+2025-07-26T14:17:44.2234331Z 141/295 - [1mp2p_nobloomfilter_messages.py[0m passed, Duration: 4 s
+2025-07-26T14:17:44.7258073Z  
+2025-07-26T14:17:47.7296086Z ......
+2025-07-26T14:17:47.7298365Z 142/295 - [1mp2p_filter.py[0m passed, Duration: 4 s
+2025-07-26T14:17:48.2323648Z       
+2025-07-26T14:17:48.2323939Z 
+2025-07-26T14:17:48.2327135Z 143/295 - [1mrpc_net.py --v1transport[0m passed, Duration: 32 s
+2025-07-26T14:17:48.7352717Z 
+2025-07-26T14:17:48.7352731Z 
+2025-07-26T14:17:48.7356837Z 144/295 - [1mrpc_net.py --v2transport[0m passed, Duration: 30 s
+2025-07-26T14:17:49.2379241Z 
+2025-07-26T14:17:51.2402280Z ....
+2025-07-26T14:17:51.2404182Z 145/295 - [1mp2p_blocksonly.py[0m passed, Duration: 7 s
+2025-07-26T14:17:51.7433704Z     
+2025-07-26T14:17:51.7433938Z 
+2025-07-26T14:17:51.7436127Z 146/295 - [1mmining_prioritisetransaction.py[0m passed, Duration: 3 s
+2025-07-26T14:17:52.2462471Z 
+2025-07-26T14:17:53.7481851Z ...
+2025-07-26T14:17:53.7482602Z    
+2025-07-26T14:17:53.7482817Z 
+2025-07-26T14:17:53.7486233Z 147/295 - [1mrpc_setban.py --v1transport[0m passed, Duration: 6 s
+2025-07-26T14:17:53.7494463Z 148/295 - [1mp2p_invalid_block.py --v1transport[0m passed, Duration: 2 s
+2025-07-26T14:17:54.2527223Z 
+2025-07-26T14:17:54.2527397Z 
+2025-07-26T14:17:54.2529944Z 149/295 - [1mp2p_invalid_locator.py[0m passed, Duration: 3 s
+2025-07-26T14:17:54.7555556Z 
+2025-07-26T14:17:55.7569687Z ..
+2025-07-26T14:17:55.7571767Z 150/295 - [1mrpc_setban.py --v2transport[0m passed, Duration: 7 s
+2025-07-26T14:17:56.2596372Z   
+2025-07-26T14:17:56.2596597Z 
+2025-07-26T14:17:56.2599298Z 151/295 - [1mp2p_invalid_block.py --v2transport[0m passed, Duration: 2 s
+2025-07-26T14:17:56.7623843Z 
+2025-07-26T14:18:03.7713242Z ..............
+2025-07-26T14:18:03.7715914Z 152/295 - [1mp2p_invalid_messages.py[0m passed, Duration: 10 s
+2025-07-26T14:18:04.2739911Z               
+2025-07-26T14:18:04.7748613Z .
+2025-07-26T14:18:04.7751468Z 153/295 - [1mp2p_invalid_tx.py --v1transport[0m passed, Duration: 10 s
+2025-07-26T14:18:05.2772961Z  
+2025-07-26T14:18:05.7781167Z .
+2025-07-26T14:18:05.7784378Z 154/295 - [1mp2p_v2_transport.py[0m passed, Duration: 9 s
+2025-07-26T14:18:06.2809739Z  
+2025-07-26T14:18:10.7887345Z .........
+2025-07-26T14:18:10.7890081Z 155/295 - [1mfeature_assumevalid.py[0m passed, Duration: 5 s
+2025-07-26T14:18:11.2915377Z          
+2025-07-26T14:18:11.7923314Z .
+2025-07-26T14:18:11.7925927Z 156/295 - [1mp2p_v2_encrypted.py[0m passed, Duration: 8 s
+2025-07-26T14:18:12.2950368Z  
+2025-07-26T14:18:13.7970343Z ...
+2025-07-26T14:18:13.7971434Z    
+2025-07-26T14:18:13.7971646Z 
+2025-07-26T14:18:13.7975897Z 157/295 - [1mp2p_invalid_tx.py --v2transport[0m passed, Duration: 18 s
+2025-07-26T14:18:13.7976511Z 158/295 - [1mwallet_txn_doublespend.py --legacy-wallet[0m passed, Duration: 2 s
+2025-07-26T14:18:14.3014949Z 
+2025-07-26T14:18:14.3015148Z 
+2025-07-26T14:18:14.3017993Z 159/295 - [1mp2p_v2_misbehaving.py[0m passed, Duration: 9 s
+2025-07-26T14:18:14.8040548Z 
+2025-07-26T14:18:14.8040561Z 
+2025-07-26T14:18:14.8043939Z 160/295 - [1mexample_test.py[0m passed, Duration: 4 s
+2025-07-26T14:18:15.3071918Z 
+2025-07-26T14:18:16.8107156Z ...
+2025-07-26T14:18:16.8109932Z 161/295 - [1mwallet_multisig_descriptor_psbt.py[0m passed, Duration: 3 s
+2025-07-26T14:18:17.3134917Z    
+2025-07-26T14:18:17.8142139Z .
+2025-07-26T14:18:17.8145423Z 162/295 - [1mwallet_txn_doublespend.py --descriptors[0m passed, Duration: 4 s
+2025-07-26T14:18:18.3170011Z  
+2025-07-26T14:18:21.3208342Z ......
+2025-07-26T14:18:21.3210326Z 163/295 - [1mwallet_txn_clone.py --mineblock[0m passed, Duration: 4 s
+2025-07-26T14:18:21.8236274Z       
+2025-07-26T14:18:21.8236510Z 
+2025-07-26T14:18:21.8239198Z 164/295 - [1mrpc_getblockfilter.py[0m passed, Duration: 4 s
+2025-07-26T14:18:22.3262638Z 
+2025-07-26T14:18:23.8283754Z ...
+2025-07-26T14:18:23.8285577Z 165/295 - [1mrpc_getblockfrompeer.py[0m passed, Duration: 2 s
+2025-07-26T14:18:24.3310075Z    
+2025-07-26T14:18:27.8357370Z .......
+2025-07-26T14:18:27.8359921Z 166/295 - [1mfeature_txindex.py[0m passed, Duration: 4 s
+2025-07-26T14:18:28.3384447Z        
+2025-07-26T14:18:28.8391539Z .
+2025-07-26T14:18:28.8393982Z 167/295 - [1mfeature_utxo_set_hash.py[0m passed, Duration: 1 s
+2025-07-26T14:18:29.3418820Z  
+2025-07-26T14:18:29.8427205Z .
+2025-07-26T14:18:29.8430281Z 168/295 - [1mrpc_invalidateblock.py[0m passed, Duration: 8 s
+2025-07-26T14:18:30.3455517Z  
+2025-07-26T14:18:30.8463470Z .
+2025-07-26T14:18:30.8465305Z 169/295 - [1mmempool_package_onemore.py[0m passed, Duration: 1 s
+2025-07-26T14:18:31.3490072Z  
+2025-07-26T14:18:32.3500659Z ..
+2025-07-26T14:18:32.3503067Z 170/295 - [1mfeature_backwards_compatibility.py --legacy-wallet[0m passed, Duration: 18 s
+2025-07-26T14:18:32.8523939Z   
+2025-07-26T14:18:33.8534496Z ..
+2025-07-26T14:18:33.8536913Z 171/295 - [1mrpc_packages.py[0m passed, Duration: 1 s
+2025-07-26T14:18:34.3581514Z 172/295 - [1mfeature_backwards_compatibility.py --descriptors[0m passed, Duration: 19 s
+2025-07-26T14:18:34.3582265Z   
+2025-07-26T14:18:34.3582887Z 
+2025-07-26T14:18:34.8600208Z 
+2025-07-26T14:18:36.8620752Z ....
+2025-07-26T14:18:36.8622201Z     
+2025-07-26T14:18:36.8622380Z 
+2025-07-26T14:18:36.8624495Z 173/295 - [1mmempool_packages.py[0m passed, Duration: 8 s
+2025-07-26T14:18:36.8626019Z 174/295 - [1mmempool_package_limits.py[0m passed, Duration: 3 s
+2025-07-26T14:18:37.3669738Z 
+2025-07-26T14:18:37.3669748Z 
+2025-07-26T14:18:37.3673030Z 175/295 - [1mrpc_createmultisig.py[0m passed, Duration: 6 s
+2025-07-26T14:18:37.8729326Z 
+2025-07-26T14:18:37.8730289Z 176/295 - [1mfeature_versionbits_warning.py[0m passed, Duration: 3 s
+2025-07-26T14:18:37.8730799Z 
+2025-07-26T14:18:38.3751753Z 
+2025-07-26T14:18:38.8761391Z .
+2025-07-26T14:18:38.8763610Z 177/295 - [1mrpc_preciousblock.py[0m passed, Duration: 2 s
+2025-07-26T14:18:39.3790096Z  
+2025-07-26T14:18:39.3790320Z 
+2025-07-26T14:18:39.3863760Z 
+2025-07-26T14:18:39.3864303Z p2p_leak_tx.py --v1transport failed at attempt 1/3, Duration: 1 s
+2025-07-26T14:18:39.8870873Z .
+2025-07-26T14:18:39.8873556Z 178/295 - [1mwallet_importprunedfunds.py --legacy-wallet[0m passed, Duration: 3 s
+2025-07-26T14:18:40.3901593Z  
+2025-07-26T14:18:40.3901921Z 
+2025-07-26T14:18:40.3905065Z 179/295 - [1mwallet_importprunedfunds.py --descriptors[0m passed, Duration: 3 s
+2025-07-26T14:18:40.8930930Z 
+2025-07-26T14:18:40.8930945Z 
+2025-07-26T14:18:40.9040789Z 
+2025-07-26T14:18:40.9041915Z p2p_leak_tx.py --v2transport failed at attempt 1/3, Duration: 2 s
+2025-07-26T14:18:41.4046879Z .
+2025-07-26T14:18:41.4139575Z  
+2025-07-26T14:18:41.4140322Z p2p_leak_tx.py --v1transport failed at attempt 2/3, Duration: 2 s
+2025-07-26T14:18:42.4150868Z ..
+2025-07-26T14:18:42.4244364Z   
+2025-07-26T14:18:42.4252485Z p2p_leak_tx.py --v2transport failed at attempt 2/3, Duration: 1 s
+2025-07-26T14:18:42.9253519Z .
+2025-07-26T14:18:42.9674092Z  
+2025-07-26T14:18:42.9675056Z 180/295 - [1mp2p_leak_tx.py --v1transport[0m failed, Duration: 1 s
+2025-07-26T14:18:42.9675554Z 
+2025-07-26T14:18:42.9675723Z [1mstdout:
+2025-07-26T14:18:42.9676417Z [0m2025-07-26T14:18:41.530000Z TestFramework (INFO): PRNG seed is: 2671638012380696357
+2025-07-26T14:18:42.9678186Z 2025-07-26T14:18:41.531000Z TestFramework (INFO): Initializing test directory /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115
+2025-07-26T14:18:42.9680387Z 2025-07-26T14:18:41.815000Z TestFramework (INFO): Check that a transaction in the last block is uploaded (beneficial for compact block relay)
+2025-07-26T14:18:42.9681579Z 2025-07-26T14:18:41.917000Z TestFramework (ERROR): Unexpected exception caught during testing
+2025-07-26T14:18:42.9682270Z Traceback (most recent call last):
+2025-07-26T14:18:42.9683097Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/test_framework.py", line 162, in main
+2025-07-26T14:18:42.9683948Z     self.run_test()
+2025-07-26T14:18:42.9684615Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/p2p_leak_tx.py", line 29, in run_test
+2025-07-26T14:18:42.9685493Z     self.test_tx_in_block()
+2025-07-26T14:18:42.9686224Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/p2p_leak_tx.py", line 39, in test_tx_in_block
+2025-07-26T14:18:42.9687460Z     txid = self.miniwallet.send_self_transfer(from_node=self.gen_node)["txid"]
+2025-07-26T14:18:42.9688525Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 214, in send_self_transfer
+2025-07-26T14:18:42.9689647Z     tx = self.create_self_transfer(**kwargs)
+2025-07-26T14:18:42.9690581Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 292, in create_self_transfer
+2025-07-26T14:18:42.9691533Z     utxo_to_spend = utxo_to_spend or self.get_utxo()
+2025-07-26T14:18:42.9692399Z   File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 195, in get_utxo
+2025-07-26T14:18:42.9693280Z     index = self._utxos.index(next(utxo_filter))
+2025-07-26T14:18:42.9693733Z StopIteration
+2025-07-26T14:18:42.9694175Z 2025-07-26T14:18:41.968000Z TestFramework (INFO): Stopping nodes
+2025-07-26T14:18:42.9695702Z 2025-07-26T14:18:42.420000Z TestFramework (WARNING): Not cleaning up dir /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115
+2025-07-26T14:18:42.9698074Z 2025-07-26T14:18:42.420000Z TestFramework (ERROR): Test failed. Test logging available at /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/test_framework.log
+2025-07-26T14:18:42.9699688Z 2025-07-26T14:18:42.420000Z TestFramework (ERROR): 
+2025-07-26T14:18:42.9701740Z 2025-07-26T14:18:42.421000Z TestFramework (ERROR): Hint: Call /__w/dash/dash/build-ci/dashcore-linux64/test/functional/combine_logs.py '/__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115' to consolidate all logs
+2025-07-26T14:18:42.9703427Z 2025-07-26T14:18:42.421000Z TestFramework (ERROR): 
+2025-07-26T14:18:42.9704573Z 2025-07-26T14:18:42.421000Z TestFramework (ERROR): If this failure happened unexpectedly or intermittently, please file a bug and provide a link or upload of the combined log.
+2025-07-26T14:18:42.9705951Z 2025-07-26T14:18:42.421000Z TestFramework (ERROR): https://github.com/dashpay/dash/issues
+2025-07-26T14:18:42.9706682Z 2025-07-26T14:18:42.421000Z TestFramework (ERROR): 
+2025-07-26T14:18:42.9707008Z 
+2025-07-26T14:18:42.9707014Z 
+2025-07-26T14:18:42.9707199Z [1mstderr:
+2025-07-26T14:18:42.9707486Z [0m
+2025-07-26T14:18:42.9707631Z 
+2025-07-26T14:18:42.9707944Z [1mCombine the logs and print the last 4000 lines ...[0m
+2025-07-26T14:18:42.9708320Z 
+2025-07-26T14:18:42.9708446Z ============
+2025-07-26T14:18:42.9709637Z [1mCombined log for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115:[0m
+2025-07-26T14:18:42.9710530Z ============
+2025-07-26T14:18:42.9710706Z 
+2025-07-26T14:18:42.9711271Z [0;36m test  2025-07-26T14:18:41.530000Z TestFramework (INFO): PRNG seed is: 2671638012380696357 [0m
+2025-07-26T14:18:42.9712334Z [0;36m test  2025-07-26T14:18:41.530000Z TestFramework (DEBUG): Setting up network thread [0m
+2025-07-26T14:18:42.9714289Z [0;36m test  2025-07-26T14:18:41.531000Z TestFramework (INFO): Initializing test directory /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115 [0m
+2025-07-26T14:18:42.9716288Z [0;36m test  2025-07-26T14:18:41.531000Z TestFramework (DEBUG): Copy cache directory /__w/dash/dash/build-ci/dashcore-linux64/test/cache/node0 to node 0 [0m
+2025-07-26T14:18:42.9717754Z [0;36m test  2025-07-26T14:18:41.552000Z TestFramework.node0 (DEBUG): dashd started, waiting for RPC to come up [0m
+2025-07-26T14:18:42.9719429Z [0;34m node0 2025-07-26T14:18:41.656210Z [      init] [init/common.cpp:182] [LogPackageVersion] Dash Core version v23.0.0-unk (release build) [0m
+2025-07-26T14:18:42.9721305Z [0;34m node0 2025-07-26T14:18:41.656217Z [      init] [init.cpp:924] [InitParameterInteraction] InitParameterInteraction: parameter interaction: -bind set -> setting -listen=1 [0m
+2025-07-26T14:18:42.9723117Z [0;34m node0 2025-07-26T14:18:41.656282Z [      init] [init.cpp:1240] [AppInitParameterInteraction] Validating signatures for all blocks. [0m
+2025-07-26T14:18:42.9725297Z [0;34m node0 2025-07-26T14:18:41.656286Z [      init] [init.cpp:1251] [AppInitParameterInteraction] Setting nMinimumChainWork=0000000000000000000000000000000000000000000000000000000000000000 [0m
+2025-07-26T14:18:42.9727266Z [0;34m node0 2025-07-26T14:18:41.656336Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init/common.cpp:30] [SetGlobals] Using the 'sse4(1way)' SHA256 implementation [0m
+2025-07-26T14:18:42.9729226Z [0;34m node0 2025-07-26T14:18:41.656340Z (mocktime: 2014-12-05T01:53:01Z) [      init] [random.cpp:103] [ReportHardwareRand] Using RdSeed as an additional entropy source [0m
+2025-07-26T14:18:42.9730999Z [0;34m node0 2025-07-26T14:18:41.656343Z (mocktime: 2014-12-05T01:53:01Z) [      init] [random.cpp:106] [ReportHardwareRand] Using RdRand as an additional entropy source [0m
+2025-07-26T14:18:42.9732795Z [0;34m node0 2025-07-26T14:18:41.657964Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init/common.cpp:153] [StartLogging] Default data directory /github/home/.dashcore [0m
+2025-07-26T14:18:42.9735246Z [0;34m node0 2025-07-26T14:18:41.657971Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init/common.cpp:154] [StartLogging] Using data directory /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest [0m
+2025-07-26T14:18:42.9738154Z [0;34m node0 2025-07-26T14:18:41.657984Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init/common.cpp:159] [StartLogging] Config file: /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/dash.conf [0m
+2025-07-26T14:18:42.9740491Z [0;34m node0 2025-07-26T14:18:41.657992Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: regtest="1" [0m
+2025-07-26T14:18:42.9742217Z [0;34m node0 2025-07-26T14:18:41.657997Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] bind="127.0.0.1" [0m
+2025-07-26T14:18:42.9743974Z [0;34m node0 2025-07-26T14:18:41.658002Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] discover="0" [0m
+2025-07-26T14:18:42.9745642Z [0;34m node0 2025-07-26T14:18:41.658006Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] dnsseed="0" [0m
+2025-07-26T14:18:42.9747336Z [0;34m node0 2025-07-26T14:18:41.658010Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] fallbackfee="0.00001" [0m
+2025-07-26T14:18:42.9749301Z [0;34m node0 2025-07-26T14:18:41.658014Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] fixedseeds="0" [0m
+2025-07-26T14:18:42.9751076Z [0;34m node0 2025-07-26T14:18:41.658018Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] keypool="1" [0m
+2025-07-26T14:18:42.9753039Z [0;34m node0 2025-07-26T14:18:41.658022Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] listenonion="0" [0m
+2025-07-26T14:18:42.9754819Z [0;34m node0 2025-07-26T14:18:41.658026Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] natpmp="0" [0m
+2025-07-26T14:18:42.9756620Z [0;34m node0 2025-07-26T14:18:41.658031Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] peertimeout="999999999" [0m
+2025-07-26T14:18:42.9758413Z [0;34m node0 2025-07-26T14:18:41.658035Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] port="13300" [0m
+2025-07-26T14:18:42.9760350Z [0;34m node0 2025-07-26T14:18:41.658039Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] printtoconsole="0" [0m
+2025-07-26T14:18:42.9762290Z [0;34m node0 2025-07-26T14:18:41.658044Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] rpcport="18300" [0m
+2025-07-26T14:18:42.9764024Z [0;34m node0 2025-07-26T14:18:41.658049Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] server="1" [0m
+2025-07-26T14:18:42.9765781Z [0;34m node0 2025-07-26T14:18:41.658053Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] shrinkdebugfile="0" [0m
+2025-07-26T14:18:42.9767589Z [0;34m node0 2025-07-26T14:18:41.658058Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] unsafesqlitesync="1" [0m
+2025-07-26T14:18:42.9769412Z [0;34m node0 2025-07-26T14:18:41.658066Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Config file arg: [regtest] upnp="0" [0m
+2025-07-26T14:18:42.9771092Z [0;34m node0 2025-07-26T14:18:41.658071Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: createwalletbackups="0" [0m
+2025-07-26T14:18:42.9773530Z [0;34m node0 2025-07-26T14:18:41.658076Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: datadir="/__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0" [0m
+2025-07-26T14:18:42.9775767Z [0;34m node0 2025-07-26T14:18:41.658080Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debug="" [0m
+2025-07-26T14:18:42.9777455Z [0;34m node0 2025-07-26T14:18:41.658085Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debugexclude="libevent" [0m
+2025-07-26T14:18:42.9779657Z [0;34m node0 2025-07-26T14:18:41.658089Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: debugexclude="leveldb" [0m
+2025-07-26T14:18:42.9781413Z [0;34m node0 2025-07-26T14:18:41.658094Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: loglevel="trace" [0m
+2025-07-26T14:18:42.9783150Z [0;34m node0 2025-07-26T14:18:41.658098Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logsourcelocations="" [0m
+2025-07-26T14:18:42.9784898Z [0;34m node0 2025-07-26T14:18:41.658102Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logthreadnames="" [0m
+2025-07-26T14:18:42.9786580Z [0;34m node0 2025-07-26T14:18:41.658107Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: logtimemicros="" [0m
+2025-07-26T14:18:42.9788303Z [0;34m node0 2025-07-26T14:18:41.658111Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: mocktime="1417744381" [0m
+2025-07-26T14:18:42.9790508Z [0;34m node0 2025-07-26T14:18:41.658115Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: mocktime="1417744381" [0m
+2025-07-26T14:18:42.9792306Z [0;34m node0 2025-07-26T14:18:41.658119Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: socketevents="poll" [0m
+2025-07-26T14:18:42.9794057Z [0;34m node0 2025-07-26T14:18:41.658124Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: uacomment="testnode0" [0m
+2025-07-26T14:18:42.9795761Z [0;34m node0 2025-07-26T14:18:41.658128Z (mocktime: 2014-12-05T01:53:01Z) [      init] [util/system.cpp:1112] [logArgsPrefix] Command-line arg: v2transport="0" [0m
+2025-07-26T14:18:42.9797575Z [0;34m node0 2025-07-26T14:18:41.658133Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1478] [AppInitMain] Using at most 125 automatic connections (1048576 file descriptors available) [0m
+2025-07-26T14:18:42.9800125Z [0;34m node0 2025-07-26T14:18:41.660802Z (mocktime: 2014-12-05T01:53:01Z) [      init] [script/sigcache.cpp:87] [InitSignatureCache] Using 16 MiB out of 32/2 requested for signature cache, able to store 524288 elements [0m
+2025-07-26T14:18:42.9802520Z [0;34m node0 2025-07-26T14:18:41.663576Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:1746] [InitScriptExecutionCache] Using 16 MiB out of 32/2 requested for script execution cache, able to store 524288 elements [0m
+2025-07-26T14:18:42.9804557Z [0;34m node0 2025-07-26T14:18:41.663629Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1505] [AppInitMain] Script verification uses 3 additional threads [0m
+2025-07-26T14:18:42.9806197Z [0;34m node0 2025-07-26T14:18:41.665560Z (mocktime: 2014-12-05T01:53:01Z) [ scheduler] [util/thread.cpp:18] [TraceThread] scheduler thread start [0m
+2025-07-26T14:18:42.9813857Z [0;34m node0 2025-07-26T14:18:41.669477Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:195] [InitHTTPAllowList] [http] Allowing HTTP connections from: 127.0.0.0/8 ::1/128 [0m
+2025-07-26T14:18:42.9815927Z [0;34m node0 2025-07-26T14:18:41.669552Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:353] [HTTPBindAddresses] Binding RPC on address ::1 port 18300 [0m
+2025-07-26T14:18:42.9817929Z [0;34m node0 2025-07-26T14:18:41.669632Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:393] [libevent_log_cb] [libevent:warning] getaddrinfo: address family for nodename not supported [0m
+2025-07-26T14:18:42.9820376Z [0;34m node0 2025-07-26T14:18:41.669643Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:362] [HTTPBindAddresses] Binding RPC on address ::1 port 18300 failed. [0m
+2025-07-26T14:18:42.9822275Z [0;34m node0 2025-07-26T14:18:41.669651Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:353] [HTTPBindAddresses] Binding RPC on address 127.0.0.1 port 18300 [0m
+2025-07-26T14:18:42.9824146Z [0;34m node0 2025-07-26T14:18:41.669760Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:432] [InitHTTPServer] [http] Initialized HTTP server [0m
+2025-07-26T14:18:42.9825939Z [0;34m node0 2025-07-26T14:18:41.669774Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:439] [InitHTTPServer] [http] creating work queue of depth 16 external_depth 0 [0m
+2025-07-26T14:18:42.9827586Z [0;34m node0 2025-07-26T14:18:41.669783Z (mocktime: 2014-12-05T01:53:01Z) [      init] [rpc/server.cpp:310] [StartRPC] [rpc] Starting RPC [0m
+2025-07-26T14:18:42.9829269Z [0;34m node0 2025-07-26T14:18:41.669798Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httprpc.cpp:332] [StartHTTPRPC] [rpc] Starting HTTP RPC server [0m
+2025-07-26T14:18:42.9830938Z [0;34m node0 2025-07-26T14:18:41.669808Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httprpc.cpp:283] [InitRPCAuthentication] Using random cookie authentication. [0m
+2025-07-26T14:18:42.9833730Z [0;34m node0 2025-07-26T14:18:41.669971Z (mocktime: 2014-12-05T01:53:01Z) [      init] [rpc/request.cpp:106] [GenerateAuthCookie] Generated RPC authentication cookie /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/.cookie [0m
+2025-07-26T14:18:42.9836389Z [0;34m node0 2025-07-26T14:18:41.669989Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:675] [RegisterHTTPHandler] [http] Registering HTTP handler for / (exactmatch 1) [0m
+2025-07-26T14:18:42.9838418Z [0;34m node0 2025-07-26T14:18:41.669998Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:675] [RegisterHTTPHandler] [http] Registering HTTP handler for /wallet/ (exactmatch 0) [0m
+2025-07-26T14:18:42.9840392Z [0;34m node0 2025-07-26T14:18:41.670007Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:460] [StartHTTPServer] [http] Starting HTTP server [0m
+2025-07-26T14:18:42.9841980Z [0;34m node0 2025-07-26T14:18:41.670016Z (mocktime: 2014-12-05T01:53:01Z) [      init] [httpserver.cpp:462] [StartHTTPServer] [http] starting 4 worker threads [0m
+2025-07-26T14:18:42.9843779Z [0;34m node0 2025-07-26T14:18:41.670668Z (mocktime: 2014-12-05T01:53:01Z) [      http] [httpserver.cpp:317] [ThreadHTTP] [http] Entering http event loop [0m
+2025-07-26T14:18:42.9846059Z [0;34m node0 2025-07-26T14:18:41.673089Z (mocktime: 2014-12-05T01:53:01Z) [      init] [wallet/load.cpp:54] [VerifyWallets] Using wallet directory /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest [0m
+2025-07-26T14:18:42.9848240Z [0;34m node0 2025-07-26T14:18:41.673109Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Verifying wallet(s)… [0m
+2025-07-26T14:18:42.9850156Z [0;34m node0 2025-07-26T14:18:41.673180Z (mocktime: 2014-12-05T01:53:01Z) [      init] [stats/client.cpp:60] [StatsdClient] Transmitting stats are disabled, will not init StatsdClient [0m
+2025-07-26T14:18:42.9851870Z [0;34m node0 2025-07-26T14:18:41.673191Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1615] [AppInitMain] Using /16 prefix for IP bucketing [0m
+2025-07-26T14:18:42.9853469Z [0;34m node0 2025-07-26T14:18:41.673201Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading P2P addresses… [0m
+2025-07-26T14:18:42.9855986Z [0;34m node0 2025-07-26T14:18:41.673751Z (mocktime: 2014-12-05T01:53:01Z) [      init] [addrdb.cpp:198] [LoadAddrman] Creating peers.dat because the file was not found ("/__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/peers.dat") [0m
+2025-07-26T14:18:42.9858285Z [0;34m node0 2025-07-26T14:18:41.678288Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading banlist… [0m
+2025-07-26T14:18:42.9860049Z [0;34m node0 2025-07-26T14:18:41.678312Z (mocktime: 2014-12-05T01:53:01Z) [      init] [banman.cpp:41] [LoadBanlist] Recreating the banlist database [0m
+2025-07-26T14:18:42.9861134Z [0;34m node0 2025-07-26T14:18:41.678363Z (mocktime: 2014-12-05T01:53:01Z) [      init] [banman.cpp:66] [DumpBanlist] [net] Flushed 0 banned node addresses/subnets to disk  0ms [0m
+2025-07-26T14:18:42.9862198Z [0;34m node0 2025-07-26T14:18:41.678376Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:2816] [SetTryNewOutboundPeer] [net] setting try another outbound peer=false [0m
+2025-07-26T14:18:42.9863370Z [0;34m node0 2025-07-26T14:18:41.678382Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:3857] [SetNetworkActive] SetNetworkActive: true [0m
+2025-07-26T14:18:42.9865257Z [0;34m node0 2025-07-26T14:18:41.679185Z (mocktime: 2014-12-05T01:53:01Z) [      init] [policy/fees.cpp:567] [CBlockPolicyEstimator] Failed to read fee estimates from /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/fee_estimates.dat. Continue anyway. [0m
+2025-07-26T14:18:42.9867034Z [0;34m node0 2025-07-26T14:18:41.679269Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:186] [Load] Reading info from sporks.dat... [0m
+2025-07-26T14:18:42.9868356Z [0;34m node0 2025-07-26T14:18:41.679318Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:162] [Read] Missing file sporks.dat, will try to recreate [0m
+2025-07-26T14:18:42.9869531Z [0;34m node0 2025-07-26T14:18:41.679347Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1921] [AppInitMain] Cache configuration: [0m
+2025-07-26T14:18:42.9870416Z [0;34m node0 2025-07-26T14:18:41.679359Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1922] [AppInitMain] * Using 2.0 MiB for block index database [0m
+2025-07-26T14:18:42.9871376Z [0;34m node0 2025-07-26T14:18:41.679370Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1924] [AppInitMain] * Using 37.2 MiB for transaction index database [0m
+2025-07-26T14:18:42.9872328Z [0;34m node0 2025-07-26T14:18:41.679378Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1930] [AppInitMain] * Using 8.0 MiB for chain state database [0m
+2025-07-26T14:18:42.9873567Z [0;34m node0 2025-07-26T14:18:41.679389Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:1931] [AppInitMain] * Using 252.8 MiB for in-memory UTXO set (plus up to 286.1 MiB of unused mempool space) [0m
+2025-07-26T14:18:42.9874631Z [0;34m node0 2025-07-26T14:18:41.679415Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Loading block index… [0m
+2025-07-26T14:18:42.9876012Z [0;34m node0 2025-07-26T14:18:41.679473Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/evodb [0m
+2025-07-26T14:18:42.9877285Z [0;34m node0 2025-07-26T14:18:41.682778Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9878658Z [0;34m node0 2025-07-26T14:18:41.682794Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/evodb: 0000000000000000 [0m
+2025-07-26T14:18:42.9880499Z [0;34m node0 2025-07-26T14:18:41.682805Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:5570] [InitializeChainstate] Switching active chainstate to Chainstate [ibd] @ height -1 (null) [0m
+2025-07-26T14:18:42.9881950Z [0;34m node0 2025-07-26T14:18:41.682829Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/blocks/index [0m
+2025-07-26T14:18:42.9883155Z [0;34m node0 2025-07-26T14:18:41.685003Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9884512Z [0;34m node0 2025-07-26T14:18:41.685016Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/blocks/index: 0000000000000000 [0m
+2025-07-26T14:18:42.9886203Z [0;34m node0 2025-07-26T14:18:41.685047Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/dkgdb [0m
+2025-07-26T14:18:42.9887395Z [0;34m node0 2025-07-26T14:18:41.686885Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9888729Z [0;34m node0 2025-07-26T14:18:41.686919Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/dkgdb: 0000000000000000 [0m
+2025-07-26T14:18:42.9890717Z [0;34m node0 2025-07-26T14:18:41.686945Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/quorumdb [0m
+2025-07-26T14:18:42.9891932Z [0;34m node0 2025-07-26T14:18:41.688945Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9893288Z [0;34m node0 2025-07-26T14:18:41.688958Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/quorumdb: 0000000000000000 [0m
+2025-07-26T14:18:42.9894798Z [0;34m node0 2025-07-26T14:18:41.688968Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1153] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- start [0m
+2025-07-26T14:18:42.9895616Z Early exiting after test failure
+2025-07-26T14:18:42.9896451Z [0;34m node0 2025-07-26T14:18:41.688990Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1196] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- q_Qqvvec moved 0 [0m
+2025-07-26T14:18:42.9897648Z [0;34m node0 2025-07-26T14:18:41.689047Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1196] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- q_Qsk moved 0 [0m
+2025-07-26T14:18:42.9898855Z [0;34m node0 2025-07-26T14:18:41.690167Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1077] [DataCleanupHelper] [llmq] CQuorumManager::DataCleanupHelper -- q_Qqvvec removed 0 [0m
+2025-07-26T14:18:42.9900374Z [0;34m node0 2025-07-26T14:18:41.690196Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1077] [DataCleanupHelper] [llmq] CQuorumManager::DataCleanupHelper -- q_Qsk removed 0 [0m
+2025-07-26T14:18:42.9901546Z [0;34m node0 2025-07-26T14:18:41.690209Z (mocktime: 2014-12-05T01:53:01Z) [      init] [llmq/quorums.cpp:1205] [MigrateOldQuorumDB] [llmq] CQuorumManager::MigrateOldQuorumDB -- done [0m
+2025-07-26T14:18:42.9902944Z [0;34m node0 2025-07-26T14:18:41.690238Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/recsigdb [0m
+2025-07-26T14:18:42.9904157Z [0;34m node0 2025-07-26T14:18:41.691960Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9905533Z [0;34m node0 2025-07-26T14:18:41.691973Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/recsigdb: 0000000000000000 [0m
+2025-07-26T14:18:42.9907242Z [0;34m node0 2025-07-26T14:18:41.692397Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/isdb [0m
+2025-07-26T14:18:42.9908434Z [0;34m node0 2025-07-26T14:18:41.692422Z (mocktime: 2014-12-05T01:53:01Z) [ cl-schdlr] [util/thread.cpp:18] [TraceThread] cl-schdlr thread start [0m
+2025-07-26T14:18:42.9909556Z [0;34m node0 2025-07-26T14:18:41.695044Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9910925Z [0;34m node0 2025-07-26T14:18:41.695057Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/llmq/isdb: 0000000000000000 [0m
+2025-07-26T14:18:42.9912423Z [0;34m node0 2025-07-26T14:18:41.707133Z (mocktime: 2014-12-05T01:53:01Z) [      init] [node/blockstorage.cpp:358] [LoadBlockIndexDB] LoadBlockIndexDB: last block file = 0 [0m
+2025-07-26T14:18:42.9913747Z [0;34m node0 2025-07-26T14:18:41.707152Z (mocktime: 2014-12-05T01:53:01Z) [      init] [node/blockstorage.cpp:362] [LoadBlockIndexDB] LoadBlockIndexDB: last block file info: CBlockFileInfo(blocks=200, size=35495, heights=0...199, time=2014-12-04...2014-12-05) [0m
+2025-07-26T14:18:42.9914992Z [0;34m node0 2025-07-26T14:18:41.707158Z (mocktime: 2014-12-05T01:53:01Z) [      init] [node/blockstorage.cpp:373] [LoadBlockIndexDB] Checking all blk files are present... [0m
+2025-07-26T14:18:42.9916333Z [0;34m node0 2025-07-26T14:18:41.707326Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/chainstate [0m
+2025-07-26T14:18:42.9917630Z [0;34m node0 2025-07-26T14:18:41.711550Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9919224Z [0;34m node0 2025-07-26T14:18:41.711568Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/chainstate: ad0f00f83b55118e [0m
+2025-07-26T14:18:42.9921021Z [0;34m node0 2025-07-26T14:18:41.711620Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4455] [LoadChainTip] Loaded best chain: hashBestChain=61bc70ec02309fa5b75914ffd433747fe330a611185cffdd677cc0eca4d09d6b height=199 date=2014-12-05T01:53:04Z progress=1.000000 [0m
+2025-07-26T14:18:42.9922312Z [0;34m node0 2025-07-26T14:18:41.711629Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2053] [AppInitMain] AppInitMain: address index disabled [0m
+2025-07-26T14:18:42.9923185Z [0;34m node0 2025-07-26T14:18:41.711638Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2054] [AppInitMain] AppInitMain: timestamp index disabled [0m
+2025-07-26T14:18:42.9924039Z [0;34m node0 2025-07-26T14:18:41.711642Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2055] [AppInitMain] AppInitMain: spent index disabled [0m
+2025-07-26T14:18:42.9924890Z [0;34m node0 2025-07-26T14:18:41.711647Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Verifying blocks… [0m
+2025-07-26T14:18:42.9925730Z [0;34m node0 2025-07-26T14:18:41.711654Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2074] [operator()] operator(): bls_legacy_scheme=0 [0m
+2025-07-26T14:18:42.9926583Z [0;34m node0 2025-07-26T14:18:41.711660Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4494] [VerifyDB] Verifying last 6 blocks at level 3 [0m
+2025-07-26T14:18:42.9927442Z [0;34m node0 2025-07-26T14:18:41.711673Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4502] [VerifyDB] Verification progress: 0% [0m
+2025-07-26T14:18:42.9928290Z [0;34m node0 2025-07-26T14:18:41.711854Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 16% [0m
+2025-07-26T14:18:42.9929337Z [0;34m node0 2025-07-26T14:18:41.712027Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 33% [0m
+2025-07-26T14:18:42.9930194Z [0;34m node0 2025-07-26T14:18:41.712163Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 50% [0m
+2025-07-26T14:18:42.9931029Z [0;34m node0 2025-07-26T14:18:41.712293Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 66% [0m
+2025-07-26T14:18:42.9931848Z [0;34m node0 2025-07-26T14:18:41.712422Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 83% [0m
+2025-07-26T14:18:42.9932672Z [0;34m node0 2025-07-26T14:18:41.712551Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4510] [VerifyDB] Verification progress: 99% [0m
+2025-07-26T14:18:42.9933842Z [0;34m node0 2025-07-26T14:18:41.712557Z (mocktime: 2014-12-05T01:53:01Z) [      init] [validation.cpp:4593] [VerifyDB] Verification: No coin database inconsistencies in last 6 blocks (6 transactions) [0m
+2025-07-26T14:18:42.9934834Z [0;34m node0 2025-07-26T14:18:41.712564Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2099] [AppInitMain]  block index              33ms [0m
+2025-07-26T14:18:42.9935682Z [0;34m node0 2025-07-26T14:18:41.713423Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:186] [Load] Reading info from netfulfilled.dat... [0m
+2025-07-26T14:18:42.9936593Z [0;34m node0 2025-07-26T14:18:41.713444Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:162] [Read] Missing file netfulfilled.dat, will try to recreate [0m
+2025-07-26T14:18:42.9937485Z [0;34m node0 2025-07-26T14:18:41.713449Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:186] [Load] Reading info from mncache.dat... [0m
+2025-07-26T14:18:42.9938485Z [0;34m node0 2025-07-26T14:18:41.713459Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:162] [Read] Missing file mncache.dat, will try to recreate [0m
+2025-07-26T14:18:42.9939585Z [0;34m node0 2025-07-26T14:18:41.713464Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:186] [Load] Reading info from governance.dat... [0m
+2025-07-26T14:18:42.9940488Z [0;34m node0 2025-07-26T14:18:41.713476Z (mocktime: 2014-12-05T01:53:01Z) [      init] [flat-database.h:162] [Read] Missing file governance.dat, will try to recreate [0m
+2025-07-26T14:18:42.9941515Z [0;34m node0 2025-07-26T14:18:41.713481Z (mocktime: 2014-12-05T01:53:01Z) [      init] [governance/governance.cpp:1434] [InitOnLoad] Preparing masternode indexes and governance triggers... [0m
+2025-07-26T14:18:42.9942652Z [0;34m node0 2025-07-26T14:18:41.713486Z (mocktime: 2014-12-05T01:53:01Z) [      init] [governance/governance.cpp:1437] [InitOnLoad] Masternode indexes and governance triggers prepared  0ms [0m
+2025-07-26T14:18:42.9943867Z [0;34m node0 2025-07-26T14:18:41.713492Z (mocktime: 2014-12-05T01:53:01Z) [      init] [governance/governance.cpp:1439] [InitOnLoad]      Governance Objects: 0 (Proposals: 0, Triggers: 0, Other: 0; Erased: 0), Votes: 0 [0m
+2025-07-26T14:18:42.9945362Z [0;34m node0 2025-07-26T14:18:41.713519Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:138] [CDBWrapper] Opening LevelDB in /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/indexes/txindex [0m
+2025-07-26T14:18:42.9946576Z [0;34m node0 2025-07-26T14:18:41.718317Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:146] [CDBWrapper] Opened LevelDB successfully [0m
+2025-07-26T14:18:42.9947953Z [0;34m node0 2025-07-26T14:18:41.718330Z (mocktime: 2014-12-05T01:53:01Z) [      init] [dbwrapper.cpp:171] [CDBWrapper] Using obfuscation key for /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/node0/regtest/indexes/txindex: 0000000000000000 [0m
+2025-07-26T14:18:42.9949350Z [0;34m node0 2025-07-26T14:18:41.718799Z (mocktime: 2014-12-05T01:53:01Z) [   txindex] [util/thread.cpp:18] [TraceThread] txindex thread start [0m
+2025-07-26T14:18:42.9950217Z [0;34m node0 2025-07-26T14:18:41.718813Z (mocktime: 2014-12-05T01:53:01Z) [   txindex] [index/base.cpp:196] [ThreadSync] txindex is enabled at height 199 [0m
+2025-07-26T14:18:42.9951071Z [0;34m node0 2025-07-26T14:18:41.718821Z (mocktime: 2014-12-05T01:53:01Z) [   txindex] [util/thread.cpp:20] [TraceThread] txindex thread exit [0m
+2025-07-26T14:18:42.9951909Z [0;34m node0 2025-07-26T14:18:41.731056Z (mocktime: 2014-12-05T01:53:01Z) [ sigshares] [util/thread.cpp:18] [TraceThread] sigshares thread start [0m
+2025-07-26T14:18:42.9952754Z [0;34m node0 2025-07-26T14:18:41.731507Z (mocktime: 2014-12-05T01:53:01Z) [ sigshares] [util/thread.cpp:18] [TraceThread] sigshares thread start [0m
+2025-07-26T14:18:42.9953713Z [0;34m node0 2025-07-26T14:18:41.731981Z (mocktime: 2014-12-05T01:53:01Z) [     isman] [util/thread.cpp:18] [TraceThread] isman thread start [0m
+2025-07-26T14:18:42.9954512Z [0;34m node0 2025-07-26T14:18:41.732371Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2380] [AppInitMain] block tree size = 200 [0m
+2025-07-26T14:18:42.9955282Z [0;34m node0 2025-07-26T14:18:41.732380Z (mocktime: 2014-12-05T01:53:01Z) [      init] [init.cpp:2393] [AppInitMain] nBestHeight = 199 [0m
+2025-07-26T14:18:42.9956085Z [0;34m node0 2025-07-26T14:18:41.732402Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [util/thread.cpp:18] [TraceThread] loadblk thread start [0m
+2025-07-26T14:18:42.9956903Z [0;34m node0 2025-07-26T14:18:41.732431Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:3788] [BindListenPort] Bound to 127.0.0.1:13300 [0m
+2025-07-26T14:18:42.9957849Z [0;34m node0 2025-07-26T14:18:41.732442Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [validation.cpp:5368] [LoadMempool] Failed to open mempool file from disk. Continuing anyway. [0m
+2025-07-26T14:18:42.9959307Z [0;34m node0 2025-07-26T14:18:41.732454Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [validation.cpp:1609] [IsInitialBlockDownload] Leaving InitialBlockDownload (latching to false) [0m
+2025-07-26T14:18:42.9960707Z [0;34m node0 2025-07-26T14:18:41.732470Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [masternode/sync.cpp:330] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 199 fInitialDownload=0 [0m
+2025-07-26T14:18:42.9962118Z [0;34m node0 2025-07-26T14:18:41.732483Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [masternode/sync.cpp:48] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::UpdatedBlockTip [0m
+2025-07-26T14:18:42.9963715Z [0;34m node0 2025-07-26T14:18:41.732496Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [masternode/sync.cpp:363] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 199 pindexTip->nHeight: 199 fInitialDownload=0 fReachedBestHeader=1 [0m
+2025-07-26T14:18:42.9965163Z [0;34m node0 2025-07-26T14:18:41.732513Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:3785] [BindListenPort] [net:error] Unable to bind to 127.0.0.1:19896 on this computer. Dash Core is probably already running. [0m
+2025-07-26T14:18:42.9966512Z [0;34m node0 2025-07-26T14:18:41.732535Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [governance/governance.cpp:1533] [UpdatedBlockTip] [gobject] CGovernanceManager::UpdatedBlockTip -- nCachedBlockHeight: 199 [0m
+2025-07-26T14:18:42.9967620Z [0;34m node0 2025-07-26T14:18:41.732544Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [init.cpp:2332] [operator()] Filling coin cache with masternode UTXOs... [0m
+2025-07-26T14:18:42.9968570Z [0;34m node0 2025-07-26T14:18:41.732551Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [init.cpp:2340] [operator()] Filling coin cache with masternode UTXOs: done in 0ms [0m
+2025-07-26T14:18:42.9969679Z [0;34m node0 2025-07-26T14:18:41.732580Z (mocktime: 2014-12-05T01:53:01Z) [   loadblk] [util/thread.cpp:20] [TraceThread] loadblk thread exit [0m
+2025-07-26T14:18:42.9970582Z [0;34m node0 2025-07-26T14:18:41.732605Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:3984] [Start] 0 block-relay-only anchors will be tried for connections. [0m
+2025-07-26T14:18:42.9971511Z [0;34m node0 2025-07-26T14:18:41.732615Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Starting network threads… [0m
+2025-07-26T14:18:42.9972338Z [0;34m node0 2025-07-26T14:18:41.733099Z (mocktime: 2014-12-05T01:53:01Z) [      init] [net.cpp:4028] [Start] DNS seeding disabled [0m
+2025-07-26T14:18:42.9973103Z [0;34m node0 2025-07-26T14:18:41.733125Z (mocktime: 2014-12-05T01:53:01Z) [       net] [util/thread.cpp:18] [TraceThread] net thread start [0m
+2025-07-26T14:18:42.9973906Z [0;34m node0 2025-07-26T14:18:41.733545Z (mocktime: 2014-12-05T01:53:01Z) [    addcon] [util/thread.cpp:18] [TraceThread] addcon thread start [0m
+2025-07-26T14:18:42.9974880Z [0;34m node0 2025-07-26T14:18:41.734108Z (mocktime: 2014-12-05T01:53:01Z) [   opencon] [util/thread.cpp:18] [TraceThread] opencon thread start [0m
+2025-07-26T14:18:42.9975748Z [0;34m node0 2025-07-26T14:18:41.734133Z (mocktime: 2014-12-05T01:53:01Z) [   opencon] [net.cpp:2939] [ThreadOpenConnections] Fixed seeds are disabled [0m
+2025-07-26T14:18:42.9976589Z [0;34m node0 2025-07-26T14:18:41.734524Z (mocktime: 2014-12-05T01:53:01Z) [     mncon] [util/thread.cpp:18] [TraceThread] mncon thread start [0m
+2025-07-26T14:18:42.9977414Z [0;34m node0 2025-07-26T14:18:41.734913Z (mocktime: 2014-12-05T01:53:01Z) [      init] [noui.cpp:56] [noui_InitMessage] init message: Done loading [0m
+2025-07-26T14:18:42.9978241Z [0;34m node0 2025-07-26T14:18:41.734929Z (mocktime: 2014-12-05T01:53:01Z) [   msghand] [util/thread.cpp:18] [TraceThread] msghand thread start [0m
+2025-07-26T14:18:42.9979404Z [0;34m node0 2025-07-26T14:18:41.806391Z (mocktime: 2014-12-05T01:53:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:42.9980693Z [0;34m node0 2025-07-26T14:18:41.806458Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getblockcount user=__cookie__ [0m
+2025-07-26T14:18:42.9981978Z [0;34m node0 2025-07-26T14:18:41.806488Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getblockcount external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:42.9982973Z [0;36m test  2025-07-26T14:18:41.807000Z TestFramework.node0 (DEBUG): RPC successfully started [0m
+2025-07-26T14:18:42.9983827Z [0;34m node0 2025-07-26T14:18:41.807236Z (mocktime: 2014-12-05T01:53:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:42.9984876Z [0;34m node0 2025-07-26T14:18:41.807294Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getmempoolinfo user=__cookie__ [0m
+2025-07-26T14:18:42.9986150Z [0;34m node0 2025-07-26T14:18:41.807377Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getmempoolinfo external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:42.9987155Z [0;36m test  2025-07-26T14:18:41.808000Z TestFramework (DEBUG): Generate a block with current mocktime [0m
+2025-07-26T14:18:42.9988023Z [0;34m node0 2025-07-26T14:18:41.808003Z (mocktime: 2014-12-05T01:53:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:42.9989185Z [0;34m node0 2025-07-26T14:18:41.808063Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.2] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getblockchaininfo user=__cookie__ [0m
+2025-07-26T14:18:42.9990504Z [0;34m node0 2025-07-26T14:18:41.808227Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.2] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getblockchaininfo external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:42.9991739Z [0;34m node0 2025-07-26T14:18:41.808815Z (mocktime: 2014-12-05T01:53:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:42.9992765Z [0;34m node0 2025-07-26T14:18:41.808864Z (mocktime: 2014-12-05T01:53:01Z) [httpworker.3] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=setmocktime user=__cookie__ [0m
+2025-07-26T14:18:42.9994009Z [0;34m node0 2025-07-26T14:18:41.808923Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.3] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=setmocktime external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:42.9995147Z [0;36m test  2025-07-26T14:18:41.809000Z TestFramework.node0 (DEBUG): TestNode.generate() dispatches `generate` call to `generatetoaddress` [0m
+2025-07-26T14:18:42.9996234Z [0;34m node0 2025-07-26T14:18:41.809419Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:42.9997306Z [0;34m node0 2025-07-26T14:18:41.809464Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=generatetoaddress user=__cookie__ [0m
+2025-07-26T14:18:42.9998416Z [0;34m node0 2025-07-26T14:18:41.809507Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [node/miner.cpp:253] [CreateNewBlock] CreateNewBlock(): total size 1000 txs: 0 fees: 0 sigops 100 [0m
+2025-07-26T14:18:43.0000102Z [0;34m node0 2025-07-26T14:18:41.809523Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:57] [GetBlockTxOuts] [mnpayments] CMNPaymentsProcessor::GetBlockTxOuts -- no masternode registered to receive a payment [0m
+2025-07-26T14:18:43.0002392Z [0;34m node0 2025-07-26T14:18:41.809540Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:364] [FillBlockPayments] [mnpayments] CMNPaymentsProcessor::FillBlockPayments -- nBlockHeight 200 blockReward 46428571429 voutMasternodePaymentsRet "" txNew CMutableTransaction(hash=dd548b39a8, ver=2, type=0, vin.size=1, vout.size=1, nLockTime=0, vExtraPayload.size=0) [0m
+2025-07-26T14:18:43.0004532Z [0;34m                                       CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 02c80000)[0m
+2025-07-26T14:18:43.0005243Z [0;34m                                       CTxOut(nValue=464.28571429, scriptPubKey=76a9148708dff2bf8b31363cb4201d)[0m
+2025-07-26T14:18:43.0006111Z [0;34m node0 2025-07-26T14:18:41.809656Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2256] [ConnectBlock] [bench]     - Sanity checks: 0.03ms [0.00s (0.03ms/blk)] [0m
+2025-07-26T14:18:43.0007408Z [0;34m node0 2025-07-26T14:18:41.809674Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2313] [ConnectBlock] [bench]     - Fork checks: 0.02ms [0.00s (0.02ms/blk)] [0m
+2025-07-26T14:18:43.0008536Z [0;34m node0 2025-07-26T14:18:41.809692Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:536] [ProcessSpecialTxsInBlock] [bench]       - GetTxPayload: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0009924Z [0;34m node0 2025-07-26T14:18:41.809698Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:564] [ProcessSpecialTxsInBlock] [bench]       - Loop: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0011105Z [0;34m node0 2025-07-26T14:18:41.809703Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:575] [ProcessSpecialTxsInBlock] [bench]       - CheckCreditPoolDiffForBlock: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0012289Z [0;34m node0 2025-07-26T14:18:41.809709Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:585] [ProcessSpecialTxsInBlock] [bench]       - m_qblockman: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0013425Z [0;34m node0 2025-07-26T14:18:41.809715Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:605] [ProcessSpecialTxsInBlock] [bench]       - m_dmnman: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0014574Z [0;34m node0 2025-07-26T14:18:41.809719Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:635] [ProcessSpecialTxsInBlock] [bench]       - CheckCbTxMerkleRoots: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0015768Z [0;34m node0 2025-07-26T14:18:41.809724Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:647] [ProcessSpecialTxsInBlock] [bench]       - CheckCbTxBestChainlock: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0017066Z [0;34m node0 2025-07-26T14:18:41.809730Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/mnhftx.cpp:217] [ProcessBlock] [ehf] CMNHFManager::ProcessBlock: no new signals; number of known signals: 0 [0m
+2025-07-26T14:18:43.0018383Z [0;34m node0 2025-07-26T14:18:41.809735Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:657] [ProcessSpecialTxsInBlock] [bench]       - m_mnhfman: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0019769Z [0;34m node0 2025-07-26T14:18:41.809740Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2344] [ConnectBlock] [bench]       - ProcessSpecialTxsInBlock: 0.07ms [0.00s (0.07ms/blk)] [0m
+2025-07-26T14:18:43.0020888Z [0;34m node0 2025-07-26T14:18:41.809747Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2471] [ConnectBlock] [bench]         - Connect index: 0.00ms [0.00s (0.00ms/blk)] [0m
+2025-07-26T14:18:43.0022073Z [0;34m node0 2025-07-26T14:18:41.809752Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2473] [ConnectBlock] [bench]       - Connect 1 transactions: 0.08ms (0.078ms/tx, 0.000ms/txin) [0.00s (0.08ms/blk)] [0m
+2025-07-26T14:18:43.0023492Z [0;34m node0 2025-07-26T14:18:41.809764Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2481] [ConnectBlock] [bench]     - Verify 0 txins: 0.09ms (0.000ms/txin) [0.00s (0.09ms/blk)] [0m
+2025-07-26T14:18:43.0024825Z [0;34m node0 2025-07-26T14:18:41.809770Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2516] [ConnectBlock] [bench]       - IS filter: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0025943Z [0;34m node0 2025-07-26T14:18:41.809775Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2526] [ConnectBlock] [bench]       - GetBlockSubsidy: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0027044Z [0;34m node0 2025-07-26T14:18:41.809781Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2538] [ConnectBlock] [bench]       - IsBlockValueValid: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0029191Z [0;34m node0 2025-07-26T14:18:41.809797Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:287] [IsBlockPayeeValid] [mnpayments] CMNPaymentsProcessor::IsBlockPayeeValid -- Valid masternode payment at height 200: CTransaction(hash=dd548b39a8, ver=2, type=0, vin.size=1, vout.size=1, nLockTime=0, vExtraPayload.size=0) [0m
+2025-07-26T14:18:43.0030676Z [0;34m                                       CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 02c80000)[0m
+2025-07-26T14:18:43.0031593Z [0;34m                                       CTxOut(nValue=464.28571429, scriptPubKey=76a9148708dff2bf8b31363cb4201d)[0m
+2025-07-26T14:18:43.0032846Z [0;34m node0 2025-07-26T14:18:41.809803Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:295] [IsBlockPayeeValid] [mnpayments] CMNPaymentsProcessor::IsBlockPayeeValid -- WARNING! Not enough data, skipping superblock payee checks [0m
+2025-07-26T14:18:43.0034226Z [0;34m node0 2025-07-26T14:18:41.809808Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2547] [ConnectBlock] [bench]       - IsBlockPayeeValid: 0.03ms [0.00s (0.03ms/blk)] [0m
+2025-07-26T14:18:43.0035321Z [0;34m node0 2025-07-26T14:18:41.809813Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2550] [ConnectBlock] [bench]     - Dash specific: 0.05ms [0.00s (0.05ms/blk)] [0m
+2025-07-26T14:18:43.0036589Z [0;34m node0 2025-07-26T14:18:41.809824Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [node/miner.cpp:342] [CreateNewBlock] [bench] CreateNewBlock() packages: 0.01ms (0 packages, 0 updated descendants), validity: 0.32ms (total 0.32ms) [0m
+2025-07-26T14:18:43.0038209Z [0;34m node0 2025-07-26T14:18:41.809907Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:263] [AcceptedBlockHeader] [validation] AcceptedBlockHeader: accepted block header hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a [0m
+2025-07-26T14:18:43.0039920Z [0;34m node0 2025-07-26T14:18:41.809919Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/sync.cpp:305] [AcceptedBlockHeader] [mnsync] CMasternodeSync::AcceptedBlockHeader -- pindexNew->nHeight: 200 [0m
+2025-07-26T14:18:43.0041480Z [0;34m node0 2025-07-26T14:18:41.809924Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/sync.cpp:48] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::AcceptedBlockHeader [0m
+2025-07-26T14:18:43.0043256Z [0;34m node0 2025-07-26T14:18:41.810020Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:258] [NewPoWValidBlock] [validation] NewPoWValidBlock: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a [0m
+2025-07-26T14:18:43.0046153Z [0;34m node0 2025-07-26T14:18:41.810160Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:268] [NotifyHeaderTip] [validation] NotifyHeaderTip: accepted block header hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a initial=0 [0m
+2025-07-26T14:18:43.0049309Z [0;34m node0 2025-07-26T14:18:41.810166Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/sync.cpp:318] [NotifyHeaderTip] [mnsync] CMasternodeSync::NotifyHeaderTip -- pindexNew->nHeight: 200 fInitialDownload=0 [0m
+2025-07-26T14:18:43.0052118Z [0;34m node0 2025-07-26T14:18:41.810170Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/sync.cpp:48] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::NotifyHeaderTip [0m
+2025-07-26T14:18:43.0053362Z [0;34m node0 2025-07-26T14:18:41.810195Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3065] [ConnectTip] [bench]   - Using cached block [0m
+2025-07-26T14:18:43.0054390Z [0;34m node0 2025-07-26T14:18:41.810203Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3072] [ConnectTip] [bench]   - Load block from disk: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0055459Z [0;34m node0 2025-07-26T14:18:41.810238Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2256] [ConnectBlock] [bench]     - Sanity checks: 0.02ms [0.00s (0.03ms/blk)] [0m
+2025-07-26T14:18:43.0056504Z [0;34m node0 2025-07-26T14:18:41.810247Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2313] [ConnectBlock] [bench]     - Fork checks: 0.01ms [0.00s (0.02ms/blk)] [0m
+2025-07-26T14:18:43.0057622Z [0;34m node0 2025-07-26T14:18:41.810253Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:536] [ProcessSpecialTxsInBlock] [bench]       - GetTxPayload: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0059451Z [0;34m node0 2025-07-26T14:18:41.810258Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:564] [ProcessSpecialTxsInBlock] [bench]       - Loop: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0061608Z [0;34m node0 2025-07-26T14:18:41.810263Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:575] [ProcessSpecialTxsInBlock] [bench]       - CheckCreditPoolDiffForBlock: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0062981Z [0;34m node0 2025-07-26T14:18:41.810268Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:585] [ProcessSpecialTxsInBlock] [bench]       - m_qblockman: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0064366Z [0;34m node0 2025-07-26T14:18:41.810273Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:605] [ProcessSpecialTxsInBlock] [bench]       - m_dmnman: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0065757Z [0;34m node0 2025-07-26T14:18:41.810278Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:635] [ProcessSpecialTxsInBlock] [bench]       - CheckCbTxMerkleRoots: 0.00ms [0.00s] [0m
+2025-07-26T14:18:43.0066965Z [0;34m node0 2025-07-26T14:18:41.810283Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:647] [ProcessSpecialTxsInBlock] [bench]       - CheckCbTxBestChainlock: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0068581Z [0;34m node0 2025-07-26T14:18:41.810289Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/mnhftx.cpp:217] [ProcessBlock] [ehf] CMNHFManager::ProcessBlock: no new signals; number of known signals: 0 [0m
+2025-07-26T14:18:43.0070037Z [0;34m node0 2025-07-26T14:18:41.810293Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [evo/specialtxman.cpp:657] [ProcessSpecialTxsInBlock] [bench]       - m_mnhfman: 0.01ms [0.00s] [0m
+2025-07-26T14:18:43.0071869Z [0;34m node0 2025-07-26T14:18:41.810303Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2344] [ConnectBlock] [bench]       - ProcessSpecialTxsInBlock: 0.06ms [0.00s (0.06ms/blk)] [0m
+2025-07-26T14:18:43.0073857Z [0;34m node0 2025-07-26T14:18:41.810309Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2471] [ConnectBlock] [bench]         - Connect index: 0.00ms [0.00s (0.00ms/blk)] [0m
+2025-07-26T14:18:43.0075889Z [0;34m node0 2025-07-26T14:18:41.810315Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2473] [ConnectBlock] [bench]       - Connect 1 transactions: 0.07ms (0.067ms/tx, 0.000ms/txin) [0.00s (0.07ms/blk)] [0m
+2025-07-26T14:18:43.0077135Z [0;34m node0 2025-07-26T14:18:41.810323Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2481] [ConnectBlock] [bench]     - Verify 0 txins: 0.07ms (0.000ms/txin) [0.00s (0.08ms/blk)] [0m
+2025-07-26T14:18:43.0078369Z [0;34m node0 2025-07-26T14:18:41.810328Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2516] [ConnectBlock] [bench]       - IS filter: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0079623Z [0;34m node0 2025-07-26T14:18:41.810333Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2526] [ConnectBlock] [bench]       - GetBlockSubsidy: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0080693Z [0;34m node0 2025-07-26T14:18:41.810338Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2538] [ConnectBlock] [bench]       - IsBlockValueValid: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0082458Z [0;34m node0 2025-07-26T14:18:41.810348Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:287] [IsBlockPayeeValid] [mnpayments] CMNPaymentsProcessor::IsBlockPayeeValid -- Valid masternode payment at height 200: CTransaction(hash=dd548b39a8, ver=2, type=0, vin.size=1, vout.size=1, nLockTime=0, vExtraPayload.size=0) [0m
+2025-07-26T14:18:43.0083912Z [0;34m                                       CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 02c80000)[0m
+2025-07-26T14:18:43.0084608Z [0;34m                                       CTxOut(nValue=464.28571429, scriptPubKey=76a9148708dff2bf8b31363cb4201d)[0m
+2025-07-26T14:18:43.0085810Z [0;34m node0 2025-07-26T14:18:41.810353Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [masternode/payments.cpp:295] [IsBlockPayeeValid] [mnpayments] CMNPaymentsProcessor::IsBlockPayeeValid -- WARNING! Not enough data, skipping superblock payee checks [0m
+2025-07-26T14:18:43.0087149Z [0;34m node0 2025-07-26T14:18:41.810358Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2547] [ConnectBlock] [bench]       - IsBlockPayeeValid: 0.02ms [0.00s (0.02ms/blk)] [0m
+2025-07-26T14:18:43.0088233Z [0;34m node0 2025-07-26T14:18:41.810363Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2550] [ConnectBlock] [bench]     - Dash specific: 0.04ms [0.00s (0.05ms/blk)] [0m
+2025-07-26T14:18:43.0089536Z [0;34m node0 2025-07-26T14:18:41.810408Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2564] [ConnectBlock] [bench]     - Write undo data: 0.04ms [0.00s (0.02ms/blk)] [0m
+2025-07-26T14:18:43.0090619Z [0;34m node0 2025-07-26T14:18:41.810413Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2590] [ConnectBlock] [bench]       - Index writing: 0.01ms [0.00s (0.00ms/blk)] [0m
+2025-07-26T14:18:43.0091970Z [0;34m node0 2025-07-26T14:18:41.810438Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:252] [BlockChecked] [validation] BlockChecked: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a state=Valid [0m
+2025-07-26T14:18:43.0093273Z [0;34m node0 2025-07-26T14:18:41.810460Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3086] [ConnectTip] [bench]   - Connect total: 0.26ms [0.00s (0.13ms/blk)] [0m
+2025-07-26T14:18:43.0094425Z [0;34m node0 2025-07-26T14:18:41.810470Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3092] [ConnectTip] [bench]   - Flush: 0.01ms [0.00s (0.01ms/blk)] [0m
+2025-07-26T14:18:43.0095460Z [0;34m node0 2025-07-26T14:18:41.810477Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3098] [ConnectTip] [bench]   - Writing chainstate: 0.01ms [0.00s (0.00ms/blk)] [0m
+2025-07-26T14:18:43.0096813Z [0;34m node0 2025-07-26T14:18:41.810537Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [policy/fees.cpp:682] [processBlock] [estimatefee] Blockpolicy estimates updated by 0 of 0 block txs, since last block 0 of 0 tracked, mempool map size 0, max target 0 from current [0m
+2025-07-26T14:18:43.0098754Z [0;34m node0 2025-07-26T14:18:41.810558Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:2847] [UpdateTipLog] UpdateTip: new best=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a height=200 version=0x30000000 log2_work=8.651052 tx=201 date='2014-12-05T10:33:01Z' progress=1.000000 cache=0.3MiB(1txo) evodb_cache=0.0MiB [0m
+2025-07-26T14:18:43.0100916Z [0;34m node0 2025-07-26T14:18:41.810564Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3110] [ConnectTip] [bench]   - Connect postprocess: 0.09ms [0.00s (0.04ms/blk)] [0m
+2025-07-26T14:18:43.0101970Z [0;34m node0 2025-07-26T14:18:41.810573Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:3111] [ConnectTip] [bench] - Connect block: 0.37ms [0.00s (0.18ms/blk)] [0m
+2025-07-26T14:18:43.0103005Z [0;34m node0 2025-07-26T14:18:41.810580Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [txmempool.cpp:1131] [check] [mempool] Checking mempool with 0 transactions and 0 inputs [0m
+2025-07-26T14:18:43.0104424Z [0;34m node0 2025-07-26T14:18:41.810605Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:229] [BlockConnected] [validation] Enqueuing BlockConnected: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a block height=200 [0m
+2025-07-26T14:18:43.0106526Z [0;34m node0 2025-07-26T14:18:41.810620Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validationinterface.cpp:198] [UpdatedBlockTip] [validation] Enqueuing UpdatedBlockTip: new block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a fork block hash=61bc70ec02309fa5b75914ffd433747fe330a611185cffdd677cc0eca4d09d6b (in IBD=false) [0m
+2025-07-26T14:18:43.0108140Z [0;34m node0 2025-07-26T14:18:41.810684Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [validation.cpp:4345] [ProcessNewBlock] ProcessNewBlock : ACCEPTED [0m
+2025-07-26T14:18:43.0109883Z [0;34m node0 2025-07-26T14:18:41.810710Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [validationinterface.cpp:229] [operator()] [validation] BlockConnected: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a block height=200 [0m
+2025-07-26T14:18:43.0111471Z [0;34m node0 2025-07-26T14:18:41.810729Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=generatetoaddress external=false status=200 elapsed_time_ms=1 [0m
+2025-07-26T14:18:43.0113412Z [0;34m node0 2025-07-26T14:18:41.810762Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [validationinterface.cpp:198] [operator()] [validation] UpdatedBlockTip: new block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a fork block hash=61bc70ec02309fa5b75914ffd433747fe330a611185cffdd677cc0eca4d09d6b (in IBD=false) [0m
+2025-07-26T14:18:43.0115272Z [0;34m node0 2025-07-26T14:18:41.810773Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [masternode/sync.cpp:330] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 200 fInitialDownload=0 [0m
+2025-07-26T14:18:43.0116681Z [0;34m node0 2025-07-26T14:18:41.810781Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [masternode/sync.cpp:48] [BumpAssetLastTime] [mnsync] CMasternodeSync::BumpAssetLastTime -- CMasternodeSync::UpdatedBlockTip [0m
+2025-07-26T14:18:43.0118411Z [0;34m node0 2025-07-26T14:18:41.810789Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [masternode/sync.cpp:363] [UpdatedBlockTip] [mnsync] CMasternodeSync::UpdatedBlockTip -- pindexNew->nHeight: 200 pindexTip->nHeight: 200 fInitialDownload=0 fReachedBestHeader=1 [0m
+2025-07-26T14:18:43.0120388Z [0;34m node0 2025-07-26T14:18:41.810805Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [governance/governance.cpp:1533] [UpdatedBlockTip] [gobject] CGovernanceManager::UpdatedBlockTip -- nCachedBlockHeight: 200 [0m
+2025-07-26T14:18:43.0121589Z [0;34m node0 2025-07-26T14:18:41.811245Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0122625Z [0;34m node0 2025-07-26T14:18:41.811292Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getblock user=__cookie__ [0m
+2025-07-26T14:18:43.0123874Z [0;34m node0 2025-07-26T14:18:41.811488Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getblock external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0125238Z [0;34m node0 2025-07-26T14:18:41.811940Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0126281Z [0;34m node0 2025-07-26T14:18:41.811987Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.2] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=submitblock user=__cookie__ [0m
+2025-07-26T14:18:43.0127528Z [0;34m node0 2025-07-26T14:18:41.812043Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.2] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=submitblock external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0128747Z [0;34m node0 2025-07-26T14:18:41.812465Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0130062Z [0;34m node0 2025-07-26T14:18:41.812513Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.3] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getblockchaininfo user=__cookie__ [0m
+2025-07-26T14:18:43.0131373Z [0;34m node0 2025-07-26T14:18:41.812673Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.3] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getblockchaininfo external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0132614Z [0;34m node0 2025-07-26T14:18:41.813204Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0133667Z [0;34m node0 2025-07-26T14:18:41.813248Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getbestblockhash user=__cookie__ [0m
+2025-07-26T14:18:43.0134958Z [0;34m node0 2025-07-26T14:18:41.813272Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getbestblockhash external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0136198Z [0;34m node0 2025-07-26T14:18:41.813691Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0137242Z [0;34m node0 2025-07-26T14:18:41.813731Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getrawmempool user=__cookie__ [0m
+2025-07-26T14:18:43.0138518Z [0;34m node0 2025-07-26T14:18:41.813787Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getrawmempool external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0139983Z [0;34m node0 2025-07-26T14:18:41.814228Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0141121Z [0;34m node0 2025-07-26T14:18:41.814271Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.2] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=syncwithvalidationinterfacequeue user=__cookie__ [0m
+2025-07-26T14:18:43.0142560Z [0;34m node0 2025-07-26T14:18:41.814375Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.2] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=syncwithvalidationinterfacequeue external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0143860Z [0;34m node0 2025-07-26T14:18:41.814809Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0144915Z [0;34m node0 2025-07-26T14:18:41.814851Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.3] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=validateaddress user=__cookie__ [0m
+2025-07-26T14:18:43.0146548Z [0;34m node0 2025-07-26T14:18:41.814910Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.3] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=validateaddress external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0147816Z [0;36m test  2025-07-26T14:18:41.815000Z TestFramework (INFO): Check that a transaction in the last block is uploaded (beneficial for compact block relay) [0m
+2025-07-26T14:18:43.0148623Z [0;36m test  2025-07-26T14:18:41.815000Z TestFramework.p2p (DEBUG): Connecting to Dash Node: 127.0.0.1:13300 [0m
+2025-07-26T14:18:43.0149602Z [0;34m node0 2025-07-26T14:18:41.815820Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:4677] [CNode] [net] Added connection peer=0 [0m
+2025-07-26T14:18:43.0150331Z [0;36m test  2025-07-26T14:18:41.816000Z TestFramework.p2p (DEBUG): Connected & Listening: 127.0.0.1:13300 [0m
+2025-07-26T14:18:43.0151916Z [0;36m test  2025-07-26T14:18:41.816000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_version(nVersion=70237 nServices=2049 nTime=Sat Jul 26 15:18:41 2025 addrTo=CAddress(nServices=1 net=IPv4 addr=127.0.0.1 port=13300) addrFrom=CAddress(nServices=1 net=IPv4 addr=0.0.0.0 port=0) nNonce=0x638F3107A9DCF0DB strSubVer=/python-p2p-tester:0.0.3/ nStartingHeight=-1 relay=1) [0m
+2025-07-26T14:18:43.0154234Z [0;36m test  2025-07-26T14:18:41.816000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_version(nVersion=70237 nServices=3077 nTime=Fri Dec  5 10:33:01 2014 addrTo=CAddress(nServices=0 net=IPv4 addr=0.0.0.0 port=0) addrFrom=CAddress(nServices=3077 net=IPv4 addr=0.0.0.0 port=0) nNonce=0xDDE3BB1D2C6BBA83 strSubVer=/Dash Core:23.0.0(testnode0)/ nStartingHeight=200 relay=1) [0m
+2025-07-26T14:18:43.0155654Z [0;36m test  2025-07-26T14:18:41.816000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_verack() [0m
+2025-07-26T14:18:43.0156577Z [0;34m node0 2025-07-26T14:18:41.816308Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2017] [CreateNodeFromAcceptedSocket] [net|netconn] connection accepted, sock=40, peer=0 [0m
+2025-07-26T14:18:43.0157696Z [0;34m node0 2025-07-26T14:18:41.816596Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2551] [SocketHandlerConnected] [net] SocketHandlerConnected -- remove mapReceivableNodes, peer=0 [0m
+2025-07-26T14:18:43.0158777Z [0;34m node0 2025-07-26T14:18:41.816630Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: version (111 bytes) peer=0 [0m
+2025-07-26T14:18:43.0159950Z [0;34m node0 2025-07-26T14:18:41.816648Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending version (148 bytes) peer=0 [0m
+2025-07-26T14:18:43.0161018Z [0;34m node0 2025-07-26T14:18:41.816664Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:1468] [PushNodeVersion] [net] send version message: version 70237, blocks=200, txrelay=1, peer=0 [0m
+2025-07-26T14:18:43.0162211Z [0;34m node0 2025-07-26T14:18:41.816677Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending sendaddrv2 (0 bytes) peer=0 [0m
+2025-07-26T14:18:43.0163157Z [0;34m node0 2025-07-26T14:18:41.816744Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending verack (0 bytes) peer=0 [0m
+2025-07-26T14:18:43.0164391Z [0;34m node0 2025-07-26T14:18:41.816799Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3754] [ProcessMessage] [net] receive version message: /python-p2p-tester:0.0.3/: version 70237, blocks=-1, us=127.0.0.1:13300, txrelay=1, peer=0 [0m
+2025-07-26T14:18:43.0165466Z [0;36m test  2025-07-26T14:18:41.817000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_getaddr() [0m
+2025-07-26T14:18:43.0166200Z [0;36m test  2025-07-26T14:18:41.817000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_sendaddrv2() [0m
+2025-07-26T14:18:43.0167070Z [0;36m test  2025-07-26T14:18:41.817000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_verack() [0m
+2025-07-26T14:18:43.0168039Z [0;34m node0 2025-07-26T14:18:41.817159Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2551] [SocketHandlerConnected] [net] SocketHandlerConnected -- remove mapReceivableNodes, peer=0 [0m
+2025-07-26T14:18:43.0169221Z [0;34m node0 2025-07-26T14:18:41.817185Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: verack (0 bytes) peer=0 [0m
+2025-07-26T14:18:43.0170310Z [0;34m node0 2025-07-26T14:18:41.817195Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3793] [ProcessMessage] New inbound v1 peer connected: version: 70237, blocks=-1, peer=0 [0m
+2025-07-26T14:18:43.0171328Z [0;34m node0 2025-07-26T14:18:41.817207Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending sendheaders2 (0 bytes) peer=0 [0m
+2025-07-26T14:18:43.0172249Z [0;34m node0 2025-07-26T14:18:41.817222Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending sendcmpct (9 bytes) peer=0 [0m
+2025-07-26T14:18:43.0173283Z [0;34m node0 2025-07-26T14:18:41.817234Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2551] [SocketHandlerConnected] [net] SocketHandlerConnected -- remove mapReceivableNodes, peer=0 [0m
+2025-07-26T14:18:43.0174283Z [0;34m node0 2025-07-26T14:18:41.817258Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending senddsq (1 bytes) peer=0 [0m
+2025-07-26T14:18:43.0175155Z [0;34m node0 2025-07-26T14:18:41.817272Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending ping (8 bytes) peer=0 [0m
+2025-07-26T14:18:43.0176048Z [0;34m node0 2025-07-26T14:18:41.817283Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending getheaders2 (645 bytes) peer=0 [0m
+2025-07-26T14:18:43.0177063Z [0;34m node0 2025-07-26T14:18:41.817292Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:5861] [SendMessages] [net] initial getheaders2 (199) to peer=0 (startheight:-1) [0m
+2025-07-26T14:18:43.0178122Z [0;34m node0 2025-07-26T14:18:41.817306Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: getaddr (0 bytes) peer=0 [0m
+2025-07-26T14:18:43.0179188Z [0;34m node0 2025-07-26T14:18:41.817332Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [addrman.cpp:845] [GetAddr_] [addrman] GetAddr returned 0 random addresses [0m
+2025-07-26T14:18:43.0180041Z [0;36m test  2025-07-26T14:18:41.865000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_ping(nonce=00000001) [0m
+2025-07-26T14:18:43.0180812Z [0;36m test  2025-07-26T14:18:41.865000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_sendheaders2() [0m
+2025-07-26T14:18:43.0181793Z [0;34m node0 2025-07-26T14:18:41.865921Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2551] [SocketHandlerConnected] [net] SocketHandlerConnected -- remove mapReceivableNodes, peer=0 [0m
+2025-07-26T14:18:43.0182972Z [0;34m node0 2025-07-26T14:18:41.865957Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: ping (8 bytes) peer=0 [0m
+2025-07-26T14:18:43.0183909Z [0;34m node0 2025-07-26T14:18:41.865974Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net.cpp:4721] [PushMessage] [net] sending pong (8 bytes) peer=0 [0m
+2025-07-26T14:18:43.0184800Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_sendcmpct(announce=False, version=1) [0m
+2025-07-26T14:18:43.0185682Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_ping(nonce=b9993e3638feded3) [0m
+2025-07-26T14:18:43.0186513Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_pong(nonce=b9993e3638feded3) [0m
+2025-07-26T14:18:43.0189473Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_getheaders2(locator=CBlockLocator(vHave=[44207292919124057098260759373701932987536965570448139883355879525102478466411, 27264239184091559102976801460227360015205333017158589607306907095199576215282, 45788385234782526101081427259792500163206728564433590179504945202098252970042, 51281173301926077496792276841589202682668519913191808871202485214095029271287, 51203794236969329792102220364057375607578753780256238585789757320905631427886, 144300846497191080146191939999988344043426370732041849979715... (msg truncated) [0m
+2025-07-26T14:18:43.0191783Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Send message to 127.0.0.1:13300: msg_headers2(headers=[]) [0m
+2025-07-26T14:18:43.0192574Z [0;36m test  2025-07-26T14:18:41.866000Z TestFramework.p2p (DEBUG): Received message from 127.0.0.1:13300: msg_pong(nonce=00000001) [0m
+2025-07-26T14:18:43.0193584Z [0;34m node0 2025-07-26T14:18:41.866610Z (mocktime: 2014-12-05T10:33:01Z) [       net] [net.cpp:2551] [SocketHandlerConnected] [net] SocketHandlerConnected -- remove mapReceivableNodes, peer=0 [0m
+2025-07-26T14:18:43.0194638Z [0;34m node0 2025-07-26T14:18:41.866632Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: pong (8 bytes) peer=0 [0m
+2025-07-26T14:18:43.0195635Z [0;34m node0 2025-07-26T14:18:41.866645Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [net_processing.cpp:3528] [ProcessMessage] [net] received: headers2 (1 bytes) peer=0 [0m
+2025-07-26T14:18:43.0196414Z [0;36m test  2025-07-26T14:18:41.916000Z TestFramework (DEBUG): Generate transaction and block [0m
+2025-07-26T14:18:43.0197264Z [0;34m node0 2025-07-26T14:18:41.916246Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0198307Z [0;34m node0 2025-07-26T14:18:41.916309Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=getpeerinfo user=__cookie__ [0m
+2025-07-26T14:18:43.0199920Z [0;34m node0 2025-07-26T14:18:41.916536Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.0] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=getpeerinfo external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0200957Z [0;36m test  2025-07-26T14:18:41.917000Z TestFramework (ERROR): Unexpected exception caught during testing [0m
+2025-07-26T14:18:43.0201479Z [0;36m                                   Traceback (most recent call last):[0m
+2025-07-26T14:18:43.0202141Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/test_framework.py", line 162, in main[0m
+2025-07-26T14:18:43.0202720Z [0;36m                                       self.run_test()[0m
+2025-07-26T14:18:43.0203311Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/p2p_leak_tx.py", line 29, in run_test[0m
+2025-07-26T14:18:43.0204036Z [0;36m                                       self.test_tx_in_block()[0m
+2025-07-26T14:18:43.0204660Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/p2p_leak_tx.py", line 39, in test_tx_in_block[0m
+2025-07-26T14:18:43.0205344Z [0;36m                                       txid = self.miniwallet.send_self_transfer(from_node=self.gen_node)["txid"][0m
+2025-07-26T14:18:43.0206104Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 214, in send_self_transfer[0m
+2025-07-26T14:18:43.0206740Z [0;36m                                       tx = self.create_self_transfer(**kwargs)[0m
+2025-07-26T14:18:43.0207420Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 292, in create_self_transfer[0m
+2025-07-26T14:18:43.0208218Z [0;36m                                       utxo_to_spend = utxo_to_spend or self.get_utxo()[0m
+2025-07-26T14:18:43.0209004Z [0;36m                                     File "/__w/dash/dash/build-ci/dashcore-linux64/test/functional/test_framework/wallet.py", line 195, in get_utxo[0m
+2025-07-26T14:18:43.0209627Z [0;36m                                       index = self._utxos.index(next(utxo_filter))[0m
+2025-07-26T14:18:43.0209994Z [0;36m                                   StopIteration[0m
+2025-07-26T14:18:43.0210455Z [0;36m test  2025-07-26T14:18:41.917000Z TestFramework (DEBUG): Closing down network thread [0m
+2025-07-26T14:18:43.0210985Z [0;36m test  2025-07-26T14:18:41.968000Z TestFramework (INFO): Stopping nodes [0m
+2025-07-26T14:18:43.0211499Z [0;36m test  2025-07-26T14:18:41.968000Z TestFramework.node0 (DEBUG): Stopping node [0m
+2025-07-26T14:18:43.0212318Z [0;34m node0 2025-07-26T14:18:41.968706Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:248] [http_request_cb] [http] Received a POST request for / from 127.0.0.1:41448 [0m
+2025-07-26T14:18:43.0213344Z [0;34m node0 2025-07-26T14:18:41.968756Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [rpc/request.cpp:180] [parse] [rpc] ThreadRPCServer method=stop user=__cookie__ [0m
+2025-07-26T14:18:43.0214316Z [0;34m node0 2025-07-26T14:18:41.968803Z (mocktime: 2014-12-05T10:33:01Z) [      init] [httpserver.cpp:472] [InterruptHTTPServer] [http] Interrupting HTTP server [0m
+2025-07-26T14:18:43.0215499Z [0;34m node0 2025-07-26T14:18:41.968835Z (mocktime: 2014-12-05T10:33:01Z) [httpworker.1] [httprpc.cpp:93] [~RpcHttpRequest] [bench] HTTP RPC request handled: user=__cookie__ command=stop external=false status=200 elapsed_time_ms=0 [0m
+2025-07-26T14:18:43.0216641Z [0;34m node0 2025-07-26T14:18:41.968868Z (mocktime: 2014-12-05T10:33:01Z) [      init] [httprpc.cpp:350] [InterruptHTTPRPC] [rpc] Interrupting HTTP RPC server [0m
+2025-07-26T14:18:43.0217516Z [0;34m node0 2025-07-26T14:18:41.968877Z (mocktime: 2014-12-05T10:33:01Z) [      init] [rpc/server.cpp:320] [operator()] [rpc] Interrupting RPC [0m
+2025-07-26T14:18:43.0218323Z [0;34m node0 2025-07-26T14:18:41.968978Z (mocktime: 2014-12-05T10:33:01Z) [     isman] [util/thread.cpp:20] [TraceThread] isman thread exit [0m
+2025-07-26T14:18:43.0219255Z [0;34m node0 2025-07-26T14:18:41.969088Z (mocktime: 2014-12-05T10:33:01Z) [ sigshares] [util/thread.cpp:20] [TraceThread] sigshares thread exit [0m
+2025-07-26T14:18:43.0220099Z [0;34m node0 2025-07-26T14:18:41.969103Z (mocktime: 2014-12-05T10:33:01Z) [ sigshares] [util/thread.cpp:20] [TraceThread] sigshares thread exit [0m
+2025-07-26T14:18:43.0220927Z [0;34m node0 2025-07-26T14:18:41.969147Z (mocktime: 2014-12-05T10:33:01Z) [    addcon] [util/thread.cpp:20] [TraceThread] addcon thread exit [0m
+2025-07-26T14:18:43.0221735Z [0;34m node0 2025-07-26T14:18:41.969194Z (mocktime: 2014-12-05T10:33:01Z) [     mncon] [util/thread.cpp:20] [TraceThread] mncon thread exit [0m
+2025-07-26T14:18:43.0222674Z [0;34m node0 2025-07-26T14:18:41.969218Z (mocktime: 2014-12-05T10:33:01Z) [   opencon] [util/thread.cpp:20] [TraceThread] opencon thread exit [0m
+2025-07-26T14:18:43.0223560Z [0;34m node0 2025-07-26T14:18:41.969280Z (mocktime: 2014-12-05T10:33:01Z) [      init] [init.cpp:255] [PrepareShutdown] PrepareShutdown: In progress... [0m
+2025-07-26T14:18:43.0224453Z [0;34m node0 2025-07-26T14:18:41.969293Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httprpc.cpp:355] [StopHTTPRPC] [rpc] Stopping HTTP RPC server [0m
+2025-07-26T14:18:43.0225465Z [0;34m node0 2025-07-26T14:18:41.969302Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:690] [UnregisterHTTPHandler] [http] Unregistering HTTP handler for / (exactmatch 1) [0m
+2025-07-26T14:18:43.0226612Z [0;34m node0 2025-07-26T14:18:41.969312Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:690] [UnregisterHTTPHandler] [http] Unregistering HTTP handler for /wallet/ (exactmatch 0) [0m
+2025-07-26T14:18:43.0227717Z [0;34m node0 2025-07-26T14:18:41.969321Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [rpc/server.cpp:332] [operator()] [rpc] Stopping RPC [0m
+2025-07-26T14:18:43.0228522Z [0;34m node0 2025-07-26T14:18:41.969400Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [init.cpp:480] [OnRPCStopped] [rpc] RPC stopped. [0m
+2025-07-26T14:18:43.0229606Z [0;34m node0 2025-07-26T14:18:41.969411Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:484] [StopHTTPServer] [http] Stopping HTTP server [0m
+2025-07-26T14:18:43.0230561Z [0;34m node0 2025-07-26T14:18:41.969418Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:486] [StopHTTPServer] [http] Waiting for HTTP worker threads to exit [0m
+2025-07-26T14:18:43.0231564Z [0;34m node0 2025-07-26T14:18:41.969648Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:499] [StopHTTPServer] [http] Waiting for HTTP event thread to exit [0m
+2025-07-26T14:18:43.0232487Z [0;34m node0 2025-07-26T14:18:41.969669Z (mocktime: 2014-12-05T10:33:01Z) [      http] [httpserver.cpp:320] [ThreadHTTP] [http] Exited http event loop [0m
+2025-07-26T14:18:43.0233368Z [0;34m node0 2025-07-26T14:18:41.969816Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [httpserver.cpp:511] [StopHTTPServer] [http] Stopped HTTP server [0m
+2025-07-26T14:18:43.0234233Z [0;34m node0 2025-07-26T14:18:41.969993Z (mocktime: 2014-12-05T10:33:01Z) [ cl-schdlr] [util/thread.cpp:20] [TraceThread] cl-schdlr thread exit [0m
+2025-07-26T14:18:43.0235069Z [0;34m node0 2025-07-26T14:18:42.066832Z (mocktime: 2014-12-05T10:33:01Z) [   msghand] [util/thread.cpp:20] [TraceThread] msghand thread exit [0m
+2025-07-26T14:18:43.0235872Z [0;34m node0 2025-07-26T14:18:42.367162Z (mocktime: 2014-12-05T10:33:01Z) [       net] [util/thread.cpp:20] [TraceThread] net thread exit [0m
+2025-07-26T14:18:43.0236734Z [0;34m node0 2025-07-26T14:18:42.368863Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [net.cpp:2783] [DumpAddresses] [net] Flushed 0 addresses to peers.dat  1ms [0m
+2025-07-26T14:18:43.0237816Z [0;34m node0 2025-07-26T14:18:42.368885Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] DumpAnchors: Flush 0 outbound block-relay-only peer addresses to anchors.dat started [0m
+2025-07-26T14:18:43.0239230Z [0;34m node0 2025-07-26T14:18:42.370280Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] DumpAnchors: Flush 0 outbound block-relay-only peer addresses to anchors.dat completed (0.00s) [0m
+2025-07-26T14:18:43.0240295Z [0;34m node0 2025-07-26T14:18:42.370298Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [net.cpp:587] [CloseSocketDisconnect] [net] disconnecting peer=0 [0m
+2025-07-26T14:18:43.0241223Z [0;34m node0 2025-07-26T14:18:42.370400Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [net_processing.cpp:1698] [FinalizeNode] [net] Cleared nodestate for peer=0 [0m
+2025-07-26T14:18:43.0242121Z [0;34m node0 2025-07-26T14:18:42.370455Z (mocktime: 2014-12-05T10:33:01Z) [ scheduler] [util/thread.cpp:20] [TraceThread] scheduler thread exit [0m
+2025-07-26T14:18:43.0243183Z [0;34m node0 2025-07-26T14:18:42.371301Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [validation.cpp:5490] [DumpMempool] Writing 0 unbroadcast transactions to disk. [0m
+2025-07-26T14:18:43.0244190Z [0;34m node0 2025-07-26T14:18:42.371987Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [validation.cpp:5500] [DumpMempool] Dumped mempool: 3e-06s to copy, 0.000731s to dump [0m
+2025-07-26T14:18:43.0245289Z [0;34m node0 2025-07-26T14:18:42.371998Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [policy/fees.cpp:1028] [FlushUnconfirmed] [estimatefee] Recorded 0 unconfirmed txs from mempool in 1 micros [0m
+2025-07-26T14:18:43.0246402Z [0;34m node0 2025-07-26T14:18:42.372756Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk started [0m
+2025-07-26T14:18:43.0247501Z [0;34m node0 2025-07-26T14:18:42.381547Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk completed (0.00ms) [0m
+2025-07-26T14:18:43.0248676Z [0;34m node0 2025-07-26T14:18:42.381565Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk started [0m
+2025-07-26T14:18:43.0249836Z [0;34m node0 2025-07-26T14:18:42.383294Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk completed (0.00ms) [0m
+2025-07-26T14:18:43.0250930Z [0;34m node0 2025-07-26T14:18:42.383306Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (1 coins, 262kB) started [0m
+2025-07-26T14:18:43.0251922Z [0;34m node0 2025-07-26T14:18:42.383335Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [txdb.cpp:172] [BatchWrite] [coindb] Writing final batch of 0.00 MiB [0m
+2025-07-26T14:18:43.0252958Z [0;34m node0 2025-07-26T14:18:42.383354Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [txdb.cpp:174] [BatchWrite] [coindb] Committed 1 changed transaction outputs (out of 1) to coin database... [0m
+2025-07-26T14:18:43.0254136Z [0;34m node0 2025-07-26T14:18:42.383366Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (1 coins, 262kB) completed (0.00ms) [0m
+2025-07-26T14:18:43.0255187Z [0;34m node0 2025-07-26T14:18:42.383371Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk started [0m
+2025-07-26T14:18:43.0256180Z [0;34m node0 2025-07-26T14:18:42.383384Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk completed (0.00s) [0m
+2025-07-26T14:18:43.0257550Z [0;34m node0 2025-07-26T14:18:42.383393Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [validationinterface.cpp:247] [ChainStateFlushed] [validation] Enqueuing ChainStateFlushed: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a [0m
+2025-07-26T14:18:43.0259252Z [0;34m node0 2025-07-26T14:18:42.383401Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [validationinterface.cpp:247] [operator()] [validation] ChainStateFlushed: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a [0m
+2025-07-26T14:18:43.0260417Z [0;34m node0 2025-07-26T14:18:42.383418Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:192] [Store] Verifying sporks.dat format... [0m
+2025-07-26T14:18:43.0261319Z [0;34m node0 2025-07-26T14:18:42.383435Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:162] [Read] Missing file sporks.dat, will try to recreate [0m
+2025-07-26T14:18:43.0262217Z [0;34m node0 2025-07-26T14:18:42.383443Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:198] [Store] Writing info to sporks.dat... [0m
+2025-07-26T14:18:43.0263117Z [0;34m node0 2025-07-26T14:18:42.383506Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to sporks.dat  0ms [0m
+2025-07-26T14:18:43.0264077Z [0;34m node0 2025-07-26T14:18:42.383512Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Sporks: 0 [0m
+2025-07-26T14:18:43.0264913Z [0;34m node0 2025-07-26T14:18:42.383516Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:200] [Store] sporks.dat dump finished  0ms [0m
+2025-07-26T14:18:43.0265776Z [0;34m node0 2025-07-26T14:18:42.383525Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:192] [Store] Verifying governance.dat format... [0m
+2025-07-26T14:18:43.0266703Z [0;34m node0 2025-07-26T14:18:42.383535Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:162] [Read] Missing file governance.dat, will try to recreate [0m
+2025-07-26T14:18:43.0267613Z [0;34m node0 2025-07-26T14:18:42.383539Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:198] [Store] Writing info to governance.dat... [0m
+2025-07-26T14:18:43.0268501Z [0;34m node0 2025-07-26T14:18:42.383578Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to governance.dat  0ms [0m
+2025-07-26T14:18:43.0269896Z [0;34m node0 2025-07-26T14:18:42.383588Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Governance Objects: 0 (Proposals: 0, Triggers: 0, Other: 0; Erased: 0), Votes: 0 [0m
+2025-07-26T14:18:43.0270924Z [0;34m node0 2025-07-26T14:18:42.383592Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:200] [Store] governance.dat dump finished  0ms [0m
+2025-07-26T14:18:43.0271815Z [0;34m node0 2025-07-26T14:18:42.383598Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:192] [Store] Verifying netfulfilled.dat format... [0m
+2025-07-26T14:18:43.0272748Z [0;34m node0 2025-07-26T14:18:42.383606Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:162] [Read] Missing file netfulfilled.dat, will try to recreate [0m
+2025-07-26T14:18:43.0273668Z [0;34m node0 2025-07-26T14:18:42.383610Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:198] [Store] Writing info to netfulfilled.dat... [0m
+2025-07-26T14:18:43.0274573Z [0;34m node0 2025-07-26T14:18:42.383645Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to netfulfilled.dat  0ms [0m
+2025-07-26T14:18:43.0275476Z [0;34m node0 2025-07-26T14:18:42.383649Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Nodes with fulfilled requests: 0 [0m
+2025-07-26T14:18:43.0276364Z [0;34m node0 2025-07-26T14:18:42.383653Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:200] [Store] netfulfilled.dat dump finished  0ms [0m
+2025-07-26T14:18:43.0277243Z [0;34m node0 2025-07-26T14:18:42.383659Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:192] [Store] Verifying mncache.dat format... [0m
+2025-07-26T14:18:43.0278150Z [0;34m node0 2025-07-26T14:18:42.383667Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:162] [Read] Missing file mncache.dat, will try to recreate [0m
+2025-07-26T14:18:43.0279253Z [0;34m node0 2025-07-26T14:18:42.383671Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:198] [Store] Writing info to mncache.dat... [0m
+2025-07-26T14:18:43.0280139Z [0;34m node0 2025-07-26T14:18:42.383706Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:68] [CoreWrite] Written info to mncache.dat  0ms [0m
+2025-07-26T14:18:43.0281104Z [0;34m node0 2025-07-26T14:18:42.383711Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:69] [CoreWrite]      Masternodes: meta infos object count: 0, nDsqCount: 0 [0m
+2025-07-26T14:18:43.0282039Z [0;34m node0 2025-07-26T14:18:42.383715Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [flat-database.h:200] [Store] mncache.dat dump finished  0ms [0m
+2025-07-26T14:18:43.0283001Z [0;34m node0 2025-07-26T14:18:42.383865Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk started [0m
+2025-07-26T14:18:43.0284228Z [0;34m node0 2025-07-26T14:18:42.384462Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block and undo data to disk completed (0.00ms) [0m
+2025-07-26T14:18:43.0285294Z [0;34m node0 2025-07-26T14:18:42.384474Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk started [0m
+2025-07-26T14:18:43.0286340Z [0;34m node0 2025-07-26T14:18:42.384908Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write block index to disk completed (0.00ms) [0m
+2025-07-26T14:18:43.0287441Z [0;34m node0 2025-07-26T14:18:42.384921Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) started [0m
+2025-07-26T14:18:43.0288426Z [0;34m node0 2025-07-26T14:18:42.384937Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [txdb.cpp:172] [BatchWrite] [coindb] Writing final batch of 0.00 MiB [0m
+2025-07-26T14:18:43.0289685Z [0;34m node0 2025-07-26T14:18:42.384948Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [txdb.cpp:174] [BatchWrite] [coindb] Committed 0 changed transaction outputs (out of 0) to coin database... [0m
+2025-07-26T14:18:43.0290849Z [0;34m node0 2025-07-26T14:18:42.384959Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:57] [Log] [bench] FlushStateToDisk: write coins cache to disk (0 coins, 262kB) completed (0.00ms) [0m
+2025-07-26T14:18:43.0291900Z [0;34m node0 2025-07-26T14:18:42.384964Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk started [0m
+2025-07-26T14:18:43.0293078Z [0;34m node0 2025-07-26T14:18:42.384973Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [logging/timer.h:55] [Log] FlushStateToDisk: write evodb cache to disk completed (0.00s) [0m
+2025-07-26T14:18:43.0295329Z [0;34m node0 2025-07-26T14:18:42.384979Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [validationinterface.cpp:247] [ChainStateFlushed] [validation] Enqueuing ChainStateFlushed: block hash=2167f8732588dd5c17ecc74f6e536da5cfb714bc3da696b910b714be99dca80a [0m
+2025-07-26T14:18:43.0297085Z [0;34m node0 2025-07-26T14:18:42.385915Z (mocktime: 2014-12-05T10:33:01Z) [   shutoff] [init.cpp:431] [Shutdown] Shutdown: done [0m
+2025-07-26T14:18:43.0297986Z [0;36m test  2025-07-26T14:18:42.420000Z TestFramework.node0 (DEBUG): Node stopped [0m
+2025-07-26T14:18:43.0299077Z [0;36m test  2025-07-26T14:18:42.420000Z TestFramework (WARNING): Not cleaning up dir /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115 [0m
+2025-07-26T14:18:43.0300459Z [0;36m test  2025-07-26T14:18:42.420000Z TestFramework (ERROR): Test failed. Test logging available at /__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115/test_framework.log [0m
+2025-07-26T14:18:43.0301360Z [0;36m test  2025-07-26T14:18:42.420000Z TestFramework (ERROR): [0m
+2025-07-26T14:18:43.0302559Z [0;36m test  2025-07-26T14:18:42.421000Z TestFramework (ERROR): Hint: Call /__w/dash/dash/build-ci/dashcore-linux64/test/functional/combine_logs.py '/__w/dash/dash/build-ci/dashcore-linux64/testdatadirs/test_runner_∋_🏃_20250726_145842/p2p_leak_tx_115' to consolidate all logs [0m
+2025-07-26T14:18:43.0303612Z [0;36m test  2025-07-26T14:18:42.421000Z TestFramework (ERROR): [0m
+2025-07-26T14:18:43.0304438Z [0;36m test  2025-07-26T14:18:42.421000Z TestFramework (ERROR): If this failure happened unexpectedly or intermittently, please file a bug and provide a link or upload of the combined log. [0m
+2025-07-26T14:18:43.0305354Z [0;36m test  2025-07-26T14:18:42.421000Z TestFramework (ERROR): https://github.com/dashpay/dash/issues [0m
+2025-07-26T14:18:43.0305879Z [0;36m test  2025-07-26T14:18:42.421000Z TestFramework (ERROR): [0m
+2025-07-26T14:18:43.0306105Z 
+2025-07-26T14:18:43.0306109Z 
+2025-07-26T14:18:43.0306283Z [1mTEST                                               | STATUS    | DURATION
+2025-07-26T14:18:43.0306484Z 
+2025-07-26T14:18:43.0306882Z [0m[0;32mexample_test.py                                    | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0307360Z [0m[0;32mfeature_abortnode.py                               | ✓ Passed  | 31 s
+2025-07-26T14:18:43.0307824Z [0m[0;32mfeature_addressindex.py                            | ✓ Passed  | 15 s
+2025-07-26T14:18:43.0308288Z [0m[0;32mfeature_asset_locks.py                             | ✓ Passed  | 207 s
+2025-07-26T14:18:43.0308750Z [0m[0;32mfeature_assumevalid.py                             | ✓ Passed  | 5 s
+2025-07-26T14:18:43.0309482Z [0m[0;32mfeature_backwards_compatibility.py --descriptors   | ✓ Passed  | 19 s
+2025-07-26T14:18:43.0309999Z [0m[0;32mfeature_backwards_compatibility.py --legacy-wallet | ✓ Passed  | 18 s
+2025-07-26T14:18:43.0310485Z [0m[0;32mfeature_bind_extra.py                              | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0310945Z [0m[0;32mfeature_bip68_sequence.py                          | ✓ Passed  | 9 s
+2025-07-26T14:18:43.0311540Z [0m[0;32mfeature_block.py                                   | ✓ Passed  | 98 s
+2025-07-26T14:18:43.0312056Z [0m[0;32mfeature_csv_activation.py                          | ✓ Passed  | 19 s
+2025-07-26T14:18:43.0312551Z [0m[0;32mfeature_dip3_deterministicmns.py --descriptors     | ✓ Passed  | 60 s
+2025-07-26T14:18:43.0313060Z [0m[0;32mfeature_dip3_deterministicmns.py --legacy-wallet   | ✓ Passed  | 62 s
+2025-07-26T14:18:43.0313540Z [0m[0;32mfeature_dip3_v19.py                                | ✓ Passed  | 120 s
+2025-07-26T14:18:43.0314004Z [0m[0;32mfeature_dip4_coinbasemerkleroots.py                | ✓ Passed  | 86 s
+2025-07-26T14:18:43.0314479Z [0m[0;32mfeature_fee_estimation.py                          | ✓ Passed  | 25 s
+2025-07-26T14:18:43.0314951Z [0m[0;32mfeature_governance.py --descriptors                | ✓ Passed  | 148 s
+2025-07-26T14:18:43.0315446Z [0m[0;32mfeature_governance.py --legacy-wallet              | ✓ Passed  | 138 s
+2025-07-26T14:18:43.0315943Z [0m[0;32mfeature_governance_cl.py --descriptors             | ✓ Passed  | 33 s
+2025-07-26T14:18:43.0316434Z [0m[0;32mfeature_governance_cl.py --legacy-wallet           | ✓ Passed  | 31 s
+2025-07-26T14:18:43.0316897Z [0m[0;32mfeature_index_prune.py                             | ✓ Passed  | 73 s
+2025-07-26T14:18:43.0317358Z [0m[0;32mfeature_llmq_chainlocks.py                         | ✓ Passed  | 255 s
+2025-07-26T14:18:43.0317827Z [0m[0;32mfeature_llmq_connections.py                        | ✓ Passed  | 90 s
+2025-07-26T14:18:43.0318291Z [0m[0;32mfeature_llmq_data_recovery.py                      | ✓ Passed  | 199 s
+2025-07-26T14:18:43.0318757Z [0m[0;32mfeature_llmq_dkgerrors.py                          | ✓ Passed  | 47 s
+2025-07-26T14:18:43.0319422Z [0m[0;32mfeature_llmq_evo.py                                | ✓ Passed  | 88 s
+2025-07-26T14:18:43.0319872Z [0m[0;32mfeature_llmq_is_cl_conflicts.py                    | ✓ Passed  | 40 s
+2025-07-26T14:18:43.0320345Z [0m[0;32mfeature_llmq_is_retroactive.py                     | ✓ Passed  | 264 s
+2025-07-26T14:18:43.0320821Z [0m[0;32mfeature_llmq_rotation.py                           | ✓ Passed  | 124 s
+2025-07-26T14:18:43.0321283Z [0m[0;32mfeature_llmq_signing.py                            | ✓ Passed  | 103 s
+2025-07-26T14:18:43.0321745Z [0m[0;32mfeature_llmq_signing.py --spork21                  | ✓ Passed  | 132 s
+2025-07-26T14:18:43.0322218Z [0m[0;32mfeature_llmq_simplepose.py                         | ✓ Passed  | 200 s
+2025-07-26T14:18:43.0322700Z [0m[0;32mfeature_llmq_simplepose.py --disable-spork23       | ✓ Passed  | 98 s
+2025-07-26T14:18:43.0323180Z [0m[0;32mfeature_llmq_singlenode.py                         | ✓ Passed  | 43 s
+2025-07-26T14:18:43.0323635Z [0m[0;32mfeature_maxtipage.py                               | ✓ Passed  | 5 s
+2025-07-26T14:18:43.0324101Z [0m[0;32mfeature_maxuploadtarget.py                         | ✓ Passed  | 42 s
+2025-07-26T14:18:43.0324561Z [0m[0;32mfeature_mnehf.py                                   | ✓ Passed  | 49 s
+2025-07-26T14:18:43.0325135Z [0m[0;32mfeature_multikeysporks.py                          | ✓ Passed  | 32 s
+2025-07-26T14:18:43.0325612Z [0m[0;32mfeature_notifications.py                           | ✓ Passed  | 30 s
+2025-07-26T14:18:43.0326061Z [0m[0;32mfeature_proxy.py                                   | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0326495Z [0m[0;32mfeature_reindex.py                                 | ✓ Passed  | 8 s
+2025-07-26T14:18:43.0326940Z [0m[0;32mfeature_spentindex.py                              | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0327397Z [0m[0;32mfeature_timestampindex.py                          | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0327846Z [0m[0;32mfeature_txindex.py                                 | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0328284Z [0m[0;32mfeature_utxo_set_hash.py                           | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0328736Z [0m[0;32mfeature_versionbits_warning.py                     | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0329569Z [0m[0;32minterface_bitcoin_cli.py                           | ✓ Passed  | 9 s
+2025-07-26T14:18:43.0330034Z [0m[0;32minterface_http.py                                  | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0330461Z [0m[0;32minterface_rest.py                                  | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0330887Z [0m[0;32minterface_rpc.py                                   | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0331312Z [0m[0;32minterface_zmq.py                                   | ✓ Passed  | 26 s
+2025-07-26T14:18:43.0331767Z [0m[0;32minterface_zmq_dash.py --legacy-wallet              | ✓ Passed  | 47 s
+2025-07-26T14:18:43.0332216Z [0m[0;32mmempool_limit.py                                   | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0332654Z [0m[0;32mmempool_package_limits.py                          | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0333110Z [0m[0;32mmempool_package_onemore.py                         | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0333563Z [0m[0;32mmempool_packages.py                                | ✓ Passed  | 8 s
+2025-07-26T14:18:43.0334010Z [0m[0;32mmempool_persist.py                                 | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0334440Z [0m[0;32mmempool_reorg.py                                   | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0334871Z [0m[0;32mmempool_resurrect.py                               | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0335315Z [0m[0;32mmempool_spend_coinbase.py                          | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0335808Z [0m[0;32mmempool_updatefromblock.py                         | ✓ Passed  | 27 s
+2025-07-26T14:18:43.0336292Z [0m[0;32mmining_getblocktemplate_longpoll.py                | ✓ Passed  | 68 s
+2025-07-26T14:18:43.0336780Z [0m[0;32mmining_prioritisetransaction.py                    | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0337232Z [0m[0;32mp2p_addr_relay.py                                  | ✓ Passed  | 31 s
+2025-07-26T14:18:43.0337662Z [0m[0;32mp2p_addrfetch.py                                   | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0338095Z [0m[0;32mp2p_addrv2_relay.py                                | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0338535Z [0m[0;32mp2p_block_sync.py --v1transport                    | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0339102Z [0m[0;32mp2p_block_sync.py --v2transport                    | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0339549Z [0m[0;32mp2p_blocksonly.py                                  | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0340009Z [0m[0;32mp2p_compactblocks_hb.py --v1transport              | ✓ Passed  | 27 s
+2025-07-26T14:18:43.0340495Z [0m[0;32mp2p_compactblocks_hb.py --v2transport              | ✓ Passed  | 30 s
+2025-07-26T14:18:43.0340972Z [0m[0;32mp2p_disconnect_ban.py --v1transport                | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0341439Z [0m[0;32mp2p_disconnect_ban.py --v2transport                | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0341869Z [0m[0;32mp2p_filter.py                                      | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0342306Z [0m[0;32mp2p_getaddr_caching.py                             | ✓ Passed  | 11 s
+2025-07-26T14:18:43.0342868Z [0m[0;32mp2p_getdata.py                                     | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0343305Z [0m[0;32mp2p_instantsend.py                                 | ✓ Passed  | 46 s
+2025-07-26T14:18:43.0343751Z [0m[0;32mp2p_invalid_block.py --v1transport                 | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0344217Z [0m[0;32mp2p_invalid_block.py --v2transport                 | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0344671Z [0m[0;32mp2p_invalid_locator.py                             | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0345121Z [0m[0;32mp2p_invalid_messages.py                            | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0345573Z [0m[0;32mp2p_invalid_tx.py --v1transport                    | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0346032Z [0m[0;32mp2p_invalid_tx.py --v2transport                    | ✓ Passed  | 18 s
+2025-07-26T14:18:43.0346616Z [0m[0;32mp2p_nobloomfilter_messages.py                      | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0347075Z [0m[0;32mp2p_quorum_data.py                                 | ✓ Passed  | 139 s
+2025-07-26T14:18:43.0347514Z [0m[0;32mp2p_sendheaders.py                                 | ✓ Passed  | 26 s
+2025-07-26T14:18:43.0347979Z [0m[0;32mp2p_sendheaders_compressed.py                      | ✓ Passed  | 15 s
+2025-07-26T14:18:43.0348446Z [0m[0;32mp2p_timeouts.py --v1transport                      | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0349085Z [0m[0;32mp2p_timeouts.py --v2transport                      | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0349583Z [0m[0;32mp2p_tx_download.py                                 | ✓ Passed  | 35 s
+2025-07-26T14:18:43.0350015Z [0m[0;32mp2p_v2_encrypted.py                                | ✓ Passed  | 8 s
+2025-07-26T14:18:43.0350446Z [0m[0;32mp2p_v2_misbehaving.py                              | ✓ Passed  | 9 s
+2025-07-26T14:18:43.0350878Z [0m[0;32mp2p_v2_transport.py                                | ✓ Passed  | 9 s
+2025-07-26T14:18:43.0351346Z [0m[0;32mrpc_blockchain.py --v1transport                    | ✓ Passed  | 16 s
+2025-07-26T14:18:43.0351818Z [0m[0;32mrpc_blockchain.py --v2transport                    | ✓ Passed  | 16 s
+2025-07-26T14:18:43.0352279Z [0m[0;32mrpc_createmultisig.py                              | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0352834Z [0m[0;32mrpc_decodescript.py                                | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0404877Z [0m[0;32mrpc_deprecated.py                                  | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0405893Z [0m[0;32mrpc_fundrawtransaction.py --descriptors            | ✓ Passed  | 15 s
+2025-07-26T14:18:43.0406728Z [0m[0;32mrpc_fundrawtransaction.py --legacy-wallet          | ✓ Passed  | 19 s
+2025-07-26T14:18:43.0407277Z [0m[0;32mrpc_fundrawtransaction.py --legacy-wallet --nohd   | ✓ Passed  | 22 s
+2025-07-26T14:18:43.0407779Z [0m[0;32mrpc_getblockfilter.py                              | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0408284Z [0m[0;32mrpc_getblockfrompeer.py                            | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0408764Z [0m[0;32mrpc_getchaintips.py                                | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0409502Z [0m[0;32mrpc_invalid_address_message.py                     | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0409973Z [0m[0;32mrpc_invalidateblock.py                             | ✓ Passed  | 8 s
+2025-07-26T14:18:43.0410401Z [0m[0;32mrpc_misc.py                                        | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0410821Z [0m[0;32mrpc_net.py --v1transport                           | ✓ Passed  | 32 s
+2025-07-26T14:18:43.0411274Z [0m[0;32mrpc_net.py --v2transport                           | ✓ Passed  | 30 s
+2025-07-26T14:18:43.0411710Z [0m[0;32mrpc_netinfo.py                                     | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0412122Z [0m[0;32mrpc_packages.py                                    | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0412554Z [0m[0;32mrpc_preciousblock.py                               | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0413191Z [0m[0;32mrpc_psbt.py --descriptors                          | ✓ Passed  | 15 s
+2025-07-26T14:18:43.0413664Z [0m[0;32mrpc_psbt.py --legacy-wallet                        | ✓ Passed  | 21 s
+2025-07-26T14:18:43.0414087Z [0m[0;32mrpc_quorum.py                                      | ✓ Passed  | 12 s
+2025-07-26T14:18:43.0414530Z [0m[0;32mrpc_rawtransaction.py --descriptors                | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0415007Z [0m[0;32mrpc_rawtransaction.py --legacy-wallet              | ✓ Passed  | 14 s
+2025-07-26T14:18:43.0415471Z [0m[0;32mrpc_setban.py --v1transport                        | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0415912Z [0m[0;32mrpc_setban.py --v2transport                        | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0416375Z [0m[0;32mrpc_signrawtransaction.py --descriptors            | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0416855Z [0m[0;32mrpc_signrawtransaction.py --legacy-wallet          | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0417436Z [0m[0;32mrpc_txoutproof.py                                  | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0417856Z [0m[0;32mrpc_users.py                                       | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0418278Z [0m[0;32mrpc_verifyislock.py                                | ✓ Passed  | 42 s
+2025-07-26T14:18:43.0418707Z [0m[0;32mrpc_whitelist.py                                   | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0419273Z [0m[0;32mtool_wallet.py --descriptors                       | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0419739Z [0m[0;32mtool_wallet.py --legacy-wallet                     | ✓ Passed  | 11 s
+2025-07-26T14:18:43.0420214Z [0m[0;32mwallet_abandonconflict.py --descriptors            | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0420694Z [0m[0;32mwallet_abandonconflict.py --legacy-wallet          | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0421168Z [0m[0;32mwallet_avoidreuse.py --descriptors                 | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0421653Z [0m[0;32mwallet_avoidreuse.py --legacy-wallet               | ✓ Passed  | 11 s
+2025-07-26T14:18:43.0422130Z [0m[0;32mwallet_backup.py --descriptors                     | ✓ Passed  | 27 s
+2025-07-26T14:18:43.0422589Z [0m[0;32mwallet_backup.py --legacy-wallet                   | ✓ Passed  | 26 s
+2025-07-26T14:18:43.0423047Z [0m[0;32mwallet_basic.py --descriptors                      | ✓ Passed  | 26 s
+2025-07-26T14:18:43.0423502Z [0m[0;32mwallet_basic.py --legacy-wallet                    | ✓ Passed  | 26 s
+2025-07-26T14:18:43.0423973Z [0m[0;32mwallet_change_address.py --descriptors             | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0424457Z [0m[0;32mwallet_change_address.py --legacy-wallet           | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0424934Z [0m[0;32mwallet_createwallet.py --descriptors               | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0425413Z [0m[0;32mwallet_createwallet.py --legacy-wallet             | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0425889Z [0m[0;32mwallet_createwallet.py --usecli                    | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0426366Z [0m[0;32mwallet_descriptor.py --descriptors                 | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0426815Z [0m[0;32mwallet_disable.py                                  | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0427254Z [0m[0;32mwallet_dump.py --legacy-wallet                     | ✓ Passed  | 5 s
+2025-07-26T14:18:43.0427711Z [0m[0;32mwallet_groups.py --descriptors                     | ✓ Passed  | 16 s
+2025-07-26T14:18:43.0428192Z [0m[0;32mwallet_groups.py --legacy-wallet                   | ✓ Passed  | 16 s
+2025-07-26T14:18:43.0428651Z [0m[0;32mwallet_hd.py --descriptors                         | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0429330Z [0m[0;32mwallet_hd.py --legacy-wallet                       | ✓ Passed  | 15 s
+2025-07-26T14:18:43.0429806Z [0m[0;32mwallet_importmulti.py --legacy-wallet              | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0430297Z [0m[0;32mwallet_importprunedfunds.py --descriptors          | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0430800Z [0m[0;32mwallet_importprunedfunds.py --legacy-wallet        | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0431412Z [0m[0;32mwallet_keypool.py --legacy-wallet                  | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0431887Z [0m[0;32mwallet_keypool_hd.py --descriptors                 | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0432349Z [0m[0;32mwallet_keypool_hd.py --legacy-wallet               | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0432814Z [0m[0;32mwallet_keypool_topup.py --descriptors              | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0433278Z [0m[0;32mwallet_keypool_topup.py --legacy-wallet            | ✓ Passed  | 8 s
+2025-07-26T14:18:43.0433739Z [0m[0;32mwallet_labels.py --descriptors                     | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0434201Z [0m[0;32mwallet_labels.py --legacy-wallet                   | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0434668Z [0m[0;32mwallet_listreceivedby.py --descriptors             | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0435265Z [0m[0;32mwallet_listreceivedby.py --legacy-wallet           | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0435757Z [0m[0;32mwallet_listtransactions.py --descriptors           | ✓ Passed  | 6 s
+2025-07-26T14:18:43.0436248Z [0m[0;32mwallet_listtransactions.py --legacy-wallet         | ✓ Passed  | 10 s
+2025-07-26T14:18:43.0436725Z [0m[0;32mwallet_multisig_descriptor_psbt.py                 | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0437206Z [0m[0;32mwallet_multiwallet.py --descriptors                | ✓ Passed  | 39 s
+2025-07-26T14:18:43.0437688Z [0m[0;32mwallet_multiwallet.py --legacy-wallet              | ✓ Passed  | 40 s
+2025-07-26T14:18:43.0438157Z [0m[0;32mwallet_multiwallet.py --usecli                     | ✓ Passed  | 13 s
+2025-07-26T14:18:43.0438620Z [0m[0;32mwallet_reorgsrestore.py                            | ✓ Passed  | 7 s
+2025-07-26T14:18:43.0439215Z [0m[0;32mwallet_transactiontime_rescan.py --descriptors     | ✓ Passed  | 5 s
+2025-07-26T14:18:43.0439717Z [0m[0;32mwallet_transactiontime_rescan.py --legacy-wallet   | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0440176Z [0m[0;32mwallet_txn_clone.py                                | ✓ Passed  | 3 s
+2025-07-26T14:18:43.0440618Z [0m[0;32mwallet_txn_clone.py --mineblock                    | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0441082Z [0m[0;32mwallet_txn_doublespend.py --descriptors            | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0441554Z [0m[0;32mwallet_txn_doublespend.py --legacy-wallet          | ✓ Passed  | 2 s
+2025-07-26T14:18:43.0442017Z [0m[0;32mwallet_txn_doublespend.py --mineblock              | ✓ Passed  | 4 s
+2025-07-26T14:18:43.0442489Z [0m[0;32mwallet_watchonly.py --legacy-wallet                | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0442966Z [0m[0;32mwallet_watchonly.py --usecli --legacy-wallet       | ✓ Passed  | 1 s
+2025-07-26T14:18:43.0443438Z [0m[0minterface_usdt_coinselection.py                    | ○ Skipped | 0 s
+2025-07-26T14:18:43.0443893Z [0m[0minterface_usdt_net.py                              | ○ Skipped | 0 s
+2025-07-26T14:18:43.0444342Z [0m[0minterface_usdt_utxocache.py                        | ○ Skipped | 1 s
+2025-07-26T14:18:43.0444796Z [0m[0minterface_usdt_validation.py                       | ○ Skipped | 0 s
+2025-07-26T14:18:43.0445243Z [0m[0;31mp2p_leak_tx.py --v1transport                       | ✖ Failed  | 1 s
+2025-07-26T14:18:43.0445568Z [0m[0;31m[1m
+2025-07-26T14:18:43.0445854Z ALL                                                | ✖ Failed  | 4533 s (accumulated) 
+2025-07-26T14:18:43.0446147Z [0m[0mRuntime: 1189 s
+2025-07-26T14:18:43.0446372Z Cleaning up coverage data
+2025-07-26T14:18:43.0685176Z ##[error]Process completed with exit code 137.
+2025-07-26T14:18:43.0742048Z ##[group]Run export BUILD_TARGET="linux64"
+2025-07-26T14:18:43.0742392Z [36;1mexport BUILD_TARGET="linux64"[0m
+2025-07-26T14:18:43.0742758Z [36;1mecho "short-sha=$(git rev-parse --short=8 HEAD)" >> "${GITHUB_OUTPUT}"[0m
+2025-07-26T14:18:43.0743264Z [36;1m( [ -d "testlogs" ] && echo "upload-logs=true" >> "${GITHUB_OUTPUT}" && ./ci/dash/bundle-logs.sh ) \[0m
+2025-07-26T14:18:43.0743735Z [36;1m                    || echo "upload-logs=false" >> "${GITHUB_OUTPUT}"[0m
+2025-07-26T14:18:43.0744210Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-26T14:18:43.0744478Z env:
+2025-07-26T14:18:43.0744764Z   INTEGRATION_TESTS_ARGS: --extended --exclude feature_pruning,feature_dbcrash
+2025-07-26T14:18:43.0745116Z ##[endgroup]
+2025-07-26T14:18:43.1407614Z Post job cleanup.
+2025-07-26T14:18:43.1411503Z ##[command]/usr/bin/docker exec  80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787 sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T14:18:43.3408852Z [command]/usr/bin/git version
+2025-07-26T14:18:43.3450500Z git version 2.43.0
+2025-07-26T14:18:43.3489902Z Copying '/github/home/.gitconfig' to '/__w/_temp/867b50c7-68e5-451a-9e7f-85a608716157/.gitconfig'
+2025-07-26T14:18:43.3502699Z Temporarily overriding HOME='/__w/_temp/867b50c7-68e5-451a-9e7f-85a608716157' before making global git config changes
+2025-07-26T14:18:43.3506900Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-26T14:18:43.3533828Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-26T14:18:43.3546495Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-26T14:18:43.3579274Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-26T14:18:43.3836810Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-26T14:18:43.3855940Z http.https://github.com/.extraheader
+2025-07-26T14:18:43.3868524Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-26T14:18:43.3899123Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-26T14:18:43.4252564Z Stop and remove container: 4424605a84604cfd84961c3afc3a66ed_ghcriodashcoreautoguixdashdashcorecislimbackport026batch427pr27625_28b535
+2025-07-26T14:18:43.4257160Z ##[command]/usr/bin/docker rm --force 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T14:18:43.5665820Z 80744ae62ffc0ed81eb6e084cae82027a5529b2412f4d17d9bf5e0e5578e8787
+2025-07-26T14:18:43.5698759Z Remove container network: github_network_907c1ac4b3fe4fa5aac0f13f7f41057f
+2025-07-26T14:18:43.5703449Z ##[command]/usr/bin/docker network rm github_network_907c1ac4b3fe4fa5aac0f13f7f41057f
+2025-07-26T14:18:43.7160567Z github_network_907c1ac4b3fe4fa5aac0f13f7f41057f
+2025-07-26T14:18:43.7221579Z Cleaning up orphan processes

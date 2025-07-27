@@ -25,6 +25,9 @@ class P2PLeakTxTest(BitcoinTestFramework):
     def run_test(self):
         self.gen_node = self.nodes[0]  # The block and tx generating node
         self.miniwallet = MiniWallet(self.gen_node)
+        # Add enough mature utxos to the wallet, so that all txs spend confirmed coins
+        self.generate(self.miniwallet, 1)
+        self.generate(self.gen_node, 100)
 
         self.test_tx_in_block()
         self.test_notfound_on_replaced_tx()
