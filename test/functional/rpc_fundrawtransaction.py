@@ -19,7 +19,6 @@ from test_framework.util import (
     assert_raises_rpc_error,
     count_bytes,
     find_vout_for_address,
-    get_fee,
     satoshi_round,
 )
 from test_framework.wallet_util import bytes_to_wif
@@ -579,7 +578,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         # Deduce exact fee to produce a changeless transaction
         # Using 2 inputs in Dash vs 1 in Bitcoin, so adjusting tx_size
         tx_size = 150  # Approximate tx size for 2 inputs
-        value = sum(inp["amount"] for inp in inputs) - get_fee(tx_size, self.min_relay_tx_fee)
+        value = sum(inp["amount"] for inp in inputs) - (tx_size * self.min_relay_tx_fee / 1000)
         outputs = {self.nodes[0].getnewaddress():value}
         rawtx = self.nodes[1].createrawtransaction(inputs, outputs)
         # fund a transaction that does not require a new key for the change output
