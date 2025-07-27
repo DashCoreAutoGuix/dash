@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     coin_selection_params_bnb.m_subtract_fee_outputs = true;
 
     {
-        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
         wallet->LoadWallet();
         LOCK(wallet->cs_wallet);
         wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
     }
 
     {
-        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
         wallet->LoadWallet();
         LOCK(wallet->cs_wallet);
         wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         BOOST_CHECK(result10);
     }
     {
-        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+        std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
         wallet->LoadWallet();
         LOCK(wallet->cs_wallet);
         wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
     FastRandomContext rand{};
     const auto temp1{[&rand](std::vector<OutputGroup>& g, const CAmount& v, CAmount c) { return KnapsackSolver(g, v, c, rand); }};
     const auto KnapsackSolver{temp1};
-    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
     wallet->LoadWallet();
     LOCK(wallet->cs_wallet);
     wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -714,7 +714,7 @@ BOOST_AUTO_TEST_CASE(knapsack_solver_test)
 BOOST_AUTO_TEST_CASE(ApproximateBestSubset)
 {
     FastRandomContext rand{};
-    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
     wallet->LoadWallet();
     LOCK(wallet->cs_wallet);
     wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -736,7 +736,7 @@ BOOST_AUTO_TEST_CASE(ApproximateBestSubset)
 // Tests that with the ideal conditions, the coin selector will always be able to find a solution that can pay the target value
 BOOST_AUTO_TEST_CASE(SelectCoins_test)
 {
-    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
     wallet->LoadWallet();
     LOCK(wallet->cs_wallet);
     wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
@@ -922,7 +922,7 @@ BOOST_AUTO_TEST_CASE(effective_value_test)
 /* --------------------------- Dash-specific tests start here --------------------------- */
 BOOST_AUTO_TEST_CASE(minimum_inputs_test)
 {
-    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateDummyWalletDatabase());
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
     wallet->LoadWallet();
     LOCK(wallet->cs_wallet);
     wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
