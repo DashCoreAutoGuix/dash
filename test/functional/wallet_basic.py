@@ -16,7 +16,6 @@ from test_framework.util import (
     assert_raises_rpc_error,
     count_bytes,
     find_vout_for_address,
-    satoshi_round,
 )
 from test_framework.wallet_util import test_address
 
@@ -288,8 +287,8 @@ class WalletTest(BitcoinTestFramework):
         node_0_bal = self.check_fee_amount(self.nodes[0].getbalance(), node_0_bal + Decimal('10'), fee_per_byte, count_bytes(tx['hex']))
         assert_equal(self.nodes[0].getbalance(), node_0_bal)
         expected_bal = Decimal('5') - (tx['fee'] / 2)
-        assert_equal(self.nodes[0].getreceivedbyaddress(a0), satoshi_round(expected_bal))
-        assert_equal(self.nodes[0].getreceivedbyaddress(a1), satoshi_round(expected_bal))
+        assert_equal(self.nodes[0].getreceivedbyaddress(a0), expected_bal)
+        assert_equal(self.nodes[0].getreceivedbyaddress(a1), expected_bal)
 
         self.log.info("Test sendmany with fee_rate param (explicit fee rate in duff/B)")
         fee_rate_sat_vb = 2
