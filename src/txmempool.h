@@ -558,9 +558,9 @@ private:
                                           setEntries& setAncestors,
                                           CTxMemPoolEntry::Parents &staged_ancestors,
                                           uint64_t limitAncestorCount,
-                                          uint64_t limitAncestorSize,
+                                          int64_t limitAncestorSize,
                                           uint64_t limitDescendantCount,
-                                          uint64_t limitDescendantSize,
+                                          int64_t limitDescendantSize,
                                           std::string &errString) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 
 public:
@@ -704,7 +704,7 @@ public:
      *  fSearchForParents = whether to search a tx's vin for in-mempool parents, or
      *    look up parents from mapLinks. Must be true for entries not in the mempool
      */
-    bool CalculateMemPoolAncestors(const CTxMemPoolEntry& entry, setEntries& setAncestors, uint64_t limitAncestorCount, uint64_t limitAncestorSize, uint64_t limitDescendantCount, uint64_t limitDescendantSize, std::string& errString, bool fSearchForParents = true) const EXCLUSIVE_LOCKS_REQUIRED(cs);
+    bool CalculateMemPoolAncestors(const CTxMemPoolEntry& entry, setEntries& setAncestors, uint64_t limitAncestorCount, int64_t limitAncestorSize, uint64_t limitDescendantCount, int64_t limitDescendantSize, std::string& errString, bool fSearchForParents = true) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /** Calculate all in-mempool ancestors of a set of transactions not already in the mempool and
      * check ancestor and descendant limits. Heuristics are used to estimate the ancestor and
@@ -723,9 +723,9 @@ public:
      */
     bool CheckPackageLimits(const Package& package,
                             uint64_t limitAncestorCount,
-                            uint64_t limitAncestorSize,
+                            int64_t limitAncestorSize,
                             uint64_t limitDescendantCount,
-                            uint64_t limitDescendantSize,
+                            int64_t limitDescendantSize,
                             std::string &errString) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /** Populate setDescendants with all in-mempool descendants of hash.

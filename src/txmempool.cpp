@@ -196,9 +196,9 @@ bool CTxMemPool::CalculateAncestorsAndCheckLimits(int64_t entry_size,
                                                   setEntries& setAncestors,
                                                   CTxMemPoolEntry::Parents& staged_ancestors,
                                                   uint64_t limitAncestorCount,
-                                                  uint64_t limitAncestorSize,
+                                                  int64_t limitAncestorSize,
                                                   uint64_t limitDescendantCount,
-                                                  uint64_t limitDescendantSize,
+                                                  int64_t limitDescendantSize,
                                                   std::string &errString) const
 {
     int64_t totalSizeWithAncestors = entry_size;
@@ -242,9 +242,9 @@ bool CTxMemPool::CalculateAncestorsAndCheckLimits(int64_t entry_size,
 
 bool CTxMemPool::CheckPackageLimits(const Package& package,
                                     uint64_t limitAncestorCount,
-                                    uint64_t limitAncestorSize,
+                                    int64_t limitAncestorSize,
                                     uint64_t limitDescendantCount,
-                                    uint64_t limitDescendantSize,
+                                    int64_t limitDescendantSize,
                                     std::string &errString) const
 {
     CTxMemPoolEntry::Parents staged_ancestors;
@@ -278,9 +278,9 @@ bool CTxMemPool::CheckPackageLimits(const Package& package,
 bool CTxMemPool::CalculateMemPoolAncestors(const CTxMemPoolEntry &entry,
                                            setEntries &setAncestors,
                                            uint64_t limitAncestorCount,
-                                           uint64_t limitAncestorSize,
+                                           int64_t limitAncestorSize,
                                            uint64_t limitDescendantCount,
-                                           uint64_t limitDescendantSize,
+                                           int64_t limitDescendantSize,
                                            std::string &errString,
                                            bool fSearchForParents /* = true */) const
 {
