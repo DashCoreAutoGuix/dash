@@ -8,8 +8,6 @@ import time
 from test_framework.messages import (
     CInv,
     MSG_TX,
-    MSG_WITNESS_TX,
-    MSG_WTX,
     msg_getdata,
     msg_inv,
     msg_notfound,
@@ -79,14 +77,14 @@ class PeerTxRelayer(P2PTxInvStore):
         self._getdata_received.append(message)
 
     def wait_for_parent_requests(self, txids):
-        """Wait for requests for missing parents by txid with witness data (MSG_WITNESS_TX or
-        WitnessTx). Requires that the getdata message match these txids exactly; all txids must be
-        requested and no additional requests are allowed."""
+        """Wait for requests for missing parents by txid (MSG_TX). Requires that the getdata 
+        message match these txids exactly; all txids must be requested and no additional 
+        requests are allowed."""
         def test_function():
             last_getdata = self.last_message.get('getdata')
             if not last_getdata:
                 return False
-            return len(last_getdata.inv) == len(txids) and all([item.type == MSG_WITNESS_TX and item.hash in txids for item in last_getdata.inv])
+            return len(last_getdata.inv) == len(txids) and all([item.type == MSG_TX and item.hash in txids for item in last_getdata.inv])
         self.wait_until(test_function, timeout=10)
 
     def assert_no_immediate_response(self, message):
@@ -120,11 +118,11 @@ class OrphanHandlingTest(BitcoinTestFramework):
         return child["tx"].getwtxid(), child["tx"], parent["tx"]
 
     def relay_transaction(self, peer, tx):
-        """Relay transaction using MSG_WTX"""
-        wtxid = int(tx.getwtxid(), 16)
-        peer.send_and_ping(msg_inv([CInv(t=MSG_WTX, h=wtxid)]))
+        """Relay transaction using MSG_TX"""
+        txid = int(tx.hash, 16)
+        peer.send_and_ping(msg_inv([CInv(t=MSG_TX, h=txid)]))
         self.nodes[0].bumpmocktime(TXREQUEST_TIME_SKIP)
-        peer.wait_for_getdata([wtxid])
+        peer.wait_for_getdata([txid])
         peer.send_and_ping(msg_tx(tx))
 
     @cleanup
@@ -157,7 +155,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         # Spy peer should not be able to query the node for the parent yet, since it hasn't been
         # announced / insufficient time has elapsed.
-        parent_inv = CInv(t=MSG_WTX, h=int(tx_parent_arrives["tx"].getwtxid(), 16))
+        parent_inv = CInv(t=MSG_TX, h=int(tx_parent_arrives["tx"].hash, 16))
         assert_equal(len(peer_spy.get_invs()), 0)
         peer_spy.assert_no_immediate_response(msg_getdata([parent_inv]))
 
@@ -283,7 +281,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         # Even though the peer would send a notfound for the "old" confirmed transaction, the node
         # doesn't give up on the orphan. Once all of the missing parents are received, it should be
         # submitted to mempool.
-        peer.send_message(msg_notfound(vec=[CInv(MSG_WITNESS_TX, int(txid_conf_old, 16))]))
+        peer.send_message(msg_notfound(vec=[CInv(MSG_TX, int(txid_conf_old, 16))]))
         peer.send_and_ping(msg_tx(missing_tx["tx"]))
         peer.sync_with_ping()
         assert_equal(node.getmempoolentry(orphan["txid"])["ancestorcount"], 3)
@@ -318,9 +316,9 @@ class OrphanHandlingTest(BitcoinTestFramework):
         assert_equal(inflight_parent_AB["txid"], inflight_parent_AB["tx"].getwtxid())
 
         # Announce inflight_parent_AB and wait for getdata
-        peer_txrequest.send_and_ping(msg_inv([CInv(t=MSG_WTX, h=int(inflight_parent_AB["tx"].getwtxid(), 16))]))
+        peer_txrequest.send_and_ping(msg_inv([CInv(t=MSG_TX, h=int(inflight_parent_AB["tx"].hash, 16))]))
         self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY)
-        peer_txrequest.wait_for_getdata([int(inflight_parent_AB["tx"].getwtxid(), 16)])
+        peer_txrequest.wait_for_getdata([int(inflight_parent_AB["tx"].hash, 16)])
 
         self.log.info("Test that the node does not request a parent if it has an in-flight txrequest")
         # Relay orphan child_A
