@@ -963,10 +963,6 @@ bool ArgsManager::ReadConfigStream(std::istream& stream, const std::string& file
     return true;
 }
 
-fs::path ArgsManager::GetConfigFilePath() const
-{
-    return GetConfigFile(*this, GetPathArg("-conf", BITCOIN_CONF_FILENAME));
-}
 bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
 {
     {
