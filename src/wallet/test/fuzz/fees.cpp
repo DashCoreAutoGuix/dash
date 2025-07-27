@@ -29,7 +29,7 @@ FUZZ_TARGET(wallet_fees, .init = initialize_setup)
 {
     FuzzedDataProvider fuzzed_data_provider{buffer.data(), buffer.size()};
     const auto& node{g_setup->m_node};
-    Chainstate* chainstate = &node.chainman->ActiveChainstate();
+    CChainState* chainstate = &node.chainman->ActiveChainstate();
     CWallet& wallet = *g_wallet_ptr;
     {
         LOCK(wallet.cs_wallet);

@@ -1,0 +1,2133 @@
+﻿2025-07-26T17:56:28.5043682Z Current runner version: '2.326.0'
+2025-07-26T17:56:28.5065507Z ##[group]Runner Image Provisioner
+2025-07-26T17:56:28.5066442Z Hosted Compute Agent
+2025-07-26T17:56:28.5066998Z Version: 20250711.363
+2025-07-26T17:56:28.5067580Z Commit: 6785254374ce925a23743850c1cb91912ce5c14c
+2025-07-26T17:56:28.5068605Z Build Date: 2025-07-11T20:04:25Z
+2025-07-26T17:56:28.5069196Z ##[endgroup]
+2025-07-26T17:56:28.5069740Z ##[group]Operating System
+2025-07-26T17:56:28.5070357Z Ubuntu
+2025-07-26T17:56:28.5070839Z 24.04.2
+2025-07-26T17:56:28.5071271Z LTS
+2025-07-26T17:56:28.5071776Z ##[endgroup]
+2025-07-26T17:56:28.5072266Z ##[group]Runner Image
+2025-07-26T17:56:28.5072801Z Image: ubuntu-24.04
+2025-07-26T17:56:28.5073353Z Version: 20250720.1.0
+2025-07-26T17:56:28.5074303Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250720.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-26T17:56:28.5075840Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250720.1
+2025-07-26T17:56:28.5076814Z ##[endgroup]
+2025-07-26T17:56:28.5077929Z ##[group]GITHUB_TOKEN Permissions
+2025-07-26T17:56:28.5080004Z Contents: read
+2025-07-26T17:56:28.5080506Z Metadata: read
+2025-07-26T17:56:28.5081103Z Packages: write
+2025-07-26T17:56:28.5081622Z ##[endgroup]
+2025-07-26T17:56:28.5083555Z Secret source: Actions
+2025-07-26T17:56:28.5084301Z Prepare workflow directory
+2025-07-26T17:56:28.5605920Z Prepare all required actions
+2025-07-26T17:56:28.5643088Z Getting action download info
+2025-07-26T17:56:29.0457977Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-26T17:56:29.0459179Z Version: 4.2.2
+2025-07-26T17:56:29.0460157Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-26T17:56:29.0461305Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-26T17:56:29.0462050Z ##[endgroup]
+2025-07-26T17:56:29.1399265Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-07-26T17:56:29.1400051Z Version: 4.2.3
+2025-07-26T17:56:29.1400752Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-07-26T17:56:29.1401830Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-07-26T17:56:29.1402509Z ##[endgroup]
+2025-07-26T17:56:29.2876419Z ##[group]Download immutable action package 'actions/upload-artifact@v4'
+2025-07-26T17:56:29.2877307Z Version: 4.6.2
+2025-07-26T17:56:29.2877990Z Digest: sha256:290722aa3281d5caf23d0acdc3dbeb3424786a1a01a9cc97e72f147225e37c38
+2025-07-26T17:56:29.2879193Z Source commit SHA: ea165f8d65b6e75b540449e92b4886f43607fa02
+2025-07-26T17:56:29.2879925Z ##[endgroup]
+2025-07-26T17:56:29.4814984Z Uses: DashCoreAutoGuix/dash/.github/workflows/build-src.yml@refs/heads/backport-0.26-batch-428-pr-27647 (4ab62331ba1e145439895ede2823cd15d76266dd)
+2025-07-26T17:56:29.4820622Z ##[group] Inputs
+2025-07-26T17:56:29.4821103Z   build-target: linux64_fuzz
+2025-07-26T17:56:29.4821961Z   container-path: ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-428-pr-27647
+2025-07-26T17:56:29.4824200Z   depends-key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-26T17:56:29.4826026Z ##[endgroup]
+2025-07-26T17:56:29.4826469Z Complete job name: linux64_fuzz-build / Build source
+2025-07-26T17:56:29.5265952Z ##[group]Checking docker version
+2025-07-26T17:56:29.5278891Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-07-26T17:56:29.5732150Z '1.48'
+2025-07-26T17:56:29.5744805Z Docker daemon API version: '1.48'
+2025-07-26T17:56:29.5745536Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-07-26T17:56:29.5891924Z '1.48'
+2025-07-26T17:56:29.5904862Z Docker client API version: '1.48'
+2025-07-26T17:56:29.5909848Z ##[endgroup]
+2025-07-26T17:56:29.5912710Z ##[group]Clean up resources from previous jobs
+2025-07-26T17:56:29.5918510Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=9cbab7"
+2025-07-26T17:56:29.6052663Z ##[command]/usr/bin/docker network prune --force --filter "label=9cbab7"
+2025-07-26T17:56:29.6175379Z ##[endgroup]
+2025-07-26T17:56:29.6175898Z ##[group]Create local container network
+2025-07-26T17:56:29.6185414Z ##[command]/usr/bin/docker network create --label 9cbab7 github_network_119267108abf469a9f5d6897b39614d0
+2025-07-26T17:56:29.6735685Z 95a57317070cc7dc2680fba30b777411666d818ba26ba8884fdeb10e59125208
+2025-07-26T17:56:29.6753925Z ##[endgroup]
+2025-07-26T17:56:29.6777435Z ##[group]Starting job container
+2025-07-26T17:56:29.6798178Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_3309bfe9-3b7d-4a62-8eed-5863fda11d1d login ghcr.io -u DashCoreAutoGuix --password-stdin
+2025-07-26T17:56:30.1654612Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_3309bfe9-3b7d-4a62-8eed-5863fda11d1d pull ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-428-pr-27647
+2025-07-26T17:56:30.8167089Z backport-0.26-batch-428-pr-27647: Pulling from dashcoreautoguix/dash/dashcore-ci-runner
+2025-07-26T17:56:30.9624846Z 32f112e3802c: Pulling fs layer
+2025-07-26T17:56:30.9625370Z 3c418bbf5534: Pulling fs layer
+2025-07-26T17:56:30.9625831Z 824b5144f7af: Pulling fs layer
+2025-07-26T17:56:30.9626304Z bb9f5c709011: Pulling fs layer
+2025-07-26T17:56:30.9626741Z c31b5eed60b6: Pulling fs layer
+2025-07-26T17:56:30.9627026Z da96180e845f: Pulling fs layer
+2025-07-26T17:56:30.9627302Z f28d6a4cf5de: Pulling fs layer
+2025-07-26T17:56:30.9627560Z 49cbdb9e902d: Pulling fs layer
+2025-07-26T17:56:30.9627828Z 247fd41058fa: Pulling fs layer
+2025-07-26T17:56:30.9628095Z d6a01b6e446c: Pulling fs layer
+2025-07-26T17:56:30.9628588Z 4f4fb700ef54: Pulling fs layer
+2025-07-26T17:56:30.9628869Z 1382f2390a1c: Pulling fs layer
+2025-07-26T17:56:30.9629199Z be38403a389e: Pulling fs layer
+2025-07-26T17:56:30.9629474Z 409781d99354: Pulling fs layer
+2025-07-26T17:56:30.9629725Z c418b82685d0: Pulling fs layer
+2025-07-26T17:56:30.9629984Z 4f4fb700ef54: Waiting
+2025-07-26T17:56:30.9630226Z 247fd41058fa: Waiting
+2025-07-26T17:56:30.9630454Z be38403a389e: Waiting
+2025-07-26T17:56:30.9630686Z d6a01b6e446c: Waiting
+2025-07-26T17:56:30.9630903Z 409781d99354: Waiting
+2025-07-26T17:56:30.9631128Z c418b82685d0: Waiting
+2025-07-26T17:56:30.9631347Z da96180e845f: Waiting
+2025-07-26T17:56:30.9631572Z 1382f2390a1c: Waiting
+2025-07-26T17:56:30.9631793Z f28d6a4cf5de: Waiting
+2025-07-26T17:56:30.9632016Z bb9f5c709011: Waiting
+2025-07-26T17:56:30.9632240Z c31b5eed60b6: Waiting
+2025-07-26T17:56:30.9632464Z 49cbdb9e902d: Waiting
+2025-07-26T17:56:31.2960926Z 3c418bbf5534: Download complete
+2025-07-26T17:56:31.3234767Z 824b5144f7af: Verifying Checksum
+2025-07-26T17:56:31.3235318Z 824b5144f7af: Download complete
+2025-07-26T17:56:31.6084412Z 32f112e3802c: Verifying Checksum
+2025-07-26T17:56:31.6085431Z 32f112e3802c: Download complete
+2025-07-26T17:56:32.6751011Z da96180e845f: Verifying Checksum
+2025-07-26T17:56:32.6755109Z da96180e845f: Download complete
+2025-07-26T17:56:32.6963346Z 32f112e3802c: Pull complete
+2025-07-26T17:56:32.7590226Z c31b5eed60b6: Verifying Checksum
+2025-07-26T17:56:32.7590771Z c31b5eed60b6: Download complete
+2025-07-26T17:56:32.9310507Z f28d6a4cf5de: Verifying Checksum
+2025-07-26T17:56:32.9311136Z f28d6a4cf5de: Download complete
+2025-07-26T17:56:33.0703458Z 49cbdb9e902d: Verifying Checksum
+2025-07-26T17:56:33.0705583Z 49cbdb9e902d: Download complete
+2025-07-26T17:56:33.2914794Z 3c418bbf5534: Pull complete
+2025-07-26T17:56:33.3015596Z d6a01b6e446c: Verifying Checksum
+2025-07-26T17:56:33.3016064Z d6a01b6e446c: Download complete
+2025-07-26T17:56:33.3786861Z 824b5144f7af: Pull complete
+2025-07-26T17:56:33.4507222Z 4f4fb700ef54: Download complete
+2025-07-26T17:56:33.5815524Z bb9f5c709011: Verifying Checksum
+2025-07-26T17:56:33.5816152Z bb9f5c709011: Download complete
+2025-07-26T17:56:35.8908536Z be38403a389e: Verifying Checksum
+2025-07-26T17:56:35.8909169Z be38403a389e: Download complete
+2025-07-26T17:56:36.2218644Z 409781d99354: Verifying Checksum
+2025-07-26T17:56:36.2220015Z 409781d99354: Download complete
+2025-07-26T17:56:36.4517590Z c418b82685d0: Verifying Checksum
+2025-07-26T17:56:36.4518506Z c418b82685d0: Download complete
+2025-07-26T17:56:36.5329430Z 247fd41058fa: Verifying Checksum
+2025-07-26T17:56:36.5329938Z 247fd41058fa: Download complete
+2025-07-26T17:56:39.9491905Z bb9f5c709011: Pull complete
+2025-07-26T17:56:44.3723669Z c31b5eed60b6: Pull complete
+2025-07-26T17:56:44.5051333Z 1382f2390a1c: Verifying Checksum
+2025-07-26T17:56:44.5052008Z 1382f2390a1c: Download complete
+2025-07-26T17:56:45.3902962Z da96180e845f: Pull complete
+2025-07-26T17:56:45.4440602Z f28d6a4cf5de: Pull complete
+2025-07-26T17:56:45.4886009Z 49cbdb9e902d: Pull complete
+2025-07-26T17:56:51.4366944Z 247fd41058fa: Pull complete
+2025-07-26T17:56:51.4517222Z d6a01b6e446c: Pull complete
+2025-07-26T17:56:51.4647055Z 4f4fb700ef54: Pull complete
+2025-07-26T17:57:06.1306352Z 1382f2390a1c: Pull complete
+2025-07-26T17:57:09.9312480Z be38403a389e: Pull complete
+2025-07-26T17:57:10.0272859Z 409781d99354: Pull complete
+2025-07-26T17:57:10.0381324Z c418b82685d0: Pull complete
+2025-07-26T17:57:10.0421882Z Digest: sha256:54ced9811ac490e8c027779fd419d86bf5be12bc3429fa7a2b624b8503785e91
+2025-07-26T17:57:10.0433441Z Status: Downloaded newer image for ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-428-pr-27647
+2025-07-26T17:57:10.0443560Z ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-428-pr-27647
+2025-07-26T17:57:10.0523865Z ##[command]/usr/bin/docker create --name 9eb0cb6ae48147958b797f6e3f874fb0_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch428pr27647_bf6929 --label 9cbab7 --workdir /__w/dash/dash --network github_network_119267108abf469a9f5d6897b39614d0 --user root -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-428-pr-27647 "-f" "/dev/null"
+2025-07-26T17:57:10.0809132Z 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T17:57:10.0831780Z ##[command]/usr/bin/docker start 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T17:57:10.3327417Z 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T17:57:10.3346850Z ##[command]/usr/bin/docker ps --all --filter id=5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-07-26T17:57:10.3459776Z 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d Up Less than a second
+2025-07-26T17:57:10.3479363Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T17:57:10.3590494Z HOME=/github/home
+2025-07-26T17:57:10.3592530Z GITHUB_ACTIONS=true
+2025-07-26T17:57:10.3592890Z CI=true
+2025-07-26T17:57:10.3593808Z PATH=/opt/shellcheck:/usr/local/pyenv/shims:/usr/local/pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2025-07-26T17:57:10.3595142Z DEBIAN_FRONTEND=noninteractive
+2025-07-26T17:57:10.3595524Z TZ=Europe/London
+2025-07-26T17:57:10.3595944Z APT_ARGS=-y --no-install-recommends --no-upgrade
+2025-07-26T17:57:10.3596423Z PYENV_ROOT=/usr/local/pyenv
+2025-07-26T17:57:10.3596797Z LD_LIBRARY_PATH=/usr/lib/llvm-18/lib
+2025-07-26T17:57:10.3611641Z ##[endgroup]
+2025-07-26T17:57:10.3620491Z ##[group]Waiting for all services to be ready
+2025-07-26T17:57:10.3622081Z ##[endgroup]
+2025-07-26T17:57:10.3850061Z ##[group]Run actions/checkout@v4
+2025-07-26T17:57:10.3850561Z with:
+2025-07-26T17:57:10.3850745Z   fetch-depth: 50
+2025-07-26T17:57:10.3850947Z   repository: DashCoreAutoGuix/dash
+2025-07-26T17:57:10.3851552Z   token: ***
+2025-07-26T17:57:10.3851727Z   ssh-strict: true
+2025-07-26T17:57:10.3851901Z   ssh-user: git
+2025-07-26T17:57:10.3852080Z   persist-credentials: true
+2025-07-26T17:57:10.3852288Z   clean: true
+2025-07-26T17:57:10.3852474Z   sparse-checkout-cone-mode: true
+2025-07-26T17:57:10.3852695Z   fetch-tags: false
+2025-07-26T17:57:10.3852876Z   show-progress: true
+2025-07-26T17:57:10.3853049Z   lfs: false
+2025-07-26T17:57:10.3853210Z   submodules: false
+2025-07-26T17:57:10.3853384Z   set-safe-directory: true
+2025-07-26T17:57:10.3853777Z ##[endgroup]
+2025-07-26T17:57:10.3966519Z ##[command]/usr/bin/docker exec  5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T17:57:10.6094753Z Syncing repository: DashCoreAutoGuix/dash
+2025-07-26T17:57:10.6096628Z ##[group]Getting Git version info
+2025-07-26T17:57:10.6097138Z Working directory is '/__w/dash/dash'
+2025-07-26T17:57:10.6097909Z [command]/usr/bin/git version
+2025-07-26T17:57:10.6098599Z git version 2.43.0
+2025-07-26T17:57:10.6116880Z ##[endgroup]
+2025-07-26T17:57:10.6130923Z Temporarily overriding HOME='/__w/_temp/b052ce32-3834-47b4-9d67-1c14e5797ba9' before making global git config changes
+2025-07-26T17:57:10.6132537Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-26T17:57:10.6137613Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-26T17:57:10.6169615Z Deleting the contents of '/__w/dash/dash'
+2025-07-26T17:57:10.6173661Z ##[group]Initializing the repository
+2025-07-26T17:57:10.6177410Z [command]/usr/bin/git init /__w/dash/dash
+2025-07-26T17:57:10.6207406Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-26T17:57:10.6208433Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-26T17:57:10.6209023Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-26T17:57:10.6209379Z hint: 
+2025-07-26T17:57:10.6209685Z hint: 	git config --global init.defaultBranch <name>
+2025-07-26T17:57:10.6209983Z hint: 
+2025-07-26T17:57:10.6210261Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-26T17:57:10.6210914Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-26T17:57:10.6211276Z hint: 
+2025-07-26T17:57:10.6211481Z hint: 	git branch -m <name>
+2025-07-26T17:57:10.6215988Z Initialized empty Git repository in /__w/dash/dash/.git/
+2025-07-26T17:57:10.6227721Z [command]/usr/bin/git remote add origin https://github.com/DashCoreAutoGuix/dash
+2025-07-26T17:57:10.6255955Z ##[endgroup]
+2025-07-26T17:57:10.6256540Z ##[group]Disabling automatic garbage collection
+2025-07-26T17:57:10.6260646Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-26T17:57:10.6287202Z ##[endgroup]
+2025-07-26T17:57:10.6287527Z ##[group]Setting up auth
+2025-07-26T17:57:10.6294069Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-26T17:57:10.6322470Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-26T17:57:10.6527299Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-26T17:57:10.6554174Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-26T17:57:10.6750012Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-26T17:57:10.6782578Z ##[endgroup]
+2025-07-26T17:57:10.6783213Z ##[group]Fetching the repository
+2025-07-26T17:57:10.6791231Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=50 origin +4ab62331ba1e145439895ede2823cd15d76266dd:refs/remotes/origin/backport-0.26-batch-428-pr-27647
+2025-07-26T17:57:12.8230439Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-26T17:57:12.8231020Z  * [new ref]         4ab62331ba1e145439895ede2823cd15d76266dd -> origin/backport-0.26-batch-428-pr-27647
+2025-07-26T17:57:12.8252736Z ##[endgroup]
+2025-07-26T17:57:12.8257210Z ##[group]Determining the checkout info
+2025-07-26T17:57:12.8258828Z ##[endgroup]
+2025-07-26T17:57:12.8261550Z [command]/usr/bin/git sparse-checkout disable
+2025-07-26T17:57:12.8299846Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-26T17:57:12.8330627Z ##[group]Checking out the ref
+2025-07-26T17:57:12.8332162Z [command]/usr/bin/git checkout --progress --force -B backport-0.26-batch-428-pr-27647 refs/remotes/origin/backport-0.26-batch-428-pr-27647
+2025-07-26T17:57:13.2181847Z Switched to a new branch 'backport-0.26-batch-428-pr-27647'
+2025-07-26T17:57:13.2182598Z branch 'backport-0.26-batch-428-pr-27647' set up to track 'origin/backport-0.26-batch-428-pr-27647'.
+2025-07-26T17:57:13.2207241Z ##[endgroup]
+2025-07-26T17:57:13.2242968Z [command]/usr/bin/git log -1 --format=%H
+2025-07-26T17:57:13.2266314Z 4ab62331ba1e145439895ede2823cd15d76266dd
+2025-07-26T17:57:13.2492510Z ##[group]Run git config --global --add safe.directory "$PWD"
+2025-07-26T17:57:13.2492960Z [36;1mgit config --global --add safe.directory "$PWD"[0m
+2025-07-26T17:57:13.2493304Z [36;1mgit fetch -fu origin develop:develop[0m
+2025-07-26T17:57:13.2493578Z [36;1mBUILD_TARGET="linux64_fuzz"[0m
+2025-07-26T17:57:13.2493822Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-26T17:57:13.2494067Z [36;1mecho "HOST=${HOST}" >> $GITHUB_OUTPUT[0m
+2025-07-26T17:57:13.2494344Z [36;1mecho "PR_BASE_SHA=" >> $GITHUB_OUTPUT[0m
+2025-07-26T17:57:13.2498209Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-26T17:57:13.2498730Z ##[endgroup]
+2025-07-26T17:57:13.6212608Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-26T17:57:13.6213196Z  * [new branch]      develop    -> develop
+2025-07-26T17:57:13.6213700Z  * [new branch]      develop    -> origin/develop
+2025-07-26T17:57:13.6285046Z Setting specific values in env
+2025-07-26T17:57:13.6285649Z Fallback to default values in env (if not yet set)
+2025-07-26T17:57:13.6779332Z ##[group]Run actions/cache/restore@v4
+2025-07-26T17:57:13.6779614Z with:
+2025-07-26T17:57:13.6779840Z   path: depends/built
+depends/x86_64-pc-linux-gnu
+
+2025-07-26T17:57:13.6780838Z   key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-26T17:57:13.6781804Z   fail-on-cache-miss: true
+2025-07-26T17:57:13.6782030Z   enableCrossOsArchive: false
+2025-07-26T17:57:13.6782240Z   lookup-only: false
+2025-07-26T17:57:13.6782426Z ##[endgroup]
+2025-07-26T17:57:13.6785690Z ##[command]/usr/bin/docker exec  5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T17:57:14.2192644Z Cache hit for: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-26T17:57:15.5796747Z Received 0 of 90041718 (0.0%), 0.0 MBs/sec
+2025-07-26T17:57:16.5803996Z Received 83886080 of 90041718 (93.2%), 40.0 MBs/sec
+2025-07-26T17:57:16.8599285Z Received 90041718 of 90041718 (100.0%), 37.7 MBs/sec
+2025-07-26T17:57:16.8602223Z Cache Size: ~86 MB (90041718 B)
+2025-07-26T17:57:16.8696007Z [command]/usr/bin/tar -xf /__w/_temp/29a868ec-e398-42a3-8f8b-f42207d588f1/cache.tzst -P -C /__w/dash/dash --use-compress-program unzstd
+2025-07-26T17:57:18.0586478Z Cache restored successfully
+2025-07-26T17:57:18.0843146Z Cache restored from key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-26T17:57:18.2537670Z ##[group]Run actions/cache@v4
+2025-07-26T17:57:18.2538126Z with:
+2025-07-26T17:57:18.2538523Z   path: /cache
+
+2025-07-26T17:57:18.2539050Z   key: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64_fuzz-4ab62331ba1e145439895ede2823cd15d76266dd
+2025-07-26T17:57:18.2539853Z   restore-keys: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64_fuzz-
+
+2025-07-26T17:57:18.2540329Z   enableCrossOsArchive: false
+2025-07-26T17:57:18.2540567Z   fail-on-cache-miss: false
+2025-07-26T17:57:18.2540772Z   lookup-only: false
+2025-07-26T17:57:18.2540961Z   save-always: false
+2025-07-26T17:57:18.2541142Z ##[endgroup]
+2025-07-26T17:57:18.2544326Z ##[command]/usr/bin/docker exec  5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T17:57:18.7843397Z Cache not found for input keys: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64_fuzz-4ab62331ba1e145439895ede2823cd15d76266dd, ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64_fuzz-
+2025-07-26T17:57:18.7937078Z ##[group]Run CCACHE_SIZE="400M"
+2025-07-26T17:57:18.7937364Z [36;1mCCACHE_SIZE="400M"[0m
+2025-07-26T17:57:18.7937572Z [36;1mCACHE_DIR="/cache"[0m
+2025-07-26T17:57:18.7937785Z [36;1mmkdir /output[0m
+2025-07-26T17:57:18.7937991Z [36;1mBASE_OUTDIR="/output"[0m
+2025-07-26T17:57:18.7938226Z [36;1mBUILD_TARGET="linux64_fuzz"[0m
+2025-07-26T17:57:18.7939624Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-26T17:57:18.7939858Z [36;1m./ci/dash/build_src.sh[0m
+2025-07-26T17:57:18.7940073Z [36;1mccache -X 9[0m
+2025-07-26T17:57:18.7940265Z [36;1mccache -c[0m
+2025-07-26T17:57:18.7940600Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-26T17:57:18.7940864Z ##[endgroup]
+2025-07-26T17:57:18.8473448Z Setting specific values in env
+2025-07-26T17:57:18.8473918Z Fallback to default values in env (if not yet set)
+2025-07-26T17:57:18.8847944Z Setting specific values in env
+2025-07-26T17:57:18.8848997Z Fallback to default values in env (if not yet set)
+2025-07-26T17:57:18.9582929Z Statistics zeroed
+2025-07-26T17:57:18.9583296Z Set cache size limit to 400.0 MB
+2025-07-26T17:57:23.8409732Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-26T17:57:23.8410461Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-26T17:57:23.8651314Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-26T17:57:23.8651981Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-26T17:57:23.8919985Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-26T17:57:23.9195170Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-26T17:57:23.9470672Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-26T17:57:23.9746955Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-26T17:57:25.9742287Z configure.ac:38: installing 'build-aux/compile'
+2025-07-26T17:57:25.9760001Z configure.ac:12: installing 'build-aux/config.guess'
+2025-07-26T17:57:25.9777662Z configure.ac:12: installing 'build-aux/config.sub'
+2025-07-26T17:57:25.9795044Z configure.ac:17: installing 'build-aux/install-sh'
+2025-07-26T17:57:25.9813476Z configure.ac:17: installing 'build-aux/missing'
+2025-07-26T17:57:26.0417335Z Makefile.am: installing 'build-aux/depcomp'
+2025-07-26T17:57:28.4261163Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-26T17:57:28.4261896Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-26T17:57:28.4496761Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-26T17:57:28.4497195Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-26T17:57:28.4697996Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-26T17:57:28.4908086Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-26T17:57:28.5117241Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-26T17:57:28.5326061Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-26T17:57:29.9707465Z configure.ac:39: installing 'build-aux/ar-lib'
+2025-07-26T17:57:29.9724899Z configure.ac:37: installing 'build-aux/compile'
+2025-07-26T17:57:29.9743817Z configure.ac:24: installing 'build-aux/config.guess'
+2025-07-26T17:57:29.9761875Z configure.ac:24: installing 'build-aux/config.sub'
+2025-07-26T17:57:29.9779550Z configure.ac:27: installing 'build-aux/install-sh'
+2025-07-26T17:57:29.9798124Z configure.ac:27: installing 'build-aux/missing'
+2025-07-26T17:57:30.0128474Z Makefile.am: installing 'build-aux/depcomp'
+2025-07-26T17:57:30.0453687Z parallel-tests: installing 'build-aux/test-driver'
+2025-07-26T17:57:30.1375202Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-26T17:57:30.1375888Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-26T17:57:30.1629620Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-26T17:57:30.1630284Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-26T17:57:30.2051575Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-26T17:57:30.2477141Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-26T17:57:30.2908127Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-26T17:57:30.3339048Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-26T17:57:32.8957453Z configure.ac:105: installing 'build-aux/compile'
+2025-07-26T17:57:32.8974612Z configure.ac:48: installing 'build-aux/config.guess'
+2025-07-26T17:57:32.8992482Z configure.ac:48: installing 'build-aux/config.sub'
+2025-07-26T17:57:32.9010334Z configure.ac:55: installing 'build-aux/install-sh'
+2025-07-26T17:57:32.9027679Z configure.ac:55: installing 'build-aux/missing'
+2025-07-26T17:57:33.1417584Z src/Makefile.am: installing 'build-aux/depcomp'
+2025-07-26T17:57:35.6807113Z parallel-tests: installing 'build-aux/test-driver'
+2025-07-26T17:57:35.8653998Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:57:35.8730928Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-26T17:57:35.8744838Z checking pkg-config is at least version 0.9.0... yes
+2025-07-26T17:57:35.9397901Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:35.9444878Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:35.9526017Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:57:35.9554160Z checking whether build environment is sane... yes
+2025-07-26T17:57:35.9614473Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:57:35.9635757Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:57:35.9641077Z checking for gawk... gawk
+2025-07-26T17:57:35.9705210Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:57:35.9758702Z checking whether make supports nested variables... yes
+2025-07-26T17:57:35.9801785Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-26T17:57:35.9803880Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:57:36.1422484Z checking whether the C++ compiler works... yes
+2025-07-26T17:57:36.1423119Z checking for C++ compiler default output file name... a.out
+2025-07-26T17:57:36.2228830Z checking for suffix of executables... 
+2025-07-26T17:57:36.3134158Z checking whether we are cross compiling... no
+2025-07-26T17:57:36.3432798Z checking for suffix of object files... o
+2025-07-26T17:57:36.3702611Z checking whether the compiler supports GNU C++... yes
+2025-07-26T17:57:36.3947186Z checking whether clang++-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:57:36.8262620Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++11 features... unsupported
+2025-07-26T17:57:36.8958150Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++98 features... none needed
+2025-07-26T17:57:36.9031739Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:57:36.9035479Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:57:37.0216076Z checking whether clang++-18 -ftrivial-auto-var-init=pattern supports C++20 features with -std=c++20... yes
+2025-07-26T17:57:37.0218968Z checking for x86_64-pc-linux-gnu-g++... clang++-18 -ftrivial-auto-var-init=pattern -std=c++20
+2025-07-26T17:57:37.1274871Z checking whether the compiler supports GNU Objective C++... yes
+2025-07-26T17:57:37.1520003Z checking whether clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 accepts -g... yes
+2025-07-26T17:57:37.1523503Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern -std=c++20... none
+2025-07-26T17:57:37.1547803Z checking how to print strings... printf
+2025-07-26T17:57:37.1550581Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:57:37.2791033Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:57:37.3039846Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:57:37.3518629Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:57:37.3984812Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:57:37.3987442Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:57:37.4027556Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:57:37.4058412Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:57:37.4073634Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:57:37.4089461Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:57:37.4301209Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:57:37.4325602Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:57:37.4349371Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:57:37.4756334Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:57:37.4756899Z checking whether ln -s works... yes
+2025-07-26T17:57:37.4801226Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:57:37.4829142Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:57:37.4830314Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:57:37.4832453Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:57:37.4836867Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:57:37.4841982Z checking for file... file
+2025-07-26T17:57:37.4846844Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:57:37.4852644Z checking for objdump... objdump
+2025-07-26T17:57:37.4856347Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:57:37.4861441Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:57:37.4866560Z checking for dlltool... no
+2025-07-26T17:57:37.4868701Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:57:37.4871061Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:57:37.5326493Z checking for archiver @FILE support... @
+2025-07-26T17:57:37.5327004Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:57:37.5330187Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:57:37.6391016Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:57:37.6407201Z checking for sysroot... no
+2025-07-26T17:57:37.6450383Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:57:37.6489512Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:57:37.6748069Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:57:37.6753254Z checking for mt... no
+2025-07-26T17:57:37.6784314Z checking if : is a manifest tool... no
+2025-07-26T17:57:37.7078203Z checking for stdio.h... yes
+2025-07-26T17:57:37.7374860Z checking for stdlib.h... yes
+2025-07-26T17:57:37.7678026Z checking for string.h... yes
+2025-07-26T17:57:37.7988520Z checking for inttypes.h... yes
+2025-07-26T17:57:37.8307493Z checking for stdint.h... yes
+2025-07-26T17:57:37.8627727Z checking for strings.h... yes
+2025-07-26T17:57:37.8949764Z checking for sys/stat.h... yes
+2025-07-26T17:57:37.9273563Z checking for sys/types.h... yes
+2025-07-26T17:57:37.9617503Z checking for unistd.h... yes
+2025-07-26T17:57:37.9953623Z checking for dlfcn.h... yes
+2025-07-26T17:57:37.9992253Z checking for objdir... .libs
+2025-07-26T17:57:38.1126148Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:57:38.1127763Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:57:38.1410178Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:57:38.2195128Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:57:38.2563020Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:57:38.2564366Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:57:38.2807827Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:38.3357161Z checking whether -lc should be explicitly linked in... no
+2025-07-26T17:57:38.4393307Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:57:38.4394647Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:57:38.4411717Z checking whether stripping libraries is possible... yes
+2025-07-26T17:57:38.4412409Z checking if libtool supports shared libraries... yes
+2025-07-26T17:57:38.4413369Z checking whether to build shared libraries... yes
+2025-07-26T17:57:38.4413903Z checking whether to build static libraries... yes
+2025-07-26T17:57:38.4944030Z checking how to run the C++ preprocessor... clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 -E
+2025-07-26T17:57:38.6724708Z checking for ld used by clang++-18 -ftrivial-auto-var-init=pattern -std=c++20... /usr/bin/ld -m elf_x86_64
+2025-07-26T17:57:38.6749740Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-26T17:57:38.7126940Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:38.8232699Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 option to produce PIC... -fPIC -DPIC
+2025-07-26T17:57:38.8531257Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:57:38.9326020Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 static flag -static works... yes
+2025-07-26T17:57:38.9705072Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 supports -c -o file.o... yes
+2025-07-26T17:57:38.9706496Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 supports -c -o file.o... (cached) yes
+2025-07-26T17:57:38.9707877Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:38.9753777Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-26T17:57:38.9755095Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:57:38.9761395Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-26T17:57:38.9767299Z checking for x86_64-pc-linux-gnu-gcov... no
+2025-07-26T17:57:38.9773195Z checking for gcov... /usr/bin/gcov
+2025-07-26T17:57:38.9777922Z checking for x86_64-pc-linux-gnu-llvm-cov... no
+2025-07-26T17:57:38.9783341Z checking for llvm-cov... /usr/bin/llvm-cov
+2025-07-26T17:57:38.9788089Z checking for lcov... no
+2025-07-26T17:57:38.9791548Z checking for python3.9... /usr/local/pyenv/shims/python3.9
+2025-07-26T17:57:38.9796330Z checking for genhtml... no
+2025-07-26T17:57:38.9800365Z checking for git... /usr/bin/git
+2025-07-26T17:57:38.9803739Z checking for ccache... /usr/bin/ccache
+2025-07-26T17:57:38.9808197Z checking for xgettext... /usr/bin/xgettext
+2025-07-26T17:57:38.9812494Z checking for hexdump... /usr/bin/hexdump
+2025-07-26T17:57:38.9817767Z checking for x86_64-pc-linux-gnu-objcopy... no
+2025-07-26T17:57:38.9823144Z checking for objcopy... /usr/bin/objcopy
+2025-07-26T17:57:38.9827358Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:57:38.9831753Z checking for objdump... /usr/bin/objdump
+2025-07-26T17:57:38.9836693Z checking for x86_64-pc-linux-gnu-dsymutil... no
+2025-07-26T17:57:38.9842185Z checking for dsymutil... /usr/bin/dsymutil
+2025-07-26T17:57:38.9846595Z checking for doxygen... no
+2025-07-26T17:57:39.0131542Z checking whether C++ compiler accepts -Werror... yes
+2025-07-26T17:57:39.0958185Z checking whether the linker accepts -Wl,--fatal-warnings... yes
+2025-07-26T17:57:39.1491068Z checking for execinfo.h... yes
+2025-07-26T17:57:39.2337694Z checking whether the linker accepts -Wl,-wrap=__cxa_allocate_exception... yes
+2025-07-26T17:57:39.2605619Z checking whether C++ compiler accepts -Wa,-mbig-obj... no
+2025-07-26T17:57:39.2930879Z checking whether C++ compiler accepts -fsanitize=fuzzer,address,undefined,integer... yes
+2025-07-26T17:57:39.4672689Z checking whether the linker accepts -fsanitize=fuzzer,address,undefined,integer... yes
+2025-07-26T17:57:39.4989848Z checking whether C++ compiler accepts -Warray-bounds... no
+2025-07-26T17:57:39.5282121Z checking whether C++ compiler accepts -Wdangling-reference... no
+2025-07-26T17:57:39.5589289Z checking whether C++ compiler accepts -Wattributes... no
+2025-07-26T17:57:39.5898003Z checking whether C++ compiler accepts -Wcpp... no
+2025-07-26T17:57:39.6199837Z checking whether C++ compiler accepts -Wstringop-overread... no
+2025-07-26T17:57:39.6480916Z checking whether C++ compiler accepts -Wstringop-overflow... no
+2025-07-26T17:57:39.6776629Z checking whether C++ compiler accepts -Wall... yes
+2025-07-26T17:57:39.7081215Z checking whether C++ compiler accepts -Wextra... yes
+2025-07-26T17:57:39.7388812Z checking whether C++ compiler accepts -Wgnu... yes
+2025-07-26T17:57:39.7684680Z checking whether C++ compiler accepts -Wformat -Wformat-security... yes
+2025-07-26T17:57:39.7983100Z checking whether C++ compiler accepts -Wreorder... yes
+2025-07-26T17:57:39.8279271Z checking whether C++ compiler accepts -Wvla... yes
+2025-07-26T17:57:39.8576921Z checking whether C++ compiler accepts -Wshadow-field... yes
+2025-07-26T17:57:39.8874948Z checking whether C++ compiler accepts -Wthread-safety... yes
+2025-07-26T17:57:39.9170974Z checking whether C++ compiler accepts -Wloop-analysis... yes
+2025-07-26T17:57:39.9465691Z checking whether C++ compiler accepts -Wredundant-decls... yes
+2025-07-26T17:57:39.9760867Z checking whether C++ compiler accepts -Wunused-member-function... yes
+2025-07-26T17:57:40.0054849Z checking whether C++ compiler accepts -Wdate-time... yes
+2025-07-26T17:57:40.0351250Z checking whether C++ compiler accepts -Wconditional-uninitialized... yes
+2025-07-26T17:57:40.0644450Z checking whether C++ compiler accepts -Wduplicated-branches... no
+2025-07-26T17:57:40.0933303Z checking whether C++ compiler accepts -Wduplicated-cond... no
+2025-07-26T17:57:40.1217911Z checking whether C++ compiler accepts -Wlogical-op... no
+2025-07-26T17:57:40.1512128Z checking whether C++ compiler accepts -Woverloaded-virtual... yes
+2025-07-26T17:57:40.1812058Z checking whether C++ compiler accepts -Wsuggest-override... yes
+2025-07-26T17:57:40.2110824Z checking whether C++ compiler accepts -Wimplicit-fallthrough... yes
+2025-07-26T17:57:40.2413054Z checking whether C++ compiler accepts -Wunreachable-code... yes
+2025-07-26T17:57:40.2708811Z checking whether C++ compiler accepts -Wdocumentation... yes
+2025-07-26T17:57:40.3001331Z checking whether C++ compiler accepts -Wself-assign... yes
+2025-07-26T17:57:40.3295462Z checking whether C++ compiler accepts -Wunused-parameter... yes
+2025-07-26T17:57:40.3580106Z checking whether C++ compiler accepts -fno-extended-identifiers... no
+2025-07-26T17:57:40.3839633Z checking whether C++ compiler accepts -fstack-reuse=none... no
+2025-07-26T17:57:40.4131114Z checking whether C++ compiler accepts -msse4.2... yes
+2025-07-26T17:57:40.4428675Z checking whether C++ compiler accepts -msse4.1... yes
+2025-07-26T17:57:40.4721696Z checking whether C++ compiler accepts -mavx -mavx2... yes
+2025-07-26T17:57:40.5019235Z checking whether C++ compiler accepts -msse4 -msha... yes
+2025-07-26T17:57:40.9788201Z checking whether C++ compiler accepts -mpclmul... yes
+2025-07-26T17:57:41.0587469Z checking for SSE4.2 intrinsics... yes
+2025-07-26T17:57:41.5210420Z checking for SSE4.1 intrinsics... yes
+2025-07-26T17:57:41.9773659Z checking for AVX2 intrinsics... yes
+2025-07-26T17:57:42.4309700Z checking for x86 SHA-NI intrinsics... yes
+2025-07-26T17:57:42.4623958Z checking whether C++ compiler accepts -march=armv8-a+crc+crypto... no
+2025-07-26T17:57:42.4919769Z checking whether C++ compiler accepts -march=armv8-a+crypto... no
+2025-07-26T17:57:42.5610549Z checking for ARMv8 CRC32 intrinsics... no
+2025-07-26T17:57:42.6323530Z checking for ARMv8 SHA-NI intrinsics... no
+2025-07-26T17:57:42.7416443Z checking whether byte ordering is bigendian... no
+2025-07-26T17:57:42.7896217Z checking how to run the C preprocessor... clang-18 -ftrivial-auto-var-init=pattern -E
+2025-07-26T17:57:42.8596322Z checking whether clang-18 -ftrivial-auto-var-init=pattern is Clang... yes
+2025-07-26T17:57:42.9295252Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-26T17:57:43.0489952Z checking whether Clang needs flag to prevent "argument unused" warning when linking with -pthread... no
+2025-07-26T17:57:43.1112107Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-26T17:57:43.1112789Z checking whether more special flags are required for pthreads... no
+2025-07-26T17:57:43.1733129Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-26T17:57:44.5929881Z checking whether std::atomic can be used without link library... yes
+2025-07-26T17:57:44.5937641Z checking for special C compiler options needed for large files... no
+2025-07-26T17:57:44.6253183Z checking for _FILE_OFFSET_BITS value needed for large files... no
+2025-07-26T17:57:44.6840843Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 options needed to detect all undeclared functions... none needed
+2025-07-26T17:57:44.7429158Z checking whether strerror_r is declared... yes
+2025-07-26T17:57:44.7781436Z checking whether strerror_r returns char *... yes
+2025-07-26T17:57:44.8065723Z checking whether C++ compiler accepts -fPIC... yes
+2025-07-26T17:57:44.8341359Z checking whether C++ compiler accepts -Wstack-protector... yes
+2025-07-26T17:57:44.8607536Z checking whether C++ compiler accepts -fstack-protector-all... yes
+2025-07-26T17:57:44.8867860Z checking whether C++ compiler accepts -fcf-protection=full... yes
+2025-07-26T17:57:44.9160157Z checking whether C++ compiler accepts -fstack-clash-protection... yes
+2025-07-26T17:57:44.9374465Z checking whether C++ preprocessor accepts -D_FORTIFY_SOURCE=3... yes
+2025-07-26T17:57:44.9587338Z checking whether C++ preprocessor accepts -U_FORTIFY_SOURCE... yes
+2025-07-26T17:57:45.0101644Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-26T17:57:45.0615578Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-26T17:57:45.1146482Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-26T17:57:45.1676810Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-26T17:57:45.2519660Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-26T17:57:45.3366117Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-26T17:57:45.4219093Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-26T17:57:45.5059080Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-26T17:57:45.5582435Z checking for sys/select.h... yes
+2025-07-26T17:57:45.6096649Z checking for sys/prctl.h... yes
+2025-07-26T17:57:45.6637012Z checking for vm/vm_param.h... no
+2025-07-26T17:57:45.7178548Z checking for sys/vmmeter.h... no
+2025-07-26T17:57:45.7724250Z checking for sys/resources.h... no
+2025-07-26T17:57:45.8108640Z checking whether getifaddrs is declared... yes
+2025-07-26T17:57:45.8999160Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-26T17:57:45.9403104Z checking whether freeifaddrs is declared... yes
+2025-07-26T17:57:46.0294615Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-26T17:57:46.0901332Z checking whether fork is declared... yes
+2025-07-26T17:57:46.1496135Z checking whether setsid is declared... yes
+2025-07-26T17:57:46.2078420Z checking whether pipe2 is declared... yes
+2025-07-26T17:57:46.2434054Z checking for mallopt M_ARENA_MAX... yes
+2025-07-26T17:57:46.2802932Z checking for getmemoryinfo... yes
+2025-07-26T17:57:46.3118737Z checking for posix_fallocate... yes
+2025-07-26T17:57:46.3391305Z checking for default visibility attribute... yes
+2025-07-26T17:57:46.3676540Z checking for dllexport attribute... no
+2025-07-26T17:57:47.0270292Z checking for thread_local support... yes
+2025-07-26T17:57:47.0621875Z checking for Linux getrandom syscall... yes
+2025-07-26T17:57:47.0987295Z checking for getentropy via random.h... yes
+2025-07-26T17:57:47.1324054Z checking for sysctl... no
+2025-07-26T17:57:47.1654671Z checking for sysctl KERN_ARND... no
+2025-07-26T17:57:47.2500316Z checking for library containing backtrace... none required
+2025-07-26T17:57:47.2826004Z checking for fdatasync... yes
+2025-07-26T17:57:47.3153199Z checking for F_FULLFSYNC... no
+2025-07-26T17:57:47.3464629Z checking for O_CLOEXEC... yes
+2025-07-26T17:57:47.3741293Z checking for __builtin_prefetch... yes
+2025-07-26T17:57:47.4467241Z checking for _mm_prefetch... yes
+2025-07-26T17:57:47.4792744Z checking for strong getauxval support in the system headers... yes
+2025-07-26T17:57:47.5175086Z checking for sockaddr_un... yes
+2025-07-26T17:57:47.6140324Z checking for std::system... yes
+2025-07-26T17:57:47.6726114Z checking for ::_wsystem... no
+2025-07-26T17:57:47.6782932Z configure: WARNING: enable-fuzz will disable all other targets and force --enable-fuzz-binary=yes
+2025-07-26T17:57:47.7027667Z checking whether C++ preprocessor accepts -DABORT_ON_FAILED_ASSUME... yes
+2025-07-26T17:57:47.8748031Z checking whether main function is needed for fuzz binary... checking whether the linker accepts ... yes
+2025-07-26T17:57:47.8749519Z no
+2025-07-26T17:57:49.2689206Z checking for Berkeley DB C++ headers... default
+2025-07-26T17:57:49.3544335Z checking for main in -ldb_cxx-4.8... yes
+2025-07-26T17:57:49.3680608Z checking for sqlite3 >= 3.7.17... yes
+2025-07-26T17:57:49.3681256Z checking whether to build wallet with support for sqlite... yes
+2025-07-26T17:57:49.4038514Z checking whether Userspace, Statically Defined Tracing tracepoints are supported... yes
+2025-07-26T17:57:49.4126178Z checking for boostlib >= 1.73.0 (107300) includes in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/include"... yes
+2025-07-26T17:57:49.4127387Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib/x86_64-linux-gnu"... no
+2025-07-26T17:57:49.4128934Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib64"... no
+2025-07-26T17:57:49.4129985Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/libx32"... no
+2025-07-26T17:57:49.4131001Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib"... yes
+2025-07-26T17:57:49.4402389Z checking for Boost headers >= 1.73.0 (107300)... yes
+2025-07-26T17:57:49.4800218Z checking whether C++ preprocessor accepts -DBOOST_NO_CXX98_FUNCTION_BASE... no
+2025-07-26T17:57:53.6426230Z checking for Boost Process... yes
+2025-07-26T17:57:53.6578989Z checking for libevent >= 2.1.8... yes
+2025-07-26T17:57:53.6692781Z checking for libevent_pthreads >= 2.1.8... yes
+2025-07-26T17:57:53.7164946Z checking if evhttp_connection_get_peer expects const char**... no
+2025-07-26T17:57:53.7831471Z checking for gmp.h... yes
+2025-07-26T17:57:53.8662132Z checking for __gmpz_init in -lgmp... yes
+2025-07-26T17:57:53.8773584Z checking for libmultiprocess... no
+2025-07-26T17:57:53.8852100Z checking whether to build dashd... no
+2025-07-26T17:57:53.8854916Z checking whether to build dash-cli... no
+2025-07-26T17:57:53.8855467Z checking whether to build dash-tx... no
+2025-07-26T17:57:53.8855935Z checking whether to build dash-wallet... no
+2025-07-26T17:57:53.8857881Z checking whether to build libraries... no
+2025-07-26T17:57:53.8860407Z checking if wallet should be enabled... yes
+2025-07-26T17:57:53.8861480Z checking whether to build with support for UPnP... no
+2025-07-26T17:57:53.8863337Z checking whether to build with support for NAT-PMP... no
+2025-07-26T17:57:53.8865879Z checking whether to build test_dash... no
+2025-07-26T17:57:53.8866541Z checking whether to reduce exports... no
+2025-07-26T17:57:53.8995632Z checking whether dsymutil needs -flat... yes
+2025-07-26T17:57:53.8995991Z 
+2025-07-26T17:57:53.9339610Z checking that generated files are newer than configure... done
+2025-07-26T17:57:53.9345743Z configure: creating ./config.status
+2025-07-26T17:57:54.4813893Z config.status: creating Makefile
+2025-07-26T17:57:54.4933088Z config.status: creating src/Makefile
+2025-07-26T17:57:54.5499602Z config.status: creating doc/man/Makefile
+2025-07-26T17:57:54.5654429Z config.status: creating share/setup.nsi
+2025-07-26T17:57:54.5813448Z config.status: creating share/qt/Info.plist
+2025-07-26T17:57:54.5970557Z config.status: creating test/config.ini
+2025-07-26T17:57:54.6126254Z config.status: creating contrib/devtools/split-debug.sh
+2025-07-26T17:57:54.6291339Z config.status: creating src/config/bitcoin-config.h
+2025-07-26T17:57:54.6459309Z config.status: linking ../contrib/filter-lcov.py to contrib/filter-lcov.py
+2025-07-26T17:57:54.6522359Z config.status: linking ../src/.bear-tidy-config to src/.bear-tidy-config
+2025-07-26T17:57:54.6586460Z config.status: linking ../src/.clang-tidy to src/.clang-tidy
+2025-07-26T17:57:54.6662006Z config.status: linking ../test/functional/test_runner.py to test/functional/test_runner.py
+2025-07-26T17:57:54.6737565Z config.status: linking ../test/fuzz/test_runner.py to test/fuzz/test_runner.py
+2025-07-26T17:57:54.6812695Z config.status: linking ../test/util/test_runner.py to test/util/test_runner.py
+2025-07-26T17:57:54.6879428Z config.status: linking ../test/util/rpcauth-test.py to test/util/rpcauth-test.py
+2025-07-26T17:57:54.6911206Z config.status: executing depfiles commands
+2025-07-26T17:57:54.6926207Z config.status: executing libtool commands
+2025-07-26T17:57:54.7047295Z === configuring in src/dashbls (/__w/dash/dash/build-ci/src/dashbls)
+2025-07-26T17:57:54.7104077Z configure: running /bin/bash ../../../src/dashbls/configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--disable-ccache' '--enable-fuzz' '--with-sanitizers=fuzzer,address,undefined,integer' 'CC=clang-18 -ftrivial-auto-var-init=pattern' 'CXX=clang++-18 -ftrivial-auto-var-init=pattern' '--with-boost-process' 'CPPFLAGS=-DDEBUG_LOCKORDER -DARENA_DEBUG' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=../../../src/dashbls
+2025-07-26T17:57:54.8300470Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:57:54.8994701Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:54.9041457Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:54.9120146Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:57:54.9147558Z checking whether build environment is sane... yes
+2025-07-26T17:57:54.9207701Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:57:54.9228205Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:57:54.9232640Z checking for gawk... gawk
+2025-07-26T17:57:54.9294121Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:57:54.9346325Z checking whether make supports nested variables... yes
+2025-07-26T17:57:54.9388456Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-26T17:57:54.9390398Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:57:54.9393258Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:57:55.0977201Z checking whether the C compiler works... yes
+2025-07-26T17:57:55.0977832Z checking for C compiler default output file name... a.out
+2025-07-26T17:57:55.1538500Z checking for suffix of executables... 
+2025-07-26T17:57:55.2181642Z checking whether we are cross compiling... no
+2025-07-26T17:57:55.2481066Z checking for suffix of object files... o
+2025-07-26T17:57:55.2752069Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:57:55.3005401Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:57:55.3482310Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:57:55.3956351Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:57:55.4029208Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:57:55.4032462Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:57:55.5083531Z checking whether the compiler supports GNU C++... yes
+2025-07-26T17:57:55.5339940Z checking whether clang++-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:57:55.9650677Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++11 features... unsupported
+2025-07-26T17:57:56.0349116Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++98 features... none needed
+2025-07-26T17:57:56.0351916Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:57:56.0904806Z checking whether clang++-18 -ftrivial-auto-var-init=pattern supports C++14 features with -std=c++14... yes
+2025-07-26T17:57:56.0929992Z checking how to print strings... printf
+2025-07-26T17:57:56.0968078Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:57:56.0998430Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:57:56.1013704Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:57:56.1029325Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:57:56.1247965Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:57:56.1272903Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:57:56.1274375Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:57:56.1694181Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:57:56.1694748Z checking whether ln -s works... yes
+2025-07-26T17:57:56.1737025Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:57:56.1764381Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:57:56.1766907Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:57:56.1768033Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:57:56.1772070Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:57:56.1776006Z checking for file... file
+2025-07-26T17:57:56.1780517Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:57:56.1784754Z checking for objdump... objdump
+2025-07-26T17:57:56.1788903Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:57:56.1793237Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:57:56.1797512Z checking for dlltool... no
+2025-07-26T17:57:56.1799757Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:57:56.1801815Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:57:56.2248172Z checking for archiver @FILE support... @
+2025-07-26T17:57:56.2249828Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:57:56.2252642Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:57:56.3315129Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:57:56.3331114Z checking for sysroot... no
+2025-07-26T17:57:56.3374002Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:57:56.3412810Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:57:56.3667026Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:57:56.3671647Z checking for mt... no
+2025-07-26T17:57:56.3702483Z checking if : is a manifest tool... no
+2025-07-26T17:57:56.4006786Z checking for stdio.h... yes
+2025-07-26T17:57:56.4305846Z checking for stdlib.h... yes
+2025-07-26T17:57:56.4609805Z checking for string.h... yes
+2025-07-26T17:57:56.4938954Z checking for inttypes.h... yes
+2025-07-26T17:57:56.5264011Z checking for stdint.h... yes
+2025-07-26T17:57:56.5578065Z checking for strings.h... yes
+2025-07-26T17:57:56.5896933Z checking for sys/stat.h... yes
+2025-07-26T17:57:56.6219541Z checking for sys/types.h... yes
+2025-07-26T17:57:56.6553039Z checking for unistd.h... yes
+2025-07-26T17:57:56.6890324Z checking for dlfcn.h... yes
+2025-07-26T17:57:56.6924866Z checking for objdir... .libs
+2025-07-26T17:57:56.8108133Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:57:56.8112555Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:57:56.8415019Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:57:56.9204822Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:57:56.9572404Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:57:56.9573480Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:57:56.9814319Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:57.0866091Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:57:57.0866840Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:57:57.0883464Z checking whether stripping libraries is possible... yes
+2025-07-26T17:57:57.0884118Z checking if libtool supports shared libraries... yes
+2025-07-26T17:57:57.0884912Z checking whether to build shared libraries... no
+2025-07-26T17:57:57.0885741Z checking whether to build static libraries... yes
+2025-07-26T17:57:57.1418981Z checking how to run the C++ preprocessor... clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 -E
+2025-07-26T17:57:57.3242884Z checking for ld used by clang++-18 -ftrivial-auto-var-init=pattern -std=c++14... /usr/bin/ld -m elf_x86_64
+2025-07-26T17:57:57.3266600Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-26T17:57:57.3632715Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:57.4739186Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 option to produce PIC... -fPIC -DPIC
+2025-07-26T17:57:57.5043721Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:57:57.5854899Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 static flag -static works... yes
+2025-07-26T17:57:57.6230763Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 supports -c -o file.o... yes
+2025-07-26T17:57:57.6231933Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 supports -c -o file.o... (cached) yes
+2025-07-26T17:57:57.6233435Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:57:57.6276720Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-26T17:57:57.6278562Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:57:57.6284539Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-26T17:57:57.6291085Z checking for x86_64-pc-linux-gnu-ranlib... no
+2025-07-26T17:57:57.6293117Z checking for ranlib... (cached) ranlib
+2025-07-26T17:57:57.6298122Z checking for x86_64-pc-linux-gnu-strip... no
+2025-07-26T17:57:57.6300604Z checking for strip... (cached) strip
+2025-07-26T17:57:57.6304357Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:57:57.6582952Z checking whether C compiler accepts -Werror... yes
+2025-07-26T17:57:57.7002175Z checking for gmp.h... yes
+2025-07-26T17:57:57.7576245Z checking for __gmpz_init in -lgmp... yes
+2025-07-26T17:57:57.7924263Z checking gmp version >= 6.2... yes
+2025-07-26T17:57:57.7952203Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-26T17:57:57.7965496Z checking pkg-config is at least version 0.9.0... yes
+2025-07-26T17:57:57.8206553Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -pipe... yes
+2025-07-26T17:57:57.8451600Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fomit-frame-pointer... yes
+2025-07-26T17:57:57.8963587Z checking how to run the C preprocessor... clang-18 -ftrivial-auto-var-init=pattern -E
+2025-07-26T17:57:57.9658741Z checking whether clang-18 -ftrivial-auto-var-init=pattern is Clang... yes
+2025-07-26T17:57:58.0353391Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-26T17:57:58.1551154Z checking whether Clang needs flag to prevent "argument unused" warning when linking with -pthread... no
+2025-07-26T17:57:58.2167489Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-26T17:57:58.2168132Z checking whether more special flags are required for pthreads... no
+2025-07-26T17:57:58.2798802Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-26T17:57:58.3392060Z checking for library containing clock_gettime... none required
+2025-07-26T17:57:58.3694281Z checking whether C compiler accepts -fPIC... yes
+2025-07-26T17:57:58.3989915Z checking whether C compiler accepts -fstack-reuse=none... no
+2025-07-26T17:57:58.4275610Z checking whether C compiler accepts -Wstack-protector... yes
+2025-07-26T17:57:58.4577733Z checking whether C compiler accepts -fstack-protector-all... yes
+2025-07-26T17:57:58.4867932Z checking whether C compiler accepts -fcf-protection=full... yes
+2025-07-26T17:57:58.5153221Z checking whether C compiler accepts -fstack-clash-protection... yes
+2025-07-26T17:57:58.5631933Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-26T17:57:58.6116988Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-26T17:57:58.6597484Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-26T17:57:58.7079021Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-26T17:57:58.7646798Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-26T17:57:58.8217762Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-26T17:57:58.8788052Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-26T17:57:58.9361351Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-26T17:57:58.9657464Z checking whether C compiler accepts -fno-extended-identifiers... no
+2025-07-26T17:57:58.9658472Z checking whether to build runtest... yes
+2025-07-26T17:57:58.9658972Z checking whether to build runbench... yes
+2025-07-26T17:57:58.9888975Z checking that generated files are newer than configure... done
+2025-07-26T17:57:58.9893995Z configure: creating ./config.status
+2025-07-26T17:57:59.5183784Z config.status: creating Makefile
+2025-07-26T17:57:59.5393035Z config.status: creating depends/relic/include/relic_conf.h
+2025-07-26T17:57:59.5533289Z config.status: executing depfiles commands
+2025-07-26T17:57:59.5547067Z config.status: executing libtool commands
+2025-07-26T17:57:59.5672223Z 
+2025-07-26T17:57:59.5672712Z Options used to compile and link:
+2025-07-26T17:57:59.5673154Z   target os           = linux
+2025-07-26T17:57:59.5673526Z   backend             = gmp
+2025-07-26T17:57:59.5673876Z   build bench         = yes
+2025-07-26T17:57:59.5674217Z   build test          = yes
+2025-07-26T17:57:59.5674554Z   use debug           = no
+2025-07-26T17:57:59.5674909Z   use hardening       = yes
+2025-07-26T17:57:59.5675271Z   use optimizations   = yes
+2025-07-26T17:57:59.5675504Z 
+2025-07-26T17:57:59.5675964Z   LDFLAGS             =  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie  
+2025-07-26T17:57:59.5678533Z   CFLAGS              =   -fPIC -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE   
+2025-07-26T17:57:59.5679163Z   CPPFLAGS            =  -DHAVE_BUILD_INFO 
+2025-07-26T17:57:59.5680049Z   CXXFLAGS            =   -fPIC -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE   
+2025-07-26T17:57:59.5680925Z   PTHREAD_FLAGS       = -pthread -lpthread
+2025-07-26T17:57:59.5681262Z 
+2025-07-26T17:57:59.6036876Z === configuring in src/secp256k1 (/__w/dash/dash/build-ci/src/secp256k1)
+2025-07-26T17:57:59.6092181Z configure: running /bin/bash ../../../src/secp256k1/configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--disable-ccache' '--enable-fuzz' '--with-sanitizers=fuzzer,address,undefined,integer' 'CC=clang-18 -ftrivial-auto-var-init=pattern' 'CXX=clang++-18 -ftrivial-auto-var-init=pattern' '--with-boost-process' 'CPPFLAGS=-DDEBUG_LOCKORDER -DARENA_DEBUG' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=../../../src/secp256k1
+2025-07-26T17:57:59.7278132Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:57:59.7975191Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:59.8021727Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:57:59.8098765Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:57:59.8126344Z checking whether build environment is sane... yes
+2025-07-26T17:57:59.8186437Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:57:59.8206479Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:57:59.8211221Z checking for gawk... gawk
+2025-07-26T17:57:59.8274268Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:57:59.8326639Z checking whether make supports nested variables... yes
+2025-07-26T17:57:59.8369290Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:57:59.8371756Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:57:59.9935564Z checking whether the C compiler works... yes
+2025-07-26T17:57:59.9936234Z checking for C compiler default output file name... a.out
+2025-07-26T17:58:00.0506133Z checking for suffix of executables... 
+2025-07-26T17:58:00.1150420Z checking whether we are cross compiling... no
+2025-07-26T17:58:00.1451239Z checking for suffix of object files... o
+2025-07-26T17:58:00.1715216Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:58:00.1967516Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:00.2443511Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:58:00.2916302Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:58:00.2989302Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:58:00.2991717Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:00.2995484Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:00.2997707Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:00.3401676Z checking the archiver (ar) interface... ar
+2025-07-26T17:58:00.3424893Z checking how to print strings... printf
+2025-07-26T17:58:00.3463103Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:58:00.3492981Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:58:00.3507746Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:58:00.3522818Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:58:00.3733020Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:58:00.3757254Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:58:00.3759307Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:58:00.4172864Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:58:00.4173416Z checking whether ln -s works... yes
+2025-07-26T17:58:00.4214616Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:58:00.4241095Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:58:00.4242298Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:58:00.4243189Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:58:00.4247535Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:58:00.4251802Z checking for file... file
+2025-07-26T17:58:00.4256024Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:58:00.4260405Z checking for objdump... objdump
+2025-07-26T17:58:00.4264407Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:58:00.4268890Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:58:00.4272860Z checking for dlltool... no
+2025-07-26T17:58:00.4274545Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:58:00.4276663Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:00.4719887Z checking for archiver @FILE support... @
+2025-07-26T17:58:00.4721093Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:58:00.4723413Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:58:00.5788570Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:58:00.5804211Z checking for sysroot... no
+2025-07-26T17:58:00.5846209Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:58:00.5883670Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:58:00.6137829Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:58:00.6142432Z checking for mt... no
+2025-07-26T17:58:00.6172283Z checking if : is a manifest tool... no
+2025-07-26T17:58:00.6463668Z checking for stdio.h... yes
+2025-07-26T17:58:00.6757020Z checking for stdlib.h... yes
+2025-07-26T17:58:00.7060256Z checking for string.h... yes
+2025-07-26T17:58:00.7370600Z checking for inttypes.h... yes
+2025-07-26T17:58:00.7679654Z checking for stdint.h... yes
+2025-07-26T17:58:00.8002599Z checking for strings.h... yes
+2025-07-26T17:58:00.8345519Z checking for sys/stat.h... yes
+2025-07-26T17:58:00.8686215Z checking for sys/types.h... yes
+2025-07-26T17:58:00.9041463Z checking for unistd.h... yes
+2025-07-26T17:58:00.9392439Z checking for dlfcn.h... yes
+2025-07-26T17:58:00.9429515Z checking for objdir... .libs
+2025-07-26T17:58:01.0570997Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:58:01.0572103Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:01.0859308Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:01.1644592Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:58:01.2014483Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:58:01.2015561Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:58:01.2262226Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:01.3303413Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:58:01.3304180Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:01.3321253Z checking whether stripping libraries is possible... yes
+2025-07-26T17:58:01.3321866Z checking if libtool supports shared libraries... yes
+2025-07-26T17:58:01.3323346Z checking whether to build shared libraries... no
+2025-07-26T17:58:01.3323863Z checking whether to build static libraries... yes
+2025-07-26T17:58:01.3589018Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Werror... yes
+2025-07-26T17:58:01.3835050Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef... yes
+2025-07-26T17:58:01.4073613Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wno-overlength-strings... yes
+2025-07-26T17:58:01.4312543Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wall... yes
+2025-07-26T17:58:01.4549103Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wno-unused-function... yes
+2025-07-26T17:58:01.4785504Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wextra... yes
+2025-07-26T17:58:01.5026192Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wcast-align... yes
+2025-07-26T17:58:01.5288408Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wcast-align=strict... no
+2025-07-26T17:58:01.5535182Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wconditional-uninitialized... yes
+2025-07-26T17:58:01.5773735Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wreserved-identifier... yes
+2025-07-26T17:58:01.6014830Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fvisibility=hidden... yes
+2025-07-26T17:58:01.6295025Z checking for valgrind support... 
+2025-07-26T17:58:01.6883368Z checking for x86_64 assembly availability... yes
+2025-07-26T17:58:01.7095689Z checking that generated files are newer than configure... done
+2025-07-26T17:58:01.7099145Z configure: creating ./config.status
+2025-07-26T17:58:02.1007733Z config.status: creating Makefile
+2025-07-26T17:58:02.1132686Z config.status: creating libsecp256k1.pc
+2025-07-26T17:58:02.1237936Z config.status: executing depfiles commands
+2025-07-26T17:58:02.1251405Z config.status: executing libtool commands
+2025-07-26T17:58:02.1335791Z 
+2025-07-26T17:58:02.1336097Z Build Options:
+2025-07-26T17:58:02.1336475Z   with external callbacks = no
+2025-07-26T17:58:02.1336894Z   with benchmarks         = no
+2025-07-26T17:58:02.1337296Z   with tests              = yes
+2025-07-26T17:58:02.1337683Z   with ctime tests        = no
+2025-07-26T17:58:02.1337949Z   with coverage           = no
+2025-07-26T17:58:02.1338161Z   with examples           = no
+2025-07-26T17:58:02.1338530Z   module ecdh             = no
+2025-07-26T17:58:02.1338761Z   module recovery         = yes
+2025-07-26T17:58:02.1338980Z   module extrakeys        = yes
+2025-07-26T17:58:02.1339190Z   module schnorrsig       = yes
+2025-07-26T17:58:02.1339410Z   module ellswift         = yes
+2025-07-26T17:58:02.1339556Z 
+2025-07-26T17:58:02.1339635Z   asm                     = x86_64
+2025-07-26T17:58:02.1339864Z   ecmult window size      = 15
+2025-07-26T17:58:02.1340079Z   ecmult gen prec. bits   = 4
+2025-07-26T17:58:02.1340232Z 
+2025-07-26T17:58:02.1340305Z   valgrind                = no
+2025-07-26T17:58:02.1340564Z   CC                      = clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:02.1341078Z   CPPFLAGS                = -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ -DDEBUG_LOCKORDER -DARENA_DEBUG
+2025-07-26T17:58:02.1342217Z   SECP_CFLAGS             = -O2  -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef -Wno-overlength-strings -Wall -Wno-unused-function -Wextra -Wcast-align -Wconditional-uninitialized -Wreserved-identifier -fvisibility=hidden 
+2025-07-26T17:58:02.1343463Z   CFLAGS                  = -pipe -std=c11 -O2 
+2025-07-26T17:58:02.1343791Z   LDFLAGS                 = -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib 
+2025-07-26T17:58:02.1639207Z 
+2025-07-26T17:58:02.1639816Z Options used to compile and link:
+2025-07-26T17:58:02.1640262Z   boost process       = yes
+2025-07-26T17:58:02.1640659Z   multiprocess        = no
+2025-07-26T17:58:02.1641040Z   with libs           = no
+2025-07-26T17:58:02.1641402Z   with wallet         = yes
+2025-07-26T17:58:02.1641761Z     with sqlite       = yes
+2025-07-26T17:58:02.1642130Z     with bdb          = yes
+2025-07-26T17:58:02.1642429Z   with gui / qt       = no
+2025-07-26T17:58:02.1642648Z   with zmq            = no
+2025-07-26T17:58:02.1643000Z   with test           = not building test_dash because fuzzing is enabled
+2025-07-26T17:58:02.1643517Z   with fuzz binary    = yes
+2025-07-26T17:58:02.1643899Z   with bench          = no
+2025-07-26T17:58:02.1644503Z   with upnp           = no
+2025-07-26T17:58:02.1644851Z   with natpmp         = no
+2025-07-26T17:58:02.1645061Z   USDT tracing        = yes
+2025-07-26T17:58:02.1645322Z   sanitizers          = fuzzer,address,undefined,integer
+2025-07-26T17:58:02.1645611Z   debug enabled       = no
+2025-07-26T17:58:02.1645810Z   stacktraces enabled = yes
+2025-07-26T17:58:02.1646015Z   crash hooks enabled = no
+2025-07-26T17:58:02.1646208Z   miner enabled       = yes
+2025-07-26T17:58:02.1646398Z   gprof enabled       = no
+2025-07-26T17:58:02.1646589Z   werror              = yes
+2025-07-26T17:58:02.1646710Z 
+2025-07-26T17:58:02.1646794Z   target os           = linux-gnu
+2025-07-26T17:58:02.1647020Z   build os            = linux-gnu
+2025-07-26T17:58:02.1647163Z 
+2025-07-26T17:58:02.1647286Z   CC                  = clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:02.1647669Z   CFLAGS              =  -g1 -fno-omit-frame-pointer -pthread -pipe -std=c11 -O2 
+2025-07-26T17:58:02.1648780Z   CPPFLAGS            =  -DABORT_ON_FAILED_ASSUME  -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3  -DHAVE_BUILD_INFO -DGSL_NO_IOSTREAMS -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ -DDEBUG_LOCKORDER -DARENA_DEBUG
+2025-07-26T17:58:02.1649578Z   CXX                 = clang++-18 -ftrivial-auto-var-init=pattern -std=c++20
+2025-07-26T17:58:02.1651444Z   CXXFLAGS            =  -g1 -fno-omit-frame-pointer  -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection  -Wall -Wextra -Wgnu -Wformat -Wformat-security -Wreorder -Wvla -Wshadow-field -Wthread-safety -Wloop-analysis -Wredundant-decls -Wunused-member-function -Wdate-time -Wconditional-uninitialized -Woverloaded-virtual -Wsuggest-override -Wimplicit-fallthrough -Wunreachable-code -Wdocumentation -Wself-assign  -Wno-unused-parameter -Werror   -pipe -std=c++20 -O2 
+2025-07-26T17:58:02.1653459Z   LDFLAGS             = -lpthread  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie   -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib 
+2025-07-26T17:58:02.1654283Z   AR                  = ar
+2025-07-26T17:58:02.1654634Z   ARFLAGS             = cr
+2025-07-26T17:58:02.1654855Z 
+2025-07-26T17:58:02.2155136Z make  distdir-am
+2025-07-26T17:58:02.2209298Z make[1]: Entering directory '/__w/dash/dash/build-ci'
+2025-07-26T17:58:02.2210657Z if test -d "dashcore-linux64_fuzz"; then find "dashcore-linux64_fuzz" -type d ! -perm -200 -exec chmod u+w {} ';' && rm -rf "dashcore-linux64_fuzz" || { sleep 5 && rm -rf "dashcore-linux64_fuzz"; }; else :; fi
+2025-07-26T17:58:02.2224391Z test -d "dashcore-linux64_fuzz" || mkdir "dashcore-linux64_fuzz"
+2025-07-26T17:58:02.4264039Z  (cd src && make  top_distdir=../dashcore-linux64_fuzz distdir=../dashcore-linux64_fuzz/src \
+2025-07-26T17:58:02.4264944Z      am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)
+2025-07-26T17:58:02.4488850Z make[2]: Entering directory '/__w/dash/dash/build-ci/src'
+2025-07-26T17:58:02.4489252Z make  distdir-am
+2025-07-26T17:58:02.5898869Z make[3]: Entering directory '/__w/dash/dash/build-ci/src'
+2025-07-26T17:58:02.5991047Z Generated test/data/blockfilters.json.h
+2025-07-26T17:58:02.6071609Z Generated test/data/base58_encode_decode.json.h
+2025-07-26T17:58:02.6159915Z Generated test/data/bip39_vectors.json.h
+2025-07-26T17:58:02.6249479Z Generated test/data/key_io_valid.json.h
+2025-07-26T17:58:02.6331775Z Generated test/data/key_io_invalid.json.h
+2025-07-26T17:58:02.6411688Z Generated test/data/proposals_valid.json.h
+2025-07-26T17:58:02.6492701Z Generated test/data/proposals_invalid.json.h
+2025-07-26T17:58:02.6842788Z Generated test/data/script_tests.json.h
+2025-07-26T17:58:02.7199764Z Generated test/data/sighash.json.h
+2025-07-26T17:58:02.7287504Z Generated test/data/trivially_invalid.json.h
+2025-07-26T17:58:02.7388432Z Generated test/data/trivially_valid.json.h
+2025-07-26T17:58:02.7503916Z Generated test/data/tx_invalid.json.h
+2025-07-26T17:58:02.7625725Z Generated test/data/tx_valid.json.h
+2025-07-26T17:58:02.7704893Z Generated test/data/asmap.raw.h
+2025-07-26T17:58:05.2584759Z  (cd secp256k1 && make  top_distdir=../../dashcore-linux64_fuzz distdir=../../dashcore-linux64_fuzz/src/secp256k1 \
+2025-07-26T17:58:05.2585436Z      am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)
+2025-07-26T17:58:05.2621948Z make[4]: Entering directory '/__w/dash/dash/build-ci/src/secp256k1'
+2025-07-26T17:58:05.2622547Z make  distdir-am
+2025-07-26T17:58:05.2737647Z make[5]: Entering directory '/__w/dash/dash/build-ci/src/secp256k1'
+2025-07-26T17:58:05.2738222Z :
+2025-07-26T17:58:05.2739282Z test -d "../../dashcore-linux64_fuzz/src/secp256k1" || mkdir "../../dashcore-linux64_fuzz/src/secp256k1"
+2025-07-26T17:58:05.4913565Z test -n ":" \
+2025-07-26T17:58:05.4914116Z || find "../../dashcore-linux64_fuzz/src/secp256k1" -type d ! -perm -755 \
+2025-07-26T17:58:05.4914626Z 	-exec chmod u+rwx,go+rx {} \; -o \
+2025-07-26T17:58:05.4914965Z   ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+2025-07-26T17:58:05.4915301Z   ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
+2025-07-26T17:58:05.4915808Z   ! -type d ! -perm -444 -exec /bin/bash /__w/dash/dash/src/secp256k1/build-aux/install-sh -c -m a+r {} {} \; \
+2025-07-26T17:58:05.4916330Z || chmod -R a+r "../../dashcore-linux64_fuzz/src/secp256k1"
+2025-07-26T17:58:05.4927505Z make[5]: Leaving directory '/__w/dash/dash/build-ci/src/secp256k1'
+2025-07-26T17:58:05.4930528Z make[4]: Leaving directory '/__w/dash/dash/build-ci/src/secp256k1'
+2025-07-26T17:58:05.4935637Z make[3]: Leaving directory '/__w/dash/dash/build-ci/src'
+2025-07-26T17:58:05.4944239Z make[2]: Leaving directory '/__w/dash/dash/build-ci/src'
+2025-07-26T17:58:05.5208372Z  (cd doc/man && make  top_distdir=../../dashcore-linux64_fuzz distdir=../../dashcore-linux64_fuzz/doc/man \
+2025-07-26T17:58:05.5209011Z      am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)
+2025-07-26T17:58:05.5229371Z make[2]: Entering directory '/__w/dash/dash/build-ci/doc/man'
+2025-07-26T17:58:05.5229919Z make  distdir-am
+2025-07-26T17:58:05.5260600Z make[3]: Entering directory '/__w/dash/dash/build-ci/doc/man'
+2025-07-26T17:58:05.5361428Z make[3]: Leaving directory '/__w/dash/dash/build-ci/doc/man'
+2025-07-26T17:58:05.5363214Z make[2]: Leaving directory '/__w/dash/dash/build-ci/doc/man'
+2025-07-26T17:58:05.5367601Z make  \
+2025-07-26T17:58:05.5368101Z   top_distdir="dashcore-linux64_fuzz" distdir="dashcore-linux64_fuzz" \
+2025-07-26T17:58:05.5368854Z   dist-hook
+2025-07-26T17:58:05.5400730Z make[2]: Entering directory '/__w/dash/dash/build-ci'
+2025-07-26T17:58:05.5401613Z /usr/bin/git archive --format=tar HEAD -- src/clientversion.cpp | ${TAR-tar} -C dashcore-linux64_fuzz -xf -
+2025-07-26T17:58:05.5429663Z fatal: pathspec 'src/clientversion.cpp' did not match any files
+2025-07-26T17:58:05.5432652Z tar: This does not look like a tar archive
+2025-07-26T17:58:05.5433190Z tar: Exiting with failure status due to previous errors
+2025-07-26T17:58:05.5437165Z make[2]: [Makefile:1226: dist-hook] Error 2 (ignored)
+2025-07-26T17:58:05.5437699Z make[2]: Leaving directory '/__w/dash/dash/build-ci'
+2025-07-26T17:58:05.5439578Z test -n "" \
+2025-07-26T17:58:05.5439992Z || find "dashcore-linux64_fuzz" -type d ! -perm -755 \
+2025-07-26T17:58:05.5440488Z 	-exec chmod u+rwx,go+rx {} \; -o \
+2025-07-26T17:58:05.5440968Z   ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+2025-07-26T17:58:05.5441492Z   ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
+2025-07-26T17:58:05.5442050Z   ! -type d ! -perm -444 -exec /bin/bash /__w/dash/dash/build-aux/install-sh -c -m a+r {} {} \; \
+2025-07-26T17:58:05.5442476Z || chmod -R a+r "dashcore-linux64_fuzz"
+2025-07-26T17:58:05.5654888Z make[1]: Leaving directory '/__w/dash/dash/build-ci'
+2025-07-26T17:58:05.6720095Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:58:05.6793918Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-26T17:58:05.6806279Z checking pkg-config is at least version 0.9.0... yes
+2025-07-26T17:58:05.7457095Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:05.7505548Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:05.7584149Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:58:05.7612156Z checking whether build environment is sane... yes
+2025-07-26T17:58:05.7671184Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:58:05.7691966Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:58:05.7695676Z checking for gawk... gawk
+2025-07-26T17:58:05.7757562Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:58:05.7810978Z checking whether make supports nested variables... yes
+2025-07-26T17:58:05.7852538Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-26T17:58:05.7854636Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:58:05.9460763Z checking whether the C++ compiler works... yes
+2025-07-26T17:58:05.9461314Z checking for C++ compiler default output file name... a.out
+2025-07-26T17:58:06.0276253Z checking for suffix of executables... 
+2025-07-26T17:58:06.1191894Z checking whether we are cross compiling... no
+2025-07-26T17:58:06.1497058Z checking for suffix of object files... o
+2025-07-26T17:58:06.1772738Z checking whether the compiler supports GNU C++... yes
+2025-07-26T17:58:06.2035619Z checking whether clang++-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:06.6320627Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++11 features... unsupported
+2025-07-26T17:58:06.7009385Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++98 features... none needed
+2025-07-26T17:58:06.7084746Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:58:06.7088468Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:06.8258200Z checking whether clang++-18 -ftrivial-auto-var-init=pattern supports C++20 features with -std=c++20... yes
+2025-07-26T17:58:06.8261360Z checking for x86_64-pc-linux-gnu-g++... clang++-18 -ftrivial-auto-var-init=pattern -std=c++20
+2025-07-26T17:58:06.9322375Z checking whether the compiler supports GNU Objective C++... yes
+2025-07-26T17:58:06.9578993Z checking whether clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 accepts -g... yes
+2025-07-26T17:58:06.9581338Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern -std=c++20... none
+2025-07-26T17:58:06.9606127Z checking how to print strings... printf
+2025-07-26T17:58:06.9608754Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:07.0880957Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:58:07.1136977Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:07.1614447Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:58:07.2085645Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:58:07.2088835Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:07.2128223Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:58:07.2158900Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:58:07.2174664Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:58:07.2190300Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:58:07.2403828Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:58:07.2428676Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:58:07.2430884Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:58:07.2848651Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:58:07.2849217Z checking whether ln -s works... yes
+2025-07-26T17:58:07.2893153Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:58:07.2920429Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:58:07.2922279Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:58:07.2923161Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:58:07.2927245Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:58:07.2932091Z checking for file... file
+2025-07-26T17:58:07.2936132Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:58:07.2951558Z checking for objdump... objdump
+2025-07-26T17:58:07.2952177Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:58:07.2952807Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:58:07.2955332Z checking for dlltool... no
+2025-07-26T17:58:07.2957270Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:58:07.2959555Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:07.3405053Z checking for archiver @FILE support... @
+2025-07-26T17:58:07.3406283Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:58:07.3409477Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:58:07.4465137Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:58:07.4481844Z checking for sysroot... no
+2025-07-26T17:58:07.4524164Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:58:07.4561934Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:58:07.4814795Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:58:07.4818987Z checking for mt... no
+2025-07-26T17:58:07.4850934Z checking if : is a manifest tool... no
+2025-07-26T17:58:07.5150463Z checking for stdio.h... yes
+2025-07-26T17:58:07.5468082Z checking for stdlib.h... yes
+2025-07-26T17:58:07.5779649Z checking for string.h... yes
+2025-07-26T17:58:07.6091478Z checking for inttypes.h... yes
+2025-07-26T17:58:07.6401486Z checking for stdint.h... yes
+2025-07-26T17:58:07.6715290Z checking for strings.h... yes
+2025-07-26T17:58:07.7036731Z checking for sys/stat.h... yes
+2025-07-26T17:58:07.7358567Z checking for sys/types.h... yes
+2025-07-26T17:58:07.7690971Z checking for unistd.h... yes
+2025-07-26T17:58:07.8026941Z checking for dlfcn.h... yes
+2025-07-26T17:58:07.8065398Z checking for objdir... .libs
+2025-07-26T17:58:07.9199880Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:58:07.9200745Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:07.9482701Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:08.0264443Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:58:08.0640820Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:58:08.0642243Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:58:08.0890077Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:08.1463485Z checking whether -lc should be explicitly linked in... no
+2025-07-26T17:58:08.2509922Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:58:08.2510558Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:08.2526155Z checking whether stripping libraries is possible... yes
+2025-07-26T17:58:08.2526798Z checking if libtool supports shared libraries... yes
+2025-07-26T17:58:08.2527515Z checking whether to build shared libraries... yes
+2025-07-26T17:58:08.2528157Z checking whether to build static libraries... yes
+2025-07-26T17:58:08.3059213Z checking how to run the C++ preprocessor... clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 -E
+2025-07-26T17:58:08.4847608Z checking for ld used by clang++-18 -ftrivial-auto-var-init=pattern -std=c++20... /usr/bin/ld -m elf_x86_64
+2025-07-26T17:58:08.4871743Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-26T17:58:08.5235120Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:08.6335543Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:08.6641887Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:08.7435375Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 static flag -static works... yes
+2025-07-26T17:58:08.7812519Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 supports -c -o file.o... yes
+2025-07-26T17:58:08.7813796Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 supports -c -o file.o... (cached) yes
+2025-07-26T17:58:08.7814887Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:08.7861255Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-26T17:58:08.7862318Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:08.7868537Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-26T17:58:08.7874030Z checking for x86_64-pc-linux-gnu-gcov... no
+2025-07-26T17:58:08.7877747Z checking for gcov... /usr/bin/gcov
+2025-07-26T17:58:08.7882378Z checking for x86_64-pc-linux-gnu-llvm-cov... no
+2025-07-26T17:58:08.7886794Z checking for llvm-cov... /usr/bin/llvm-cov
+2025-07-26T17:58:08.7891136Z checking for lcov... no
+2025-07-26T17:58:08.7894091Z checking for python3.9... /usr/local/pyenv/shims/python3.9
+2025-07-26T17:58:08.7897956Z checking for genhtml... no
+2025-07-26T17:58:08.7901836Z checking for git... /usr/bin/git
+2025-07-26T17:58:08.7905198Z checking for ccache... /usr/bin/ccache
+2025-07-26T17:58:08.7908423Z checking for xgettext... /usr/bin/xgettext
+2025-07-26T17:58:08.7911939Z checking for hexdump... /usr/bin/hexdump
+2025-07-26T17:58:08.7915930Z checking for x86_64-pc-linux-gnu-objcopy... no
+2025-07-26T17:58:08.7920964Z checking for objcopy... /usr/bin/objcopy
+2025-07-26T17:58:08.7924808Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:58:08.7929377Z checking for objdump... /usr/bin/objdump
+2025-07-26T17:58:08.7933235Z checking for x86_64-pc-linux-gnu-dsymutil... no
+2025-07-26T17:58:08.7937259Z checking for dsymutil... /usr/bin/dsymutil
+2025-07-26T17:58:08.7941513Z checking for doxygen... no
+2025-07-26T17:58:08.8223317Z checking whether C++ compiler accepts -Werror... yes
+2025-07-26T17:58:08.9070205Z checking whether the linker accepts -Wl,--fatal-warnings... yes
+2025-07-26T17:58:08.9594145Z checking for execinfo.h... yes
+2025-07-26T17:58:09.0431105Z checking whether the linker accepts -Wl,-wrap=__cxa_allocate_exception... yes
+2025-07-26T17:58:09.0703715Z checking whether C++ compiler accepts -Wa,-mbig-obj... no
+2025-07-26T17:58:09.1031129Z checking whether C++ compiler accepts -fsanitize=fuzzer,address,undefined,integer... yes
+2025-07-26T17:58:09.2730730Z checking whether the linker accepts -fsanitize=fuzzer,address,undefined,integer... yes
+2025-07-26T17:58:09.3047881Z checking whether C++ compiler accepts -Warray-bounds... no
+2025-07-26T17:58:09.3339037Z checking whether C++ compiler accepts -Wdangling-reference... no
+2025-07-26T17:58:09.3644452Z checking whether C++ compiler accepts -Wattributes... no
+2025-07-26T17:58:09.3947988Z checking whether C++ compiler accepts -Wcpp... no
+2025-07-26T17:58:09.4240126Z checking whether C++ compiler accepts -Wstringop-overread... no
+2025-07-26T17:58:09.4536326Z checking whether C++ compiler accepts -Wstringop-overflow... no
+2025-07-26T17:58:09.4834160Z checking whether C++ compiler accepts -Wall... yes
+2025-07-26T17:58:09.5132445Z checking whether C++ compiler accepts -Wextra... yes
+2025-07-26T17:58:09.5425080Z checking whether C++ compiler accepts -Wgnu... yes
+2025-07-26T17:58:09.5729632Z checking whether C++ compiler accepts -Wformat -Wformat-security... yes
+2025-07-26T17:58:09.6045038Z checking whether C++ compiler accepts -Wreorder... yes
+2025-07-26T17:58:09.6343469Z checking whether C++ compiler accepts -Wvla... yes
+2025-07-26T17:58:09.6651825Z checking whether C++ compiler accepts -Wshadow-field... yes
+2025-07-26T17:58:09.6958040Z checking whether C++ compiler accepts -Wthread-safety... yes
+2025-07-26T17:58:09.7266786Z checking whether C++ compiler accepts -Wloop-analysis... yes
+2025-07-26T17:58:09.7565253Z checking whether C++ compiler accepts -Wredundant-decls... yes
+2025-07-26T17:58:09.7858567Z checking whether C++ compiler accepts -Wunused-member-function... yes
+2025-07-26T17:58:09.8157246Z checking whether C++ compiler accepts -Wdate-time... yes
+2025-07-26T17:58:09.8458426Z checking whether C++ compiler accepts -Wconditional-uninitialized... yes
+2025-07-26T17:58:09.8754087Z checking whether C++ compiler accepts -Wduplicated-branches... no
+2025-07-26T17:58:09.9043981Z checking whether C++ compiler accepts -Wduplicated-cond... no
+2025-07-26T17:58:09.9328095Z checking whether C++ compiler accepts -Wlogical-op... no
+2025-07-26T17:58:09.9625128Z checking whether C++ compiler accepts -Woverloaded-virtual... yes
+2025-07-26T17:58:09.9923466Z checking whether C++ compiler accepts -Wsuggest-override... yes
+2025-07-26T17:58:10.0215577Z checking whether C++ compiler accepts -Wimplicit-fallthrough... yes
+2025-07-26T17:58:10.0507591Z checking whether C++ compiler accepts -Wunreachable-code... yes
+2025-07-26T17:58:10.0815044Z checking whether C++ compiler accepts -Wdocumentation... yes
+2025-07-26T17:58:10.1119721Z checking whether C++ compiler accepts -Wself-assign... yes
+2025-07-26T17:58:10.1415406Z checking whether C++ compiler accepts -Wunused-parameter... yes
+2025-07-26T17:58:10.1702155Z checking whether C++ compiler accepts -fno-extended-identifiers... no
+2025-07-26T17:58:10.1965805Z checking whether C++ compiler accepts -fstack-reuse=none... no
+2025-07-26T17:58:10.2270054Z checking whether C++ compiler accepts -msse4.2... yes
+2025-07-26T17:58:10.2569480Z checking whether C++ compiler accepts -msse4.1... yes
+2025-07-26T17:58:10.2872034Z checking whether C++ compiler accepts -mavx -mavx2... yes
+2025-07-26T17:58:10.3168803Z checking whether C++ compiler accepts -msse4 -msha... yes
+2025-07-26T17:58:10.8003754Z checking whether C++ compiler accepts -mpclmul... yes
+2025-07-26T17:58:10.8802093Z checking for SSE4.2 intrinsics... yes
+2025-07-26T17:58:11.3324412Z checking for SSE4.1 intrinsics... yes
+2025-07-26T17:58:11.7866118Z checking for AVX2 intrinsics... yes
+2025-07-26T17:58:12.2470529Z checking for x86 SHA-NI intrinsics... yes
+2025-07-26T17:58:12.2789153Z checking whether C++ compiler accepts -march=armv8-a+crc+crypto... no
+2025-07-26T17:58:12.3090689Z checking whether C++ compiler accepts -march=armv8-a+crypto... no
+2025-07-26T17:58:12.3778913Z checking for ARMv8 CRC32 intrinsics... no
+2025-07-26T17:58:12.4483159Z checking for ARMv8 SHA-NI intrinsics... no
+2025-07-26T17:58:12.5587995Z checking whether byte ordering is bigendian... no
+2025-07-26T17:58:12.6080085Z checking how to run the C preprocessor... clang-18 -ftrivial-auto-var-init=pattern -E
+2025-07-26T17:58:12.6774678Z checking whether clang-18 -ftrivial-auto-var-init=pattern is Clang... yes
+2025-07-26T17:58:12.7467048Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-26T17:58:12.8655270Z checking whether Clang needs flag to prevent "argument unused" warning when linking with -pthread... no
+2025-07-26T17:58:12.9269034Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-26T17:58:12.9269843Z checking whether more special flags are required for pthreads... no
+2025-07-26T17:58:12.9894778Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-26T17:58:14.4082657Z checking whether std::atomic can be used without link library... yes
+2025-07-26T17:58:14.4095688Z checking for special C compiler options needed for large files... no
+2025-07-26T17:58:14.4410847Z checking for _FILE_OFFSET_BITS value needed for large files... no
+2025-07-26T17:58:14.4994364Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 options needed to detect all undeclared functions... none needed
+2025-07-26T17:58:14.5568400Z checking whether strerror_r is declared... yes
+2025-07-26T17:58:14.5904492Z checking whether strerror_r returns char *... yes
+2025-07-26T17:58:14.6177914Z checking whether C++ compiler accepts -fPIC... yes
+2025-07-26T17:58:14.6448150Z checking whether C++ compiler accepts -Wstack-protector... yes
+2025-07-26T17:58:14.6715448Z checking whether C++ compiler accepts -fstack-protector-all... yes
+2025-07-26T17:58:14.6978549Z checking whether C++ compiler accepts -fcf-protection=full... yes
+2025-07-26T17:58:14.7271962Z checking whether C++ compiler accepts -fstack-clash-protection... yes
+2025-07-26T17:58:14.7488950Z checking whether C++ preprocessor accepts -D_FORTIFY_SOURCE=3... yes
+2025-07-26T17:58:14.7699399Z checking whether C++ preprocessor accepts -U_FORTIFY_SOURCE... yes
+2025-07-26T17:58:14.8208807Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-26T17:58:14.8720154Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-26T17:58:14.9230300Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-26T17:58:14.9740413Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-26T17:58:15.0570544Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-26T17:58:15.1425007Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-26T17:58:15.2284764Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-26T17:58:15.3133833Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-26T17:58:15.3652268Z checking for sys/select.h... yes
+2025-07-26T17:58:15.4152826Z checking for sys/prctl.h... yes
+2025-07-26T17:58:15.4695802Z checking for vm/vm_param.h... no
+2025-07-26T17:58:15.5239170Z checking for sys/vmmeter.h... no
+2025-07-26T17:58:15.5773881Z checking for sys/resources.h... no
+2025-07-26T17:58:15.6160681Z checking whether getifaddrs is declared... yes
+2025-07-26T17:58:15.7056094Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-26T17:58:15.7461033Z checking whether freeifaddrs is declared... yes
+2025-07-26T17:58:15.8355875Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-26T17:58:15.8946437Z checking whether fork is declared... yes
+2025-07-26T17:58:15.9522126Z checking whether setsid is declared... yes
+2025-07-26T17:58:16.0098512Z checking whether pipe2 is declared... yes
+2025-07-26T17:58:16.0443367Z checking for mallopt M_ARENA_MAX... yes
+2025-07-26T17:58:16.0802258Z checking for getmemoryinfo... yes
+2025-07-26T17:58:16.1115714Z checking for posix_fallocate... yes
+2025-07-26T17:58:16.1387159Z checking for default visibility attribute... yes
+2025-07-26T17:58:16.1667432Z checking for dllexport attribute... no
+2025-07-26T17:58:16.8256950Z checking for thread_local support... yes
+2025-07-26T17:58:16.8606143Z checking for Linux getrandom syscall... yes
+2025-07-26T17:58:16.8960888Z checking for getentropy via random.h... yes
+2025-07-26T17:58:16.9289565Z checking for sysctl... no
+2025-07-26T17:58:16.9607420Z checking for sysctl KERN_ARND... no
+2025-07-26T17:58:17.0443067Z checking for library containing backtrace... none required
+2025-07-26T17:58:17.0772772Z checking for fdatasync... yes
+2025-07-26T17:58:17.1096299Z checking for F_FULLFSYNC... no
+2025-07-26T17:58:17.1412484Z checking for O_CLOEXEC... yes
+2025-07-26T17:58:17.1688831Z checking for __builtin_prefetch... yes
+2025-07-26T17:58:17.2406890Z checking for _mm_prefetch... yes
+2025-07-26T17:58:17.2737373Z checking for strong getauxval support in the system headers... yes
+2025-07-26T17:58:17.3120775Z checking for sockaddr_un... yes
+2025-07-26T17:58:17.4078883Z checking for std::system... yes
+2025-07-26T17:58:17.4663194Z checking for ::_wsystem... no
+2025-07-26T17:58:17.4719886Z configure: WARNING: enable-fuzz will disable all other targets and force --enable-fuzz-binary=yes
+2025-07-26T17:58:17.4963562Z checking whether C++ preprocessor accepts -DABORT_ON_FAILED_ASSUME... yes
+2025-07-26T17:58:17.6677051Z checking whether main function is needed for fuzz binary... checking whether the linker accepts ... yes
+2025-07-26T17:58:17.6677588Z no
+2025-07-26T17:58:19.0655481Z checking for Berkeley DB C++ headers... default
+2025-07-26T17:58:19.1532653Z checking for main in -ldb_cxx-4.8... yes
+2025-07-26T17:58:19.1665855Z checking for sqlite3 >= 3.7.17... yes
+2025-07-26T17:58:19.1666720Z checking whether to build wallet with support for sqlite... yes
+2025-07-26T17:58:19.2020987Z checking whether Userspace, Statically Defined Tracing tracepoints are supported... yes
+2025-07-26T17:58:19.2107911Z checking for boostlib >= 1.73.0 (107300) includes in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/include"... yes
+2025-07-26T17:58:19.2110127Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib/x86_64-linux-gnu"... no
+2025-07-26T17:58:19.2111848Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib64"... no
+2025-07-26T17:58:19.2112949Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/libx32"... no
+2025-07-26T17:58:19.2114064Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib"... yes
+2025-07-26T17:58:19.2382615Z checking for Boost headers >= 1.73.0 (107300)... yes
+2025-07-26T17:58:19.2812586Z checking whether C++ preprocessor accepts -DBOOST_NO_CXX98_FUNCTION_BASE... no
+2025-07-26T17:58:23.3986771Z checking for Boost Process... yes
+2025-07-26T17:58:23.4139139Z checking for libevent >= 2.1.8... yes
+2025-07-26T17:58:23.4253001Z checking for libevent_pthreads >= 2.1.8... yes
+2025-07-26T17:58:23.4725332Z checking if evhttp_connection_get_peer expects const char**... no
+2025-07-26T17:58:23.5396513Z checking for gmp.h... yes
+2025-07-26T17:58:23.6217916Z checking for __gmpz_init in -lgmp... yes
+2025-07-26T17:58:23.6327911Z checking for libmultiprocess... no
+2025-07-26T17:58:23.6406470Z checking whether to build dashd... no
+2025-07-26T17:58:23.6407661Z checking whether to build dash-cli... no
+2025-07-26T17:58:23.6408565Z checking whether to build dash-tx... no
+2025-07-26T17:58:23.6411190Z checking whether to build dash-wallet... no
+2025-07-26T17:58:23.6411710Z checking whether to build libraries... no
+2025-07-26T17:58:23.6414760Z checking if wallet should be enabled... yes
+2025-07-26T17:58:23.6416289Z checking whether to build with support for UPnP... no
+2025-07-26T17:58:23.6417348Z checking whether to build with support for NAT-PMP... no
+2025-07-26T17:58:23.6420520Z checking whether to build test_dash... no
+2025-07-26T17:58:23.6422440Z checking whether to reduce exports... no
+2025-07-26T17:58:23.6545469Z checking whether dsymutil needs -flat... yes
+2025-07-26T17:58:23.6545894Z 
+2025-07-26T17:58:23.6886601Z checking that generated files are newer than configure... done
+2025-07-26T17:58:23.6893738Z configure: creating ./config.status
+2025-07-26T17:58:24.2410706Z config.status: creating Makefile
+2025-07-26T17:58:24.2529807Z config.status: creating src/Makefile
+2025-07-26T17:58:24.3096889Z config.status: creating doc/man/Makefile
+2025-07-26T17:58:24.3242240Z config.status: creating share/setup.nsi
+2025-07-26T17:58:24.3391852Z config.status: creating share/qt/Info.plist
+2025-07-26T17:58:24.3537997Z config.status: creating test/config.ini
+2025-07-26T17:58:24.3685534Z config.status: creating contrib/devtools/split-debug.sh
+2025-07-26T17:58:24.3841799Z config.status: creating src/config/bitcoin-config.h
+2025-07-26T17:58:24.4292168Z config.status: executing depfiles commands
+2025-07-26T17:58:24.4305753Z config.status: executing libtool commands
+2025-07-26T17:58:24.4423037Z === configuring in src/dashbls (/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/dashbls)
+2025-07-26T17:58:24.4469030Z configure: running /bin/bash ./configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--disable-ccache' '--enable-fuzz' '--with-sanitizers=fuzzer,address,undefined,integer' 'CC=clang-18 -ftrivial-auto-var-init=pattern' 'CXX=clang++-18 -ftrivial-auto-var-init=pattern' '--with-boost-process' 'CPPFLAGS=-DDEBUG_LOCKORDER -DARENA_DEBUG' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=.
+2025-07-26T17:58:24.5679056Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:58:24.6380369Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:24.6426679Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:24.6505174Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:58:24.6534051Z checking whether build environment is sane... yes
+2025-07-26T17:58:24.6594623Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:58:24.6616218Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:58:24.6619929Z checking for gawk... gawk
+2025-07-26T17:58:24.6682466Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:58:24.6734692Z checking whether make supports nested variables... yes
+2025-07-26T17:58:24.6776440Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-26T17:58:24.6777770Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:58:24.6781260Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:24.8357893Z checking whether the C compiler works... yes
+2025-07-26T17:58:24.8358608Z checking for C compiler default output file name... a.out
+2025-07-26T17:58:24.8906962Z checking for suffix of executables... 
+2025-07-26T17:58:24.9523296Z checking whether we are cross compiling... no
+2025-07-26T17:58:24.9814433Z checking for suffix of object files... o
+2025-07-26T17:58:25.0076474Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:58:25.0325839Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:25.0805718Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:58:25.1281138Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:58:25.1355570Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:58:25.1359840Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:25.2405616Z checking whether the compiler supports GNU C++... yes
+2025-07-26T17:58:25.2655772Z checking whether clang++-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:25.6988110Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++11 features... unsupported
+2025-07-26T17:58:25.7687450Z checking for clang++-18 -ftrivial-auto-var-init=pattern option to enable C++98 features... none needed
+2025-07-26T17:58:25.7689938Z checking dependency style of clang++-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:25.8244500Z checking whether clang++-18 -ftrivial-auto-var-init=pattern supports C++14 features with -std=c++14... yes
+2025-07-26T17:58:25.8270765Z checking how to print strings... printf
+2025-07-26T17:58:25.8308158Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:58:25.8338447Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:58:25.8353792Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:58:25.8369113Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:58:25.8590088Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:58:25.8614524Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:58:25.8616818Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:58:25.9041500Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:58:25.9041999Z checking whether ln -s works... yes
+2025-07-26T17:58:25.9084521Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:58:25.9110827Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:58:25.9113090Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:58:25.9114013Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:58:25.9117540Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:58:25.9121654Z checking for file... file
+2025-07-26T17:58:25.9126056Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:58:25.9130949Z checking for objdump... objdump
+2025-07-26T17:58:25.9134582Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:58:25.9139062Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:58:25.9143483Z checking for dlltool... no
+2025-07-26T17:58:25.9145670Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:58:25.9147445Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:25.9602195Z checking for archiver @FILE support... @
+2025-07-26T17:58:25.9602819Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:58:25.9605103Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:58:26.0666428Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:58:26.0682698Z checking for sysroot... no
+2025-07-26T17:58:26.0726217Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:58:26.0765290Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:58:26.1034088Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:58:26.1037667Z checking for mt... no
+2025-07-26T17:58:26.1069559Z checking if : is a manifest tool... no
+2025-07-26T17:58:26.1376608Z checking for stdio.h... yes
+2025-07-26T17:58:26.1685837Z checking for stdlib.h... yes
+2025-07-26T17:58:26.2006944Z checking for string.h... yes
+2025-07-26T17:58:26.2333655Z checking for inttypes.h... yes
+2025-07-26T17:58:26.2661235Z checking for stdint.h... yes
+2025-07-26T17:58:26.2993967Z checking for strings.h... yes
+2025-07-26T17:58:26.3325234Z checking for sys/stat.h... yes
+2025-07-26T17:58:26.3656772Z checking for sys/types.h... yes
+2025-07-26T17:58:26.4004889Z checking for unistd.h... yes
+2025-07-26T17:58:26.4353980Z checking for dlfcn.h... yes
+2025-07-26T17:58:26.4389089Z checking for objdir... .libs
+2025-07-26T17:58:26.5568755Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:58:26.5571014Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:26.5857093Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:26.6639244Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:58:26.7006005Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:58:26.7007387Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:58:26.7253403Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:26.8296385Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:58:26.8297181Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:26.8313863Z checking whether stripping libraries is possible... yes
+2025-07-26T17:58:26.8314744Z checking if libtool supports shared libraries... yes
+2025-07-26T17:58:26.8315423Z checking whether to build shared libraries... no
+2025-07-26T17:58:26.8315924Z checking whether to build static libraries... yes
+2025-07-26T17:58:26.8844473Z checking how to run the C++ preprocessor... clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 -E
+2025-07-26T17:58:27.0639021Z checking for ld used by clang++-18 -ftrivial-auto-var-init=pattern -std=c++14... /usr/bin/ld -m elf_x86_64
+2025-07-26T17:58:27.0662594Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-26T17:58:27.1042064Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:27.2139340Z checking for clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:27.2444427Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:27.3254612Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 static flag -static works... yes
+2025-07-26T17:58:27.3630530Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 supports -c -o file.o... yes
+2025-07-26T17:58:27.3631785Z checking if clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 supports -c -o file.o... (cached) yes
+2025-07-26T17:58:27.3633190Z checking whether the clang++-18 -ftrivial-auto-var-init=pattern -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:27.3677385Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-26T17:58:27.3678656Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:27.3685383Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-26T17:58:27.3690831Z checking for x86_64-pc-linux-gnu-ranlib... no
+2025-07-26T17:58:27.3692890Z checking for ranlib... (cached) ranlib
+2025-07-26T17:58:27.3697068Z checking for x86_64-pc-linux-gnu-strip... no
+2025-07-26T17:58:27.3700047Z checking for strip... (cached) strip
+2025-07-26T17:58:27.3703066Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:27.3982670Z checking whether C compiler accepts -Werror... yes
+2025-07-26T17:58:27.4404323Z checking for gmp.h... yes
+2025-07-26T17:58:27.4983356Z checking for __gmpz_init in -lgmp... yes
+2025-07-26T17:58:27.5335293Z checking gmp version >= 6.2... yes
+2025-07-26T17:58:27.5363288Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-26T17:58:27.5376417Z checking pkg-config is at least version 0.9.0... yes
+2025-07-26T17:58:27.5623629Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -pipe... yes
+2025-07-26T17:58:27.5871764Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fomit-frame-pointer... yes
+2025-07-26T17:58:27.6385756Z checking how to run the C preprocessor... clang-18 -ftrivial-auto-var-init=pattern -E
+2025-07-26T17:58:27.7080077Z checking whether clang-18 -ftrivial-auto-var-init=pattern is Clang... yes
+2025-07-26T17:58:27.7769576Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-26T17:58:27.8977847Z checking whether Clang needs flag to prevent "argument unused" warning when linking with -pthread... no
+2025-07-26T17:58:27.9593641Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-26T17:58:27.9594438Z checking whether more special flags are required for pthreads... no
+2025-07-26T17:58:28.0225362Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-26T17:58:28.0826865Z checking for library containing clock_gettime... none required
+2025-07-26T17:58:28.1139966Z checking whether C compiler accepts -fPIC... yes
+2025-07-26T17:58:28.1435516Z checking whether C compiler accepts -fstack-reuse=none... no
+2025-07-26T17:58:28.1703544Z checking whether C compiler accepts -Wstack-protector... yes
+2025-07-26T17:58:28.2000679Z checking whether C compiler accepts -fstack-protector-all... yes
+2025-07-26T17:58:28.2302674Z checking whether C compiler accepts -fcf-protection=full... yes
+2025-07-26T17:58:28.2599455Z checking whether C compiler accepts -fstack-clash-protection... yes
+2025-07-26T17:58:28.3108541Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-26T17:58:28.3606031Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-26T17:58:28.4096001Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-26T17:58:28.4579072Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-26T17:58:28.5140455Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-26T17:58:28.5704710Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-26T17:58:28.6271592Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-26T17:58:28.6841006Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-26T17:58:28.7136251Z checking whether C compiler accepts -fno-extended-identifiers... no
+2025-07-26T17:58:28.7137619Z checking whether to build runtest... yes
+2025-07-26T17:58:28.7138544Z checking whether to build runbench... yes
+2025-07-26T17:58:28.7370266Z checking that generated files are newer than configure... done
+2025-07-26T17:58:28.7374423Z configure: creating ./config.status
+2025-07-26T17:58:29.2689737Z config.status: creating Makefile
+2025-07-26T17:58:29.2903515Z config.status: creating depends/relic/include/relic_conf.h
+2025-07-26T17:58:29.3034040Z config.status: executing depfiles commands
+2025-07-26T17:58:29.3047644Z config.status: executing libtool commands
+2025-07-26T17:58:29.3177360Z 
+2025-07-26T17:58:29.3177573Z Options used to compile and link:
+2025-07-26T17:58:29.3178021Z   target os           = linux
+2025-07-26T17:58:29.3178601Z   backend             = gmp
+2025-07-26T17:58:29.3178974Z   build bench         = yes
+2025-07-26T17:58:29.3179325Z   build test          = yes
+2025-07-26T17:58:29.3179679Z   use debug           = no
+2025-07-26T17:58:29.3180038Z   use hardening       = yes
+2025-07-26T17:58:29.3180427Z   use optimizations   = yes
+2025-07-26T17:58:29.3180664Z 
+2025-07-26T17:58:29.3180953Z   LDFLAGS             =  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie  
+2025-07-26T17:58:29.3181970Z   CFLAGS              =   -fPIC -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE   
+2025-07-26T17:58:29.3182853Z   CPPFLAGS            =  -DHAVE_BUILD_INFO 
+2025-07-26T17:58:29.3183716Z   CXXFLAGS            =   -fPIC -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE   
+2025-07-26T17:58:29.3184606Z   PTHREAD_FLAGS       = -pthread -lpthread
+2025-07-26T17:58:29.3184908Z 
+2025-07-26T17:58:29.3536709Z === configuring in src/secp256k1 (/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/secp256k1)
+2025-07-26T17:58:29.3580282Z configure: running /bin/bash ./configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--disable-ccache' '--enable-fuzz' '--with-sanitizers=fuzzer,address,undefined,integer' 'CC=clang-18 -ftrivial-auto-var-init=pattern' 'CXX=clang++-18 -ftrivial-auto-var-init=pattern' '--with-boost-process' 'CPPFLAGS=-DDEBUG_LOCKORDER -DARENA_DEBUG' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=.
+2025-07-26T17:58:29.4772476Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-26T17:58:29.5474274Z checking build system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:29.5522151Z checking host system type... x86_64-pc-linux-gnu
+2025-07-26T17:58:29.5599940Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-26T17:58:29.5628062Z checking whether build environment is sane... yes
+2025-07-26T17:58:29.5690138Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-26T17:58:29.5710603Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-26T17:58:29.5714701Z checking for gawk... gawk
+2025-07-26T17:58:29.5777148Z checking whether make sets $(MAKE)... yes
+2025-07-26T17:58:29.5830726Z checking whether make supports nested variables... yes
+2025-07-26T17:58:29.5872673Z checking whether make supports nested variables... (cached) yes
+2025-07-26T17:58:29.5875822Z checking for x86_64-pc-linux-gnu-gcc... clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:29.7433926Z checking whether the C compiler works... yes
+2025-07-26T17:58:29.7434763Z checking for C compiler default output file name... a.out
+2025-07-26T17:58:29.7987592Z checking for suffix of executables... 
+2025-07-26T17:58:29.8607244Z checking whether we are cross compiling... no
+2025-07-26T17:58:29.8896397Z checking for suffix of object files... o
+2025-07-26T17:58:29.9161797Z checking whether the compiler supports GNU C... yes
+2025-07-26T17:58:29.9411032Z checking whether clang-18 -ftrivial-auto-var-init=pattern accepts -g... yes
+2025-07-26T17:58:29.9879711Z checking for clang-18 -ftrivial-auto-var-init=pattern option to enable C11 features... none needed
+2025-07-26T17:58:30.0344242Z checking whether clang-18 -ftrivial-auto-var-init=pattern understands -c and -o together... yes
+2025-07-26T17:58:30.0415326Z checking whether make supports the include directive... yes (GNU style)
+2025-07-26T17:58:30.0418956Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:30.0422486Z checking dependency style of clang-18 -ftrivial-auto-var-init=pattern... none
+2025-07-26T17:58:30.0424056Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:30.0824027Z checking the archiver (ar) interface... ar
+2025-07-26T17:58:30.0846953Z checking how to print strings... printf
+2025-07-26T17:58:30.0885382Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-26T17:58:30.0915105Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-26T17:58:30.0930870Z checking for egrep... /usr/bin/grep -E
+2025-07-26T17:58:30.0945863Z checking for fgrep... /usr/bin/grep -F
+2025-07-26T17:58:30.1152570Z checking for ld used by clang-18 -ftrivial-auto-var-init=pattern... /usr/bin/ld
+2025-07-26T17:58:30.1177125Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-26T17:58:30.1179433Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-26T17:58:30.1591620Z checking the name lister (nm) interface... BSD nm
+2025-07-26T17:58:30.1592186Z checking whether ln -s works... yes
+2025-07-26T17:58:30.1632974Z checking the maximum length of command line arguments... 3145728
+2025-07-26T17:58:30.1658588Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-26T17:58:30.1659744Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-26T17:58:30.1660618Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-26T17:58:30.1664973Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-26T17:58:30.1669459Z checking for file... file
+2025-07-26T17:58:30.1673677Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-26T17:58:30.1677538Z checking for objdump... objdump
+2025-07-26T17:58:30.1681840Z checking how to recognize dependent libraries... pass_all
+2025-07-26T17:58:30.1686042Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-26T17:58:30.1690674Z checking for dlltool... no
+2025-07-26T17:58:30.1692009Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-26T17:58:30.1693803Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-26T17:58:30.2135640Z checking for archiver @FILE support... @
+2025-07-26T17:58:30.2137364Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-26T17:58:30.2140425Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-26T17:58:30.3204267Z checking command to parse nm output from clang-18 -ftrivial-auto-var-init=pattern object... ok
+2025-07-26T17:58:30.3220473Z checking for sysroot... no
+2025-07-26T17:58:30.3262270Z checking for a working dd... /usr/bin/dd
+2025-07-26T17:58:30.3299920Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-26T17:58:30.3553240Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-26T17:58:30.3557220Z checking for mt... no
+2025-07-26T17:58:30.3587413Z checking if : is a manifest tool... no
+2025-07-26T17:58:30.3876968Z checking for stdio.h... yes
+2025-07-26T17:58:30.4176223Z checking for stdlib.h... yes
+2025-07-26T17:58:30.4477757Z checking for string.h... yes
+2025-07-26T17:58:30.4785288Z checking for inttypes.h... yes
+2025-07-26T17:58:30.5093483Z checking for stdint.h... yes
+2025-07-26T17:58:30.5404486Z checking for strings.h... yes
+2025-07-26T17:58:30.5722965Z checking for sys/stat.h... yes
+2025-07-26T17:58:30.6049328Z checking for sys/types.h... yes
+2025-07-26T17:58:30.6392078Z checking for unistd.h... yes
+2025-07-26T17:58:30.6735417Z checking for dlfcn.h... yes
+2025-07-26T17:58:30.6773572Z checking for objdir... .libs
+2025-07-26T17:58:30.7926400Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fno-rtti -fno-exceptions... yes
+2025-07-26T17:58:30.7927368Z checking for clang-18 -ftrivial-auto-var-init=pattern option to produce PIC... -fPIC -DPIC
+2025-07-26T17:58:30.8219134Z checking if clang-18 -ftrivial-auto-var-init=pattern PIC flag -fPIC -DPIC works... yes
+2025-07-26T17:58:30.9004540Z checking if clang-18 -ftrivial-auto-var-init=pattern static flag -static works... yes
+2025-07-26T17:58:30.9373802Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... yes
+2025-07-26T17:58:30.9374637Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -c -o file.o... (cached) yes
+2025-07-26T17:58:30.9615442Z checking whether the clang-18 -ftrivial-auto-var-init=pattern linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-26T17:58:31.0647896Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-26T17:58:31.0649056Z checking how to hardcode library paths into programs... immediate
+2025-07-26T17:58:31.0666119Z checking whether stripping libraries is possible... yes
+2025-07-26T17:58:31.0668179Z checking if libtool supports shared libraries... yes
+2025-07-26T17:58:31.0668896Z checking whether to build shared libraries... no
+2025-07-26T17:58:31.0669397Z checking whether to build static libraries... yes
+2025-07-26T17:58:31.0946445Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Werror... yes
+2025-07-26T17:58:31.1193560Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef... yes
+2025-07-26T17:58:31.1436809Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wno-overlength-strings... yes
+2025-07-26T17:58:31.1677186Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wall... yes
+2025-07-26T17:58:31.1917500Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wno-unused-function... yes
+2025-07-26T17:58:31.2164285Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wextra... yes
+2025-07-26T17:58:31.2406815Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wcast-align... yes
+2025-07-26T17:58:31.2673721Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wcast-align=strict... no
+2025-07-26T17:58:31.2919149Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wconditional-uninitialized... yes
+2025-07-26T17:58:31.3159085Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -Wreserved-identifier... yes
+2025-07-26T17:58:31.3395389Z checking if clang-18 -ftrivial-auto-var-init=pattern supports -fvisibility=hidden... yes
+2025-07-26T17:58:31.3677798Z checking for valgrind support... 
+2025-07-26T17:58:31.4272009Z checking for x86_64 assembly availability... yes
+2025-07-26T17:58:31.4485747Z checking that generated files are newer than configure... done
+2025-07-26T17:58:31.4488642Z configure: creating ./config.status
+2025-07-26T17:58:31.8416848Z config.status: creating Makefile
+2025-07-26T17:58:31.8543722Z config.status: creating libsecp256k1.pc
+2025-07-26T17:58:31.8649067Z config.status: executing depfiles commands
+2025-07-26T17:58:31.8662406Z config.status: executing libtool commands
+2025-07-26T17:58:31.8746774Z 
+2025-07-26T17:58:31.8746956Z Build Options:
+2025-07-26T17:58:31.8747545Z   with external callbacks = no
+2025-07-26T17:58:31.8747969Z   with benchmarks         = no
+2025-07-26T17:58:31.8748603Z   with tests              = yes
+2025-07-26T17:58:31.8748985Z   with ctime tests        = no
+2025-07-26T17:58:31.8749415Z   with coverage           = no
+2025-07-26T17:58:31.8750056Z   with examples           = no
+2025-07-26T17:58:31.8750424Z   module ecdh             = no
+2025-07-26T17:58:31.8750804Z   module recovery         = yes
+2025-07-26T17:58:31.8751043Z   module extrakeys        = yes
+2025-07-26T17:58:31.8751277Z   module schnorrsig       = yes
+2025-07-26T17:58:31.8751505Z   module ellswift         = yes
+2025-07-26T17:58:31.8751640Z 
+2025-07-26T17:58:31.8751733Z   asm                     = x86_64
+2025-07-26T17:58:31.8752097Z   ecmult window size      = 15
+2025-07-26T17:58:31.8752476Z   ecmult gen prec. bits   = 4
+2025-07-26T17:58:31.8752733Z 
+2025-07-26T17:58:31.8752859Z   valgrind                = no
+2025-07-26T17:58:31.8753300Z   CC                      = clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:31.8754119Z   CPPFLAGS                = -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ -DDEBUG_LOCKORDER -DARENA_DEBUG
+2025-07-26T17:58:31.8755663Z   SECP_CFLAGS             = -O2  -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef -Wno-overlength-strings -Wall -Wno-unused-function -Wextra -Wcast-align -Wconditional-uninitialized -Wreserved-identifier -fvisibility=hidden 
+2025-07-26T17:58:31.8756687Z   CFLAGS                  = -pipe -std=c11 -O2 
+2025-07-26T17:58:31.8757030Z   LDFLAGS                 = -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib 
+2025-07-26T17:58:31.9060521Z 
+2025-07-26T17:58:31.9060774Z Options used to compile and link:
+2025-07-26T17:58:31.9061240Z   boost process       = yes
+2025-07-26T17:58:31.9062219Z   multiprocess        = no
+2025-07-26T17:58:31.9062643Z   with libs           = no
+2025-07-26T17:58:31.9064632Z   with wallet         = yes
+2025-07-26T17:58:31.9065159Z     with sqlite       = yes
+2025-07-26T17:58:31.9065514Z     with bdb          = yes
+2025-07-26T17:58:31.9065863Z   with gui / qt       = no
+2025-07-26T17:58:31.9066207Z   with zmq            = no
+2025-07-26T17:58:31.9066669Z   with test           = not building test_dash because fuzzing is enabled
+2025-07-26T17:58:31.9067267Z   with fuzz binary    = yes
+2025-07-26T17:58:31.9067629Z   with bench          = no
+2025-07-26T17:58:31.9067931Z   with upnp           = no
+2025-07-26T17:58:31.9068567Z   with natpmp         = no
+2025-07-26T17:58:31.9068924Z   USDT tracing        = yes
+2025-07-26T17:58:31.9069375Z   sanitizers          = fuzzer,address,undefined,integer
+2025-07-26T17:58:31.9069896Z   debug enabled       = no
+2025-07-26T17:58:31.9070277Z   stacktraces enabled = yes
+2025-07-26T17:58:31.9070650Z   crash hooks enabled = no
+2025-07-26T17:58:31.9070998Z   miner enabled       = yes
+2025-07-26T17:58:31.9071359Z   gprof enabled       = no
+2025-07-26T17:58:31.9071568Z   werror              = yes
+2025-07-26T17:58:31.9071705Z 
+2025-07-26T17:58:31.9071830Z   target os           = linux-gnu
+2025-07-26T17:58:31.9072229Z   build os            = linux-gnu
+2025-07-26T17:58:31.9072481Z 
+2025-07-26T17:58:31.9072687Z   CC                  = clang-18 -ftrivial-auto-var-init=pattern
+2025-07-26T17:58:31.9073600Z   CFLAGS              =  -g1 -fno-omit-frame-pointer -pthread -pipe -std=c11 -O2 
+2025-07-26T17:58:31.9075001Z   CPPFLAGS            =  -DABORT_ON_FAILED_ASSUME  -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3  -DHAVE_BUILD_INFO -DGSL_NO_IOSTREAMS -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ -DDEBUG_LOCKORDER -DARENA_DEBUG
+2025-07-26T17:58:31.9076374Z   CXX                 = clang++-18 -ftrivial-auto-var-init=pattern -std=c++20
+2025-07-26T17:58:31.9079164Z   CXXFLAGS            =  -g1 -fno-omit-frame-pointer  -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection  -Wall -Wextra -Wgnu -Wformat -Wformat-security -Wreorder -Wvla -Wshadow-field -Wthread-safety -Wloop-analysis -Wredundant-decls -Wunused-member-function -Wdate-time -Wconditional-uninitialized -Woverloaded-virtual -Wsuggest-override -Wimplicit-fallthrough -Wunreachable-code -Wdocumentation -Wself-assign  -Wno-unused-parameter -Werror   -pipe -std=c++20 -O2 
+2025-07-26T17:58:31.9081364Z   LDFLAGS             = -lpthread  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie   -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib 
+2025-07-26T17:58:31.9081840Z   AR                  = ar
+2025-07-26T17:58:31.9082036Z   ARFLAGS             = cr
+2025-07-26T17:58:31.9082168Z 
+2025-07-26T17:58:31.9647908Z Making install in src
+2025-07-26T17:58:31.9860886Z make[1]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T17:58:32.0107819Z make[2]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T17:58:32.0244959Z   CXX      libbitcoin_node_a-addrdb.o
+2025-07-26T17:58:32.0245793Z   CXX      libbitcoin_node_a-addressindex.o
+2025-07-26T17:58:32.0247636Z   CXX      libbitcoin_node_a-addrman.o
+2025-07-26T17:58:32.0248134Z   CXX      libbitcoin_node_a-banman.o
+2025-07-26T17:58:35.5193888Z   CXX      libbitcoin_node_a-batchedlogger.o
+2025-07-26T17:58:37.5452158Z   CXX      libbitcoin_node_a-bip324.o
+2025-07-26T17:58:39.0215612Z   CXX      libbitcoin_node_a-blockencodings.o
+2025-07-26T17:58:42.0720997Z   CXX      libbitcoin_node_a-blockfilter.o
+2025-07-26T17:58:42.9718388Z   CXX      libbitcoin_node_a-chain.o
+2025-07-26T17:58:47.4490744Z   CXX      libbitcoin_node_a-dbwrapper.o
+2025-07-26T17:58:48.4159982Z   CXX      libbitcoin_node_a-deploymentstatus.o
+2025-07-26T17:58:50.1972523Z   CXX      libbitcoin_node_a-dsnotificationinterface.o
+2025-07-26T17:58:50.7103615Z   CXX      libbitcoin_node_a-flatfile.o
+2025-07-26T17:58:50.8503280Z   CXX      libbitcoin_node_a-httprpc.o
+2025-07-26T17:58:55.1343023Z   CXX      libbitcoin_node_a-httpserver.o
+2025-07-26T17:58:56.6317526Z   CXX      libbitcoin_node_a-i2p.o
+2025-07-26T17:59:01.0798135Z   CXX      libbitcoin_node_a-init.o
+2025-07-26T17:59:03.7421318Z   CXX      libbitcoin_node_a-mapport.o
+2025-07-26T17:59:06.0827456Z   CXX      libbitcoin_node_a-net.o
+2025-07-26T17:59:06.7412574Z   CXX      libbitcoin_node_a-netfulfilledman.o
+2025-07-26T17:59:08.1735563Z   CXX      libbitcoin_node_a-netgroup.o
+2025-07-26T17:59:12.1274930Z   CXX      libbitcoin_node_a-net_processing.o
+2025-07-26T17:59:17.1215572Z   CXX      libbitcoin_node_a-noui.o
+2025-07-26T17:59:23.0154437Z   CXX      libbitcoin_node_a-pow.o
+2025-07-26T17:59:26.0618890Z   CXX      libbitcoin_node_a-rest.o
+2025-07-26T17:59:41.5401400Z   CXX      libbitcoin_node_a-shutdown.o
+2025-07-26T17:59:44.8013685Z   CXX      libbitcoin_node_a-spork.o
+2025-07-26T17:59:46.6850931Z   CXX      libbitcoin_node_a-timedata.o
+2025-07-26T17:59:53.0957268Z   CXX      libbitcoin_node_a-torcontrol.o
+2025-07-26T17:59:55.0522076Z   CXX      libbitcoin_node_a-txdb.o
+2025-07-26T18:00:03.2152262Z   CXX      libbitcoin_node_a-txmempool.o
+2025-07-26T18:00:05.9893873Z   CXX      libbitcoin_node_a-txorphanage.o
+2025-07-26T18:00:07.1009718Z   CXX      libbitcoin_node_a-validation.o
+2025-07-26T18:00:15.1556936Z   CXX      libbitcoin_node_a-validationinterface.o
+2025-07-26T18:00:21.7658809Z   CXX      libbitcoin_node_a-versionbits.o
+2025-07-26T18:00:25.5502979Z   CXX      libbitcoin_common_a-base58.o
+2025-07-26T18:00:27.7983357Z   CXX      libbitcoin_common_a-bech32.o
+2025-07-26T18:00:28.4989843Z   CXX      libbitcoin_common_a-chainparams.o
+2025-07-26T18:00:29.3345769Z   CXX      libbitcoin_common_a-coins.o
+2025-07-26T18:00:36.8654403Z   CXX      libbitcoin_common_a-compressor.o
+2025-07-26T18:00:39.1533739Z   CXX      libbitcoin_common_a-core_read.o
+2025-07-26T18:00:40.3381041Z   CXX      libbitcoin_common_a-core_write.o
+2025-07-26T18:00:41.8287777Z   CXX      libbitcoin_common_a-deploymentinfo.o
+2025-07-26T18:00:42.9221400Z   CXX      evo/libbitcoin_common_a-core_write.o
+2025-07-26T18:00:46.0698809Z   CXX      evo/libbitcoin_common_a-netinfo.o
+2025-07-26T18:00:51.2641988Z   CXX      governance/libbitcoin_common_a-common.o
+2025-07-26T18:00:53.9060757Z   CXX      libbitcoin_common_a-key.o
+2025-07-26T18:00:54.5662020Z   CXX      libbitcoin_common_a-key_io.o
+2025-07-26T18:00:54.9818883Z   CXX      libbitcoin_common_a-merkleblock.o
+2025-07-26T18:00:57.8624245Z   CXX      libbitcoin_common_a-net_types.o
+2025-07-26T18:00:58.8501556Z   CXX      libbitcoin_common_a-netaddress.o
+2025-07-26T18:00:59.4678894Z   CXX      libbitcoin_common_a-netbase.o
+2025-07-26T18:01:03.4709288Z   CXX      libbitcoin_common_a-net_permissions.o
+2025-07-26T18:01:04.4895323Z   CXX      libbitcoin_common_a-outputtype.o
+2025-07-26T18:01:06.8135910Z   CXX      policy/libbitcoin_common_a-feerate.o
+2025-07-26T18:01:07.2395464Z   CXX      policy/libbitcoin_common_a-policy.o
+2025-07-26T18:01:09.1429007Z   CXX      libbitcoin_common_a-protocol.o
+2025-07-26T18:01:09.2909094Z   CXX      libbitcoin_common_a-psbt.o
+2025-07-26T18:01:09.6849344Z   CXX      rpc/libbitcoin_common_a-evo_util.o
+2025-07-26T18:01:10.0127154Z   CXX      rpc/libbitcoin_common_a-rawtransaction_util.o
+2025-07-26T18:01:15.8759881Z   CXX      rpc/libbitcoin_common_a-util.o
+2025-07-26T18:01:16.5833681Z   CXX      libbitcoin_common_a-saltedhasher.o
+2025-07-26T18:01:19.5029164Z   CXX      libbitcoin_common_a-scheduler.o
+2025-07-26T18:01:21.9442834Z   CXX      script/libbitcoin_common_a-descriptor.o
+2025-07-26T18:01:23.9323099Z   CXX      script/libbitcoin_common_a-sign.o
+2025-07-26T18:01:26.6901090Z   CXX      script/libbitcoin_common_a-signingprovider.o
+2025-07-26T18:01:28.6905795Z   CXX      script/libbitcoin_common_a-standard.o
+2025-07-26T18:01:31.3584827Z   CXX      libbitcoin_common_a-warnings.o
+2025-07-26T18:01:32.8336954Z   CXX      coinjoin/libbitcoin_util_a-common.o
+2025-07-26T18:01:35.1361959Z   CXX      coinjoin/libbitcoin_util_a-options.o
+2025-07-26T18:01:35.6208681Z   CXX      libbitcoin_util_a-chainparamsbase.o
+2025-07-26T18:01:36.3528916Z   CXX      libbitcoin_util_a-fs.o
+2025-07-26T18:01:38.1738748Z   CXX      libbitcoin_util_a-logging.o
+2025-07-26T18:01:38.6502278Z   CXX      libbitcoin_util_a-messagesigner.o
+2025-07-26T18:01:38.8490569Z   CXX      libbitcoin_util_a-random.o
+2025-07-26T18:01:40.5763273Z   CXX      libbitcoin_util_a-randomenv.o
+2025-07-26T18:01:42.3502022Z   CXX      rpc/libbitcoin_util_a-request.o
+2025-07-26T18:01:43.5075201Z   CXX      libbitcoin_util_a-stacktraces.o
+2025-07-26T18:01:44.8755838Z   CXX      support/libbitcoin_util_a-cleanse.o
+2025-07-26T18:01:44.9563628Z   CXX      libbitcoin_util_a-sync.o
+2025-07-26T18:01:46.1134021Z   CXX      libbitcoin_consensus_a-arith_uint256.o
+2025-07-26T18:01:47.6578170Z   CXX      bls/libbitcoin_consensus_a-bls.o
+2025-07-26T18:01:49.0885551Z   CXX      consensus/libbitcoin_consensus_a-merkle.o
+2025-07-26T18:01:51.2677726Z   CXX      consensus/libbitcoin_consensus_a-tx_check.o
+2025-07-26T18:01:51.4955799Z   CXX      libbitcoin_consensus_a-hash.o
+2025-07-26T18:01:52.3702712Z   CXX      libbitcoin_consensus_a-pubkey.o
+2025-07-26T18:01:53.2527140Z   CXX      script/libbitcoin_consensus_a-bitcoinconsensus.o
+2025-07-26T18:01:53.9519503Z   CXX      script/libbitcoin_consensus_a-interpreter.o
+2025-07-26T18:01:54.5602689Z   CXX      script/libbitcoin_consensus_a-script.o
+2025-07-26T18:01:54.6156583Z   CXX      script/libbitcoin_consensus_a-script_error.o
+2025-07-26T18:01:55.4956897Z   CXX      libbitcoin_consensus_a-uint256.o
+2025-07-26T18:01:56.9312344Z   CXX      util/libbitcoin_consensus_a-strencodings.o
+2025-07-26T18:01:57.0569464Z   CXX      util/libbitcoin_consensus_a-string.o
+2025-07-26T18:01:57.5796524Z   CXX      coinjoin/libbitcoin_wallet_a-client.o
+2025-07-26T18:02:00.7411358Z   CXX      coinjoin/libbitcoin_wallet_a-interfaces.o
+2025-07-26T18:02:01.6579510Z   CXX      coinjoin/libbitcoin_wallet_a-util.o
+2025-07-26T18:02:10.0826882Z   CXX      wallet/libbitcoin_wallet_a-bip39.o
+2025-07-26T18:02:11.7019061Z   CXX      wallet/libbitcoin_wallet_a-coinjoin.o
+2025-07-26T18:02:13.8928204Z   CXX      wallet/libbitcoin_wallet_a-coincontrol.o
+2025-07-26T18:02:15.2031708Z   CXX      wallet/libbitcoin_wallet_a-context.o
+2025-07-26T18:02:16.7887299Z   CXX      wallet/libbitcoin_wallet_a-crypter.o
+2025-07-26T18:02:18.6184419Z   CXX      wallet/libbitcoin_wallet_a-db.o
+2025-07-26T18:02:22.6253820Z   CXX      wallet/libbitcoin_wallet_a-dump.o
+2025-07-26T18:02:25.6466962Z   CXX      wallet/libbitcoin_wallet_a-fees.o
+2025-07-26T18:02:32.1686542Z   CXX      wallet/libbitcoin_wallet_a-hdchain.o
+2025-07-26T18:02:33.9350327Z   CXX      wallet/libbitcoin_wallet_a-interfaces.o
+2025-07-26T18:02:35.7867761Z   CXX      wallet/libbitcoin_wallet_a-load.o
+2025-07-26T18:02:39.5749427Z   CXX      wallet/libbitcoin_wallet_a-receive.o
+2025-07-26T18:02:40.4606947Z   CXX      wallet/libbitcoin_wallet_a-scriptpubkeyman.o
+2025-07-26T18:02:48.5129479Z   CXX      wallet/libbitcoin_wallet_a-spend.o
+2025-07-26T18:02:53.1086389Z   CXX      wallet/libbitcoin_wallet_a-transaction.o
+2025-07-26T18:02:55.5485389Z   CXX      wallet/libbitcoin_wallet_a-wallet.o
+2025-07-26T18:03:08.6381878Z   CXX      wallet/libbitcoin_wallet_a-walletdb.o
+2025-07-26T18:03:13.4640565Z   CXX      wallet/libbitcoin_wallet_a-walletutil.o
+2025-07-26T18:03:15.7026540Z   CXX      wallet/libbitcoin_wallet_a-coinselection.o
+2025-07-26T18:03:17.8227097Z   CXX      wallet/libbitcoin_wallet_a-sqlite.o
+2025-07-26T18:03:26.2677677Z   CXX      wallet/libbitcoin_wallet_a-bdb.o
+2025-07-26T18:03:26.6479060Z   CXX      wallet/libbitcoin_wallet_a-salvage.o
+2025-07-26T18:03:38.4754175Z   CXX      crypto/libbitcoin_crypto_sse41_la-sha256_sse41.lo
+2025-07-26T18:03:39.6927584Z   CXX      crypto/libbitcoin_crypto_x86_shani_la-sha256_x86_shani.lo
+2025-07-26T18:03:40.6975167Z   CXX      crypto/libbitcoin_crypto_avx2_la-sha256_avx2.lo
+2025-07-26T18:03:41.2119193Z   CXX      rpc/libbitcoin_cli_a-client.o
+2025-07-26T18:03:43.1974251Z make[3]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/dashbls'
+2025-07-26T18:03:43.1994362Z  /bin/bash ./config.status
+2025-07-26T18:03:43.4123358Z   CXX      crc32c/src/libcrc32c_sse42_la-crc32c_sse42.lo
+2025-07-26T18:03:43.4280650Z config.status: creating Makefile
+2025-07-26T18:03:43.4750173Z config.status: creating depends/relic/include/relic_conf.h
+2025-07-26T18:03:43.4951324Z config.status: executing depfiles commands
+2025-07-26T18:03:43.4974439Z config.status: executing libtool commands
+2025-07-26T18:03:43.6309072Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_add_low.lo
+2025-07-26T18:03:43.8507779Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_inv_low.lo
+2025-07-26T18:03:43.9895592Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_mul_low.lo
+2025-07-26T18:03:44.0319754Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_rdc_low.lo
+2025-07-26T18:03:44.1148937Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_shift_low.lo
+2025-07-26T18:03:44.2238663Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fp_sqr_low.lo
+2025-07-26T18:03:44.2469500Z make[3]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/secp256k1'
+2025-07-26T18:03:44.2596077Z   CC       src/libsecp256k1_la-secp256k1.lo
+2025-07-26T18:03:44.3745291Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fb_add_low.lo
+2025-07-26T18:03:44.4959178Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_inv_low.lo
+2025-07-26T18:03:44.6478871Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_itr_low.lo
+2025-07-26T18:03:44.7720726Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_mul_low.lo
+2025-07-26T18:03:44.9560295Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_rdc_low.lo
+2025-07-26T18:03:45.1426898Z   CC       depends/relic/src/low/gmp/librelic_la-relic_fb_shift_low.lo
+2025-07-26T18:03:45.2773709Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_slv_low.lo
+2025-07-26T18:03:45.4281753Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_sqr_low.lo
+2025-07-26T18:03:45.5835753Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_srt_low.lo
+2025-07-26T18:03:45.8693970Z   CC       depends/relic/src/low/easy/librelic_la-relic_fb_trc_low.lo
+2025-07-26T18:03:46.1113845Z   CXX      src/runbench-test-bench.o
+2025-07-26T18:03:47.6656351Z   CC       src/libsecp256k1_precomputed_la-precomputed_ecmult.lo
+2025-07-26T18:03:47.7316961Z   CC       src/libsecp256k1_precomputed_la-precomputed_ecmult_gen.lo
+2025-07-26T18:03:48.0548632Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_1byte.o
+2025-07-26T18:03:48.1229436Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_2bytes.o
+2025-07-26T18:03:48.1916314Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_3bytes.o
+2025-07-26T18:03:48.2579140Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_4bytes.o
+2025-07-26T18:03:49.2531228Z   CXX      src/runtest-test.o
+2025-07-26T18:03:50.8615995Z   CCLD     libsecp256k1_precomputed.la
+2025-07-26T18:03:51.0530688Z   CCLD     libsecp256k1.la
+2025-07-26T18:03:51.3040393Z make[3]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/secp256k1'
+2025-07-26T18:03:51.3070743Z   CXX      src/libdashbls_la-bls.lo
+2025-07-26T18:03:52.4750441Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_5bytes.o
+2025-07-26T18:03:52.5412227Z   CXX      src/libdashbls_la-chaincode.lo
+2025-07-26T18:03:52.9284713Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_6bytes.o
+2025-07-26T18:03:52.9993239Z   CXX      src/libdashbls_la-elements.lo
+2025-07-26T18:03:54.2100150Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_7bytes.o
+2025-07-26T18:03:54.2820036Z   CXX      src/libdashbls_la-extendedprivatekey.lo
+2025-07-26T18:03:54.8628994Z   CXX      minisketch/src/fields/libminisketch_clmul_a-clmul_8bytes.o
+2025-07-26T18:03:54.9350234Z   CXX      src/libdashbls_la-extendedpublickey.lo
+2025-07-26T18:03:56.0731014Z   CXX      wallet/test/fuzz/test_fuzz_fuzz-coinselection.o
+2025-07-26T18:03:56.5991251Z   CXX      wallet/test/fuzz/test_fuzz_fuzz-fees.o
+2025-07-26T18:03:58.9776791Z   CXX      src/libdashbls_la-legacy.lo
+2025-07-26T18:04:00.1796196Z   CXX      wallet/test/fuzz/test_fuzz_fuzz-notifications.o
+2025-07-26T18:04:04.8816147Z wallet/test/fuzz/fees.cpp:32:5: error: unknown type name 'Chainstate'; did you mean 'CChainState'?
+2025-07-26T18:04:04.8817168Z    32 |     Chainstate* chainstate = &node.chainman->ActiveChainstate();
+2025-07-26T18:04:04.8817752Z       |     ^~~~~~~~~~
+2025-07-26T18:04:04.8818072Z       |     CChainState
+2025-07-26T18:04:04.8818692Z ./validation.h:454:7: note: 'CChainState' declared here
+2025-07-26T18:04:04.8819276Z   454 | class CChainState
+2025-07-26T18:04:04.8819631Z       |       ^
+2025-07-26T18:04:06.7064398Z 1 error generated.
+2025-07-26T18:04:06.7494582Z make[2]: *** [Makefile:17087: wallet/test/fuzz/test_fuzz_fuzz-fees.o] Error 1
+2025-07-26T18:04:06.7501265Z make[2]: *** Waiting for unfinished jobs....
+2025-07-26T18:04:06.7525503Z   CXX      src/libdashbls_la-privatekey.lo
+2025-07-26T18:04:08.2607792Z   CXX      src/libdashbls_la-schemes.lo
+2025-07-26T18:04:08.4052283Z   CXX      src/libdashbls_la-threshold.lo
+2025-07-26T18:04:10.4720852Z   CC       depends/mimalloc/src/libmimalloc_secure_la-stats.lo
+2025-07-26T18:04:10.7695065Z   CC       depends/mimalloc/src/libmimalloc_secure_la-random.lo
+2025-07-26T18:04:11.0410684Z   CC       depends/mimalloc/src/libmimalloc_secure_la-os.lo
+2025-07-26T18:04:11.4235020Z   CC       depends/mimalloc/src/libmimalloc_secure_la-bitmap.lo
+2025-07-26T18:04:11.6206915Z   CC       depends/mimalloc/src/libmimalloc_secure_la-arena.lo
+2025-07-26T18:04:11.7400391Z   CC       depends/mimalloc/src/libmimalloc_secure_la-segment-cache.lo
+2025-07-26T18:04:11.9123026Z   CC       depends/mimalloc/src/libmimalloc_secure_la-segment.lo
+2025-07-26T18:04:11.9927345Z   CC       depends/mimalloc/src/libmimalloc_secure_la-page.lo
+2025-07-26T18:04:12.4895839Z   CC       depends/mimalloc/src/libmimalloc_secure_la-alloc.lo
+2025-07-26T18:04:12.5650945Z   CC       depends/mimalloc/src/libmimalloc_secure_la-alloc-aligned.lo
+2025-07-26T18:04:12.8463435Z   CC       depends/mimalloc/src/libmimalloc_secure_la-alloc-posix.lo
+2025-07-26T18:04:12.8990943Z   CC       depends/mimalloc/src/libmimalloc_secure_la-heap.lo
+2025-07-26T18:04:13.0443180Z   CC       depends/mimalloc/src/libmimalloc_secure_la-options.lo
+2025-07-26T18:04:13.2116899Z   CC       depends/mimalloc/src/libmimalloc_secure_la-init.lo
+2025-07-26T18:04:13.3601746Z   CC       depends/relic/src/librelic_la-relic_err.lo
+2025-07-26T18:04:13.4639867Z   CC       depends/relic/src/librelic_la-relic_core.lo
+2025-07-26T18:04:13.5117199Z   CC       depends/relic/src/librelic_la-relic_conf.lo
+2025-07-26T18:04:13.6354642Z   CC       depends/relic/src/librelic_la-relic_util.lo
+2025-07-26T18:04:13.6706649Z   CC       depends/relic/src/arch/librelic_la-relic_arch_x64.lo
+2025-07-26T18:04:13.6823744Z   CC       depends/relic/src/rand/librelic_la-relic_rand_call.lo
+2025-07-26T18:04:13.8094007Z   CC       depends/relic/src/rand/librelic_la-relic_rand_core.lo
+2025-07-26T18:04:13.8365839Z   CC       depends/relic/src/rand/librelic_la-relic_rand_hashd.lo
+2025-07-26T18:04:13.8398746Z   CC       depends/relic/src/rand/librelic_la-relic_rand_udev.lo
+2025-07-26T18:04:13.9894452Z   CC       depends/relic/src/dv/librelic_la-relic_dv_mem.lo
+2025-07-26T18:04:13.9918982Z   CC       depends/relic/src/dv/librelic_la-relic_dv_util.lo
+2025-07-26T18:04:14.0358480Z   CC       depends/relic/src/bn/librelic_la-relic_bn_add.lo
+2025-07-26T18:04:14.1413727Z   CC       depends/relic/src/bn/librelic_la-relic_bn_cmp.lo
+2025-07-26T18:04:14.2143934Z   CC       depends/relic/src/bn/librelic_la-relic_bn_div.lo
+2025-07-26T18:04:14.2189668Z   CC       depends/relic/src/bn/librelic_la-relic_bn_factor.lo
+2025-07-26T18:04:14.3033979Z   CC       depends/relic/src/bn/librelic_la-relic_bn_gcd.lo
+2025-07-26T18:04:14.3803567Z   CC       depends/relic/src/bn/librelic_la-relic_bn_inv.lo
+2025-07-26T18:04:14.3912203Z   CC       depends/relic/src/bn/librelic_la-relic_bn_lcm.lo
+2025-07-26T18:04:14.5387812Z   CC       depends/relic/src/bn/librelic_la-relic_bn_mem.lo
+2025-07-26T18:04:14.5493305Z   CC       depends/relic/src/bn/librelic_la-relic_bn_mod.lo
+2025-07-26T18:04:14.6147302Z   CC       depends/relic/src/bn/librelic_la-relic_bn_mul.lo
+2025-07-26T18:04:14.7067993Z   CC       depends/relic/src/bn/librelic_la-relic_bn_mxp.lo
+2025-07-26T18:04:14.7660080Z   CC       depends/relic/src/bn/librelic_la-relic_bn_prime.lo
+2025-07-26T18:04:14.8005202Z   CC       depends/relic/src/bn/librelic_la-relic_bn_rec.lo
+2025-07-26T18:04:14.9144557Z   CC       depends/relic/src/bn/librelic_la-relic_bn_shift.lo
+2025-07-26T18:04:14.9911254Z   CC       depends/relic/src/bn/librelic_la-relic_bn_smb.lo
+2025-07-26T18:04:15.0945394Z   CC       depends/relic/src/bn/librelic_la-relic_bn_sqr.lo
+2025-07-26T18:04:15.1596101Z   CC       depends/relic/src/bn/librelic_la-relic_bn_srt.lo
+2025-07-26T18:04:15.1687911Z   CC       depends/relic/src/bn/librelic_la-relic_bn_util.lo
+2025-07-26T18:04:15.2525890Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_add_low.lo
+2025-07-26T18:04:15.3218883Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_div_low.lo
+2025-07-26T18:04:15.4095801Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_mod_low.lo
+2025-07-26T18:04:15.4461432Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_mul_low.lo
+2025-07-26T18:04:15.4841144Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_shift_low.lo
+2025-07-26T18:04:15.5388863Z   CC       depends/relic/src/low/gmp/librelic_la-relic_bn_sqr_low.lo
+2025-07-26T18:04:15.5620968Z   CC       depends/relic/src/fp/librelic_la-relic_fp_add.lo
+2025-07-26T18:04:15.6165480Z   CC       depends/relic/src/fp/librelic_la-relic_fp_cmp.lo
+2025-07-26T18:04:15.6641984Z   CC       depends/relic/src/fp/librelic_la-relic_fp_exp.lo
+2025-07-26T18:04:15.7369889Z   CC       depends/relic/src/fp/librelic_la-relic_fp_inv.lo
+2025-07-26T18:04:15.7661830Z   CC       depends/relic/src/fp/librelic_la-relic_fp_mul.lo
+2025-07-26T18:04:15.8498052Z   CC       depends/relic/src/fp/librelic_la-relic_fp_param.lo
+2025-07-26T18:04:15.8770605Z depends/relic/src/fp/relic_fp_inv.c:463:15: warning: shift count >= width of type [-Wshift-count-overflow]
+2025-07-26T18:04:15.8772049Z   463 |                         d0 = delta >> (RLC_DIG - 1);
+2025-07-26T18:04:15.8773105Z       |                                    ^  ~~~~~~~~~~~~~
+2025-07-26T18:04:15.9406104Z   CC       depends/relic/src/fp/librelic_la-relic_fp_prime.lo
+2025-07-26T18:04:15.9506124Z 1 warning generated.
+2025-07-26T18:04:15.9612751Z   CC       depends/relic/src/fp/librelic_la-relic_fp_rdc.lo
+2025-07-26T18:04:16.0094173Z   CC       depends/relic/src/fp/librelic_la-relic_fp_shift.lo
+2025-07-26T18:04:16.1186800Z   CC       depends/relic/src/fp/librelic_la-relic_fp_sqr.lo
+2025-07-26T18:04:16.1670162Z   CC       depends/relic/src/fp/librelic_la-relic_fp_srt.lo
+2025-07-26T18:04:16.1699160Z   CC       depends/relic/src/fp/librelic_la-relic_fp_util.lo
+2025-07-26T18:04:16.2883290Z   CC       depends/relic/src/fpx/librelic_la-relic_fp2_mul.lo
+2025-07-26T18:04:16.3362343Z   CC       depends/relic/src/fpx/librelic_la-relic_fp2_sqr.lo
+2025-07-26T18:04:16.3755893Z   CC       depends/relic/src/fpx/librelic_la-relic_fp3_mul.lo
+2025-07-26T18:04:16.4591695Z   CC       depends/relic/src/fpx/librelic_la-relic_fp3_sqr.lo
+2025-07-26T18:04:16.4908417Z   CC       depends/relic/src/fpx/librelic_la-relic_fp4_mul.lo
+2025-07-26T18:04:16.5578939Z   CC       depends/relic/src/fpx/librelic_la-relic_fp4_sqr.lo
+2025-07-26T18:04:16.6127708Z   CC       depends/relic/src/fpx/librelic_la-relic_fp6_mul.lo
+2025-07-26T18:04:16.6566916Z   CC       depends/relic/src/fpx/librelic_la-relic_fp6_sqr.lo
+2025-07-26T18:04:16.7277339Z   CC       depends/relic/src/fpx/librelic_la-relic_fp8_mul.lo
+2025-07-26T18:04:16.7859067Z   CC       depends/relic/src/fpx/librelic_la-relic_fp8_sqr.lo
+2025-07-26T18:04:16.8238153Z   CC       depends/relic/src/fpx/librelic_la-relic_fp9_mul.lo
+2025-07-26T18:04:16.9040473Z   CC       depends/relic/src/fpx/librelic_la-relic_fp9_sqr.lo
+2025-07-26T18:04:16.9525681Z   CC       depends/relic/src/fpx/librelic_la-relic_fp12_mul.lo
+2025-07-26T18:04:17.0010736Z   CC       depends/relic/src/fpx/librelic_la-relic_fp12_sqr.lo
+2025-07-26T18:04:17.0646646Z   CC       depends/relic/src/fpx/librelic_la-relic_fp18_mul.lo
+2025-07-26T18:04:17.1280841Z   CC       depends/relic/src/fpx/librelic_la-relic_fp18_sqr.lo
+2025-07-26T18:04:17.2049236Z   CC       depends/relic/src/fpx/librelic_la-relic_fp24_mul.lo
+2025-07-26T18:04:17.2293789Z   CC       depends/relic/src/fpx/librelic_la-relic_fp24_sqr.lo
+2025-07-26T18:04:17.2907173Z   CC       depends/relic/src/fpx/librelic_la-relic_fp48_mul.lo
+2025-07-26T18:04:17.3940962Z   CC       depends/relic/src/fpx/librelic_la-relic_fp48_sqr.lo
+2025-07-26T18:04:17.4267905Z   CC       depends/relic/src/fpx/librelic_la-relic_fp54_mul.lo
+2025-07-26T18:04:17.4544619Z   CC       depends/relic/src/fpx/librelic_la-relic_fp54_sqr.lo
+2025-07-26T18:04:17.5995457Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_add.lo
+2025-07-26T18:04:17.5996189Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_cmp.lo
+2025-07-26T18:04:17.6515437Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_cyc.lo
+2025-07-26T18:04:17.8167992Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_exp.lo
+2025-07-26T18:04:17.8508872Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_field.lo
+2025-07-26T18:04:18.0459305Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_frb.lo
+2025-07-26T18:04:18.0927518Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_inv.lo
+2025-07-26T18:04:18.2291682Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_pck.lo
+2025-07-26T18:04:18.2637432Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_rdc.lo
+2025-07-26T18:04:18.3717130Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_srt.lo
+2025-07-26T18:04:18.4150947Z   CC       depends/relic/src/fpx/librelic_la-relic_fpx_util.lo
+2025-07-26T18:04:18.4250913Z   CC       depends/relic/src/low/easy/librelic_la-relic_fpx_add_low.lo
+2025-07-26T18:04:18.5645022Z   CC       depends/relic/src/low/easy/librelic_la-relic_fpx_mul_low.lo
+2025-07-26T18:04:18.6224301Z   CC       depends/relic/src/low/easy/librelic_la-relic_fpx_rdc_low.lo
+2025-07-26T18:04:18.7517608Z   CC       depends/relic/src/low/easy/librelic_la-relic_fpx_sqr_low.lo
+2025-07-26T18:04:18.7811389Z   CC       depends/relic/src/fb/librelic_la-relic_fb_add.lo
+2025-07-26T18:04:18.8196264Z   CC       depends/relic/src/fb/librelic_la-relic_fb_cmp.lo
+2025-07-26T18:04:18.9285116Z   CC       depends/relic/src/fb/librelic_la-relic_fb_exp.lo
+2025-07-26T18:04:18.9312735Z   CC       depends/relic/src/fb/librelic_la-relic_fb_inv.lo
+2025-07-26T18:04:18.9747256Z   CC       depends/relic/src/fb/librelic_la-relic_fb_itr.lo
+2025-07-26T18:04:19.1083789Z   CC       depends/relic/src/fb/librelic_la-relic_fb_mul.lo
+2025-07-26T18:04:19.1475351Z   CC       depends/relic/src/fb/librelic_la-relic_fb_param.lo
+2025-07-26T18:04:19.2013712Z   CC       depends/relic/src/fb/librelic_la-relic_fb_poly.lo
+2025-07-26T18:04:19.2883213Z   CC       depends/relic/src/fb/librelic_la-relic_fb_rdc.lo
+2025-07-26T18:04:19.3096124Z   CC       depends/relic/src/fb/librelic_la-relic_fb_shift.lo
+2025-07-26T18:04:19.4169831Z   CC       depends/relic/src/fb/librelic_la-relic_fb_slv.lo
+2025-07-26T18:04:19.4604110Z   CC       depends/relic/src/fb/librelic_la-relic_fb_sqr.lo
+2025-07-26T18:04:19.4704010Z   CC       depends/relic/src/fb/librelic_la-relic_fb_srt.lo
+2025-07-26T18:04:19.5732808Z   CC       depends/relic/src/fb/librelic_la-relic_fb_trc.lo
+2025-07-26T18:04:19.6211408Z   CC       depends/relic/src/fb/librelic_la-relic_fb_util.lo
+2025-07-26T18:04:19.6254638Z   CC       depends/relic/src/fbx/librelic_la-relic_fb2_inv.lo
+2025-07-26T18:04:19.7500189Z   CC       depends/relic/src/fbx/librelic_la-relic_fb2_mul.lo
+2025-07-26T18:04:19.8160950Z   CC       depends/relic/src/fbx/librelic_la-relic_fb2_slv.lo
+2025-07-26T18:04:19.8711537Z   CC       depends/relic/src/fbx/librelic_la-relic_fb2_sqr.lo
+2025-07-26T18:04:19.9066645Z   CC       depends/relic/src/ep/librelic_la-relic_ep_add.lo
+2025-07-26T18:04:19.9746532Z   CC       depends/relic/src/ep/librelic_la-relic_ep_cmp.lo
+2025-07-26T18:04:20.0226688Z   CC       depends/relic/src/ep/librelic_la-relic_ep_curve.lo
+2025-07-26T18:04:20.1306263Z   CC       depends/relic/src/ep/librelic_la-relic_ep_dbl.lo
+2025-07-26T18:04:20.1312152Z   CC       depends/relic/src/ep/librelic_la-relic_ep_map.lo
+2025-07-26T18:04:20.2441280Z   CC       depends/relic/src/ep/librelic_la-relic_ep_mul.lo
+2025-07-26T18:04:20.3272040Z   CC       depends/relic/src/ep/librelic_la-relic_ep_mul_fix.lo
+2025-07-26T18:04:20.3301533Z   CC       depends/relic/src/ep/librelic_la-relic_ep_mul_sim.lo
+2025-07-26T18:04:20.5054184Z   CC       depends/relic/src/ep/librelic_la-relic_ep_neg.lo
+2025-07-26T18:04:20.5861157Z   CC       depends/relic/src/ep/librelic_la-relic_ep_norm.lo
+2025-07-26T18:04:20.6549767Z   CC       depends/relic/src/ep/librelic_la-relic_ep_param.lo
+2025-07-26T18:04:20.6981776Z   CC       depends/relic/src/ep/librelic_la-relic_ep_pck.lo
+2025-07-26T18:04:20.7548989Z   CC       depends/relic/src/ep/librelic_la-relic_ep_psi.lo
+2025-07-26T18:04:20.8465624Z   CC       depends/relic/src/ep/librelic_la-relic_ep_util.lo
+2025-07-26T18:04:20.8504614Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_add.lo
+2025-07-26T18:04:20.9084406Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_cmp.lo
+2025-07-26T18:04:21.0202139Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_curve.lo
+2025-07-26T18:04:21.0287030Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_dbl.lo
+2025-07-26T18:04:21.0326958Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_frb.lo
+2025-07-26T18:04:21.0675245Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_map.lo
+2025-07-26T18:04:21.1857724Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_mul.lo
+2025-07-26T18:04:21.2003936Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_mul_cof.lo
+2025-07-26T18:04:21.2506237Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_mul_fix.lo
+2025-07-26T18:04:21.2751172Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_mul_sim.lo
+2025-07-26T18:04:21.3650230Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_neg.lo
+2025-07-26T18:04:21.4069280Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_norm.lo
+2025-07-26T18:04:21.5025185Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_pck.lo
+2025-07-26T18:04:21.5139039Z   CC       depends/relic/src/epx/librelic_la-relic_ep2_util.lo
+2025-07-26T18:04:21.5712689Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_add.lo
+2025-07-26T18:04:21.6245030Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_cmp.lo
+2025-07-26T18:04:21.6664719Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_curve.lo
+2025-07-26T18:04:21.7104287Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_dbl.lo
+2025-07-26T18:04:21.7634506Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_frb.lo
+2025-07-26T18:04:21.7777634Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_map.lo
+2025-07-26T18:04:21.8552198Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_mul.lo
+2025-07-26T18:04:21.8900984Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_mul_cof.lo
+2025-07-26T18:04:21.9185471Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_mul_fix.lo
+2025-07-26T18:04:21.9355199Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_mul_sim.lo
+2025-07-26T18:04:22.0437657Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_neg.lo
+2025-07-26T18:04:22.0849494Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_norm.lo
+2025-07-26T18:04:22.1666255Z   CC       depends/relic/src/epx/librelic_la-relic_ep4_util.lo
+2025-07-26T18:04:22.2002027Z   CC       depends/relic/src/eb/librelic_la-relic_eb_add.lo
+2025-07-26T18:04:22.2562794Z   CC       depends/relic/src/eb/librelic_la-relic_eb_cmp.lo
+2025-07-26T18:04:22.2848851Z   CC       depends/relic/src/eb/librelic_la-relic_eb_curve.lo
+2025-07-26T18:04:22.3511479Z   CC       depends/relic/src/eb/librelic_la-relic_eb_dbl.lo
+2025-07-26T18:04:22.3903606Z   CC       depends/relic/src/eb/librelic_la-relic_eb_frb.lo
+2025-07-26T18:04:22.4095804Z   CC       depends/relic/src/eb/librelic_la-relic_eb_hlv.lo
+2025-07-26T18:04:22.4665197Z   CC       depends/relic/src/eb/librelic_la-relic_eb_map.lo
+2025-07-26T18:04:22.5199838Z   CC       depends/relic/src/eb/librelic_la-relic_eb_mul.lo
+2025-07-26T18:04:22.5470063Z   CC       depends/relic/src/eb/librelic_la-relic_eb_mul_fix.lo
+2025-07-26T18:04:22.5662742Z   CC       depends/relic/src/eb/librelic_la-relic_eb_mul_sim.lo
+2025-07-26T18:04:22.6223998Z   CC       depends/relic/src/eb/librelic_la-relic_eb_neg.lo
+2025-07-26T18:04:22.7928025Z   CC       depends/relic/src/eb/librelic_la-relic_eb_norm.lo
+2025-07-26T18:04:22.7929676Z   CC       depends/relic/src/eb/librelic_la-relic_eb_param.lo
+2025-07-26T18:04:22.7944804Z   CC       depends/relic/src/eb/librelic_la-relic_eb_pck.lo
+2025-07-26T18:04:22.8272492Z   CC       depends/relic/src/eb/librelic_la-relic_eb_util.lo
+2025-07-26T18:04:22.9540788Z   CC       depends/relic/src/ed/librelic_la-relic_ed_add.lo
+2025-07-26T18:04:22.9608948Z   CC       depends/relic/src/ed/librelic_la-relic_ed_cmp.lo
+2025-07-26T18:04:22.9628663Z   CC       depends/relic/src/ed/librelic_la-relic_ed_curve.lo
+2025-07-26T18:04:23.0270077Z   CC       depends/relic/src/ed/librelic_la-relic_ed_dbl.lo
+2025-07-26T18:04:23.1195644Z   CC       depends/relic/src/ed/librelic_la-relic_ed_map.lo
+2025-07-26T18:04:23.1209983Z   CC       depends/relic/src/ed/librelic_la-relic_ed_mul.lo
+2025-07-26T18:04:23.1297904Z   CC       depends/relic/src/ed/librelic_la-relic_ed_mul_fix.lo
+2025-07-26T18:04:23.1941846Z   CC       depends/relic/src/ed/librelic_la-relic_ed_mul_sim.lo
+2025-07-26T18:04:23.2997702Z   CC       depends/relic/src/ed/librelic_la-relic_ed_neg.lo
+2025-07-26T18:04:23.3419082Z   CC       depends/relic/src/ed/librelic_la-relic_ed_norm.lo
+2025-07-26T18:04:23.3692950Z   CC       depends/relic/src/ed/librelic_la-relic_ed_param.lo
+2025-07-26T18:04:23.4230045Z   CC       depends/relic/src/ed/librelic_la-relic_ed_pck.lo
+2025-07-26T18:04:23.4560128Z   CC       depends/relic/src/ed/librelic_la-relic_ed_util.lo
+2025-07-26T18:04:23.5129626Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k2.lo
+2025-07-26T18:04:23.5421792Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k8.lo
+2025-07-26T18:04:23.5926910Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k12.lo
+2025-07-26T18:04:23.6614778Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k24.lo
+2025-07-26T18:04:23.6767247Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k48.lo
+2025-07-26T18:04:23.7132276Z   CC       depends/relic/src/pp/librelic_la-relic_pp_add_k54.lo
+2025-07-26T18:04:23.7764633Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k2.lo
+2025-07-26T18:04:23.8300721Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k8.lo
+2025-07-26T18:04:23.8447320Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k12.lo
+2025-07-26T18:04:23.8814388Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k24.lo
+2025-07-26T18:04:23.9445826Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k48.lo
+2025-07-26T18:04:24.0258477Z   CC       depends/relic/src/pp/librelic_la-relic_pp_dbl_k54.lo
+2025-07-26T18:04:24.0372650Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k2.lo
+2025-07-26T18:04:24.0472626Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k8.lo
+2025-07-26T18:04:24.1151709Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k12.lo
+2025-07-26T18:04:24.1912874Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k24.lo
+2025-07-26T18:04:24.1973776Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k48.lo
+2025-07-26T18:04:24.2044101Z   CC       depends/relic/src/pp/librelic_la-relic_pp_exp_k54.lo
+2025-07-26T18:04:24.2802736Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map.lo
+2025-07-26T18:04:24.3555585Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k2.lo
+2025-07-26T18:04:24.3622528Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k8.lo
+2025-07-26T18:04:24.3808469Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k12.lo
+2025-07-26T18:04:24.4340721Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k24.lo
+2025-07-26T18:04:24.5257799Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k48.lo
+2025-07-26T18:04:24.5689407Z   CC       depends/relic/src/pp/librelic_la-relic_pp_map_k54.lo
+2025-07-26T18:04:24.6236122Z   CC       depends/relic/src/pp/librelic_la-relic_pp_norm.lo
+2025-07-26T18:04:24.6249333Z   CC       depends/relic/src/pc/librelic_la-relic_pc_core.lo
+2025-07-26T18:04:24.6997541Z   CC       depends/relic/src/pc/librelic_la-relic_pc_exp.lo
+2025-07-26T18:04:24.7475937Z   CC       depends/relic/src/pc/librelic_la-relic_pc_util.lo
+2025-07-26T18:04:24.7767989Z   CC       depends/relic/src/cp/librelic_la-relic_cp_bbs.lo
+2025-07-26T18:04:24.7858045Z   CC       depends/relic/src/cp/librelic_la-relic_cp_bdpe.lo
+2025-07-26T18:04:24.8823995Z   CC       depends/relic/src/cp/librelic_la-relic_cp_bgn.lo
+2025-07-26T18:04:24.9329590Z   CC       depends/relic/src/cp/librelic_la-relic_cp_bls.lo
+2025-07-26T18:04:25.0022885Z   CC       depends/relic/src/cp/librelic_la-relic_cp_cls.lo
+2025-07-26T18:04:25.0254070Z   CC       depends/relic/src/cp/librelic_la-relic_cp_cmlhs.lo
+2025-07-26T18:04:25.1215253Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ecdh.lo
+2025-07-26T18:04:25.1486781Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ecdsa.lo
+2025-07-26T18:04:25.2841597Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ecies.lo
+2025-07-26T18:04:25.3038686Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ecmqv.lo
+2025-07-26T18:04:25.3421312Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ecss.lo
+2025-07-26T18:04:25.3770320Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ers.lo
+2025-07-26T18:04:25.5271501Z   CC       depends/relic/src/cp/librelic_la-relic_cp_etrs.lo
+2025-07-26T18:04:25.5273235Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ghpe.lo
+2025-07-26T18:04:25.5712802Z   CC       depends/relic/src/cp/librelic_la-relic_cp_ibe.lo
+2025-07-26T18:04:25.6046370Z   CC       depends/relic/src/cp/librelic_la-relic_cp_mklhs.lo
+2025-07-26T18:04:25.7639822Z   CC       depends/relic/src/cp/librelic_la-relic_cp_mpss.lo
+2025-07-26T18:04:25.8252296Z   CC       depends/relic/src/cp/librelic_la-relic_cp_pcdel.lo
+2025-07-26T18:04:25.8285591Z   CC       depends/relic/src/cp/librelic_la-relic_cp_phpe.lo
+2025-07-26T18:04:25.8932080Z   CC       depends/relic/src/cp/librelic_la-relic_cp_pok.lo
+2025-07-26T18:04:26.0480227Z   CC       depends/relic/src/cp/librelic_la-relic_cp_pss.lo
+2025-07-26T18:04:26.0528154Z   CC       depends/relic/src/cp/librelic_la-relic_cp_rabin.lo
+2025-07-26T18:04:26.0865133Z   CC       depends/relic/src/cp/librelic_la-relic_cp_rsa.lo
+2025-07-26T18:04:26.1307011Z   CC       depends/relic/src/cp/librelic_la-relic_cp_sok.lo
+2025-07-26T18:04:26.2910301Z   CC       depends/relic/src/cp/librelic_la-relic_cp_sokaka.lo
+2025-07-26T18:04:26.2975172Z   CC       depends/relic/src/cp/librelic_la-relic_cp_vbnn.lo
+2025-07-26T18:04:26.3897022Z   CC       depends/relic/src/cp/librelic_la-relic_cp_zss.lo
+2025-07-26T18:04:26.3901871Z   CC       depends/relic/src/bc/librelic_la-relic_bc_aes.lo
+2025-07-26T18:04:26.5180428Z   CC       depends/relic/src/bc/librelic_la-rijndael-alg-fst.lo
+2025-07-26T18:04:26.5317053Z   CC       depends/relic/src/bc/librelic_la-rijndael-api-fst.lo
+2025-07-26T18:04:26.5486309Z   CC       depends/relic/src/md/librelic_la-blake2s-ref.lo
+2025-07-26T18:04:26.6051251Z   CC       depends/relic/src/md/librelic_la-relic_md_blake2s.lo
+2025-07-26T18:04:26.7545402Z   CC       depends/relic/src/md/librelic_la-relic_md_hmac.lo
+2025-07-26T18:04:26.7699438Z   CC       depends/relic/src/md/librelic_la-relic_md_kdf.lo
+2025-07-26T18:04:26.7901169Z   CC       depends/relic/src/md/librelic_la-relic_md_mgf.lo
+2025-07-26T18:04:26.9117827Z   CC       depends/relic/src/md/librelic_la-relic_md_sha224.lo
+2025-07-26T18:04:26.9245607Z   CC       depends/relic/src/md/librelic_la-relic_md_sha256.lo
+2025-07-26T18:04:26.9499323Z   CC       depends/relic/src/md/librelic_la-relic_md_sha384.lo
+2025-07-26T18:04:26.9595075Z   CC       depends/relic/src/md/librelic_la-relic_md_sha512.lo
+2025-07-26T18:04:27.0709476Z   CC       depends/relic/src/md/librelic_la-relic_md_xmd.lo
+2025-07-26T18:04:27.0791815Z   CC       depends/relic/src/md/librelic_la-sha224-256.lo
+2025-07-26T18:04:27.1051752Z   CC       depends/relic/src/md/librelic_la-sha384-512.lo
+2025-07-26T18:04:27.1093831Z   CC       depends/relic/src/mpc/librelic_la-relic_mt_mpc.lo
+2025-07-26T18:04:27.2558108Z   CC       depends/relic/src/mpc/librelic_la-relic_pc_mpc.lo
+2025-07-26T18:04:27.2741860Z   CCLD     libmimalloc-secure.la
+2025-07-26T18:04:27.4134227Z   CCLD     librelic.la
+2025-07-26T18:04:28.8955812Z   CXXLD    libdashbls.la
+2025-07-26T18:04:29.9011380Z   CXXLD    runtest
+2025-07-26T18:04:29.9014522Z   CXXLD    runbench
+2025-07-26T18:04:30.2138931Z make[3]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src/dashbls'
+2025-07-26T18:04:30.2142159Z make[2]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:30.2148559Z make[1]: *** [Makefile:20697: install-recursive] Error 1
+2025-07-26T18:04:30.2149277Z make[1]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:30.2155589Z make: *** [Makefile:789: install-recursive] Error 1
+2025-07-26T18:04:30.2161259Z Build failure. Verbose build follows.
+2025-07-26T18:04:30.2223099Z Making install in src
+2025-07-26T18:04:30.2436694Z make[1]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:30.2688523Z make[2]: Entering directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:30.2697281Z clang++-18 -ftrivial-auto-var-init=pattern -std=c++20 -DHAVE_CONFIG_H -I. -I../src/config  -DABORT_ON_FAILED_ASSUME -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DHAVE_BUILD_INFO -DGSL_NO_IOSTREAMS -I. -I./minisketch/include -I./secp256k1/include -I./univalue/include -I./leveldb/include -isystem./dashbls/include -isystem./dashbls/depends/relic/include -isystem./dashbls/depends/minialloc/include -isystem./immer -isystem /__w/dash/dash/depends/x86_64-pc-linux-gnu/include -DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ -DDEBUG_LOCKORDER -DARENA_DEBUG -g1 -fno-omit-frame-pointer -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -Wall -Wextra -Wgnu -Wformat -Wformat-security -Wreorder -Wvla -Wshadow-field -Wthread-safety -Wloop-analysis -Wredundant-decls -Wunused-member-function -Wdate-time -Wconditional-uninitialized -Woverloaded-virtual -Wsuggest-override -Wimplicit-fallthrough -Wunreachable-code -Wdocumentation -Wself-assign -Wno-unused-parameter -Werror  -fsanitize=fuzzer,address,undefined,integer  -fPIE -pipe -std=c++20 -O2  -c -o wallet/test/fuzz/test_fuzz_fuzz-fees.o `test -f 'wallet/test/fuzz/fees.cpp' || echo './'`wallet/test/fuzz/fees.cpp
+2025-07-26T18:04:34.8873993Z wallet/test/fuzz/fees.cpp:32:5: error: unknown type name 'Chainstate'; did you mean 'CChainState'?
+2025-07-26T18:04:34.8874742Z    32 |     Chainstate* chainstate = &node.chainman->ActiveChainstate();
+2025-07-26T18:04:34.8875161Z       |     ^~~~~~~~~~
+2025-07-26T18:04:34.8875369Z       |     CChainState
+2025-07-26T18:04:34.8875613Z ./validation.h:454:7: note: 'CChainState' declared here
+2025-07-26T18:04:34.8875902Z   454 | class CChainState
+2025-07-26T18:04:34.8876095Z       |       ^
+2025-07-26T18:04:35.9427822Z 1 error generated.
+2025-07-26T18:04:35.9742126Z make[2]: *** [Makefile:17087: wallet/test/fuzz/test_fuzz_fuzz-fees.o] Error 1
+2025-07-26T18:04:35.9742864Z make[2]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:35.9752968Z make[1]: *** [Makefile:20697: install-recursive] Error 1
+2025-07-26T18:04:35.9753718Z make[1]: Leaving directory '/__w/dash/dash/build-ci/dashcore-linux64_fuzz/src'
+2025-07-26T18:04:35.9761454Z make: *** [Makefile:789: install-recursive] Error 1
+2025-07-26T18:04:35.9877964Z ##[error]Process completed with exit code 2.
+2025-07-26T18:04:35.9959462Z Post job cleanup.
+2025-07-26T18:04:35.9963091Z ##[command]/usr/bin/docker exec  5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d sh -c "cat /etc/*release | grep ^ID"
+2025-07-26T18:04:36.1858991Z [command]/usr/bin/git version
+2025-07-26T18:04:36.1898172Z git version 2.43.0
+2025-07-26T18:04:36.1936610Z Copying '/github/home/.gitconfig' to '/__w/_temp/582a8844-c862-472f-94b6-61b47c5360c6/.gitconfig'
+2025-07-26T18:04:36.1949336Z Temporarily overriding HOME='/__w/_temp/582a8844-c862-472f-94b6-61b47c5360c6' before making global git config changes
+2025-07-26T18:04:36.1950570Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-26T18:04:36.1956020Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-26T18:04:36.1996446Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-26T18:04:36.2031597Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-26T18:04:36.2256851Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-26T18:04:36.2280353Z http.https://github.com/.extraheader
+2025-07-26T18:04:36.2293872Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-26T18:04:36.2326243Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-26T18:04:36.2676857Z Stop and remove container: 9eb0cb6ae48147958b797f6e3f874fb0_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch428pr27647_bf6929
+2025-07-26T18:04:36.2681796Z ##[command]/usr/bin/docker rm --force 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T18:04:36.3775146Z 5311b5d981d4e2787b5ed6c9bcfb8f9f0486e0283ef2c4db3956762ed8087e1d
+2025-07-26T18:04:36.3803975Z Remove container network: github_network_119267108abf469a9f5d6897b39614d0
+2025-07-26T18:04:36.3808078Z ##[command]/usr/bin/docker network rm github_network_119267108abf469a9f5d6897b39614d0
+2025-07-26T18:04:36.5053785Z github_network_119267108abf469a9f5d6897b39614d0
+2025-07-26T18:04:36.5113248Z Evaluate and set job outputs
+2025-07-26T18:04:36.5118561Z Cleaning up orphan processes
