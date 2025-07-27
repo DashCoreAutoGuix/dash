@@ -11,8 +11,7 @@
 #include <serialize.h>
 #include <span.h>
 #include <streams.h>
-#include <util/fs.h>
-#include <util/fs_helpers.h>
+#include <fs.h>
 #include <util/strencodings.h>
 
 #include <leveldb/cache.h>

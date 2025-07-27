@@ -17,7 +17,7 @@
 #include <interfaces/echo.h>
 #include <interfaces/init.h>
 #include <interfaces/ipc.h>
-#include <kernel/cs_main.h>
+#include <validation.h>
 #include <key_io.h>
 #include <logging.h>
 #include <net.h>

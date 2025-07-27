@@ -16,7 +16,6 @@
 #include <index/txindex.h>
 #include <init.h>
 #include <interfaces/chain.h>
-#include <kernel/mempool_entry.h>
 #include <logging.h>
 #include <net.h>
 #include <net_processing.h>

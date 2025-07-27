@@ -10,9 +10,7 @@
 #include <qt/bitcoin.h>
 
 #include <chainparams.h>
-#include <common/args.h>
-#include <common/init.h>
-#include <common/system.h>
+#include <util/system.h>
 #include <fs.h>
 #include <init.h>
 #include <interfaces/handler.h>
