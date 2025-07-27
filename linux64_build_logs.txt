@@ -1,0 +1,1048 @@
+﻿2025-07-27T16:07:36.6857914Z Current runner version: '2.326.0'
+2025-07-27T16:07:36.6881793Z ##[group]Runner Image Provisioner
+2025-07-27T16:07:36.6882661Z Hosted Compute Agent
+2025-07-27T16:07:36.6883296Z Version: 20250711.363
+2025-07-27T16:07:36.6883840Z Commit: 6785254374ce925a23743850c1cb91912ce5c14c
+2025-07-27T16:07:36.6884515Z Build Date: 2025-07-11T20:04:25Z
+2025-07-27T16:07:36.6885143Z ##[endgroup]
+2025-07-27T16:07:36.6885665Z ##[group]Operating System
+2025-07-27T16:07:36.6886263Z Ubuntu
+2025-07-27T16:07:36.6886844Z 24.04.2
+2025-07-27T16:07:36.6887327Z LTS
+2025-07-27T16:07:36.6887745Z ##[endgroup]
+2025-07-27T16:07:36.6888266Z ##[group]Runner Image
+2025-07-27T16:07:36.6888820Z Image: ubuntu-24.04
+2025-07-27T16:07:36.6889333Z Version: 20250720.1.0
+2025-07-27T16:07:36.6890773Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250720.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-27T16:07:36.6892312Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250720.1
+2025-07-27T16:07:36.6893605Z ##[endgroup]
+2025-07-27T16:07:36.6894833Z ##[group]GITHUB_TOKEN Permissions
+2025-07-27T16:07:36.6896893Z Contents: read
+2025-07-27T16:07:36.6897549Z Metadata: read
+2025-07-27T16:07:36.6898079Z Packages: write
+2025-07-27T16:07:36.6898580Z ##[endgroup]
+2025-07-27T16:07:36.6901020Z Secret source: Actions
+2025-07-27T16:07:36.6901721Z Prepare workflow directory
+2025-07-27T16:07:36.7431827Z Prepare all required actions
+2025-07-27T16:07:36.7468325Z Getting action download info
+2025-07-27T16:07:37.0750342Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-27T16:07:37.0751520Z Version: 4.2.2
+2025-07-27T16:07:37.0752479Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-27T16:07:37.0753592Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-27T16:07:37.0754406Z ##[endgroup]
+2025-07-27T16:07:37.1577128Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-07-27T16:07:37.1577949Z Version: 4.2.3
+2025-07-27T16:07:37.1578767Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-07-27T16:07:37.1579945Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-07-27T16:07:37.1580775Z ##[endgroup]
+2025-07-27T16:07:37.2664664Z ##[group]Download immutable action package 'actions/upload-artifact@v4'
+2025-07-27T16:07:37.2665577Z Version: 4.6.2
+2025-07-27T16:07:37.2666317Z Digest: sha256:290722aa3281d5caf23d0acdc3dbeb3424786a1a01a9cc97e72f147225e37c38
+2025-07-27T16:07:37.2667215Z Source commit SHA: ea165f8d65b6e75b540449e92b4886f43607fa02
+2025-07-27T16:07:37.2667986Z ##[endgroup]
+2025-07-27T16:07:37.4680048Z Uses: DashCoreAutoGuix/dash/.github/workflows/build-src.yml@refs/heads/backport-0.26-batch-441-pr-28168 (9e6db0326f9d12ed12714a56c8f415305305f906)
+2025-07-27T16:07:37.4684761Z ##[group] Inputs
+2025-07-27T16:07:37.4685238Z   build-target: linux64
+2025-07-27T16:07:37.4686061Z   container-path: ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-441-pr-28168
+2025-07-27T16:07:37.4688295Z   depends-key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-27T16:07:37.4690319Z ##[endgroup]
+2025-07-27T16:07:37.4690738Z Complete job name: linux64-build / Build source
+2025-07-27T16:07:37.5148640Z ##[group]Checking docker version
+2025-07-27T16:07:37.5161917Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-07-27T16:07:37.5554539Z '1.48'
+2025-07-27T16:07:37.5566253Z Docker daemon API version: '1.48'
+2025-07-27T16:07:37.5567006Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-07-27T16:07:37.5726601Z '1.48'
+2025-07-27T16:07:37.5740957Z Docker client API version: '1.48'
+2025-07-27T16:07:37.5746472Z ##[endgroup]
+2025-07-27T16:07:37.5750179Z ##[group]Clean up resources from previous jobs
+2025-07-27T16:07:37.5755356Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=19fd45"
+2025-07-27T16:07:37.5901741Z ##[command]/usr/bin/docker network prune --force --filter "label=19fd45"
+2025-07-27T16:07:37.6030584Z ##[endgroup]
+2025-07-27T16:07:37.6031067Z ##[group]Create local container network
+2025-07-27T16:07:37.6041306Z ##[command]/usr/bin/docker network create --label 19fd45 github_network_544409b2d59249139504f245caa863e3
+2025-07-27T16:07:37.6531362Z 2024f5c91a4508e14a48663b990218fbe257c8a153967acdf91b6d07a000b4e5
+2025-07-27T16:07:37.6552041Z ##[endgroup]
+2025-07-27T16:07:37.6577126Z ##[group]Starting job container
+2025-07-27T16:07:37.6599455Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_a3a90bac-2d1e-4f67-8fa2-9999f8cc8aaf login ghcr.io -u DashCoreAutoGuix --password-stdin
+2025-07-27T16:07:37.9283970Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_a3a90bac-2d1e-4f67-8fa2-9999f8cc8aaf pull ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-441-pr-28168
+2025-07-27T16:07:38.3834576Z backport-0.26-batch-441-pr-28168: Pulling from dashcoreautoguix/dash/dashcore-ci-runner
+2025-07-27T16:07:38.4634258Z 32f112e3802c: Pulling fs layer
+2025-07-27T16:07:38.4635353Z 3c418bbf5534: Pulling fs layer
+2025-07-27T16:07:38.4636243Z 824b5144f7af: Pulling fs layer
+2025-07-27T16:07:38.4637108Z bb9f5c709011: Pulling fs layer
+2025-07-27T16:07:38.4638019Z c31b5eed60b6: Pulling fs layer
+2025-07-27T16:07:38.4639020Z da96180e845f: Pulling fs layer
+2025-07-27T16:07:38.4640103Z f28d6a4cf5de: Pulling fs layer
+2025-07-27T16:07:38.4640986Z 49cbdb9e902d: Pulling fs layer
+2025-07-27T16:07:38.4641855Z 247fd41058fa: Pulling fs layer
+2025-07-27T16:07:38.4642708Z d6a01b6e446c: Pulling fs layer
+2025-07-27T16:07:38.4643565Z 4f4fb700ef54: Pulling fs layer
+2025-07-27T16:07:38.4644417Z 1382f2390a1c: Pulling fs layer
+2025-07-27T16:07:38.4645309Z be38403a389e: Pulling fs layer
+2025-07-27T16:07:38.4646522Z 409781d99354: Pulling fs layer
+2025-07-27T16:07:38.4647463Z c418b82685d0: Pulling fs layer
+2025-07-27T16:07:38.4648380Z 4f4fb700ef54: Waiting
+2025-07-27T16:07:38.4649285Z 49cbdb9e902d: Waiting
+2025-07-27T16:07:38.4650281Z 1382f2390a1c: Waiting
+2025-07-27T16:07:38.4651115Z 247fd41058fa: Waiting
+2025-07-27T16:07:38.4651939Z d6a01b6e446c: Waiting
+2025-07-27T16:07:38.4652797Z be38403a389e: Waiting
+2025-07-27T16:07:38.4653639Z 409781d99354: Waiting
+2025-07-27T16:07:38.4654486Z c418b82685d0: Waiting
+2025-07-27T16:07:38.4655343Z bb9f5c709011: Waiting
+2025-07-27T16:07:38.4656205Z c31b5eed60b6: Waiting
+2025-07-27T16:07:38.4657059Z f28d6a4cf5de: Waiting
+2025-07-27T16:07:38.4658069Z da96180e845f: Waiting
+2025-07-27T16:07:38.5713389Z 3c418bbf5534: Verifying Checksum
+2025-07-27T16:07:38.5715260Z 3c418bbf5534: Download complete
+2025-07-27T16:07:38.5959058Z 824b5144f7af: Verifying Checksum
+2025-07-27T16:07:38.5961036Z 824b5144f7af: Download complete
+2025-07-27T16:07:38.7098681Z 32f112e3802c: Verifying Checksum
+2025-07-27T16:07:38.7103301Z 32f112e3802c: Download complete
+2025-07-27T16:07:38.8899232Z c31b5eed60b6: Verifying Checksum
+2025-07-27T16:07:38.8900162Z c31b5eed60b6: Download complete
+2025-07-27T16:07:38.9353675Z da96180e845f: Download complete
+2025-07-27T16:07:38.9844140Z f28d6a4cf5de: Verifying Checksum
+2025-07-27T16:07:38.9847386Z f28d6a4cf5de: Download complete
+2025-07-27T16:07:39.0824745Z 49cbdb9e902d: Verifying Checksum
+2025-07-27T16:07:39.0826300Z 49cbdb9e902d: Download complete
+2025-07-27T16:07:39.0945273Z bb9f5c709011: Verifying Checksum
+2025-07-27T16:07:39.0946942Z bb9f5c709011: Download complete
+2025-07-27T16:07:39.1625162Z d6a01b6e446c: Verifying Checksum
+2025-07-27T16:07:39.1630955Z d6a01b6e446c: Download complete
+2025-07-27T16:07:39.1874721Z 4f4fb700ef54: Verifying Checksum
+2025-07-27T16:07:39.1875223Z 4f4fb700ef54: Download complete
+2025-07-27T16:07:39.6921495Z be38403a389e: Verifying Checksum
+2025-07-27T16:07:39.6922284Z be38403a389e: Download complete
+2025-07-27T16:07:39.8048605Z 409781d99354: Verifying Checksum
+2025-07-27T16:07:39.8059156Z 409781d99354: Download complete
+2025-07-27T16:07:39.8705319Z 247fd41058fa: Verifying Checksum
+2025-07-27T16:07:39.8711825Z 247fd41058fa: Download complete
+2025-07-27T16:07:39.8856204Z c418b82685d0: Verifying Checksum
+2025-07-27T16:07:39.8856718Z c418b82685d0: Download complete
+2025-07-27T16:07:40.2910037Z 32f112e3802c: Pull complete
+2025-07-27T16:07:41.3788859Z 1382f2390a1c: Verifying Checksum
+2025-07-27T16:07:43.8369189Z 3c418bbf5534: Pull complete
+2025-07-27T16:07:43.9263251Z 824b5144f7af: Pull complete
+2025-07-27T16:07:48.0726994Z bb9f5c709011: Pull complete
+2025-07-27T16:07:51.6205442Z c31b5eed60b6: Pull complete
+2025-07-27T16:07:52.6449255Z da96180e845f: Pull complete
+2025-07-27T16:07:52.6960841Z f28d6a4cf5de: Pull complete
+2025-07-27T16:07:52.7359372Z 49cbdb9e902d: Pull complete
+2025-07-27T16:07:58.7324103Z 247fd41058fa: Pull complete
+2025-07-27T16:07:58.7471112Z d6a01b6e446c: Pull complete
+2025-07-27T16:07:58.7559681Z 4f4fb700ef54: Pull complete
+2025-07-27T16:08:13.5187337Z 1382f2390a1c: Pull complete
+2025-07-27T16:08:17.3259131Z be38403a389e: Pull complete
+2025-07-27T16:08:17.4203923Z 409781d99354: Pull complete
+2025-07-27T16:08:17.4297886Z c418b82685d0: Pull complete
+2025-07-27T16:08:17.4339058Z Digest: sha256:2e4f00206b6cc963ec8e1992a24f73997c04ffa4422e711d91522b99e08bdc53
+2025-07-27T16:08:17.4349820Z Status: Downloaded newer image for ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-441-pr-28168
+2025-07-27T16:08:17.4359429Z ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-441-pr-28168
+2025-07-27T16:08:17.4440830Z ##[command]/usr/bin/docker create --name 583f9bb235cb456f9e726402141548ca_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch441pr28168_8ff915 --label 19fd45 --workdir /__w/dash/dash --network github_network_544409b2d59249139504f245caa863e3 --user root -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-441-pr-28168 "-f" "/dev/null"
+2025-07-27T16:08:17.4681483Z 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:08:17.4704102Z ##[command]/usr/bin/docker start 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:08:17.6184181Z 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:08:17.6204472Z ##[command]/usr/bin/docker ps --all --filter id=85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-07-27T16:08:17.6315216Z 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 Up Less than a second
+2025-07-27T16:08:17.6334171Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:08:17.6445347Z HOME=/github/home
+2025-07-27T16:08:17.6445695Z GITHUB_ACTIONS=true
+2025-07-27T16:08:17.6445993Z CI=true
+2025-07-27T16:08:17.6446834Z PATH=/opt/shellcheck:/usr/local/pyenv/shims:/usr/local/pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2025-07-27T16:08:17.6448211Z DEBIAN_FRONTEND=noninteractive
+2025-07-27T16:08:17.6448571Z TZ=Europe/London
+2025-07-27T16:08:17.6448966Z APT_ARGS=-y --no-install-recommends --no-upgrade
+2025-07-27T16:08:17.6449429Z PYENV_ROOT=/usr/local/pyenv
+2025-07-27T16:08:17.6450038Z LD_LIBRARY_PATH=/usr/lib/llvm-18/lib
+2025-07-27T16:08:17.6465848Z ##[endgroup]
+2025-07-27T16:08:17.6474951Z ##[group]Waiting for all services to be ready
+2025-07-27T16:08:17.6476630Z ##[endgroup]
+2025-07-27T16:08:17.6701859Z ##[group]Run actions/checkout@v4
+2025-07-27T16:08:17.6702373Z with:
+2025-07-27T16:08:17.6702552Z   fetch-depth: 50
+2025-07-27T16:08:17.6702749Z   repository: DashCoreAutoGuix/dash
+2025-07-27T16:08:17.6703368Z   token: ***
+2025-07-27T16:08:17.6703545Z   ssh-strict: true
+2025-07-27T16:08:17.6703715Z   ssh-user: git
+2025-07-27T16:08:17.6703898Z   persist-credentials: true
+2025-07-27T16:08:17.6704102Z   clean: true
+2025-07-27T16:08:17.6704287Z   sparse-checkout-cone-mode: true
+2025-07-27T16:08:17.6704508Z   fetch-tags: false
+2025-07-27T16:08:17.6704691Z   show-progress: true
+2025-07-27T16:08:17.6704869Z   lfs: false
+2025-07-27T16:08:17.6705026Z   submodules: false
+2025-07-27T16:08:17.6705201Z   set-safe-directory: true
+2025-07-27T16:08:17.6705625Z ##[endgroup]
+2025-07-27T16:08:17.6824305Z ##[command]/usr/bin/docker exec  85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 sh -c "cat /etc/*release | grep ^ID"
+2025-07-27T16:08:17.8879838Z Syncing repository: DashCoreAutoGuix/dash
+2025-07-27T16:08:17.8881283Z ##[group]Getting Git version info
+2025-07-27T16:08:17.8881691Z Working directory is '/__w/dash/dash'
+2025-07-27T16:08:17.8882472Z [command]/usr/bin/git version
+2025-07-27T16:08:17.8883035Z git version 2.43.0
+2025-07-27T16:08:17.8910978Z ##[endgroup]
+2025-07-27T16:08:17.8926356Z Temporarily overriding HOME='/__w/_temp/0466c9ab-7558-4351-8e98-7f1e3637f28c' before making global git config changes
+2025-07-27T16:08:17.8927214Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-27T16:08:17.8931742Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-27T16:08:17.8964058Z Deleting the contents of '/__w/dash/dash'
+2025-07-27T16:08:17.8968761Z ##[group]Initializing the repository
+2025-07-27T16:08:17.8980735Z [command]/usr/bin/git init /__w/dash/dash
+2025-07-27T16:08:17.9011636Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-27T16:08:17.9012362Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-27T16:08:17.9012837Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-27T16:08:17.9013151Z hint: 
+2025-07-27T16:08:17.9013406Z hint: 	git config --global init.defaultBranch <name>
+2025-07-27T16:08:17.9013691Z hint: 
+2025-07-27T16:08:17.9013942Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-27T16:08:17.9014367Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-27T16:08:17.9014701Z hint: 
+2025-07-27T16:08:17.9014875Z hint: 	git branch -m <name>
+2025-07-27T16:08:17.9019047Z Initialized empty Git repository in /__w/dash/dash/.git/
+2025-07-27T16:08:17.9030445Z [command]/usr/bin/git remote add origin https://github.com/DashCoreAutoGuix/dash
+2025-07-27T16:08:17.9060314Z ##[endgroup]
+2025-07-27T16:08:17.9060917Z ##[group]Disabling automatic garbage collection
+2025-07-27T16:08:17.9064670Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-27T16:08:17.9091771Z ##[endgroup]
+2025-07-27T16:08:17.9092185Z ##[group]Setting up auth
+2025-07-27T16:08:17.9098528Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-27T16:08:17.9128127Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-27T16:08:17.9338787Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-27T16:08:17.9368533Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-27T16:08:17.9573433Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-27T16:08:17.9608508Z ##[endgroup]
+2025-07-27T16:08:17.9609158Z ##[group]Fetching the repository
+2025-07-27T16:08:17.9618597Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=50 origin +9e6db0326f9d12ed12714a56c8f415305305f906:refs/remotes/origin/backport-0.26-batch-441-pr-28168
+2025-07-27T16:08:19.9909293Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-27T16:08:19.9910325Z  * [new ref]         9e6db0326f9d12ed12714a56c8f415305305f906 -> origin/backport-0.26-batch-441-pr-28168
+2025-07-27T16:08:19.9932652Z ##[endgroup]
+2025-07-27T16:08:19.9933219Z ##[group]Determining the checkout info
+2025-07-27T16:08:19.9934601Z ##[endgroup]
+2025-07-27T16:08:19.9941191Z [command]/usr/bin/git sparse-checkout disable
+2025-07-27T16:08:19.9979846Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-27T16:08:20.0006039Z ##[group]Checking out the ref
+2025-07-27T16:08:20.0010640Z [command]/usr/bin/git checkout --progress --force -B backport-0.26-batch-441-pr-28168 refs/remotes/origin/backport-0.26-batch-441-pr-28168
+2025-07-27T16:08:20.3848286Z Switched to a new branch 'backport-0.26-batch-441-pr-28168'
+2025-07-27T16:08:20.3848980Z branch 'backport-0.26-batch-441-pr-28168' set up to track 'origin/backport-0.26-batch-441-pr-28168'.
+2025-07-27T16:08:20.3873946Z ##[endgroup]
+2025-07-27T16:08:20.3922702Z [command]/usr/bin/git log -1 --format=%H
+2025-07-27T16:08:20.3945771Z 9e6db0326f9d12ed12714a56c8f415305305f906
+2025-07-27T16:08:20.4171708Z ##[group]Run git config --global --add safe.directory "$PWD"
+2025-07-27T16:08:20.4172174Z [36;1mgit config --global --add safe.directory "$PWD"[0m
+2025-07-27T16:08:20.4172538Z [36;1mgit fetch -fu origin develop:develop[0m
+2025-07-27T16:08:20.4172820Z [36;1mBUILD_TARGET="linux64"[0m
+2025-07-27T16:08:20.4173054Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-27T16:08:20.4173299Z [36;1mecho "HOST=${HOST}" >> $GITHUB_OUTPUT[0m
+2025-07-27T16:08:20.4173572Z [36;1mecho "PR_BASE_SHA=" >> $GITHUB_OUTPUT[0m
+2025-07-27T16:08:20.4177430Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-27T16:08:20.4177731Z ##[endgroup]
+2025-07-27T16:08:20.6745770Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-27T16:08:20.6746451Z  * [new branch]      develop    -> develop
+2025-07-27T16:08:20.6746900Z  * [new branch]      develop    -> origin/develop
+2025-07-27T16:08:20.6830575Z Setting specific values in env
+2025-07-27T16:08:20.6831543Z Fallback to default values in env (if not yet set)
+2025-07-27T16:08:20.7324694Z ##[group]Run actions/cache/restore@v4
+2025-07-27T16:08:20.7324952Z with:
+2025-07-27T16:08:20.7325169Z   path: depends/built
+depends/x86_64-pc-linux-gnu
+
+2025-07-27T16:08:20.7326182Z   key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-27T16:08:20.7327152Z   fail-on-cache-miss: true
+2025-07-27T16:08:20.7327384Z   enableCrossOsArchive: false
+2025-07-27T16:08:20.7327592Z   lookup-only: false
+2025-07-27T16:08:20.7327779Z ##[endgroup]
+2025-07-27T16:08:20.7331495Z ##[command]/usr/bin/docker exec  85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 sh -c "cat /etc/*release | grep ^ID"
+2025-07-27T16:08:21.1303450Z Cache hit for: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-27T16:08:22.2069438Z Received 90046447 of 90046447 (100.0%), 92.5 MBs/sec
+2025-07-27T16:08:22.2071342Z Cache Size: ~86 MB (90046447 B)
+2025-07-27T16:08:22.2098207Z [command]/usr/bin/tar -xf /__w/_temp/6ea302fa-b407-4112-9ba6-54446931f919/cache.tzst -P -C /__w/dash/dash --use-compress-program unzstd
+2025-07-27T16:08:23.4726764Z Cache restored successfully
+2025-07-27T16:08:23.4962331Z Cache restored from key: depends-8d8b447eb52b5ae2b1502c1f17063f3469c895de5cb00e206594681be493940c-linux64-5e68e2df712ce28194c6b6d486145262467ca05bc80cf4a4f71520f130839ff3-f5e950451cdefd07f6af0c6b4cfb0ab0a542623860d6dbc24a1bb43afc0d21ed
+2025-07-27T16:08:23.6575907Z ##[group]Run actions/cache@v4
+2025-07-27T16:08:23.6576149Z with:
+2025-07-27T16:08:23.6576320Z   path: /cache
+
+2025-07-27T16:08:23.6576847Z   key: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64-9e6db0326f9d12ed12714a56c8f415305305f906
+2025-07-27T16:08:23.6577868Z   restore-keys: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64-
+
+2025-07-27T16:08:23.6578317Z   enableCrossOsArchive: false
+2025-07-27T16:08:23.6578548Z   fail-on-cache-miss: false
+2025-07-27T16:08:23.6578753Z   lookup-only: false
+2025-07-27T16:08:23.6578932Z   save-always: false
+2025-07-27T16:08:23.6579109Z ##[endgroup]
+2025-07-27T16:08:23.6583584Z ##[command]/usr/bin/docker exec  85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 sh -c "cat /etc/*release | grep ^ID"
+2025-07-27T16:08:24.0130800Z Cache not found for input keys: ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64-9e6db0326f9d12ed12714a56c8f415305305f906, ccache-78b03b3a2bf75dd03fa501c273c1ac88e498f7a528d630906ef3500f89a28c15-linux64-
+2025-07-27T16:08:24.0236670Z ##[group]Run CCACHE_SIZE="400M"
+2025-07-27T16:08:24.0236951Z [36;1mCCACHE_SIZE="400M"[0m
+2025-07-27T16:08:24.0237181Z [36;1mCACHE_DIR="/cache"[0m
+2025-07-27T16:08:24.0237386Z [36;1mmkdir /output[0m
+2025-07-27T16:08:24.0237589Z [36;1mBASE_OUTDIR="/output"[0m
+2025-07-27T16:08:24.0237805Z [36;1mBUILD_TARGET="linux64"[0m
+2025-07-27T16:08:24.0238041Z [36;1msource ./ci/dash/matrix.sh[0m
+2025-07-27T16:08:24.0238274Z [36;1m./ci/dash/build_src.sh[0m
+2025-07-27T16:08:24.0238490Z [36;1mccache -X 9[0m
+2025-07-27T16:08:24.0238681Z [36;1mccache -c[0m
+2025-07-27T16:08:24.0239018Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-27T16:08:24.0239283Z ##[endgroup]
+2025-07-27T16:08:24.0893471Z Setting specific values in env
+2025-07-27T16:08:24.0893985Z Fallback to default values in env (if not yet set)
+2025-07-27T16:08:24.1267225Z Setting specific values in env
+2025-07-27T16:08:24.1267733Z Fallback to default values in env (if not yet set)
+2025-07-27T16:08:24.2007882Z Statistics zeroed
+2025-07-27T16:08:24.2008163Z Set cache size limit to 400.0 MB
+2025-07-27T16:08:29.1376572Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-27T16:08:29.1377513Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-27T16:08:29.1621056Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-27T16:08:29.1621757Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-27T16:08:29.1892695Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-27T16:08:29.2170655Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-27T16:08:29.2451091Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-27T16:08:29.2729079Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-27T16:08:31.2920117Z configure.ac:38: installing 'build-aux/compile'
+2025-07-27T16:08:31.2937874Z configure.ac:12: installing 'build-aux/config.guess'
+2025-07-27T16:08:31.2956052Z configure.ac:12: installing 'build-aux/config.sub'
+2025-07-27T16:08:31.2973972Z configure.ac:17: installing 'build-aux/install-sh'
+2025-07-27T16:08:31.2992958Z configure.ac:17: installing 'build-aux/missing'
+2025-07-27T16:08:31.3618573Z Makefile.am: installing 'build-aux/depcomp'
+2025-07-27T16:08:33.7054995Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-27T16:08:33.7055711Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-27T16:08:33.7290108Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-27T16:08:33.7290825Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-27T16:08:33.7493457Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-27T16:08:33.7707357Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-27T16:08:33.7918467Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-27T16:08:33.8128018Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-27T16:08:35.2614986Z configure.ac:39: installing 'build-aux/ar-lib'
+2025-07-27T16:08:35.2632605Z configure.ac:37: installing 'build-aux/compile'
+2025-07-27T16:08:35.2651141Z configure.ac:24: installing 'build-aux/config.guess'
+2025-07-27T16:08:35.2669082Z configure.ac:24: installing 'build-aux/config.sub'
+2025-07-27T16:08:35.2686794Z configure.ac:27: installing 'build-aux/install-sh'
+2025-07-27T16:08:35.2705629Z configure.ac:27: installing 'build-aux/missing'
+2025-07-27T16:08:35.3037371Z Makefile.am: installing 'build-aux/depcomp'
+2025-07-27T16:08:35.3370124Z parallel-tests: installing 'build-aux/test-driver'
+2025-07-27T16:08:35.4309810Z libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+2025-07-27T16:08:35.4310534Z libtoolize: copying file 'build-aux/ltmain.sh'
+2025-07-27T16:08:35.4566227Z libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+2025-07-27T16:08:35.4567042Z libtoolize: copying file 'build-aux/m4/libtool.m4'
+2025-07-27T16:08:35.4993290Z libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+2025-07-27T16:08:35.5423869Z libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+2025-07-27T16:08:35.5858048Z libtoolize: copying file 'build-aux/m4/ltversion.m4'
+2025-07-27T16:08:35.6294417Z libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+2025-07-27T16:08:38.2199054Z configure.ac:105: installing 'build-aux/compile'
+2025-07-27T16:08:38.2217560Z configure.ac:48: installing 'build-aux/config.guess'
+2025-07-27T16:08:38.2236362Z configure.ac:48: installing 'build-aux/config.sub'
+2025-07-27T16:08:38.2254057Z configure.ac:55: installing 'build-aux/install-sh'
+2025-07-27T16:08:38.2272072Z configure.ac:55: installing 'build-aux/missing'
+2025-07-27T16:08:38.4738191Z src/Makefile.am: installing 'build-aux/depcomp'
+2025-07-27T16:08:41.0168969Z parallel-tests: installing 'build-aux/test-driver'
+2025-07-27T16:08:41.2102175Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-27T16:08:41.2177463Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-27T16:08:41.2191192Z checking pkg-config is at least version 0.9.0... yes
+2025-07-27T16:08:41.2633021Z checking build system type... x86_64-pc-linux-gnu
+2025-07-27T16:08:41.2680843Z checking host system type... x86_64-pc-linux-gnu
+2025-07-27T16:08:41.2760713Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-27T16:08:41.2788814Z checking whether build environment is sane... yes
+2025-07-27T16:08:41.2849040Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-27T16:08:41.2870227Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-27T16:08:41.2874554Z checking for gawk... gawk
+2025-07-27T16:08:41.2940443Z checking whether make sets $(MAKE)... yes
+2025-07-27T16:08:41.2992729Z checking whether make supports nested variables... yes
+2025-07-27T16:08:41.3035645Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-27T16:08:41.3038386Z checking whether make supports nested variables... (cached) yes
+2025-07-27T16:08:41.3589479Z checking whether the C++ compiler works... yes
+2025-07-27T16:08:41.3590353Z checking for C++ compiler default output file name... a.out
+2025-07-27T16:08:41.3910839Z checking for suffix of executables... 
+2025-07-27T16:08:41.4360533Z checking whether we are cross compiling... no
+2025-07-27T16:08:41.4527052Z checking for suffix of object files... o
+2025-07-27T16:08:41.4669935Z checking whether the compiler supports GNU C++... yes
+2025-07-27T16:08:41.4826652Z checking whether g++ -m64 accepts -g... yes
+2025-07-27T16:08:41.7661999Z checking for g++ -m64 option to enable C++11 features... unsupported
+2025-07-27T16:08:41.8135455Z checking for g++ -m64 option to enable C++98 features... none needed
+2025-07-27T16:08:41.8210235Z checking whether make supports the include directive... yes (GNU style)
+2025-07-27T16:08:41.8213567Z checking dependency style of g++ -m64... none
+2025-07-27T16:08:41.9005752Z checking whether g++ -m64 supports C++20 features with -std=c++20... yes
+2025-07-27T16:08:41.9008526Z checking for x86_64-pc-linux-gnu-g++... g++ -m64 -std=c++20
+2025-07-27T16:08:41.9296498Z checking whether the compiler supports GNU Objective C++... no
+2025-07-27T16:08:41.9571489Z checking whether g++ -m64 -std=c++20 accepts -g... no
+2025-07-27T16:08:41.9575459Z checking dependency style of g++ -m64 -std=c++20... none
+2025-07-27T16:08:41.9600704Z checking how to print strings... printf
+2025-07-27T16:08:41.9603051Z checking for x86_64-pc-linux-gnu-gcc... gcc -m64
+2025-07-27T16:08:41.9980922Z checking whether the compiler supports GNU C... yes
+2025-07-27T16:08:42.0130944Z checking whether gcc -m64 accepts -g... yes
+2025-07-27T16:08:42.0476311Z checking for gcc -m64 option to enable C11 features... none needed
+2025-07-27T16:08:42.0748083Z checking whether gcc -m64 understands -c and -o together... yes
+2025-07-27T16:08:42.0751168Z checking dependency style of gcc -m64... none
+2025-07-27T16:08:42.0790374Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-27T16:08:42.0821819Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-27T16:08:42.0837307Z checking for egrep... /usr/bin/grep -E
+2025-07-27T16:08:42.0853140Z checking for fgrep... /usr/bin/grep -F
+2025-07-27T16:08:42.0900873Z checking for ld used by gcc -m64... /usr/bin/ld
+2025-07-27T16:08:42.0925287Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-27T16:08:42.0927445Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-27T16:08:42.1216578Z checking the name lister (nm) interface... BSD nm
+2025-07-27T16:08:42.1217114Z checking whether ln -s works... yes
+2025-07-27T16:08:42.1259477Z checking the maximum length of command line arguments... 3145728
+2025-07-27T16:08:42.1286428Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-27T16:08:42.1288026Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-27T16:08:42.1289380Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-27T16:08:42.1295508Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-27T16:08:42.1300625Z checking for file... file
+2025-07-27T16:08:42.1332613Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-27T16:08:42.1334004Z checking for objdump... objdump
+2025-07-27T16:08:42.1334529Z checking how to recognize dependent libraries... pass_all
+2025-07-27T16:08:42.1335070Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-27T16:08:42.1335488Z checking for dlltool... no
+2025-07-27T16:08:42.1335945Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-27T16:08:42.1336426Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-27T16:08:42.1672071Z checking for archiver @FILE support... @
+2025-07-27T16:08:42.1673461Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-27T16:08:42.1676070Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-27T16:08:42.2340350Z checking command to parse nm output from gcc -m64 object... ok
+2025-07-27T16:08:42.2357867Z checking for sysroot... no
+2025-07-27T16:08:42.2401710Z checking for a working dd... /usr/bin/dd
+2025-07-27T16:08:42.2439891Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-27T16:08:42.2544454Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-27T16:08:42.2550206Z checking for mt... no
+2025-07-27T16:08:42.2580344Z checking if : is a manifest tool... no
+2025-07-27T16:08:42.2727195Z checking for stdio.h... yes
+2025-07-27T16:08:42.2890006Z checking for stdlib.h... yes
+2025-07-27T16:08:42.3055861Z checking for string.h... yes
+2025-07-27T16:08:42.3230821Z checking for inttypes.h... yes
+2025-07-27T16:08:42.3404683Z checking for stdint.h... yes
+2025-07-27T16:08:42.3584593Z checking for strings.h... yes
+2025-07-27T16:08:42.3764967Z checking for sys/stat.h... yes
+2025-07-27T16:08:42.3945766Z checking for sys/types.h... yes
+2025-07-27T16:08:42.4147955Z checking for unistd.h... yes
+2025-07-27T16:08:42.4354118Z checking for dlfcn.h... yes
+2025-07-27T16:08:42.4392680Z checking for objdir... .libs
+2025-07-27T16:08:42.4970894Z checking if gcc -m64 supports -fno-rtti -fno-exceptions... no
+2025-07-27T16:08:42.4971888Z checking for gcc -m64 option to produce PIC... -fPIC -DPIC
+2025-07-27T16:08:42.5103933Z checking if gcc -m64 PIC flag -fPIC -DPIC works... yes
+2025-07-27T16:08:42.5662196Z checking if gcc -m64 static flag -static works... yes
+2025-07-27T16:08:42.5872141Z checking if gcc -m64 supports -c -o file.o... yes
+2025-07-27T16:08:42.5872780Z checking if gcc -m64 supports -c -o file.o... (cached) yes
+2025-07-27T16:08:42.5966275Z checking whether the gcc -m64 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:08:42.6168311Z checking whether -lc should be explicitly linked in... no
+2025-07-27T16:08:42.6645390Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-27T16:08:42.6646228Z checking how to hardcode library paths into programs... immediate
+2025-07-27T16:08:42.6663506Z checking whether stripping libraries is possible... yes
+2025-07-27T16:08:42.6664506Z checking if libtool supports shared libraries... yes
+2025-07-27T16:08:42.6668985Z checking whether to build shared libraries... yes
+2025-07-27T16:08:42.6669997Z checking whether to build static libraries... yes
+2025-07-27T16:08:42.6926165Z checking how to run the C++ preprocessor... g++ -m64 -std=c++20 -E
+2025-07-27T16:08:42.7664736Z checking for ld used by g++ -m64 -std=c++20... /usr/bin/ld -m elf_x86_64
+2025-07-27T16:08:42.7689826Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-27T16:08:42.7760188Z checking whether the g++ -m64 -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:08:42.8352824Z checking for g++ -m64 -std=c++20 option to produce PIC... -fPIC -DPIC
+2025-07-27T16:08:42.8502388Z checking if g++ -m64 -std=c++20 PIC flag -fPIC -DPIC works... yes
+2025-07-27T16:08:42.9083353Z checking if g++ -m64 -std=c++20 static flag -static works... yes
+2025-07-27T16:08:42.9308927Z checking if g++ -m64 -std=c++20 supports -c -o file.o... yes
+2025-07-27T16:08:42.9310206Z checking if g++ -m64 -std=c++20 supports -c -o file.o... (cached) yes
+2025-07-27T16:08:42.9312082Z checking whether the g++ -m64 -std=c++20 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:08:42.9358303Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-27T16:08:42.9361232Z checking how to hardcode library paths into programs... immediate
+2025-07-27T16:08:42.9367067Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-27T16:08:42.9373401Z checking for x86_64-pc-linux-gnu-gcov... no
+2025-07-27T16:08:42.9378304Z checking for gcov... /usr/bin/gcov
+2025-07-27T16:08:42.9383466Z checking for x86_64-pc-linux-gnu-llvm-cov... no
+2025-07-27T16:08:42.9389081Z checking for llvm-cov... /usr/bin/llvm-cov
+2025-07-27T16:08:42.9394202Z checking for lcov... no
+2025-07-27T16:08:42.9397731Z checking for python3.9... /usr/local/pyenv/shims/python3.9
+2025-07-27T16:08:42.9402921Z checking for genhtml... no
+2025-07-27T16:08:42.9406433Z checking for git... /usr/bin/git
+2025-07-27T16:08:42.9410126Z checking for ccache... /usr/bin/ccache
+2025-07-27T16:08:42.9414741Z checking for xgettext... /usr/bin/xgettext
+2025-07-27T16:08:42.9419135Z checking for hexdump... /usr/bin/hexdump
+2025-07-27T16:08:42.9424723Z checking for x86_64-pc-linux-gnu-objcopy... no
+2025-07-27T16:08:42.9429451Z checking for objcopy... /usr/bin/objcopy
+2025-07-27T16:08:42.9433900Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-27T16:08:42.9438271Z checking for objdump... /usr/bin/objdump
+2025-07-27T16:08:42.9443356Z checking for x86_64-pc-linux-gnu-dsymutil... no
+2025-07-27T16:08:42.9448848Z checking for dsymutil... /usr/bin/dsymutil
+2025-07-27T16:08:42.9453640Z checking for doxygen... no
+2025-07-27T16:08:42.9606213Z checking whether C++ compiler accepts -Werror... yes
+2025-07-27T16:08:42.9958842Z checking whether the linker accepts -Wl,--fatal-warnings... yes
+2025-07-27T16:08:43.0388357Z checking for execinfo.h... yes
+2025-07-27T16:08:43.0744165Z checking whether the linker accepts -Wl,-wrap=__cxa_allocate_exception... yes
+2025-07-27T16:08:43.0941208Z checking whether C++ compiler accepts -Wa,-mbig-obj... no
+2025-07-27T16:08:43.1114891Z checking whether C++ compiler accepts -Warray-bounds... yes
+2025-07-27T16:08:43.1285261Z checking whether C++ compiler accepts -Wdangling-reference... yes
+2025-07-27T16:08:43.1454652Z checking whether C++ compiler accepts -Wattributes... yes
+2025-07-27T16:08:43.1626546Z checking whether C++ compiler accepts -Wcpp... no
+2025-07-27T16:08:43.1795635Z checking whether C++ compiler accepts -Wstringop-overread... yes
+2025-07-27T16:08:43.1965190Z checking whether C++ compiler accepts -Wstringop-overflow... yes
+2025-07-27T16:08:43.2137261Z checking whether C++ compiler accepts -Wall... yes
+2025-07-27T16:08:43.2308616Z checking whether C++ compiler accepts -Wextra... yes
+2025-07-27T16:08:43.2446823Z checking whether C++ compiler accepts -Wgnu... no
+2025-07-27T16:08:43.2623208Z checking whether C++ compiler accepts -Wformat -Wformat-security... yes
+2025-07-27T16:08:43.2794966Z checking whether C++ compiler accepts -Wreorder... yes
+2025-07-27T16:08:43.2968029Z checking whether C++ compiler accepts -Wvla... yes
+2025-07-27T16:08:43.3141811Z checking whether C++ compiler accepts -Wshadow-field... no
+2025-07-27T16:08:43.3339464Z checking whether C++ compiler accepts -Wthread-safety... no
+2025-07-27T16:08:43.3533947Z checking whether C++ compiler accepts -Wloop-analysis... no
+2025-07-27T16:08:43.3713374Z checking whether C++ compiler accepts -Wredundant-decls... yes
+2025-07-27T16:08:43.3961559Z checking whether C++ compiler accepts -Wunused-member-function... no
+2025-07-27T16:08:43.4139365Z checking whether C++ compiler accepts -Wdate-time... yes
+2025-07-27T16:08:43.4409882Z checking whether C++ compiler accepts -Wconditional-uninitialized... no
+2025-07-27T16:08:43.4587048Z checking whether C++ compiler accepts -Wduplicated-branches... yes
+2025-07-27T16:08:43.4765080Z checking whether C++ compiler accepts -Wduplicated-cond... yes
+2025-07-27T16:08:43.4939655Z checking whether C++ compiler accepts -Wlogical-op... yes
+2025-07-27T16:08:43.5112917Z checking whether C++ compiler accepts -Woverloaded-virtual... yes
+2025-07-27T16:08:43.5285146Z checking whether C++ compiler accepts -Wsuggest-override... yes
+2025-07-27T16:08:43.5464089Z checking whether C++ compiler accepts -Wimplicit-fallthrough... yes
+2025-07-27T16:08:43.5645033Z checking whether C++ compiler accepts -Wunreachable-code... yes
+2025-07-27T16:08:43.5845078Z checking whether C++ compiler accepts -Wdocumentation... no
+2025-07-27T16:08:43.6021195Z checking whether C++ compiler accepts -Wself-assign... no
+2025-07-27T16:08:43.6203322Z checking whether C++ compiler accepts -Wunused-parameter... yes
+2025-07-27T16:08:43.6386088Z checking whether C++ compiler accepts -fno-extended-identifiers... yes
+2025-07-27T16:08:43.6540049Z checking whether C++ compiler accepts -fstack-reuse=none... yes
+2025-07-27T16:08:43.6716023Z checking whether C++ compiler accepts -msse4.2... yes
+2025-07-27T16:08:43.6889409Z checking whether C++ compiler accepts -msse4.1... yes
+2025-07-27T16:08:43.7064730Z checking whether C++ compiler accepts -mavx -mavx2... yes
+2025-07-27T16:08:43.7235430Z checking whether C++ compiler accepts -msse4 -msha... yes
+2025-07-27T16:08:44.1898864Z checking whether C++ compiler accepts -mpclmul... yes
+2025-07-27T16:08:44.2349863Z checking for SSE4.2 intrinsics... yes
+2025-07-27T16:08:44.6788810Z checking for SSE4.1 intrinsics... yes
+2025-07-27T16:08:45.1082632Z checking for AVX2 intrinsics... yes
+2025-07-27T16:08:45.5522833Z checking for x86 SHA-NI intrinsics... yes
+2025-07-27T16:08:45.5693909Z checking whether C++ compiler accepts -march=armv8-a+crc+crypto... no
+2025-07-27T16:08:45.5850363Z checking whether C++ compiler accepts -march=armv8-a+crypto... no
+2025-07-27T16:08:45.5995199Z checking for ARMv8 CRC32 intrinsics... no
+2025-07-27T16:08:45.6145202Z checking for ARMv8 SHA-NI intrinsics... no
+2025-07-27T16:08:45.6980368Z checking whether byte ordering is bigendian... no
+2025-07-27T16:08:45.7206534Z checking how to run the C preprocessor... gcc -m64 -E
+2025-07-27T16:08:45.7517554Z checking whether gcc -m64 is Clang... no
+2025-07-27T16:08:45.7975753Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-27T16:08:45.8339728Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-27T16:08:45.8340635Z checking whether more special flags are required for pthreads... no
+2025-07-27T16:08:45.8703361Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-27T16:08:46.7055919Z checking whether std::atomic can be used without link library... yes
+2025-07-27T16:08:46.7064312Z checking for special C compiler options needed for large files... no
+2025-07-27T16:08:46.7256274Z checking for _FILE_OFFSET_BITS value needed for large files... no
+2025-07-27T16:08:46.7572911Z checking for g++ -m64 -std=c++20 options needed to detect all undeclared functions... none needed
+2025-07-27T16:08:46.8073796Z checking whether strerror_r is declared... yes
+2025-07-27T16:08:46.8297762Z checking whether strerror_r returns char *... yes
+2025-07-27T16:08:46.8447345Z checking whether C++ compiler accepts -fPIC... yes
+2025-07-27T16:08:46.8597655Z checking whether C++ compiler accepts -Wstack-protector... yes
+2025-07-27T16:08:46.8744649Z checking whether C++ compiler accepts -fstack-protector-all... yes
+2025-07-27T16:08:46.8884145Z checking whether C++ compiler accepts -fcf-protection=full... yes
+2025-07-27T16:08:46.9050692Z checking whether C++ compiler accepts -fstack-clash-protection... yes
+2025-07-27T16:08:46.9134856Z checking whether C++ preprocessor accepts -D_FORTIFY_SOURCE=3... yes
+2025-07-27T16:08:46.9215999Z checking whether C++ preprocessor accepts -U_FORTIFY_SOURCE... yes
+2025-07-27T16:08:46.9467147Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-27T16:08:46.9720753Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-27T16:08:46.9970318Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-27T16:08:47.0223080Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-27T16:08:47.0602454Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-27T16:08:47.0979269Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-27T16:08:47.1357089Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-27T16:08:47.1729288Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-27T16:08:47.2153617Z checking for sys/select.h... yes
+2025-07-27T16:08:47.2573897Z checking for sys/prctl.h... yes
+2025-07-27T16:08:47.2885454Z checking for vm/vm_param.h... no
+2025-07-27T16:08:47.3193085Z checking for sys/vmmeter.h... no
+2025-07-27T16:08:47.3501338Z checking for sys/resources.h... no
+2025-07-27T16:08:47.3782637Z checking whether getifaddrs is declared... yes
+2025-07-27T16:08:47.4218486Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-27T16:08:47.4499907Z checking whether freeifaddrs is declared... yes
+2025-07-27T16:08:47.4940647Z checking whether ifaddrs funcs can be used without link library... yes
+2025-07-27T16:08:47.5461167Z checking whether fork is declared... yes
+2025-07-27T16:08:47.5965735Z checking whether setsid is declared... yes
+2025-07-27T16:08:47.6468449Z checking whether pipe2 is declared... yes
+2025-07-27T16:08:47.6701236Z checking for mallopt M_ARENA_MAX... yes
+2025-07-27T16:08:47.6937742Z checking for getmemoryinfo... yes
+2025-07-27T16:08:47.7135257Z checking for posix_fallocate... yes
+2025-07-27T16:08:47.7283089Z checking for default visibility attribute... yes
+2025-07-27T16:08:47.7432562Z checking for dllexport attribute... no
+2025-07-27T16:08:48.2258150Z checking for thread_local support... yes
+2025-07-27T16:08:48.2544887Z checking for Linux getrandom syscall... yes
+2025-07-27T16:08:48.2862806Z checking for getentropy via random.h... yes
+2025-07-27T16:08:48.3058363Z checking for sysctl... no
+2025-07-27T16:08:48.3251181Z checking for sysctl KERN_ARND... no
+2025-07-27T16:08:48.3618021Z checking for library containing backtrace... none required
+2025-07-27T16:08:48.3858890Z checking for fdatasync... yes
+2025-07-27T16:08:48.4060726Z checking for F_FULLFSYNC... no
+2025-07-27T16:08:48.4265878Z checking for O_CLOEXEC... yes
+2025-07-27T16:08:48.4423167Z checking for __builtin_prefetch... yes
+2025-07-27T16:08:48.4821084Z checking for _mm_prefetch... yes
+2025-07-27T16:08:48.5020229Z checking for strong getauxval support in the system headers... yes
+2025-07-27T16:08:48.5288425Z checking for sockaddr_un... yes
+2025-07-27T16:08:48.5755617Z checking for std::system... yes
+2025-07-27T16:08:48.6041032Z checking for ::_wsystem... no
+2025-07-27T16:08:48.6206664Z checking for Qt5Core >= 5.11.3... yes
+2025-07-27T16:08:48.6315652Z checking for Qt5Gui >= 5.11.3... yes
+2025-07-27T16:08:48.6424264Z checking for Qt5Widgets >= 5.11.3... yes
+2025-07-27T16:08:48.6532130Z checking for Qt5Network >= 5.11.3... yes
+2025-07-27T16:08:48.6640005Z checking for Qt5Test >= 5.11.3... yes
+2025-07-27T16:08:48.6748700Z checking for Qt5DBus >= 5.11.3... yes
+2025-07-27T16:08:48.8859716Z checking for static Qt... yes
+2025-07-27T16:08:48.8972539Z checking for Qt5AccessibilitySupport... yes
+2025-07-27T16:08:48.9082566Z checking for Qt5DeviceDiscoverySupport... yes
+2025-07-27T16:08:48.9190335Z checking for Qt5EdidSupport... yes
+2025-07-27T16:08:48.9301879Z checking for Qt5EventDispatcherSupport... yes
+2025-07-27T16:08:48.9412344Z checking for Qt5FbSupport... yes
+2025-07-27T16:08:48.9524305Z checking for Qt5FontDatabaseSupport... yes
+2025-07-27T16:08:48.9635243Z checking for Qt5ThemeSupport... yes
+2025-07-27T16:08:48.9747812Z checking for Qt5InputSupport... yes
+2025-07-27T16:08:48.9862331Z checking for Qt5ServiceSupport... yes
+2025-07-27T16:08:48.9989380Z checking for Qt5XcbQpa... yes
+2025-07-27T16:08:49.0102914Z checking for Qt5XkbCommonSupport... yes
+2025-07-27T16:08:51.0101614Z checking for QMinimalIntegrationPlugin (-lqminimal)... yes
+2025-07-27T16:08:53.0867851Z checking for QXcbIntegrationPlugin (-lqxcb)... yes
+2025-07-27T16:08:53.3006970Z checking whether -fPIE can be used with this Qt config... yes
+2025-07-27T16:08:53.3019668Z checking for moc-qt5... no
+2025-07-27T16:08:53.3020612Z checking for moc5... no
+2025-07-27T16:08:53.3022953Z checking for moc... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/moc
+2025-07-27T16:08:53.3024855Z checking for uic-qt5... no
+2025-07-27T16:08:53.3025464Z checking for uic5... no
+2025-07-27T16:08:53.3027224Z checking for uic... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/uic
+2025-07-27T16:08:53.3028558Z checking for rcc-qt5... no
+2025-07-27T16:08:53.3030168Z checking for rcc5... no
+2025-07-27T16:08:53.3032359Z checking for rcc... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/rcc
+2025-07-27T16:08:53.3034007Z checking for lrelease-qt5... no
+2025-07-27T16:08:53.3034782Z checking for lrelease5... no
+2025-07-27T16:08:53.3037260Z checking for lrelease... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/lrelease
+2025-07-27T16:08:53.3038750Z checking for lupdate-qt5... no
+2025-07-27T16:08:53.3040765Z checking for lupdate5... no
+2025-07-27T16:08:53.3042873Z checking for lupdate... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/lupdate
+2025-07-27T16:08:53.3044962Z checking for lconvert-qt5... no
+2025-07-27T16:08:53.3045524Z checking for lconvert5... no
+2025-07-27T16:08:53.3047345Z checking for lconvert... /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/lconvert
+2025-07-27T16:08:53.3078255Z checking whether /__w/dash/dash/depends/x86_64-pc-linux-gnu/native/bin/rcc accepts --format-version option... yes
+2025-07-27T16:08:53.3079195Z checking whether to build Dash Core GUI... yes (Qt5)
+2025-07-27T16:08:54.1914516Z checking for Berkeley DB C++ headers... default
+2025-07-27T16:08:54.2318271Z checking for main in -ldb_cxx-4.8... yes
+2025-07-27T16:08:54.2468175Z checking for sqlite3 >= 3.7.17... yes
+2025-07-27T16:08:54.2468800Z checking whether to build wallet with support for sqlite... yes
+2025-07-27T16:08:54.2660209Z checking whether Userspace, Statically Defined Tracing tracepoints are supported... yes
+2025-07-27T16:08:54.3144060Z checking for miniupnpc/miniupnpc.h... yes
+2025-07-27T16:08:54.3548959Z checking for upnpDiscover in -lminiupnpc... yes
+2025-07-27T16:08:54.3998903Z checking for miniupnpc/upnpcommands.h... yes
+2025-07-27T16:08:54.4037391Z checking for upnpDiscover in -lminiupnpc... (cached) yes
+2025-07-27T16:08:54.4484123Z checking for miniupnpc/upnperrors.h... yes
+2025-07-27T16:08:54.4522629Z checking for upnpDiscover in -lminiupnpc... (cached) yes
+2025-07-27T16:08:54.4603726Z checking whether miniUPnPc API version is supported... yes
+2025-07-27T16:08:54.5085648Z checking for natpmp.h... yes
+2025-07-27T16:08:54.5441490Z checking for initnatpmp in -lnatpmp... yes
+2025-07-27T16:08:54.5518624Z checking for boostlib >= 1.73.0 (107300) includes in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/include"... yes
+2025-07-27T16:08:54.5521082Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib/x86_64-linux-gnu"... no
+2025-07-27T16:08:54.5522220Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib64"... no
+2025-07-27T16:08:54.5523685Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/libx32"... no
+2025-07-27T16:08:54.5524617Z checking for boostlib >= 1.73.0 (107300) lib path in "/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib"... yes
+2025-07-27T16:08:54.5663459Z checking for Boost headers >= 1.73.0 (107300)... yes
+2025-07-27T16:08:54.5947225Z checking whether C++ preprocessor accepts -DBOOST_NO_CXX98_FUNCTION_BASE... no
+2025-07-27T16:08:57.4301695Z checking for Boost Process... yes
+2025-07-27T16:08:57.4516364Z checking whether C++ compiler accepts -fvisibility=hidden... yes
+2025-07-27T16:08:57.4893267Z checking whether the linker accepts -Wl,--exclude-libs,ALL... yes
+2025-07-27T16:08:57.5152548Z checking whether the linker accepts -Wl,-no_exported_symbols... no
+2025-07-27T16:08:57.5272410Z checking for libevent >= 2.1.8... yes
+2025-07-27T16:08:57.5386287Z checking for libevent_pthreads >= 2.1.8... yes
+2025-07-27T16:08:57.5720656Z checking if evhttp_connection_get_peer expects const char**... no
+2025-07-27T16:08:57.5847041Z checking for libqrencode... yes
+2025-07-27T16:08:57.5962037Z checking for libzmq >= 4... yes
+2025-07-27T16:08:57.6537710Z checking for gmp.h... yes
+2025-07-27T16:08:57.6900015Z checking for __gmpz_init in -lgmp... yes
+2025-07-27T16:08:57.7015241Z checking for libmultiprocess... no
+2025-07-27T16:08:57.7094437Z checking whether to build dashd... yes
+2025-07-27T16:08:57.7096995Z checking whether to build dash-cli... yes
+2025-07-27T16:08:57.7097520Z checking whether to build dash-tx... yes
+2025-07-27T16:08:57.7098000Z checking whether to build dash-wallet... yes
+2025-07-27T16:08:57.7099309Z checking whether to build libraries... no
+2025-07-27T16:08:57.7101632Z checking if ccache should be used... yes
+2025-07-27T16:08:57.7371995Z checking whether C compiler accepts -fdebug-prefix-map=A=B... yes
+2025-07-27T16:08:57.7483960Z checking whether C preprocessor accepts -fmacro-prefix-map=A=B... yes
+2025-07-27T16:08:57.7485571Z checking if wallet should be enabled... yes
+2025-07-27T16:08:57.7487762Z checking whether to build with support for UPnP... yes
+2025-07-27T16:08:57.7489239Z checking whether to build with support for NAT-PMP... yes
+2025-07-27T16:08:57.7492919Z checking whether to build GUI with support for D-Bus... yes
+2025-07-27T16:08:57.7494156Z checking whether to build GUI with support for QR codes... yes
+2025-07-27T16:08:57.7496627Z checking whether to build test_dash-qt... yes
+2025-07-27T16:08:57.7497683Z checking whether to build test_dash... yes
+2025-07-27T16:08:57.7498157Z checking whether to reduce exports... yes
+2025-07-27T16:08:57.7628689Z checking whether dsymutil needs -flat... yes
+2025-07-27T16:08:57.7629284Z 
+2025-07-27T16:08:57.8060347Z checking that generated files are newer than configure... done
+2025-07-27T16:08:57.8067514Z configure: creating ./config.status
+2025-07-27T16:08:58.4486722Z config.status: creating Makefile
+2025-07-27T16:08:58.4610820Z config.status: creating src/Makefile
+2025-07-27T16:08:58.5182692Z config.status: creating doc/man/Makefile
+2025-07-27T16:08:58.5342405Z config.status: creating share/setup.nsi
+2025-07-27T16:08:58.5505301Z config.status: creating share/qt/Info.plist
+2025-07-27T16:08:58.5666746Z config.status: creating test/config.ini
+2025-07-27T16:08:58.5825868Z config.status: creating contrib/devtools/split-debug.sh
+2025-07-27T16:08:58.5993560Z config.status: creating src/config/bitcoin-config.h
+2025-07-27T16:08:58.6163736Z config.status: linking ../contrib/filter-lcov.py to contrib/filter-lcov.py
+2025-07-27T16:08:58.6227799Z config.status: linking ../src/.bear-tidy-config to src/.bear-tidy-config
+2025-07-27T16:08:58.6291403Z config.status: linking ../src/.clang-tidy to src/.clang-tidy
+2025-07-27T16:08:58.6366387Z config.status: linking ../test/functional/test_runner.py to test/functional/test_runner.py
+2025-07-27T16:08:58.6441917Z config.status: linking ../test/fuzz/test_runner.py to test/fuzz/test_runner.py
+2025-07-27T16:08:58.6515467Z config.status: linking ../test/util/test_runner.py to test/util/test_runner.py
+2025-07-27T16:08:58.6580613Z config.status: linking ../test/util/rpcauth-test.py to test/util/rpcauth-test.py
+2025-07-27T16:08:58.6610792Z config.status: executing depfiles commands
+2025-07-27T16:08:58.6624136Z config.status: executing libtool commands
+2025-07-27T16:08:58.6739905Z === configuring in src/dashbls (/__w/dash/dash/build-ci/src/dashbls)
+2025-07-27T16:08:58.6794829Z configure: running /bin/bash ../../../src/dashbls/configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--with-libs=no' '--enable-reduce-exports' '--disable-fuzz-binary' 'LDFLAGS=-static-libstdc++' '--with-boost-process' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=../../../src/dashbls
+2025-07-27T16:08:58.7958018Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-27T16:08:58.8448082Z checking build system type... x86_64-pc-linux-gnu
+2025-07-27T16:08:58.8495316Z checking host system type... x86_64-pc-linux-gnu
+2025-07-27T16:08:58.8573612Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-27T16:08:58.8601893Z checking whether build environment is sane... yes
+2025-07-27T16:08:58.8662705Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-27T16:08:58.8683111Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-27T16:08:58.8686934Z checking for gawk... gawk
+2025-07-27T16:08:58.8749800Z checking whether make sets $(MAKE)... yes
+2025-07-27T16:08:58.8801145Z checking whether make supports nested variables... yes
+2025-07-27T16:08:58.8842949Z checking whether to enable maintainer-specific portions of Makefiles... yes
+2025-07-27T16:08:58.8844563Z checking whether make supports nested variables... (cached) yes
+2025-07-27T16:08:58.8847342Z checking for x86_64-pc-linux-gnu-gcc... gcc -m64
+2025-07-27T16:08:58.9392702Z checking whether the C compiler works... yes
+2025-07-27T16:08:58.9393146Z checking for C compiler default output file name... a.out
+2025-07-27T16:08:58.9679858Z checking for suffix of executables... 
+2025-07-27T16:08:59.0034711Z checking whether we are cross compiling... no
+2025-07-27T16:08:59.0189828Z checking for suffix of object files... o
+2025-07-27T16:08:59.0323914Z checking whether the compiler supports GNU C... yes
+2025-07-27T16:08:59.0472238Z checking whether gcc -m64 accepts -g... yes
+2025-07-27T16:08:59.0826924Z checking for gcc -m64 option to enable C11 features... none needed
+2025-07-27T16:08:59.1091745Z checking whether gcc -m64 understands -c and -o together... yes
+2025-07-27T16:08:59.1164938Z checking whether make supports the include directive... yes (GNU style)
+2025-07-27T16:08:59.1168531Z checking dependency style of gcc -m64... none
+2025-07-27T16:08:59.1504607Z checking whether the compiler supports GNU C++... yes
+2025-07-27T16:08:59.1662957Z checking whether g++ -m64 accepts -g... yes
+2025-07-27T16:08:59.4463661Z checking for g++ -m64 option to enable C++11 features... unsupported
+2025-07-27T16:08:59.4931790Z checking for g++ -m64 option to enable C++98 features... none needed
+2025-07-27T16:08:59.4934632Z checking dependency style of g++ -m64... none
+2025-07-27T16:08:59.5319830Z checking whether g++ -m64 supports C++14 features with -std=c++14... yes
+2025-07-27T16:08:59.5343734Z checking how to print strings... printf
+2025-07-27T16:08:59.5381818Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-27T16:08:59.5410652Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-27T16:08:59.5425567Z checking for egrep... /usr/bin/grep -E
+2025-07-27T16:08:59.5440217Z checking for fgrep... /usr/bin/grep -F
+2025-07-27T16:08:59.5486768Z checking for ld used by gcc -m64... /usr/bin/ld
+2025-07-27T16:08:59.5510658Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-27T16:08:59.5512581Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-27T16:08:59.5792276Z checking the name lister (nm) interface... BSD nm
+2025-07-27T16:08:59.5793112Z checking whether ln -s works... yes
+2025-07-27T16:08:59.5834984Z checking the maximum length of command line arguments... 3145728
+2025-07-27T16:08:59.5861555Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-27T16:08:59.5862670Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-27T16:08:59.5863491Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-27T16:08:59.5867751Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-27T16:08:59.5872568Z checking for file... file
+2025-07-27T16:08:59.5876543Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-27T16:08:59.5880909Z checking for objdump... objdump
+2025-07-27T16:08:59.5885180Z checking how to recognize dependent libraries... pass_all
+2025-07-27T16:08:59.5889303Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-27T16:08:59.5893852Z checking for dlltool... no
+2025-07-27T16:08:59.5895504Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-27T16:08:59.5897106Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-27T16:08:59.6225617Z checking for archiver @FILE support... @
+2025-07-27T16:08:59.6226700Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-27T16:08:59.6232412Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-27T16:08:59.6892563Z checking command to parse nm output from gcc -m64 object... ok
+2025-07-27T16:08:59.6908330Z checking for sysroot... no
+2025-07-27T16:08:59.6949314Z checking for a working dd... /usr/bin/dd
+2025-07-27T16:08:59.6987475Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-27T16:08:59.7086466Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-27T16:08:59.7091375Z checking for mt... no
+2025-07-27T16:08:59.7122025Z checking if : is a manifest tool... no
+2025-07-27T16:08:59.7266005Z checking for stdio.h... yes
+2025-07-27T16:08:59.7422260Z checking for stdlib.h... yes
+2025-07-27T16:08:59.7585188Z checking for string.h... yes
+2025-07-27T16:08:59.7755871Z checking for inttypes.h... yes
+2025-07-27T16:08:59.7927210Z checking for stdint.h... yes
+2025-07-27T16:08:59.8098499Z checking for strings.h... yes
+2025-07-27T16:08:59.8274145Z checking for sys/stat.h... yes
+2025-07-27T16:08:59.8451172Z checking for sys/types.h... yes
+2025-07-27T16:08:59.8650026Z checking for unistd.h... yes
+2025-07-27T16:08:59.8852914Z checking for dlfcn.h... yes
+2025-07-27T16:08:59.8887211Z checking for objdir... .libs
+2025-07-27T16:08:59.9467004Z checking if gcc -m64 supports -fno-rtti -fno-exceptions... no
+2025-07-27T16:08:59.9467781Z checking for gcc -m64 option to produce PIC... -fPIC -DPIC
+2025-07-27T16:08:59.9600306Z checking if gcc -m64 PIC flag -fPIC -DPIC works... yes
+2025-07-27T16:09:00.0169350Z checking if gcc -m64 static flag -static works... yes
+2025-07-27T16:09:00.0383017Z checking if gcc -m64 supports -c -o file.o... yes
+2025-07-27T16:09:00.0383675Z checking if gcc -m64 supports -c -o file.o... (cached) yes
+2025-07-27T16:09:00.0477453Z checking whether the gcc -m64 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:09:00.0954183Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-27T16:09:00.0955933Z checking how to hardcode library paths into programs... immediate
+2025-07-27T16:09:00.0972231Z checking whether stripping libraries is possible... yes
+2025-07-27T16:09:00.0972985Z checking if libtool supports shared libraries... yes
+2025-07-27T16:09:00.0973941Z checking whether to build shared libraries... no
+2025-07-27T16:09:00.0974490Z checking whether to build static libraries... yes
+2025-07-27T16:09:00.1226741Z checking how to run the C++ preprocessor... g++ -m64 -std=c++14 -E
+2025-07-27T16:09:00.1948147Z checking for ld used by g++ -m64 -std=c++14... /usr/bin/ld -m elf_x86_64
+2025-07-27T16:09:00.1972456Z checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+2025-07-27T16:09:00.2042091Z checking whether the g++ -m64 -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:09:00.2627423Z checking for g++ -m64 -std=c++14 option to produce PIC... -fPIC -DPIC
+2025-07-27T16:09:00.2777806Z checking if g++ -m64 -std=c++14 PIC flag -fPIC -DPIC works... yes
+2025-07-27T16:09:00.3351112Z checking if g++ -m64 -std=c++14 static flag -static works... yes
+2025-07-27T16:09:00.3571146Z checking if g++ -m64 -std=c++14 supports -c -o file.o... yes
+2025-07-27T16:09:00.3572546Z checking if g++ -m64 -std=c++14 supports -c -o file.o... (cached) yes
+2025-07-27T16:09:00.3574184Z checking whether the g++ -m64 -std=c++14 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:09:00.3619367Z checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+2025-07-27T16:09:00.3620786Z checking how to hardcode library paths into programs... immediate
+2025-07-27T16:09:00.3627627Z checking for x86_64-pc-linux-gnu-ar... (cached) ar
+2025-07-27T16:09:00.3634262Z checking for x86_64-pc-linux-gnu-ranlib... no
+2025-07-27T16:09:00.3636206Z checking for ranlib... (cached) ranlib
+2025-07-27T16:09:00.3641611Z checking for x86_64-pc-linux-gnu-strip... no
+2025-07-27T16:09:00.3643619Z checking for strip... (cached) strip
+2025-07-27T16:09:00.3646773Z checking dependency style of gcc -m64... none
+2025-07-27T16:09:00.3788954Z checking whether C compiler accepts -Werror... yes
+2025-07-27T16:09:00.4032196Z checking for gmp.h... yes
+2025-07-27T16:09:00.4340711Z checking for __gmpz_init in -lgmp... yes
+2025-07-27T16:09:00.4512056Z checking gmp version >= 6.2... yes
+2025-07-27T16:09:00.4538765Z checking for x86_64-pc-linux-gnu-pkg-config... /usr/bin/pkg-config --static
+2025-07-27T16:09:00.4550965Z checking pkg-config is at least version 0.9.0... yes
+2025-07-27T16:09:00.4637654Z checking if gcc -m64 supports -pipe... yes
+2025-07-27T16:09:00.4732293Z checking if gcc -m64 supports -fomit-frame-pointer... yes
+2025-07-27T16:09:00.4972687Z checking how to run the C preprocessor... gcc -m64 -E
+2025-07-27T16:09:00.5267003Z checking whether gcc -m64 is Clang... no
+2025-07-27T16:09:00.5700148Z checking whether pthreads work with "-pthread" and "-lpthread"... yes
+2025-07-27T16:09:00.6056246Z checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+2025-07-27T16:09:00.6056982Z checking whether more special flags are required for pthreads... no
+2025-07-27T16:09:00.6407792Z checking for PTHREAD_PRIO_INHERIT... yes
+2025-07-27T16:09:00.6723805Z checking for library containing clock_gettime... none required
+2025-07-27T16:09:00.6892831Z checking whether C compiler accepts -fPIC... yes
+2025-07-27T16:09:00.7058368Z checking whether C compiler accepts -fstack-reuse=none... yes
+2025-07-27T16:09:00.7201769Z checking whether C compiler accepts -Wstack-protector... yes
+2025-07-27T16:09:00.7367097Z checking whether C compiler accepts -fstack-protector-all... yes
+2025-07-27T16:09:00.7525509Z checking whether C compiler accepts -fcf-protection=full... yes
+2025-07-27T16:09:00.7683698Z checking whether C compiler accepts -fstack-clash-protection... yes
+2025-07-27T16:09:00.7901284Z checking whether the linker accepts -Wl,--enable-reloc-section... no
+2025-07-27T16:09:00.8119404Z checking whether the linker accepts -Wl,--dynamicbase... no
+2025-07-27T16:09:00.8335294Z checking whether the linker accepts -Wl,--nxcompat... no
+2025-07-27T16:09:00.8552222Z checking whether the linker accepts -Wl,--high-entropy-va... no
+2025-07-27T16:09:00.8852138Z checking whether the linker accepts -Wl,-z,relro... yes
+2025-07-27T16:09:00.9154137Z checking whether the linker accepts -Wl,-z,now... yes
+2025-07-27T16:09:00.9454239Z checking whether the linker accepts -Wl,-z,separate-code... yes
+2025-07-27T16:09:00.9756130Z checking whether the linker accepts -fPIE -pie... yes
+2025-07-27T16:09:00.9928611Z checking whether C compiler accepts -fno-extended-identifiers... yes
+2025-07-27T16:09:00.9929694Z checking whether to build runtest... yes
+2025-07-27T16:09:00.9930648Z checking whether to build runbench... yes
+2025-07-27T16:09:01.0157685Z checking that generated files are newer than configure... done
+2025-07-27T16:09:01.0163075Z configure: creating ./config.status
+2025-07-27T16:09:01.5621757Z config.status: creating Makefile
+2025-07-27T16:09:01.5831917Z config.status: creating depends/relic/include/relic_conf.h
+2025-07-27T16:09:01.5972123Z config.status: executing depfiles commands
+2025-07-27T16:09:01.5986100Z config.status: executing libtool commands
+2025-07-27T16:09:01.6110852Z 
+2025-07-27T16:09:01.6111408Z Options used to compile and link:
+2025-07-27T16:09:01.6112069Z   target os           = linux
+2025-07-27T16:09:01.6112876Z   backend             = gmp
+2025-07-27T16:09:01.6113324Z   build bench         = yes
+2025-07-27T16:09:01.6113775Z   build test          = yes
+2025-07-27T16:09:01.6114252Z   use debug           = no
+2025-07-27T16:09:01.6114696Z   use hardening       = yes
+2025-07-27T16:09:01.6115187Z   use optimizations   = yes
+2025-07-27T16:09:01.6115511Z 
+2025-07-27T16:09:01.6115892Z   LDFLAGS             =  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie  
+2025-07-27T16:09:01.6117122Z   CFLAGS              =   -fPIC -fstack-reuse=none -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE  -fno-extended-identifiers  
+2025-07-27T16:09:01.6118028Z   CPPFLAGS            =  -DHAVE_BUILD_INFO 
+2025-07-27T16:09:01.6118692Z   CXXFLAGS            =   -fPIC -fstack-reuse=none -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection -fPIE  -fno-extended-identifiers  
+2025-07-27T16:09:01.6119378Z   PTHREAD_FLAGS       = -pthread -lpthread
+2025-07-27T16:09:01.6119784Z 
+2025-07-27T16:09:01.6466267Z === configuring in src/secp256k1 (/__w/dash/dash/build-ci/src/secp256k1)
+2025-07-27T16:09:01.6521450Z configure: running /bin/bash ../../../src/secp256k1/configure --disable-option-checking '--prefix=/__w/dash/dash/depends/x86_64-pc-linux-gnu'  '--disable-dependency-tracking' '--bindir=/output/bin' '--libdir=/output/lib' '--enable-werror' '--enable-zmq' '--with-libs=no' '--enable-reduce-exports' '--disable-fuzz-binary' 'LDFLAGS=-static-libstdc++' '--with-boost-process' '--disable-shared' '--with-pic' '--enable-benchmark=no' '--enable-module-recovery' '--disable-module-ecdh' '--disable-openssl-tests' --cache-file=/dev/null --srcdir=../../../src/secp256k1
+2025-07-27T16:09:01.7658348Z configure: loading site script /__w/dash/dash/depends/x86_64-pc-linux-gnu/share/config.site
+2025-07-27T16:09:01.8164534Z checking build system type... x86_64-pc-linux-gnu
+2025-07-27T16:09:01.8211674Z checking host system type... x86_64-pc-linux-gnu
+2025-07-27T16:09:01.8288873Z checking for a BSD-compatible install... /usr/bin/install -c
+2025-07-27T16:09:01.8316648Z checking whether build environment is sane... yes
+2025-07-27T16:09:01.8376961Z checking for x86_64-pc-linux-gnu-strip... strip
+2025-07-27T16:09:01.8397969Z checking for a race-free mkdir -p... /usr/bin/mkdir -p
+2025-07-27T16:09:01.8402169Z checking for gawk... gawk
+2025-07-27T16:09:01.8463583Z checking whether make sets $(MAKE)... yes
+2025-07-27T16:09:01.8515535Z checking whether make supports nested variables... yes
+2025-07-27T16:09:01.8556825Z checking whether make supports nested variables... (cached) yes
+2025-07-27T16:09:01.8559355Z checking for x86_64-pc-linux-gnu-gcc... gcc -m64
+2025-07-27T16:09:01.9108829Z checking whether the C compiler works... yes
+2025-07-27T16:09:01.9109481Z checking for C compiler default output file name... a.out
+2025-07-27T16:09:01.9406689Z checking for suffix of executables... 
+2025-07-27T16:09:01.9769975Z checking whether we are cross compiling... no
+2025-07-27T16:09:01.9927080Z checking for suffix of object files... o
+2025-07-27T16:09:02.0059647Z checking whether the compiler supports GNU C... yes
+2025-07-27T16:09:02.0204758Z checking whether gcc -m64 accepts -g... yes
+2025-07-27T16:09:02.0545483Z checking for gcc -m64 option to enable C11 features... none needed
+2025-07-27T16:09:02.0808119Z checking whether gcc -m64 understands -c and -o together... yes
+2025-07-27T16:09:02.0877928Z checking whether make supports the include directive... yes (GNU style)
+2025-07-27T16:09:02.0882286Z checking dependency style of gcc -m64... none
+2025-07-27T16:09:02.0885661Z checking dependency style of gcc -m64... none
+2025-07-27T16:09:02.0887265Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-27T16:09:02.1140811Z checking the archiver (ar) interface... ar
+2025-07-27T16:09:02.1163091Z checking how to print strings... printf
+2025-07-27T16:09:02.1200713Z checking for a sed that does not truncate output... /usr/bin/sed
+2025-07-27T16:09:02.1228847Z checking for grep that handles long lines and -e... /usr/bin/grep
+2025-07-27T16:09:02.1244224Z checking for egrep... /usr/bin/grep -E
+2025-07-27T16:09:02.1259760Z checking for fgrep... /usr/bin/grep -F
+2025-07-27T16:09:02.1307244Z checking for ld used by gcc -m64... /usr/bin/ld
+2025-07-27T16:09:02.1331290Z checking if the linker (/usr/bin/ld) is GNU ld... yes
+2025-07-27T16:09:02.1334542Z checking for BSD- or MS-compatible name lister (nm)... nm
+2025-07-27T16:09:02.1608821Z checking the name lister (nm) interface... BSD nm
+2025-07-27T16:09:02.1609353Z checking whether ln -s works... yes
+2025-07-27T16:09:02.1649999Z checking the maximum length of command line arguments... 3145728
+2025-07-27T16:09:02.1674854Z checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+2025-07-27T16:09:02.1678114Z checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+2025-07-27T16:09:02.1679011Z checking for /usr/bin/ld option to reload object files... -r
+2025-07-27T16:09:02.1682470Z checking for x86_64-pc-linux-gnu-file... no
+2025-07-27T16:09:02.1686485Z checking for file... file
+2025-07-27T16:09:02.1690487Z checking for x86_64-pc-linux-gnu-objdump... no
+2025-07-27T16:09:02.1695297Z checking for objdump... objdump
+2025-07-27T16:09:02.1698860Z checking how to recognize dependent libraries... pass_all
+2025-07-27T16:09:02.1703720Z checking for x86_64-pc-linux-gnu-dlltool... no
+2025-07-27T16:09:02.1707682Z checking for dlltool... no
+2025-07-27T16:09:02.1709310Z checking how to associate runtime and link libraries... printf %s\n
+2025-07-27T16:09:02.1711810Z checking for x86_64-pc-linux-gnu-ar... ar
+2025-07-27T16:09:02.2034841Z checking for archiver @FILE support... @
+2025-07-27T16:09:02.2036330Z checking for x86_64-pc-linux-gnu-strip... (cached) strip
+2025-07-27T16:09:02.2038593Z checking for x86_64-pc-linux-gnu-ranlib... ranlib
+2025-07-27T16:09:02.2684370Z checking command to parse nm output from gcc -m64 object... ok
+2025-07-27T16:09:02.2700467Z checking for sysroot... no
+2025-07-27T16:09:02.2741074Z checking for a working dd... /usr/bin/dd
+2025-07-27T16:09:02.2779224Z checking how to truncate binary pipes... /usr/bin/dd bs=4096 count=1
+2025-07-27T16:09:02.2880192Z checking for x86_64-pc-linux-gnu-mt... no
+2025-07-27T16:09:02.2884259Z checking for mt... no
+2025-07-27T16:09:02.2915112Z checking if : is a manifest tool... no
+2025-07-27T16:09:02.3064957Z checking for stdio.h... yes
+2025-07-27T16:09:02.3227088Z checking for stdlib.h... yes
+2025-07-27T16:09:02.3399892Z checking for string.h... yes
+2025-07-27T16:09:02.3580896Z checking for inttypes.h... yes
+2025-07-27T16:09:02.3761033Z checking for stdint.h... yes
+2025-07-27T16:09:02.3945014Z checking for strings.h... yes
+2025-07-27T16:09:02.4129870Z checking for sys/stat.h... yes
+2025-07-27T16:09:02.4320441Z checking for sys/types.h... yes
+2025-07-27T16:09:02.4535445Z checking for unistd.h... yes
+2025-07-27T16:09:02.4751617Z checking for dlfcn.h... yes
+2025-07-27T16:09:02.4791985Z checking for objdir... .libs
+2025-07-27T16:09:02.5393998Z checking if gcc -m64 supports -fno-rtti -fno-exceptions... no
+2025-07-27T16:09:02.5394745Z checking for gcc -m64 option to produce PIC... -fPIC -DPIC
+2025-07-27T16:09:02.5531446Z checking if gcc -m64 PIC flag -fPIC -DPIC works... yes
+2025-07-27T16:09:02.6083416Z checking if gcc -m64 static flag -static works... yes
+2025-07-27T16:09:02.6289830Z checking if gcc -m64 supports -c -o file.o... yes
+2025-07-27T16:09:02.6290479Z checking if gcc -m64 supports -c -o file.o... (cached) yes
+2025-07-27T16:09:02.6382984Z checking whether the gcc -m64 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+2025-07-27T16:09:02.6850937Z checking dynamic linker characteristics... GNU/Linux ld.so
+2025-07-27T16:09:02.6852881Z checking how to hardcode library paths into programs... immediate
+2025-07-27T16:09:02.6868779Z checking whether stripping libraries is possible... yes
+2025-07-27T16:09:02.6870014Z checking if libtool supports shared libraries... yes
+2025-07-27T16:09:02.6870609Z checking whether to build shared libraries... no
+2025-07-27T16:09:02.6871088Z checking whether to build static libraries... yes
+2025-07-27T16:09:02.6974523Z checking if gcc -m64 supports -Werror... yes
+2025-07-27T16:09:02.7066537Z checking if gcc -m64 supports -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef... yes
+2025-07-27T16:09:02.7155922Z checking if gcc -m64 supports -Wno-overlength-strings... yes
+2025-07-27T16:09:02.7245848Z checking if gcc -m64 supports -Wall... yes
+2025-07-27T16:09:02.7335785Z checking if gcc -m64 supports -Wno-unused-function... yes
+2025-07-27T16:09:02.7425749Z checking if gcc -m64 supports -Wextra... yes
+2025-07-27T16:09:02.7515773Z checking if gcc -m64 supports -Wcast-align... yes
+2025-07-27T16:09:02.7604885Z checking if gcc -m64 supports -Wcast-align=strict... yes
+2025-07-27T16:09:02.7841234Z checking if gcc -m64 supports -Wconditional-uninitialized... no
+2025-07-27T16:09:02.8042333Z checking if gcc -m64 supports -Wreserved-identifier... no
+2025-07-27T16:09:02.8132625Z checking if gcc -m64 supports -fvisibility=hidden... yes
+2025-07-27T16:09:02.8274086Z checking for valgrind support... 
+2025-07-27T16:09:02.8594768Z checking for x86_64 assembly availability... yes
+2025-07-27T16:09:02.8817298Z checking that generated files are newer than configure... done
+2025-07-27T16:09:02.8820359Z configure: creating ./config.status
+2025-07-27T16:09:03.2677290Z config.status: creating Makefile
+2025-07-27T16:09:03.2801184Z config.status: creating libsecp256k1.pc
+2025-07-27T16:09:03.2905148Z config.status: executing depfiles commands
+2025-07-27T16:09:03.2919223Z config.status: executing libtool commands
+2025-07-27T16:09:03.3003327Z 
+2025-07-27T16:09:03.3003660Z Build Options:
+2025-07-27T16:09:03.3004045Z   with external callbacks = no
+2025-07-27T16:09:03.3004437Z   with benchmarks         = no
+2025-07-27T16:09:03.3004804Z   with tests              = yes
+2025-07-27T16:09:03.3005166Z   with ctime tests        = no
+2025-07-27T16:09:03.3005514Z   with coverage           = no
+2025-07-27T16:09:03.3005870Z   with examples           = no
+2025-07-27T16:09:03.3006213Z   module ecdh             = no
+2025-07-27T16:09:03.3006554Z   module recovery         = yes
+2025-07-27T16:09:03.3006928Z   module extrakeys        = yes
+2025-07-27T16:09:03.3007305Z   module schnorrsig       = yes
+2025-07-27T16:09:03.3007623Z   module ellswift         = yes
+2025-07-27T16:09:03.3007840Z 
+2025-07-27T16:09:03.3009473Z   asm                     = x86_64
+2025-07-27T16:09:03.3010362Z   ecmult window size      = 15
+2025-07-27T16:09:03.3011019Z   ecmult gen prec. bits   = 4
+2025-07-27T16:09:03.3011318Z 
+2025-07-27T16:09:03.3011481Z   valgrind                = no
+2025-07-27T16:09:03.3011878Z   CC                      = gcc -m64
+2025-07-27T16:09:03.3012509Z   CPPFLAGS                = -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ 
+2025-07-27T16:09:03.3013442Z   SECP_CFLAGS             = -O2  -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef -Wno-overlength-strings -Wall -Wno-unused-function -Wextra -Wcast-align -Wcast-align=strict -fvisibility=hidden 
+2025-07-27T16:09:03.3014600Z   CFLAGS                  = -pipe -std=c11 -O2 
+2025-07-27T16:09:03.3014989Z   LDFLAGS                 = -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib -static-libstdc++
+2025-07-27T16:09:03.3318182Z 
+2025-07-27T16:09:03.3318691Z Options used to compile and link:
+2025-07-27T16:09:03.3319205Z   boost process       = yes
+2025-07-27T16:09:03.3319831Z   multiprocess        = no
+2025-07-27T16:09:03.3320268Z   with libs           = no
+2025-07-27T16:09:03.3320662Z   with wallet         = yes
+2025-07-27T16:09:03.3321381Z     with sqlite       = yes
+2025-07-27T16:09:03.3321848Z     with bdb          = yes
+2025-07-27T16:09:03.3322294Z   with gui / qt       = yes
+2025-07-27T16:09:03.3322631Z     with qr           = yes
+2025-07-27T16:09:03.3322980Z   with zmq            = yes
+2025-07-27T16:09:03.3323303Z   with test           = yes
+2025-07-27T16:09:03.3323598Z   with fuzz binary    = no
+2025-07-27T16:09:03.3323894Z   with bench          = yes
+2025-07-27T16:09:03.3324218Z   with upnp           = yes
+2025-07-27T16:09:03.3324559Z   with natpmp         = yes
+2025-07-27T16:09:03.3324912Z   USDT tracing        = yes
+2025-07-27T16:09:03.3325266Z   sanitizers          = 
+2025-07-27T16:09:03.3325628Z   debug enabled       = no
+2025-07-27T16:09:03.3326427Z   stacktraces enabled = yes
+2025-07-27T16:09:03.3326796Z   crash hooks enabled = no
+2025-07-27T16:09:03.3327175Z   miner enabled       = yes
+2025-07-27T16:09:03.3327422Z   gprof enabled       = no
+2025-07-27T16:09:03.3327637Z   werror              = yes
+2025-07-27T16:09:03.3327781Z 
+2025-07-27T16:09:03.3327876Z   target os           = linux-gnu
+2025-07-27T16:09:03.3328114Z   build os            = linux-gnu
+2025-07-27T16:09:03.3328285Z 
+2025-07-27T16:09:03.3328397Z   CC                  = /usr/bin/ccache gcc -m64
+2025-07-27T16:09:03.3328786Z   CFLAGS              =  -g1 -fno-omit-frame-pointer -pthread -pipe -std=c11 -O2 
+2025-07-27T16:09:03.3329930Z   CPPFLAGS            =  -fmacro-prefix-map=$(abs_top_srcdir)=.  -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3  -DHAVE_BUILD_INFO -DGSL_NO_IOSTREAMS -I/__w/dash/dash/depends/x86_64-pc-linux-gnu/include/ 
+2025-07-27T16:09:03.3330715Z   CXX                 = /usr/bin/ccache g++ -m64 -std=c++20
+2025-07-27T16:09:03.3333789Z   CXXFLAGS            =  -g1 -fno-omit-frame-pointer -fdebug-prefix-map=$(abs_top_srcdir)=.  -Wstack-protector -fstack-protector-all -fcf-protection=full -fstack-clash-protection  -Wall -Wextra -Wformat -Wformat-security -Wreorder -Wvla -Wredundant-decls -Wdate-time -Wduplicated-branches -Wduplicated-cond -Wlogical-op -Woverloaded-virtual -Wsuggest-override -Wimplicit-fallthrough -Wunreachable-code  -Wno-array-bounds -Wno-error=dangling-reference -Wno-error=attributes -Wno-stringop-overread -Wno-stringop-overflow -Wno-unused-parameter -Werror   -fno-extended-identifiers -fstack-reuse=none -fvisibility=hidden -pipe -std=c++20 -O2 
+2025-07-27T16:09:03.3338206Z   LDFLAGS             = -lpthread  -Wl,-z,relro -Wl,-z,now -Wl,-z,separate-code -pie   -L/__w/dash/dash/depends/x86_64-pc-linux-gnu/lib -static-libstdc++
+2025-07-27T16:09:03.3339138Z   AR                  = ar
+2025-07-27T16:09:03.3339801Z   ARFLAGS             = cr
+2025-07-27T16:09:03.3340039Z 
+2025-07-27T16:09:03.3913151Z make  distdir-am
+2025-07-27T16:09:03.3965944Z make[1]: Entering directory '/__w/dash/dash/build-ci'
+2025-07-27T16:09:03.3967037Z if test -d "dashcore-linux64"; then find "dashcore-linux64" -type d ! -perm -200 -exec chmod u+w {} ';' && rm -rf "dashcore-linux64" || { sleep 5 && rm -rf "dashcore-linux64"; }; else :; fi
+2025-07-27T16:09:03.3980254Z test -d "dashcore-linux64" || mkdir "dashcore-linux64"
+2025-07-27T16:09:03.6029470Z  (cd src && make  top_distdir=../dashcore-linux64 distdir=../dashcore-linux64/src \
+2025-07-27T16:09:03.6031008Z      am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)
+2025-07-27T16:09:03.6274343Z make[2]: Entering directory '/__w/dash/dash/build-ci/src'
+2025-07-27T16:09:03.6275011Z make  distdir-am
+2025-07-27T16:09:03.7571898Z make[3]: Entering directory '/__w/dash/dash/build-ci/src'
+2025-07-27T16:09:03.8478662Z Generated bench/data/block813851.raw.h
+2025-07-27T16:09:03.8587314Z make[3]: *** No rule to make target 'wallet/test/fuzz/coincontrol.cpp', needed by 'distdir-am'.  Stop.
+2025-07-27T16:09:03.8588069Z make[3]: Leaving directory '/__w/dash/dash/build-ci/src'
+2025-07-27T16:09:03.8595485Z make[2]: *** [Makefile:20826: distdir] Error 2
+2025-07-27T16:09:03.8595974Z make[2]: Leaving directory '/__w/dash/dash/build-ci/src'
+2025-07-27T16:09:03.8603597Z make[1]: *** [Makefile:894: distdir-am] Error 1
+2025-07-27T16:09:03.8604364Z make[1]: Leaving directory '/__w/dash/dash/build-ci'
+2025-07-27T16:09:03.8606353Z make: *** [Makefile:888: distdir] Error 2
+2025-07-27T16:09:03.8653814Z ##[error]Process completed with exit code 2.
+2025-07-27T16:09:03.8748122Z Post job cleanup.
+2025-07-27T16:09:03.8752068Z ##[command]/usr/bin/docker exec  85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926 sh -c "cat /etc/*release | grep ^ID"
+2025-07-27T16:09:04.0665871Z [command]/usr/bin/git version
+2025-07-27T16:09:04.0705775Z git version 2.43.0
+2025-07-27T16:09:04.0747308Z Copying '/github/home/.gitconfig' to '/__w/_temp/92ca38d9-847a-4735-9b62-5c9b52a852a3/.gitconfig'
+2025-07-27T16:09:04.0759454Z Temporarily overriding HOME='/__w/_temp/92ca38d9-847a-4735-9b62-5c9b52a852a3' before making global git config changes
+2025-07-27T16:09:04.0760740Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-27T16:09:04.0766994Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-27T16:09:04.0802939Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-27T16:09:04.0847434Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-27T16:09:04.1082512Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-27T16:09:04.1105998Z http.https://github.com/.extraheader
+2025-07-27T16:09:04.1119186Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-27T16:09:04.1150788Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-27T16:09:04.1475627Z Stop and remove container: 583f9bb235cb456f9e726402141548ca_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch441pr28168_8ff915
+2025-07-27T16:09:04.1481054Z ##[command]/usr/bin/docker rm --force 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:09:04.2686653Z 85fea03b2d286bf85fa55d45b700f9ded9bbced9e8ece100ffeed40f3decc926
+2025-07-27T16:09:04.2717070Z Remove container network: github_network_544409b2d59249139504f245caa863e3
+2025-07-27T16:09:04.2721454Z ##[command]/usr/bin/docker network rm github_network_544409b2d59249139504f245caa863e3
+2025-07-27T16:09:04.3884385Z github_network_544409b2d59249139504f245caa863e3
+2025-07-27T16:09:04.3940529Z Evaluate and set job outputs
+2025-07-27T16:09:04.3945952Z Cleaning up orphan processes
