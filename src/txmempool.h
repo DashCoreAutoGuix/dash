@@ -21,6 +21,7 @@
 #include <gsl/pointers.h>
 #include <indirectmap.h>
 #include <netaddress.h>
+#include <node/mempool_removal_reason.h>
 #include <policy/feerate.h>
 #include <policy/packages.h>
 #include <primitives/transaction.h>
@@ -344,19 +345,6 @@ struct TxMempoolInfo
     int64_t nFeeDelta;
 };
 
-/** Reason why a transaction was removed from the mempool,
- * this is passed to the notification signal.
- */
-enum class MemPoolRemovalReason {
-    EXPIRY,      //!< Expired from mempool
-    SIZELIMIT,   //!< Removed in size limiting
-    REORG,       //!< Removed for reorganization
-    BLOCK,       //!< Removed for block
-    CONFLICT,    //!< Removed for conflict with in-block transaction
-    MANUAL       //!< Removed manually
-};
-
-std::string RemovalReasonToString(const MemPoolRemovalReason& r) noexcept;
 
 /**
  * CTxMemPool stores valid-according-to-the-current-best-chain transactions
