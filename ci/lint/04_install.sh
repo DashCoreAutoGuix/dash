@@ -6,8 +6,6 @@
 
 export LC_ALL=C
 
-export PATH=$PWD/ci/retry:$PATH
-
 ${CI_RETRY_EXE} apt-get update
 # Lint dependencies:
 # - curl/xz-utils (to install shellcheck)

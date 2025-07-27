@@ -29,12 +29,10 @@ if [[ $BITCOIN_CONFIG = *--with-sanitizers=*address* ]]; then # If ran with (ASa
   DOCKER_ADMIN="--cap-add SYS_PTRACE"
 fi
 
+export P_CI_DIR="$PWD"
+export BINS_SCRATCH_DIR="${BASE_SCRATCH_DIR}/bins/"
+
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
-  # Export all env vars to avoid missing some.
-  # Though, exclude those with newlines to avoid parsing problems.
-  python3 -c 'import os; [print(f"{key}={value}") for key, value in os.environ.items() if "\n" not in value and "HOME" != key and "PATH" != key and "USER" != key]' | tee /tmp/env
-  # System-dependent env vars must be kept as is. So read them from the container.
-  docker run --rm "${DOCKER_NAME_TAG}" bash -c "env | grep --extended-regexp '^(HOME|PATH|USER)='" | tee --append /tmp/env
   echo "Creating $DOCKER_NAME_TAG container to run in"
   LOCAL_UID=$(id -u)
   LOCAL_GID=$(id -g)
@@ -68,10 +66,10 @@ else
 fi
 
 CI_EXEC () {
-  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && $*"
+  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=${BINS_SCRATCH_DIR}:\$PATH && cd \"$P_CI_DIR\" && $*"
 }
 CI_EXEC_ROOT () {
-  $DOCKER_CI_CMD_PREFIX_ROOT bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && $*"
+  $DOCKER_CI_CMD_PREFIX_ROOT bash -c "export PATH=${BINS_SCRATCH_DIR}:\$PATH && cd \"$P_CI_DIR\" && $*"
 }
 export -f CI_EXEC
 export -f CI_EXEC_ROOT
