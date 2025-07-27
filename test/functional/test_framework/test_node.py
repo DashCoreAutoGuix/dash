@@ -433,7 +433,11 @@ class TestNode():
         return self.chain_path / 'debug.log'
 
     def debug_log_bytes(self) -> int:
-        with open(self.debug_log_path, encoding='utf-8') as dl:
+        # Deprecated method name kept for compatibility, use debug_log_size instead
+        return self.debug_log_size(encoding='utf-8')
+
+    def debug_log_size(self, **kwargs) -> int:
+        with open(self.debug_log_path, **kwargs) as dl:
             dl.seek(0, 2)
             return dl.tell()
 
@@ -445,13 +449,13 @@ class TestNode():
         assert_equal(type(unexpected_msgs), list)
 
         time_end = time.time() + timeout * self.timeout_factor
-        prev_size = self.debug_log_bytes()
+        prev_size = self.debug_log_size(encoding="utf-8")  # Must use same encoding that is used to read() below
 
         yield
 
         while True:
             found = True
-            with open(self.debug_log_path, encoding='utf-8') as dl:
+            with open(self.debug_log_path, encoding="utf-8", errors="replace") as dl:
                 dl.seek(prev_size)
                 log = dl.read()
             print_log = " - " + "\n - ".join(log.splitlines())
@@ -476,7 +480,7 @@ class TestNode():
             the number of log lines we encountered when matching
         """
         time_end = time.time() + timeout * self.timeout_factor
-        prev_size = self.debug_log_bytes()
+        prev_size = self.debug_log_size(mode="rb")  # Must use same mode that is used to read() below
 
         yield
 
