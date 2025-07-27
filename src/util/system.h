@@ -318,10 +318,6 @@ protected:
 
     fs::path GetBackupsDirPath();
 
-    /**
-     * Get the path of the configuration file
-     */
-    fs::path GetConfigFilePath() const;
 
     /**
      * Clear cached directory paths
