@@ -76,7 +76,7 @@ class CoinStatsIndexTest(BitcoinTestFramework):
             block_info['new_outputs_ex_coinbase'] + block_info['coinbase'] + block_info['unspendable']
         )
 
-    def sync_index_node(self):
+    def sync_index_node(self) -> None:
         self.wait_until(lambda: self.nodes[1].getindexinfo()['coinstatsindex']['synced'] is True)
 
     def _test_coin_stats_index(self):
@@ -316,7 +316,7 @@ class CoinStatsIndexTest(BitcoinTestFramework):
         for use_index in {True, False, None}:
             assert_raises_rpc_error(-8, msg, self.nodes[1].gettxoutsetinfo, hash_type='hash_serialized_2', hash_or_height=111, use_index=use_index)
 
-    def _test_init_index_after_reorg(self):
+    def _test_init_index_after_reorg(self) -> None:
         self.log.info("Test a reorg while the index is deactivated")
         index_node = self.nodes[1]
         block = self.nodes[0].getbestblockhash()
