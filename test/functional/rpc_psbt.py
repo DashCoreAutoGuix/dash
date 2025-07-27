@@ -502,7 +502,7 @@ class PSBTTest(BitcoinTestFramework):
         self.nodes[0].finalizepsbt(signed['psbt'])
 
         self.log.info("Test walletprocesspsbt raises if an invalid sighashtype is passed")
-        assert_raises_rpc_error(-8, "all is not a valid sighash parameter.", self.nodes[0].walletprocesspsbt, psbtx1, sighashtype="all")
+        assert_raises_rpc_error(-1, "all is not a valid sighash parameter.", self.nodes[0].walletprocesspsbt, psbtx1, sighashtype="all")
 
 
 if __name__ == '__main__':
