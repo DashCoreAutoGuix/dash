@@ -1584,6 +1584,8 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     fListen = args.GetBoolArg("-listen", DEFAULT_LISTEN);
     fDiscover = args.GetBoolArg("-discover", true);
+    // TODO: This reads -blocksonly a second time. Bitcoin PR #28148 addresses this
+    // by using PeerManager::Options, but that requires PR #27499 to be backported first.
     const bool ignores_incoming_txs{args.GetBoolArg("-blocksonly", DEFAULT_BLOCKSONLY)};
 
     // We need to initialize g_stats_client early as currently, g_stats_client is called
