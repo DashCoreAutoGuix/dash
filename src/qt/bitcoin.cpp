@@ -237,8 +237,7 @@ BitcoinApplication::BitcoinApplication():
     optionsModel(nullptr),
     clientModel(nullptr),
     window(nullptr),
-    pollShutdownTimer(nullptr),
-    returnValue(0)
+    pollShutdownTimer(nullptr)
 {
     RegisterMetaTypes();
     // Qt runs setlocale(LC_ALL, "") on initialization.
@@ -395,9 +394,7 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
 {
     qDebug() << __func__ << ": Initialization result: " << success;
 
-    // Set exit result.
-    returnValue = success ? node().getExitStatus() : EXIT_FAILURE;
-    if(success) {
+    if (success) {
         delete m_splash;
         m_splash = nullptr;
 
