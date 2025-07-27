@@ -237,8 +237,7 @@ BitcoinApplication::BitcoinApplication():
     optionsModel(nullptr),
     clientModel(nullptr),
     window(nullptr),
-    pollShutdownTimer(nullptr),
-    returnValue(0)
+    pollShutdownTimer(nullptr)
 {
     RegisterMetaTypes();
     // Qt runs setlocale(LC_ALL, "") on initialization.
@@ -395,9 +394,7 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
 {
     qDebug() << __func__ << ": Initialization result: " << success;
 
-    // Set exit result.
-    returnValue = success ? EXIT_SUCCESS : EXIT_FAILURE;
-    if(success) {
+    if (success) {
         delete m_splash;
         m_splash = nullptr;
 
@@ -766,7 +763,6 @@ int GuiMain(int argc, char* argv[])
 
     app.createNode(*init);
 
-    int rv = EXIT_SUCCESS;
     try
     {
         app.createWindow(networkStyle.data());
@@ -779,14 +775,13 @@ int GuiMain(int argc, char* argv[])
             WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("%1 didn't yet exit safely…").arg(PACKAGE_NAME), (HWND)app.getMainWinId());
 #endif
             app.exec();
-            rv = app.getReturnValue();
         } else {
             // A dialog with detailed error will have been shown by InitError()
-            rv = EXIT_FAILURE;
+            return EXIT_FAILURE;
         }
     } catch (...) {
         PrintExceptionContinue(std::current_exception(), "Runaway exception");
         app.handleRunawayException(QString::fromStdString(app.node().getWarnings().translated));
     }
-    return rv;
+    return app.node().getExitStatus();
 }

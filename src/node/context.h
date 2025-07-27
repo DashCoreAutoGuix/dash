@@ -5,7 +5,9 @@
 #ifndef BITCOIN_NODE_CONTEXT_H
 #define BITCOIN_NODE_CONTEXT_H
 
+#include <atomic>
 #include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -76,6 +78,7 @@ struct NodeContext {
     std::unique_ptr<interfaces::CoinJoin::Loader> coinjoin_loader{nullptr};
     std::unique_ptr<CScheduler> scheduler;
     std::function<void()> rpc_interruption_point = [] {};
+    std::atomic<int> exit_status{EXIT_SUCCESS};
     //! Dash
     std::unique_ptr<CActiveMasternodeManager> mn_activeman;
     std::unique_ptr<CCreditPoolManager> cpoolman;
