@@ -250,6 +250,8 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
 #endif
     if (fRet) {
         WaitForShutdown();
+    } else {
+        node.exit_status = EXIT_FAILURE;
     }
     Interrupt(node);
     Shutdown(node);
