@@ -272,9 +272,15 @@ class RESTTest (BitcoinTestFramework):
         assert_equal(json_obj[0]['hash'], bb_hash)  # request/response hash should be the same
 
         # Check invalid uri (% symbol at the end of the request)
-        for invalid_uri in [f"/headers/{bb_hash}%", f"/blockfilterheaders/basic/{bb_hash}%", "/mempool/contents.json?%"]:
+        # Test specific invalid URIs and their expected Dash error messages
+        invalid_uris = [
+            (f"/headers/{bb_hash}%", "No header count specified. Use /rest/headers/<count>/<hash>.<ext>."),
+            (f"/blockfilterheaders/basic/{bb_hash}%", "Invalid URI format. Expected /rest/blockfilterheaders/<filtertype>/<count>/<blockhash>"),
+            ("/mempool/contents.json?%", "URI parsing failed, it likely contained RFC 3986 invalid characters")
+        ]
+        for invalid_uri, expected_error in invalid_uris:
             resp = self.test_rest_request(invalid_uri, ret_type=RetType.OBJ, status=400)
-            assert_equal(resp.read().decode('utf-8').rstrip(), "URI parsing failed, it likely contained RFC 3986 invalid characters")
+            assert_equal(resp.read().decode('utf-8').rstrip(), expected_error)
 
         # Compare with normal RPC block response
         rpc_block_json = self.nodes[0].getblock(bb_hash)
