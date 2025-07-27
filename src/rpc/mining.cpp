@@ -520,7 +520,7 @@ static RPCHelpMan getprioritisedtransactions()
             RPCResult::Type::OBJ_DYN, "prioritisation-map", "prioritisation keyed by txid",
             {
                 {RPCResult::Type::OBJ, "txid", "", {
-                    {RPCResult::Type::NUM, "fee_delta", "transaction fee delta in satoshis"},
+                    {RPCResult::Type::NUM, "fee_delta", "transaction fee delta in duffs"},
                     {RPCResult::Type::BOOL, "in_mempool", "whether this transaction is currently in mempool"},
                 }}
             },

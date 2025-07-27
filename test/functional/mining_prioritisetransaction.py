@@ -158,7 +158,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
 
         # Test `getprioritisedtransactions` invalid parameters
         assert_raises_rpc_error(-1, "getprioritisedtransactions",
-                self.nodes[0].getprioritisedtransactions, True)
+                                self.nodes[0].getprioritisedtransactions, True)
 
         # Test `prioritisetransaction` invalid `txid`
         assert_raises_rpc_error(-8, "txid must be of length 64 (not 3, for 'foo')", self.nodes[0].prioritisetransaction, txid='foo', fee_delta=0)
