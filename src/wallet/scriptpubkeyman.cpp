@@ -2327,6 +2327,7 @@ TransactionError DescriptorScriptPubKeyMan::FillPSBT(PartiallySignedTransaction&
             *keys = Merge(*keys, *script_keys);
         } else {
             // Maybe there are pubkeys listed that we can sign for
+            script_keys = std::make_unique<FlatSigningProvider>();
             std::vector<CPubKey> pubkeys;
             pubkeys.reserve(input.hd_keypaths.size());
 
