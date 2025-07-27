@@ -562,15 +562,9 @@ class RawTransactionsTest(BitcoinTestFramework):
         wallet.encryptwallet("test")
 
         if self.options.descriptors:
-<<<<<<< HEAD:test/functional/rpc_fundrawtransaction.py
-            self.nodes[1].walletpassphrase('test', 10)
-            self.nodes[1].importdescriptors([{
-                'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/0h/*h)'),
-=======
             wallet.walletpassphrase('test', 10)
             wallet.importdescriptors([{
-                'desc': descsum_create('wpkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/0h/*h)'),
->>>>>>> f033a981ed (Merge bitcoin/bitcoin#28139: test: create wallet specific for test_locked_wallet case):test/functional/wallet_fundrawtransaction.py
+                'desc': descsum_create('pkh(tprv8ZgxMBicQKsPdYeeZbPSKd2KYLmeVKtcFA7kqCxDvDR13MQ6us8HopUR2wLcS2ZKPhLyKsqpDL2FtL73LMHcgoCL7DXsciA8eX8nbjCR2eG/0h/*h)'),
                 'timestamp': 'now',
                 'active': True
             },
@@ -583,22 +577,13 @@ class RawTransactionsTest(BitcoinTestFramework):
             wallet.walletlock()
 
         # Drain the keypool.
-<<<<<<< HEAD:test/functional/rpc_fundrawtransaction.py
-        self.nodes[1].getnewaddress()
-
-        # Choose 2 inputs
-        # bnb doesn't work same way as in bitcoin, so, `value` is also calculated by different way
-        inputs = self.nodes[1].listunspent()
-        value = sum(inp["amount"] for inp in inputs) - Decimal("0.00002200")
-=======
         wallet.getnewaddress()
         wallet.getrawchangeaddress()
 
-        # Choose input
+        # Choose 2 inputs
+        # bnb doesn't work same way as in bitcoin, so, `value` is also calculated by different way
         inputs = wallet.listunspent()
-        # Deduce fee to produce a changeless transaction
-        value = inputs[0]["amount"] - Decimal("0.00002200")
->>>>>>> f033a981ed (Merge bitcoin/bitcoin#28139: test: create wallet specific for test_locked_wallet case):test/functional/wallet_fundrawtransaction.py
+        value = sum(inp["amount"] for inp in inputs) - Decimal("0.00002200")
         outputs = {self.nodes[0].getnewaddress():value}
         rawtx = wallet.createrawtransaction(inputs, outputs)
         # fund a transaction that does not require a new key for the change output
@@ -608,40 +593,23 @@ class RawTransactionsTest(BitcoinTestFramework):
         # fund a transaction that requires a new key for the change output
         # creating the key must be impossible because the wallet is locked
         outputs = {self.nodes[0].getnewaddress():value - Decimal("0.1")}
-<<<<<<< HEAD:test/functional/rpc_fundrawtransaction.py
-        rawtx = self.nodes[1].createrawtransaction(inputs, outputs)
-        assert_raises_rpc_error(-4, "Transaction needs a change address, but we can't generate it. Please call keypoolrefill first.", self.nodes[1].fundrawtransaction, rawtx)
-
-        # Refill the keypool.
-        self.nodes[1].walletpassphrase("test", 100)
-        self.nodes[1].walletlock()
-
-        assert_raises_rpc_error(-13, "walletpassphrase", self.nodes[1].sendtoaddress, self.nodes[0].getnewaddress(), 12)
-=======
         rawtx = wallet.createrawtransaction(inputs, outputs)
-        assert_raises_rpc_error(-4, "Transaction needs a change address, but we can't generate it.", wallet.fundrawtransaction, rawtx)
+        assert_raises_rpc_error(-4, "Transaction needs a change address, but we can't generate it. Please call keypoolrefill first.", wallet.fundrawtransaction, rawtx)
 
         # Refill the keypool.
         wallet.walletpassphrase("test", 100)
         wallet.keypoolrefill(8) #need to refill the keypool to get an internal change address
         wallet.walletlock()
 
-        assert_raises_rpc_error(-13, "walletpassphrase", wallet.sendtoaddress, self.nodes[0].getnewaddress(), 1.2)
->>>>>>> f033a981ed (Merge bitcoin/bitcoin#28139: test: create wallet specific for test_locked_wallet case):test/functional/wallet_fundrawtransaction.py
+        assert_raises_rpc_error(-13, "walletpassphrase", wallet.sendtoaddress, self.nodes[0].getnewaddress(), 12)
 
         oldBalance = self.nodes[0].getbalance()
 
         inputs = []
-<<<<<<< HEAD:test/functional/rpc_fundrawtransaction.py
         outputs = {self.nodes[0].getnewaddress():11}
-        rawtx = self.nodes[1].createrawtransaction(inputs, outputs)
-        fundedTx = self.nodes[1].fundrawtransaction(rawtx)
-=======
-        outputs = {self.nodes[0].getnewaddress():1.1}
         rawtx = wallet.createrawtransaction(inputs, outputs)
         fundedTx = wallet.fundrawtransaction(rawtx)
         assert fundedTx["changepos"] != -1
->>>>>>> f033a981ed (Merge bitcoin/bitcoin#28139: test: create wallet specific for test_locked_wallet case):test/functional/wallet_fundrawtransaction.py
 
         # Now we need to unlock.
         wallet.walletpassphrase("test", 600)
