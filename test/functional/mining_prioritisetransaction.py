@@ -32,7 +32,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
     def clear_prioritisation(self, node):
         for txid, info in node.getprioritisedtransactions().items():
             delta = info["fee_delta"]
-            node.prioritisetransaction(txid, 0, -delta)
+            node.prioritisetransaction(txid, -delta)
         assert_equal(node.getprioritisedtransactions(), {})
 
     def test_replacement(self):
@@ -41,7 +41,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         tx_replacee = self.wallet.create_self_transfer(utxo_to_spend=conflicting_input, fee_rate=Decimal("0.0001"))
         tx_replacement = self.wallet.create_self_transfer(utxo_to_spend=conflicting_input, fee_rate=Decimal("0.005"))
         # Add 1 satoshi fee delta to replacee
-        self.nodes[0].prioritisetransaction(tx_replacee["txid"], 0, 100)
+        self.nodes[0].prioritisetransaction(tx_replacee["txid"], 100)
         assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : False}})
         self.nodes[0].sendrawtransaction(tx_replacee["hex"])
         assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : True}})
@@ -50,7 +50,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : 100, "in_mempool" : False}})
 
         # PrioritiseTransaction is additive
-        self.nodes[0].prioritisetransaction(tx_replacee["txid"], 0, COIN)
+        self.nodes[0].prioritisetransaction(tx_replacee["txid"], COIN)
         self.nodes[0].sendrawtransaction(tx_replacee["hex"])
         assert_equal(self.nodes[0].getprioritisedtransactions(), { tx_replacee["txid"] : { "fee_delta" : COIN + 100, "in_mempool" : True}})
         self.generate(self.nodes[0], 1)
@@ -154,7 +154,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction, '')
 
         # Test `prioritisetransaction` invalid extra parameters
-        assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction, '', 0, 0)
+        assert_raises_rpc_error(-1, "prioritisetransaction", self.nodes[0].prioritisetransaction, '', 0)
 
         # Test `getprioritisedtransactions` invalid parameters
         assert_raises_rpc_error(-1, "getprioritisedtransactions",
