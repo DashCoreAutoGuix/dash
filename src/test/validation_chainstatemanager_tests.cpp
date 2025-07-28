@@ -16,11 +16,8 @@
 #include <sync.h>
 #include <test/util/chainstate.h>
 #include <test/util/setup_common.h>
-<<<<<<< HEAD
-=======
 #include <test/util/validation.h>
 #include <timedata.h>
->>>>>>> 723f1c669f (Merge bitcoin/bitcoin#28218: refactor: Make IsInitialBlockDownload & NotifyHeaderTip not require a Chainstate)
 #include <uint256.h>
 #include <validation.h>
 #include <validationinterface.h>

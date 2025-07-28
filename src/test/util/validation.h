@@ -9,11 +9,7 @@
 
 class CValidationInterface;
 
-<<<<<<< HEAD
-struct TestChainState : public CChainState {
-=======
 struct TestChainstateManager : public ChainstateManager {
->>>>>>> 723f1c669f (Merge bitcoin/bitcoin#28218: refactor: Make IsInitialBlockDownload & NotifyHeaderTip not require a Chainstate)
     /** Reset the ibd cache to its initial state */
     void ResetIbd();
     /** Toggle IsInitialBlockDownload from true to false */
