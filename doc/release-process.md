@@ -114,9 +114,10 @@ Commit your signature to `guix.sigs`:
 pushd guix.sigs
 git add "${VERSION}/${SIGNER}/noncodesigned.SHA256SUMS{,.asc}"
 git commit -a
-git push  # Assuming you can push to the guix.sigs tree
 popd
 ```
+
+Then open a Pull Request to the [guix.sigs repository](https://github.com/dashpay/guix.sigs).
 
 Codesigner only: Create Windows/macOS detached signatures:
 - Only one person handles codesigning. Everyone else should skip to the next step.
@@ -161,7 +162,6 @@ tar xf signature-osx.tar.gz
 tar xf signature-win.tar.gz
 git add -A
 git commit -m "add detached sigs for win/osx for ${VERSION}"
-git push
 popd
 ```
 
@@ -181,6 +181,8 @@ git add "${VERSION}/${SIGNER}"/all.SHA256SUMS{,.asc}
 git commit -m "Add attestations by ${SIGNER} for ${VERSION} codesigned"
 popd
 ```
+
+Then open a Pull Request to the [guix.sigs repository](https://github.com/dashpay/guix.sigs).
 
 ### After 3 or more people have guix-built and their results match:
 
