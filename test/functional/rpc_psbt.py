@@ -15,6 +15,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_approx,
     assert_equal,
+    assert_greater_than,
     assert_raises_rpc_error,
     find_output
 )
@@ -516,7 +517,7 @@ class PSBTTest(BitcoinTestFramework):
         len_scriptsig = len(psbt_in["final_scriptSig"]["hex"]) // 2 if "final_scriptSig" in psbt_in else 0
         len_scriptsig += len(ser_compact_size(len_scriptsig)) + 1
         len_scriptwitness = (sum([(len(x) // 2) + len(ser_compact_size(len(x) // 2)) for x in psbt_in["final_scriptwitness"]]) + len(psbt_in["final_scriptwitness"]) + 1) if "final_scriptwitness" in psbt_in else 0
-        input_weight = ((40 + len_scriptsig) * WITNESS_SCALE_FACTOR) + len_scriptwitness
+        input_weight = ((40 + len_scriptsig) * 4) + len_scriptwitness
         low_input_weight = input_weight // 2
         high_input_weight = input_weight * 2
 
@@ -524,38 +525,38 @@ class PSBTTest(BitcoinTestFramework):
         assert_raises_rpc_error(
             -8,
             "Input weights should be specified in inputs rather than in options.",
-            wallet.walletcreatefundedpsbt,
+            self.nodes[0].walletcreatefundedpsbt,
             inputs=[ext_utxo],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={"input_weights": [{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": 1000}]}
         )
 
         # Funding should also work if the input weight is provided
-        psbt = wallet.walletcreatefundedpsbt(
+        psbt = self.nodes[0].walletcreatefundedpsbt(
             inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": input_weight}],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={"add_inputs": True}
         )
-        signed = wallet.walletprocesspsbt(psbt["psbt"])
+        signed = self.nodes[0].walletprocesspsbt(psbt["psbt"])
         signed = self.nodes[0].walletprocesspsbt(signed["psbt"])
         final = self.nodes[0].finalizepsbt(signed["psbt"])
         assert self.nodes[0].testmempoolaccept([final["hex"]])[0]["allowed"]
         # Reducing the weight should have a lower fee
-        psbt2 = wallet.walletcreatefundedpsbt(
+        psbt2 = self.nodes[0].walletcreatefundedpsbt(
             inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": low_input_weight}],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={"add_inputs": True}
         )
         assert_greater_than(psbt["fee"], psbt2["fee"])
         # Increasing the weight should have a higher fee
-        psbt2 = wallet.walletcreatefundedpsbt(
+        psbt2 = self.nodes[0].walletcreatefundedpsbt(
             inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={"add_inputs": True}
         )
         assert_greater_than(psbt2["fee"], psbt["fee"])
         # The provided weight should override the calculated weight when solving data is provided
-        psbt3 = wallet.walletcreatefundedpsbt(
+        psbt3 = self.nodes[0].walletcreatefundedpsbt(
             inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={'add_inputs': True, "solving_data":{"descriptors": [desc]}}
@@ -564,12 +565,12 @@ class PSBTTest(BitcoinTestFramework):
 
         # Import the external utxo descriptor so that we can sign for it from the test wallet
         if self.options.descriptors:
-            res = wallet.importdescriptors([{"desc": desc, "timestamp": "now"}])
+            res = self.nodes[0].importdescriptors([{"desc": desc, "timestamp": "now"}])
         else:
-            res = wallet.importmulti([{"desc": desc, "timestamp": "now"}])
+            res = self.nodes[0].importmulti([{"desc": desc, "timestamp": "now"}])
         assert res[0]["success"]
         # The provided weight should override the calculated weight for a wallet input
-        psbt3 = wallet.walletcreatefundedpsbt(
+        psbt3 = self.nodes[0].walletcreatefundedpsbt(
             inputs=[{"txid": ext_utxo["txid"], "vout": ext_utxo["vout"], "weight": high_input_weight}],
             outputs={self.nodes[0].getnewaddress(): 15},
             options={"add_inputs": True}
