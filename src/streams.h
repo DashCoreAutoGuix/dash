@@ -548,7 +548,6 @@ public:
     //
     // Stream subset
     //
-    int GetType() const          { return nType; }
     int GetVersion() const       { return nVersion; }
 
     void read(Span<std::byte> dst)
@@ -609,7 +608,7 @@ public:
  *  Will automatically close the file when it goes out of scope if not null.
  *  If you need to close the file early, use file.fclose() instead of fclose(file).
  */
-class CBufferedFile
+class BufferedFile
 {
 private:
     const int nType;
@@ -633,7 +632,7 @@ private:
             return false;
         size_t nBytes = fread((void*)&vchBuf[pos], 1, readNow, src);
         if (nBytes == 0) {
-            throw std::ios_base::failure(feof(src) ? "CBufferedFile::Fill: end of file" : "CBufferedFile::Fill: fread failed");
+            throw std::ios_base::failure(feof(src) ? "BufferedFile::Fill: end of file" : "BufferedFile::Fill: fread failed");
         }
         nSrcPos += nBytes;
         return true;
@@ -662,7 +661,7 @@ private:
     }
 
 public:
-    CBufferedFile(FILE* fileIn, uint64_t nBufSize, uint64_t nRewindIn, int nTypeIn, int nVersionIn)
+    BufferedFile(FILE* fileIn, uint64_t nBufSize, uint64_t nRewindIn, int nTypeIn, int nVersionIn)
         : nType(nTypeIn), nVersion(nVersionIn), nSrcPos(0), m_read_pos(0), nReadLimit(std::numeric_limits<uint64_t>::max()), nRewind(nRewindIn), vchBuf(nBufSize, std::byte{0})
     {
         if (nRewindIn >= nBufSize)
@@ -670,17 +669,16 @@ public:
         src = fileIn;
     }
 
-    ~CBufferedFile()
+    ~BufferedFile()
     {
         fclose();
     }
 
     // Disallow copies
-    CBufferedFile(const CBufferedFile&) = delete;
-    CBufferedFile& operator=(const CBufferedFile&) = delete;
+    BufferedFile(const BufferedFile&) = delete;
+    BufferedFile& operator=(const BufferedFile&) = delete;
 
     int GetVersion() const { return nVersion; }
-    int GetType() const { return nType; }
 
     void fclose()
     {
@@ -745,7 +743,7 @@ public:
     }
 
     template<typename T>
-    CBufferedFile& operator>>(T&& obj) {
+    BufferedFile& operator>>(T&& obj) {
         // Unserialize from this stream
         ::Unserialize(*this, obj);
         return (*this);
