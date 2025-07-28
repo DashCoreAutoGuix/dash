@@ -5,12 +5,18 @@
 
 #include <script/standard.h>
 
+#include <crypto/sha256.h>
 #include <hash.h>
 #include <pubkey.h>
+#include <script/interpreter.h>
 #include <script/script.h>
+#include <uint256.h>
+#include <util/hash_type.h>
 
+#include <algorithm>
 #include <cassert>
 #include <string>
+#include <vector>
 
 typedef std::vector<unsigned char> valtype;
 
