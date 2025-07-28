@@ -20,6 +20,7 @@
 #include <deploymentstatus.h>
 #include <flatfile.h>
 #include <hash.h>
+#include <streams.h>
 #include <logging.h>
 #include <logging/timer.h>
 #include <node/blockstorage.h>
