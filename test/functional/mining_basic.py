@@ -84,7 +84,7 @@ class MiningTest(BitcoinTestFramework):
             if blockmintxfee_sat_kvb == DEFAULT_BLOCK_MIN_TX_FEE:
                 self.log.info("-> Default -blockmintxfee setting (%d sat/kvB)...", blockmintxfee_sat_kvb)
             else:
-                blockmintxfee_parameter = f"-blockmintxfee={blockmintxfee_btc_kvb:.8f}"
+                blockmintxfee_parameter = "-blockmintxfee={:.8f}".format(blockmintxfee_btc_kvb)
                 self.log.info("-> Test %s (%d sat/kvB)...", blockmintxfee_parameter, blockmintxfee_sat_kvb)
                 self.restart_node(0, extra_args=[blockmintxfee_parameter, '-minrelaytxfee=0', '-persistmempool=0'])
                 self.wallet.rescan_utxos()  # to avoid spending outputs of txs that are not in mempool anymore after restart
