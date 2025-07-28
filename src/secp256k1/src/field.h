@@ -102,8 +102,8 @@ static const secp256k1_fe secp256k1_const_beta = SECP256K1_FE_CONST(
 #  define secp256k1_fe_half secp256k1_fe_impl_half
 #  define secp256k1_fe_add_int secp256k1_fe_impl_add_int
 #  define secp256k1_fe_is_square_var secp256k1_fe_impl_is_square_var
-#  define secp256k1_fe_mul_int_unchecked secp256k1_fe_mul_int_unchecked
-#  define secp256k1_fe_negate_unchecked secp256k1_fe_negate_unchecked
+#  define secp256k1_fe_mul_int_unchecked secp256k1_fe_impl_mul_int_unchecked
+#  define secp256k1_fe_negate_unchecked secp256k1_fe_impl_negate_unchecked
 #endif /* !defined(VERIFY) */
 
 /** Normalize a field element.
