@@ -57,7 +57,7 @@ private:
     leveldb::WriteBatch batch;
 
     CDataStream ssKey;
-    CDataStream ssValue;
+    DataStream ssValue{};
 
     size_t size_estimate;
 
@@ -65,7 +65,7 @@ public:
     /**
      * @param[in] _parent    CDBWrapper that this batch is to be submitted to
      */
-    explicit CDBBatch(const CDBWrapper &_parent) : parent(_parent), ssKey(SER_DISK, CLIENT_VERSION), ssValue(SER_DISK, CLIENT_VERSION), size_estimate(0) { };
+    explicit CDBBatch(const CDBWrapper &_parent) : parent(_parent), ssKey(SER_DISK, CLIENT_VERSION), size_estimate(0) { };
 
     void Clear()
     {
@@ -246,7 +246,7 @@ public:
     CDBWrapper& operator=(const CDBWrapper&) = delete;
 
     template <typename K>
-    bool ReadDataStream(const K& key, CDataStream& ssValue) const
+    bool ReadDataStream(const K& key, DataStream& ssValue) const
     {
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(DBWRAPPER_PREALLOC_KEY_SIZE);
@@ -254,7 +254,7 @@ public:
         return ReadDataStream(ssKey, ssValue);
     }
 
-    bool ReadDataStream(const CDataStream& ssKey, CDataStream& ssValue) const
+    bool ReadDataStream(const CDataStream& ssKey, DataStream& ssValue) const
     {
         leveldb::Slice slKey(CharCast(ssKey.data()), ssKey.size());
 
@@ -266,7 +266,7 @@ public:
             LogPrintf("LevelDB read failure: %s\n", status.ToString());
             dbwrapper_private::HandleError(status);
         }
-        CDataStream ssValueTmp{MakeByteSpan(strValue), SER_DISK, CLIENT_VERSION};
+        DataStream ssValueTmp{MakeByteSpan(strValue)};
         ssValueTmp.Xor(obfuscate_key);
         ssValue = std::move(ssValueTmp);
         return true;
@@ -284,7 +284,7 @@ public:
     template <typename V>
     bool Read(const CDataStream& ssKey, V& value) const
     {
-        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+        DataStream ssValue{};
         if (!ReadDataStream(ssKey, ssValue)) {
             return false;
         }
