@@ -28,7 +28,6 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
-    get_fee,
 )
 from test_framework.wallet import MiniWallet
 
@@ -92,11 +91,11 @@ class MiningTest(BitcoinTestFramework):
 
             # submit one tx with exactly the blockmintxfee rate, and one slightly below
             tx_with_min_feerate = self.wallet.send_self_transfer(from_node=node, fee_rate=blockmintxfee_btc_kvb)
-            assert_equal(tx_with_min_feerate["fee"], get_fee(tx_with_min_feerate["tx"].get_vsize(), blockmintxfee_btc_kvb))
+            assert_equal(tx_with_min_feerate["fee"], tx_with_min_feerate["tx"].get_vsize() * blockmintxfee_btc_kvb)
             if blockmintxfee_btc_kvb > 0:
                 lowerfee_btc_kvb = blockmintxfee_btc_kvb - Decimal(10)/COIN  # 0.01 sat/vbyte lower
                 tx_below_min_feerate = self.wallet.send_self_transfer(from_node=node, fee_rate=lowerfee_btc_kvb)
-                assert_equal(tx_below_min_feerate["fee"], get_fee(tx_below_min_feerate["tx"].get_vsize(), lowerfee_btc_kvb))
+                assert_equal(tx_below_min_feerate["fee"], tx_below_min_feerate["tx"].get_vsize() * lowerfee_btc_kvb)
             else:  # go below zero fee by using modified fees
                 tx_below_min_feerate = self.wallet.send_self_transfer(from_node=node, fee_rate=blockmintxfee_btc_kvb)
                 node.prioritisetransaction(tx_below_min_feerate["txid"], 0, -1)
