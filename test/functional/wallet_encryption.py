@@ -56,7 +56,7 @@ class WalletEncryptionTest(BitcoinTestFramework):
         assert_raises_rpc_error(-14, "wallet passphrase entered was incorrect", self.nodes[0].walletpassphrase, passphrase + "wrong", 10)
 
         # Test walletlock
-        self.nodes[0].walletpassphrase(passphrase, 84600)
+        self.nodes[0].walletpassphrase(passphrase, 999000)
         sig = self.nodes[0].signmessage(address, msg)
         assert self.nodes[0].verifymessage(address, sig, msg)
         self.nodes[0].walletlock()
@@ -65,7 +65,7 @@ class WalletEncryptionTest(BitcoinTestFramework):
         # Test passphrase changes
         self.nodes[0].walletpassphrasechange(passphrase, passphrase2)
         assert_raises_rpc_error(-14, "wallet passphrase entered was incorrect", self.nodes[0].walletpassphrase, passphrase, 10)
-        self.nodes[0].walletpassphrase(passphrase2, 10)
+        self.nodes[0].walletpassphrase(passphrase2, 999000)
         sig = self.nodes[0].signmessage(address, msg)
         assert self.nodes[0].verifymessage(address, sig, msg)
         self.nodes[0].walletlock()
