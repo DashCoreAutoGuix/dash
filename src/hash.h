@@ -175,7 +175,7 @@ private:
     Source* source;
 
 public:
-    explicit CHashVerifier(Source* source_) : CHashWriter(source_->GetType(), source_->GetVersion()), source(source_) {}
+    explicit CHashVerifier(Source* source_) : CHashWriter(SER_DISK, source_->GetVersion()), source(source_) {}
 
     void read(Span<std::byte> dst)
     {
@@ -210,7 +210,7 @@ private:
     Source& m_source;
 
 public:
-    explicit HashedSourceWriter(Source& source LIFETIMEBOUND) : CHashWriter{source.GetType(), source.GetVersion()}, m_source{source} {}
+    explicit HashedSourceWriter(Source& source LIFETIMEBOUND) : CHashWriter{SER_DISK, source.GetVersion()}, m_source{source} {}
 
     void write(Span<const std::byte> src)
     {

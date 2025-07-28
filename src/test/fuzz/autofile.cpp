@@ -52,7 +52,6 @@ FUZZ_TARGET(autofile)
             });
     }
     (void)auto_file.Get();
-    (void)auto_file.GetType();
     (void)auto_file.GetVersion();
     (void)auto_file.IsNull();
     if (fuzzed_data_provider.ConsumeBool()) {

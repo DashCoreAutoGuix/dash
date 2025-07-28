@@ -172,7 +172,7 @@ void AddrManImpl::Serialize(Stream& s_) const
 
     // Always serialize in the latest version (FILE_FORMAT).
 
-    OverrideStream<Stream> s(&s_, s_.GetType(), s_.GetVersion() | ADDRV2_FORMAT);
+    OverrideStream<Stream> s(&s_, SER_DISK, s_.GetVersion() | ADDRV2_FORMAT);
 
     s << static_cast<uint8_t>(FILE_FORMAT);
 
@@ -243,7 +243,7 @@ void AddrManImpl::Unserialize(Stream& s_)
         stream_version |= ADDRV2_FORMAT;
     }
 
-    OverrideStream<Stream> s(&s_, s_.GetType(), stream_version);
+    OverrideStream<Stream> s(&s_, SER_DISK, stream_version);
 
     uint8_t compat;
     s >> compat;
