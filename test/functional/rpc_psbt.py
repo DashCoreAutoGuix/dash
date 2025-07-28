@@ -596,7 +596,7 @@ class PSBTTest(BitcoinTestFramework):
         self.generate(self.nodes[0], 1)
         self.nodes[0].importprivkey(privkey)
 
-        psbt = watchonly.sendall([wallet.getnewaddress()])["psbt"]
+        psbt = watchonly.sendall([self.nodes[0].getnewaddress()])["psbt"]
         psbt = self.nodes[0].walletprocesspsbt(psbt)["psbt"]
         self.nodes[0].sendrawtransaction(self.nodes[0].finalizepsbt(psbt)["hex"])
 
