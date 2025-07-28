@@ -5,7 +5,6 @@
 #ifndef BITCOIN_RPC_UTIL_H
 #define BITCOIN_RPC_UTIL_H
 
-#include <addresstype.h>
 #include <consensus/amount.h>
 #include <node/coinstats.h>
 #include <node/transaction.h>
