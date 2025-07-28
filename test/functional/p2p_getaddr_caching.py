@@ -4,8 +4,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test addr response caching"""
 
-import time
-
 from test_framework.p2p import (
     P2PInterface,
     p2p_lock
