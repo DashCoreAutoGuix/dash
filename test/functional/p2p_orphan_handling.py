@@ -39,7 +39,7 @@ TXREQUEST_TIME_SKIP = NONPREF_PEER_TX_DELAY + TXID_RELAY_DELAY + OVERLOADED_PEER
 
 def cleanup(func):
     # Time to fastfoward (using setmocktime) in between subtests to ensure they do not interfere with
-    # one another, in seconds. Equal to 12 hours, which is enough to expire anything that may exist
+    # one another, in seconds. Equal to 12 hours, which is enough to expire anything that may exis
     # (though nothing should since state should be cleared) in p2p data structures.
     LONG_TIME_SKIP = 12 * 60 * 60
 
@@ -77,8 +77,8 @@ class PeerTxRelayer(P2PTxInvStore):
         self._getdata_received.append(message)
 
     def wait_for_parent_requests(self, txids):
-        """Wait for requests for missing parents by txid (MSG_TX). Requires that the getdata 
-        message match these txids exactly; all txids must be requested and no additional 
+        """Wait for requests for missing parents by txid (MSG_TX). Requires that the getdata
+        message match these txids exactly; all txids must be requested and no additional
         requests are allowed."""
         def test_function():
             last_getdata = self.last_message.get('getdata')
@@ -140,7 +140,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         peer_spy = node.add_p2p_connection(PeerTxRelayer())
         peer_normal = node.add_p2p_connection(PeerTxRelayer())
         # This transaction is an orphan because it is missing inputs. It is a "fake" orphan that the
-        # spy peer has crafted to learn information about tx_parent_arrives even though it isn't
+        # spy peer has crafted to learn information about tx_parent_arrives even though it isn'
         # able to spend a real output of it, but it could also just be a normal, real child tx.
         # The node should not immediately respond with a request for orphan parents.
         # Also, no request should be sent later because it will be resolved by
@@ -209,7 +209,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         self.relay_transaction(peer2, child_low_fee["tx"])
         assert child_low_fee["txid"] not in node.getrawmempool()
 
-        # The parent should be requested because even though the txid commits to the fee, it doesn't
+        # The parent should be requested because even though the txid commits to the fee, it doesn'
         # commit to the feerate. Delayed because it's by txid and this is not a preferred relay peer.
         self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY + TXID_RELAY_DELAY)
         peer2.wait_for_getdata([int(parent_low_fee["tx"].rehash(), 16)])
@@ -311,7 +311,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
             utxos_to_spend=[missing_parent_B["new_utxo"], missing_parent_AB["new_utxo"], inflight_parent_AB["new_utxo"]]
         )
 
-        # The wtxid and txid need to be the same for the node to recognize that the missing input
+        # The wtxid and txid need to be the same for the node to recognize that the missing inpu
         # and in-flight request for inflight_parent_AB are the same transaction.
         assert_equal(inflight_parent_AB["txid"], inflight_parent_AB["tx"].getwtxid())
 
@@ -348,7 +348,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         missing_parent = self.wallet_nonsegwit.create_self_transfer()
         orphan = self.wallet_nonsegwit.create_self_transfer_multi(utxos_to_spend=[missing_parent["new_utxo"], missing_parent_orphan["new_utxo"]])
 
-        # The node should put missing_parent_orphan into the orphanage and request missing_grandparent
+        # The node should put missing_parent_orphan into the orphanage and request missing_grandparen
         self.relay_transaction(peer, missing_parent_orphan["tx"])
         self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY + TXID_RELAY_DELAY)
         peer.wait_for_parent_requests([int(missing_grandparent["txid"], 16)])
