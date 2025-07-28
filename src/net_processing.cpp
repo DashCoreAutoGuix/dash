@@ -5724,69 +5724,6 @@ void PeerManagerImpl::MaybeSendAddr(CNode& node, Peer& peer, std::chrono::micros
     }
 }
 
-void PeerManagerImpl::MaybeSendSendHeaders(CNode& node, Peer& peer)
-{
-    // Delay sending SENDHEADERS (BIP 130) until we're done with an
-    // initial-headers-sync with this peer. Receiving headers announcements for
-    // new blocks while trying to sync their headers chain is problematic,
-    // because of the state tracking done.
-    if (!peer.m_sent_sendheaders && node.GetCommonVersion() >= SENDHEADERS_VERSION) {
-        LOCK(cs_main);
-        CNodeState &state = *State(node.GetId());
-        if (state.pindexBestKnownBlock != nullptr &&
-                state.pindexBestKnownBlock->nChainWork > m_chainman.MinimumChainWork()) {
-            // Tell our peer we prefer to receive headers rather than inv's
-            // We send this to non-NODE NETWORK peers as well, because even
-            // non-NODE NETWORK peers can announce blocks (such as pruning
-            // nodes)
-            m_connman.PushMessage(&node, CNetMsgMaker(node.GetCommonVersion()).Make(NetMsgType::SENDHEADERS));
-            peer.m_sent_sendheaders = true;
-        }
-    }
-}
-
-void PeerManagerImpl::MaybeSendFeefilter(CNode& pto, Peer& peer, std::chrono::microseconds current_time)
-{
-    if (m_opts.ignore_incoming_txs) return;
-    if (pto.GetCommonVersion() < FEEFILTER_VERSION) return;
-    // peers with the forcerelay permission should not filter txs to us
-    if (pto.HasPermission(NetPermissionFlags::ForceRelay)) return;
-    // Don't send feefilter messages to outbound block-relay-only peers since they should never announce
-    // transactions to us, regardless of feefilter state.
-    if (pto.IsBlockOnlyConn()) return;
-
-    CAmount currentFilter = m_mempool.GetMinFee().GetFeePerK();
-    static FeeFilterRounder g_filter_rounder{CFeeRate{DEFAULT_MIN_RELAY_TX_FEE}};
-
-    if (m_chainman.IsInitialBlockDownload()) {
-        // Received tx-inv messages are discarded when the active
-        // chainstate is in IBD, so tell the peer to not send them.
-        currentFilter = MAX_MONEY;
-    } else {
-        static const CAmount MAX_FILTER{g_filter_rounder.round(MAX_MONEY)};
-        if (peer.m_fee_filter_sent == MAX_FILTER) {
-            // Send the current filter if we sent MAX_FILTER previously
-            // and made it out of IBD.
-            peer.m_next_send_feefilter = 0us;
-        }
-    }
-    if (current_time > peer.m_next_send_feefilter) {
-        CAmount filterToSend = g_filter_rounder.round(currentFilter);
-        // We always have a fee filter of at least the min relay fee
-        filterToSend = std::max(filterToSend, m_mempool.m_min_relay_feerate.GetFeePerK());
-        if (filterToSend != peer.m_fee_filter_sent) {
-            m_connman.PushMessage(&pto, CNetMsgMaker(pto.GetCommonVersion()).Make(NetMsgType::FEEFILTER, filterToSend));
-            peer.m_fee_filter_sent = filterToSend;
-        }
-        peer.m_next_send_feefilter = GetExponentialRand(current_time, AVG_FEEFILTER_BROADCAST_INTERVAL);
-    }
-    // If the fee filter has changed substantially and it's still more than MAX_FEEFILTER_CHANGE_DELAY
-    // until scheduled broadcast, then move the broadcast to within MAX_FEEFILTER_CHANGE_DELAY.
-    else if (current_time + MAX_FEEFILTER_CHANGE_DELAY < peer.m_next_send_feefilter &&
-                (currentFilter < 3 * peer.m_fee_filter_sent / 4 || currentFilter > 4 * peer.m_fee_filter_sent / 3)) {
-        peer.m_next_send_feefilter = current_time + GetRandomDuration<std::chrono::microseconds>(MAX_FEEFILTER_CHANGE_DELAY);
-    }
-}
 
 namespace {
 class CompareInvMempoolOrder
