@@ -443,7 +443,8 @@ void BerkeleyEnvironment::ReloadDbEnv()
     });
 
     std::vector<fs::path> filenames;
-    for (auto it : m_databases) {
+    filenames.reserve(m_databases.size());
+    for (const auto& it : m_databases) {
         filenames.push_back(it.first);
     }
     // Close the individual Db's

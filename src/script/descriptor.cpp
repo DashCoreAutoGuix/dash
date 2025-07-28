@@ -16,6 +16,7 @@
 #include <util/system.h>
 #include <util/vector.h>
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
