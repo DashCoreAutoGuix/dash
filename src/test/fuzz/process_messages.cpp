@@ -16,7 +16,6 @@
 #include <test/util/setup_common.h>
 #include <test/util/validation.h>
 #include <txorphanage.h>
-#include <util/chaintype.h>
 #include <util/time.h>
 #include <validationinterface.h>
 
