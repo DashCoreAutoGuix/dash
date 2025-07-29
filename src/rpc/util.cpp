@@ -17,7 +17,6 @@
 #include <util/string.h>
 #include <util/translation.h>
 
-#include <string_view>
 #include <tuple>
 const std::string UNIX_EPOCH_TIME = "UNIX epoch time";
 const std::string EXAMPLE_ADDRESS[2] = {"XunLY9Tf7Zsef8gMGL2fhWA9ZmMjt4KPw0", "XwQQkwA4FYkq2XERzMY2CiAZhJTEDAbtc0"};
@@ -110,7 +109,7 @@ uint256 ParseHashV(const UniValue& v, std::string_view name)
 }
 uint256 ParseHashO(const UniValue& o, std::string_view strKey)
 {
-    return ParseHashV(o.find_value(strKey), strKey);
+    return ParseHashV(o.find_value(std::string(strKey)), strKey);
 }
 std::vector<unsigned char> ParseHexV(const UniValue& v, std::string_view name)
 {
@@ -123,7 +122,7 @@ std::vector<unsigned char> ParseHexV(const UniValue& v, std::string_view name)
 }
 std::vector<unsigned char> ParseHexO(const UniValue& o, std::string_view strKey)
 {
-    return ParseHexV(o.find_value(strKey), strKey);
+    return ParseHexV(o.find_value(std::string(strKey)), strKey);
 }
 
 int32_t ParseInt32V(const UniValue& v, const std::string &strName)
