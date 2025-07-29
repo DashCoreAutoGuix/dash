@@ -77,6 +77,131 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
     return CalculateMaximumSignedTxSize(tx, wallet, txouts, coin_control);
 }
 
+<<<<<<< HEAD
+=======
+size_t CoinsResult::Size() const
+{
+    size_t size{0};
+    for (const auto& it : coins) {
+        size += it.second.size();
+    }
+    return size;
+}
+
+std::vector<COutput> CoinsResult::All() const
+{
+    std::vector<COutput> all;
+    all.reserve(coins.size());
+    for (const auto& it : coins) {
+        all.insert(all.end(), it.second.begin(), it.second.end());
+    }
+    return all;
+}
+
+void CoinsResult::Clear() {
+    coins.clear();
+}
+
+void CoinsResult::Erase(const std::unordered_set<COutPoint, SaltedOutpointHasher>& coins_to_remove)
+{
+    for (auto& [type, vec] : coins) {
+        auto remove_it = std::remove_if(vec.begin(), vec.end(), [&](const COutput& coin) {
+            // remove it if it's on the set
+            if (coins_to_remove.count(coin.outpoint) == 0) return false;
+
+            // update cached amounts
+            total_amount -= coin.txout.nValue;
+            if (coin.HasEffectiveValue()) total_effective_amount = *total_effective_amount - coin.GetEffectiveValue();
+            return true;
+        });
+        vec.erase(remove_it, vec.end());
+    }
+}
+
+void CoinsResult::Shuffle(FastRandomContext& rng_fast)
+{
+    for (auto& it : coins) {
+        ::Shuffle(it.second.begin(), it.second.end(), rng_fast);
+    }
+}
+
+void CoinsResult::Add(OutputType type, const COutput& out)
+{
+    coins[type].emplace_back(out);
+    total_amount += out.txout.nValue;
+    if (out.HasEffectiveValue()) {
+        total_effective_amount = total_effective_amount.has_value() ?
+                *total_effective_amount + out.GetEffectiveValue() : out.GetEffectiveValue();
+    }
+}
+
+static OutputType GetOutputType(TxoutType type, bool is_from_p2sh)
+{
+    switch (type) {
+        case TxoutType::WITNESS_V1_TAPROOT:
+            return OutputType::BECH32M;
+        case TxoutType::WITNESS_V0_KEYHASH:
+        case TxoutType::WITNESS_V0_SCRIPTHASH:
+            if (is_from_p2sh) return OutputType::P2SH_SEGWIT;
+            else return OutputType::BECH32;
+        case TxoutType::SCRIPTHASH:
+        case TxoutType::PUBKEYHASH:
+            return OutputType::LEGACY;
+        default:
+            return OutputType::UNKNOWN;
+    }
+}
+
+// Fetch and validate the coin control selected inputs.
+// Coins could be internal (from the wallet) or external.
+util::Result<PreSelectedInputs> FetchSelectedInputs(const CWallet& wallet, const CCoinControl& coin_control,
+                                            const CoinSelectionParams& coin_selection_params) EXCLUSIVE_LOCKS_REQUIRED(wallet.cs_wallet)
+{
+    PreSelectedInputs result;
+    const bool can_grind_r = wallet.CanGrindR();
+    std::map<COutPoint, CAmount> map_of_bump_fees = wallet.chain().calculateIndividualBumpFees(coin_control.ListSelected(), coin_selection_params.m_effective_feerate);
+    for (const COutPoint& outpoint : coin_control.ListSelected()) {
+        int input_bytes = -1;
+        CTxOut txout;
+        if (auto ptr_wtx = wallet.GetWalletTx(outpoint.hash)) {
+            // Clearly invalid input, fail
+            if (ptr_wtx->tx->vout.size() <= outpoint.n) {
+                return util::Error{strprintf(_("Invalid pre-selected input %s"), outpoint.ToString())};
+            }
+            txout = ptr_wtx->tx->vout.at(outpoint.n);
+            input_bytes = CalculateMaximumSignedInputSize(txout, &wallet, &coin_control);
+        } else {
+            // The input is external. We did not find the tx in mapWallet.
+            const auto out{coin_control.GetExternalOutput(outpoint)};
+            if (!out) {
+                return util::Error{strprintf(_("Not found pre-selected input %s"), outpoint.ToString())};
+            }
+
+            txout = *out;
+        }
+
+        if (input_bytes == -1) {
+            input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, can_grind_r, &coin_control);
+        }
+
+        // If available, override calculated size with coin control specified size
+        if (coin_control.HasInputWeight(outpoint)) {
+            input_bytes = GetVirtualTransactionSize(coin_control.GetInputWeight(outpoint), 0, 0);
+        }
+
+        if (input_bytes == -1) {
+            return util::Error{strprintf(_("Not solvable pre-selected input %s"), outpoint.ToString())}; // Not solvable, can't estimate size for fee
+        }
+
+        /* Set some defaults for depth, spendable, solvable, safe, time, and from_me as these don't matter for preset inputs since no selection is being done. */
+        COutput output(outpoint, txout, /*depth=*/ 0, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, coin_selection_params.m_effective_feerate);
+        output.ApplyBumpFee(map_of_bump_fees.at(output.outpoint));
+        result.Insert(output, coin_selection_params.m_subtract_fee_outputs);
+    }
+    return result;
+}
+
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates)
 CoinsResult AvailableCoins(const CWallet& wallet,
                            const CCoinControl* coinControl,
                            std::optional<CFeeRate> feerate,
@@ -212,6 +337,19 @@ CoinsResult AvailableCoins(const CWallet& wallet,
         }
     }
 
+<<<<<<< HEAD
+=======
+    if (feerate.has_value()) {
+        std::map<COutPoint, CAmount> map_of_bump_fees = wallet.chain().calculateIndividualBumpFees(outpoints, feerate.value());
+
+        for (auto& [_, outputs] : result.coins) {
+            for (auto& output : outputs) {
+                output.ApplyBumpFee(map_of_bump_fees.at(output.outpoint));
+            }
+        }
+    }
+
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates)
     return result;
 }
 
@@ -400,6 +538,7 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
         results.push_back(*bnb_result);
     }
 
+<<<<<<< HEAD
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
     std::vector<OutputGroup> all_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, false /* positive_only */);
     CAmount target_with_change = nTargetValue;
@@ -429,6 +568,27 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     if (results.size() == 0) {
         // No solution found
         return std::nullopt;
+=======
+    // If the chosen input set has unconfirmed inputs, check for synergies from overlapping ancestry
+    for (auto& result : results) {
+        std::vector<COutPoint> outpoints;
+        std::set<std::shared_ptr<COutput>> coins = result.GetInputSet();
+        CAmount summed_bump_fees = 0;
+        for (auto& coin : coins) {
+            if (coin->depth > 0) continue; // Bump fees only exist for unconfirmed inputs
+            outpoints.push_back(coin->outpoint);
+            summed_bump_fees += coin->ancestor_bump_fees;
+        }
+        std::optional<CAmount> combined_bump_fee = chain.calculateCombinedBumpFee(outpoints, coin_selection_params.m_effective_feerate);
+        if (!combined_bump_fee.has_value()) {
+            return util::Error{_("Failed to calculate bump fees, because unconfirmed UTXOs depend on enormous cluster of unconfirmed transactions.")};
+        }
+        CAmount bump_fee_overestimate = summed_bump_fees - combined_bump_fee.value();
+        if (bump_fee_overestimate) {
+            result.SetBumpFeeDiscount(bump_fee_overestimate);
+        }
+        result.ComputeAndSetWaste(coin_selection_params.min_viable_change, coin_selection_params.m_cost_of_change, coin_selection_params.m_change_fee);
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates)
     }
 
     // Choose the result with the least waste

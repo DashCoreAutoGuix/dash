@@ -257,6 +257,15 @@ protected:
     void SelectConfigNetwork(const std::string& network);
 
     [[nodiscard]] bool ParseParameters(int argc, const char* const argv[], std::string& error);
+<<<<<<< HEAD:src/util/system.h
+=======
+
+    /**
+     * Return config file path (read-only)
+     */
+    fs::path GetConfigFilePath() const;
+    void SetConfigFilePath(fs::path);
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates):src/common/args.h
     [[nodiscard]] bool ReadConfigFiles(std::string& error, bool ignore_invalid_keys = false);
 
     /**

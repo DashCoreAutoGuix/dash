@@ -504,10 +504,12 @@ public:
     std::vector<std::string> listRpcCommands() override { return ::tableRPC.listCommands(); }
     void rpcSetTimerInterfaceIfUnset(RPCTimerInterface* iface) override { RPCSetTimerInterfaceIfUnset(iface); }
     void rpcUnsetTimerInterface(RPCTimerInterface* iface) override { RPCUnsetTimerInterface(iface); }
-    bool getUnspentOutput(const COutPoint& output, Coin& coin) override
+    std::optional<Coin> getUnspentOutput(const COutPoint& output) override
     {
         LOCK(::cs_main);
-        return chainman().ActiveChainstate().CoinsTip().GetCoin(output, coin);
+        Coin coin;
+        if (chainman().ActiveChainstate().CoinsTip().GetCoin(output, coin)) return coin;
+        return {};
     }
     TransactionError broadcastTransaction(CTransactionRef tx, CAmount max_tx_fee, bilingual_str& err_string) override
     {
@@ -916,6 +918,29 @@ public:
         if (!m_node.mempool) return;
         m_node.mempool->GetTransactionAncestry(txid, ancestors, descendants, ancestorsize, ancestorfees);
     }
+<<<<<<< HEAD
+=======
+
+    std::map<COutPoint, CAmount> calculateIndividualBumpFees(const std::vector<COutPoint>& outpoints, const CFeeRate& target_feerate) override
+    {
+        if (!m_node.mempool) {
+            std::map<COutPoint, CAmount> bump_fees;
+            for (const auto& outpoint : outpoints) {
+                bump_fees.emplace(outpoint, 0);
+            }
+            return bump_fees;
+        }
+        return MiniMiner(*m_node.mempool, outpoints).CalculateBumpFees(target_feerate);
+    }
+
+    std::optional<CAmount> calculateCombinedBumpFee(const std::vector<COutPoint>& outpoints, const CFeeRate& target_feerate) override
+    {
+        if (!m_node.mempool) {
+            return 0;
+        }
+        return MiniMiner(*m_node.mempool, outpoints).CalculateTotalBumpFees(target_feerate);
+    }
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates)
     void getPackageLimits(unsigned int& limit_ancestor_count, unsigned int& limit_descendant_count) override
     {
         limit_ancestor_count = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);

@@ -840,10 +840,19 @@ static RPCHelpMan mockscheduler()
         throw std::runtime_error("delta_time must be between 1 and 3600 seconds (1 hr)");
     }
 
+<<<<<<< HEAD
     auto* node_context = CHECK_NONFATAL(GetContext<NodeContext>(request.context));
     // protect against null pointer dereference
     CHECK_NONFATAL(node_context->scheduler);
     node_context->scheduler->MockForward(std::chrono::seconds(delta_seconds));
+=======
+    const NodeContext& node_context{EnsureAnyNodeContext(request.context)};
+    CHECK_NONFATAL(node_context.scheduler)->MockForward(std::chrono::seconds{delta_seconds});
+    SyncWithValidationInterfaceQueue();
+    for (const auto& chain_client : node_context.chain_clients) {
+        chain_client->schedulerMockForward(std::chrono::seconds(delta_seconds));
+    }
+>>>>>>> 29c2c90362 (Merge bitcoin/bitcoin#28721: multiprocess compatibility updates)
 
     return NullUniValue;
 },
