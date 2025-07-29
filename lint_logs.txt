@@ -1,0 +1,455 @@
+﻿2025-07-28T21:29:05.5574253Z Current runner version: '2.326.0'
+2025-07-28T21:29:05.5608811Z ##[group]Runner Image Provisioner
+2025-07-28T21:29:05.5610023Z Hosted Compute Agent
+2025-07-28T21:29:05.5610933Z Version: 20250711.363
+2025-07-28T21:29:05.5611875Z Commit: 6785254374ce925a23743850c1cb91912ce5c14c
+2025-07-28T21:29:05.5612921Z Build Date: 2025-07-11T20:04:25Z
+2025-07-28T21:29:05.5613951Z ##[endgroup]
+2025-07-28T21:29:05.5614910Z ##[group]Operating System
+2025-07-28T21:29:05.5615911Z Ubuntu
+2025-07-28T21:29:05.5616823Z 24.04.2
+2025-07-28T21:29:05.5617527Z LTS
+2025-07-28T21:29:05.5618489Z ##[endgroup]
+2025-07-28T21:29:05.5619427Z ##[group]Runner Image
+2025-07-28T21:29:05.5620512Z Image: ubuntu-24.04
+2025-07-28T21:29:05.5621367Z Version: 20250720.1.0
+2025-07-28T21:29:05.5623072Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250720.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-28T21:29:05.5625674Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250720.1
+2025-07-28T21:29:05.5627571Z ##[endgroup]
+2025-07-28T21:29:05.5629709Z ##[group]GITHUB_TOKEN Permissions
+2025-07-28T21:29:05.5632857Z Contents: read
+2025-07-28T21:29:05.5633800Z Metadata: read
+2025-07-28T21:29:05.5634718Z Packages: write
+2025-07-28T21:29:05.5635515Z ##[endgroup]
+2025-07-28T21:29:05.5639126Z Secret source: Actions
+2025-07-28T21:29:05.5640526Z Prepare workflow directory
+2025-07-28T21:29:05.6392971Z Prepare all required actions
+2025-07-28T21:29:05.6446915Z Getting action download info
+2025-07-28T21:29:05.9276370Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-28T21:29:05.9277368Z Version: 4.2.2
+2025-07-28T21:29:05.9278679Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-28T21:29:05.9280137Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-28T21:29:05.9280865Z ##[endgroup]
+2025-07-28T21:29:06.0749575Z Uses: DashCoreAutoGuix/dash/.github/workflows/lint.yml@refs/heads/backport-0.26-batch-488-pr-28587 (a7c0e1af3ce7bd518d22a663c39bd27f0992753b)
+2025-07-28T21:29:06.0755052Z ##[group] Inputs
+2025-07-28T21:29:06.0756143Z   container-path: ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:06.0757181Z ##[endgroup]
+2025-07-28T21:29:06.0757650Z Complete job name: Lint / Run linters
+2025-07-28T21:29:06.1318646Z ##[group]Checking docker version
+2025-07-28T21:29:06.1331713Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-07-28T21:29:06.2281054Z '1.48'
+2025-07-28T21:29:06.2293570Z Docker daemon API version: '1.48'
+2025-07-28T21:29:06.2294318Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-07-28T21:29:06.2513664Z '1.48'
+2025-07-28T21:29:06.2528602Z Docker client API version: '1.48'
+2025-07-28T21:29:06.2534912Z ##[endgroup]
+2025-07-28T21:29:06.2537770Z ##[group]Clean up resources from previous jobs
+2025-07-28T21:29:06.2543809Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=db687b"
+2025-07-28T21:29:06.2685073Z ##[command]/usr/bin/docker network prune --force --filter "label=db687b"
+2025-07-28T21:29:06.2821048Z ##[endgroup]
+2025-07-28T21:29:06.2821533Z ##[group]Create local container network
+2025-07-28T21:29:06.2832310Z ##[command]/usr/bin/docker network create --label db687b github_network_2a0ef7e1785c426f990ab23c802ff15c
+2025-07-28T21:29:06.3351798Z eff630d5d80dde6615271e0ad55c11439ed0ca23168b676f4f7a6c1cb8cf0852
+2025-07-28T21:29:06.3372727Z ##[endgroup]
+2025-07-28T21:29:06.3396167Z ##[group]Starting job container
+2025-07-28T21:29:06.3417596Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_6e9ebdbd-d2db-4727-bd05-abc6fd857cdb login ghcr.io -u PastaPastaPasta --password-stdin
+2025-07-28T21:29:06.6924897Z ##[command]/usr/bin/docker --config /home/runner/work/_temp/.docker_6e9ebdbd-d2db-4727-bd05-abc6fd857cdb pull ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:07.1706487Z backport-0.26-batch-488-pr-28587: Pulling from dashcoreautoguix/dash/dashcore-ci-runner
+2025-07-28T21:29:07.2954545Z 32f112e3802c: Pulling fs layer
+2025-07-28T21:29:07.2955641Z 3c418bbf5534: Pulling fs layer
+2025-07-28T21:29:07.2956365Z 824b5144f7af: Pulling fs layer
+2025-07-28T21:29:07.2957095Z bb9f5c709011: Pulling fs layer
+2025-07-28T21:29:07.2957798Z c31b5eed60b6: Pulling fs layer
+2025-07-28T21:29:07.2958832Z da96180e845f: Pulling fs layer
+2025-07-28T21:29:07.2959557Z f28d6a4cf5de: Pulling fs layer
+2025-07-28T21:29:07.2960248Z 49cbdb9e902d: Pulling fs layer
+2025-07-28T21:29:07.2960957Z 247fd41058fa: Pulling fs layer
+2025-07-28T21:29:07.2961686Z d6a01b6e446c: Pulling fs layer
+2025-07-28T21:29:07.2962391Z 4f4fb700ef54: Pulling fs layer
+2025-07-28T21:29:07.2963081Z 1382f2390a1c: Pulling fs layer
+2025-07-28T21:29:07.2963783Z be38403a389e: Pulling fs layer
+2025-07-28T21:29:07.2964508Z 409781d99354: Pulling fs layer
+2025-07-28T21:29:07.2965311Z c418b82685d0: Pulling fs layer
+2025-07-28T21:29:07.2966033Z bb9f5c709011: Waiting
+2025-07-28T21:29:07.2966926Z c31b5eed60b6: Waiting
+2025-07-28T21:29:07.2967685Z d6a01b6e446c: Waiting
+2025-07-28T21:29:07.2968963Z da96180e845f: Waiting
+2025-07-28T21:29:07.2969890Z 4f4fb700ef54: Waiting
+2025-07-28T21:29:07.2970590Z 409781d99354: Waiting
+2025-07-28T21:29:07.2971266Z f28d6a4cf5de: Waiting
+2025-07-28T21:29:07.2971942Z 1382f2390a1c: Waiting
+2025-07-28T21:29:07.2972654Z c418b82685d0: Waiting
+2025-07-28T21:29:07.2973330Z 49cbdb9e902d: Waiting
+2025-07-28T21:29:07.2974167Z be38403a389e: Waiting
+2025-07-28T21:29:07.2975109Z 247fd41058fa: Waiting
+2025-07-28T21:29:07.4958764Z 824b5144f7af: Verifying Checksum
+2025-07-28T21:29:07.4961208Z 824b5144f7af: Download complete
+2025-07-28T21:29:07.5330068Z 3c418bbf5534: Verifying Checksum
+2025-07-28T21:29:07.5331526Z 3c418bbf5534: Download complete
+2025-07-28T21:29:07.6380166Z 32f112e3802c: Verifying Checksum
+2025-07-28T21:29:07.6383301Z 32f112e3802c: Download complete
+2025-07-28T21:29:08.0047530Z c31b5eed60b6: Verifying Checksum
+2025-07-28T21:29:08.0051013Z c31b5eed60b6: Download complete
+2025-07-28T21:29:08.2583097Z da96180e845f: Verifying Checksum
+2025-07-28T21:29:08.2585052Z da96180e845f: Download complete
+2025-07-28T21:29:08.2989050Z bb9f5c709011: Verifying Checksum
+2025-07-28T21:29:08.2989619Z bb9f5c709011: Download complete
+2025-07-28T21:29:08.2989990Z f28d6a4cf5de: Verifying Checksum
+2025-07-28T21:29:08.2990882Z f28d6a4cf5de: Download complete
+2025-07-28T21:29:08.4816125Z d6a01b6e446c: Download complete
+2025-07-28T21:29:08.5019055Z 49cbdb9e902d: Verifying Checksum
+2025-07-28T21:29:08.5019550Z 49cbdb9e902d: Download complete
+2025-07-28T21:29:08.6306719Z 4f4fb700ef54: Verifying Checksum
+2025-07-28T21:29:08.6307868Z 4f4fb700ef54: Download complete
+2025-07-28T21:29:08.9195671Z 32f112e3802c: Pull complete
+2025-07-28T21:29:09.6422805Z 247fd41058fa: Verifying Checksum
+2025-07-28T21:29:09.6424146Z 247fd41058fa: Download complete
+2025-07-28T21:29:09.9732559Z 409781d99354: Verifying Checksum
+2025-07-28T21:29:09.9733445Z 409781d99354: Download complete
+2025-07-28T21:29:10.0419524Z be38403a389e: Verifying Checksum
+2025-07-28T21:29:10.0419865Z be38403a389e: Download complete
+2025-07-28T21:29:10.1197556Z c418b82685d0: Verifying Checksum
+2025-07-28T21:29:10.1198511Z c418b82685d0: Download complete
+2025-07-28T21:29:11.3904089Z 1382f2390a1c: Verifying Checksum
+2025-07-28T21:29:11.3904494Z 1382f2390a1c: Download complete
+2025-07-28T21:29:12.9845982Z 3c418bbf5534: Pull complete
+2025-07-28T21:29:13.1205202Z 824b5144f7af: Pull complete
+2025-07-28T21:29:17.2191674Z bb9f5c709011: Pull complete
+2025-07-28T21:29:20.7560628Z c31b5eed60b6: Pull complete
+2025-07-28T21:29:21.7835161Z da96180e845f: Pull complete
+2025-07-28T21:29:21.8368521Z f28d6a4cf5de: Pull complete
+2025-07-28T21:29:21.8812828Z 49cbdb9e902d: Pull complete
+2025-07-28T21:29:27.8659905Z 247fd41058fa: Pull complete
+2025-07-28T21:29:27.8827067Z d6a01b6e446c: Pull complete
+2025-07-28T21:29:27.8960688Z 4f4fb700ef54: Pull complete
+2025-07-28T21:29:43.1592695Z 1382f2390a1c: Pull complete
+2025-07-28T21:29:47.0618756Z be38403a389e: Pull complete
+2025-07-28T21:29:47.1624343Z 409781d99354: Pull complete
+2025-07-28T21:29:47.1761024Z c418b82685d0: Pull complete
+2025-07-28T21:29:47.1815420Z Digest: sha256:0623f7de3088193914ba4c03e200983ab432049d4d4ab5758c7c309e44fdf1b1
+2025-07-28T21:29:47.1828267Z Status: Downloaded newer image for ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:47.1841843Z ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:47.1932124Z ##[command]/usr/bin/docker create --name 0ec8131bcb384b44a861112be4899212_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch488pr28587_cdac18 --label db687b --workdir /__w/dash/dash --network github_network_2a0ef7e1785c426f990ab23c802ff15c --user root -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" ghcr.io/dashcoreautoguix/dash/dashcore-ci-runner:backport-0.26-batch-488-pr-28587 "-f" "/dev/null"
+2025-07-28T21:29:47.2202615Z 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:29:47.2229668Z ##[command]/usr/bin/docker start 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:29:47.4207301Z 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:29:47.4232643Z ##[command]/usr/bin/docker ps --all --filter id=6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-07-28T21:29:47.4346067Z 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399 Up Less than a second
+2025-07-28T21:29:47.4365844Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:29:47.4484060Z HOME=/github/home
+2025-07-28T21:29:47.4484473Z GITHUB_ACTIONS=true
+2025-07-28T21:29:47.4484897Z CI=true
+2025-07-28T21:29:47.4486189Z PATH=/opt/shellcheck:/usr/local/pyenv/shims:/usr/local/pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2025-07-28T21:29:47.4487167Z DEBIAN_FRONTEND=noninteractive
+2025-07-28T21:29:47.4487504Z TZ=Europe/London
+2025-07-28T21:29:47.4487887Z APT_ARGS=-y --no-install-recommends --no-upgrade
+2025-07-28T21:29:47.4488522Z PYENV_ROOT=/usr/local/pyenv
+2025-07-28T21:29:47.4488879Z LD_LIBRARY_PATH=/usr/lib/llvm-18/lib
+2025-07-28T21:29:47.4507211Z ##[endgroup]
+2025-07-28T21:29:47.4516633Z ##[group]Waiting for all services to be ready
+2025-07-28T21:29:47.4518433Z ##[endgroup]
+2025-07-28T21:29:47.4752656Z ##[group]Run actions/checkout@v4
+2025-07-28T21:29:47.4753183Z with:
+2025-07-28T21:29:47.4753368Z   fetch-depth: 50
+2025-07-28T21:29:47.4753570Z   repository: DashCoreAutoGuix/dash
+2025-07-28T21:29:47.4754003Z   token: ***
+2025-07-28T21:29:47.4754181Z   ssh-strict: true
+2025-07-28T21:29:47.4754360Z   ssh-user: git
+2025-07-28T21:29:47.4754546Z   persist-credentials: true
+2025-07-28T21:29:47.4754742Z   clean: true
+2025-07-28T21:29:47.4754923Z   sparse-checkout-cone-mode: true
+2025-07-28T21:29:47.4755144Z   fetch-tags: false
+2025-07-28T21:29:47.4755326Z   show-progress: true
+2025-07-28T21:29:47.4755504Z   lfs: false
+2025-07-28T21:29:47.4755660Z   submodules: false
+2025-07-28T21:29:47.4755831Z   set-safe-directory: true
+2025-07-28T21:29:47.4756215Z ##[endgroup]
+2025-07-28T21:29:47.4811351Z ##[command]/usr/bin/docker exec  6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399 sh -c "cat /etc/*release | grep ^ID"
+2025-07-28T21:29:47.7017299Z Syncing repository: DashCoreAutoGuix/dash
+2025-07-28T21:29:47.7019612Z ##[group]Getting Git version info
+2025-07-28T21:29:47.7020126Z Working directory is '/__w/dash/dash'
+2025-07-28T21:29:47.7020949Z [command]/usr/bin/git version
+2025-07-28T21:29:47.7021872Z git version 2.43.0
+2025-07-28T21:29:47.7045067Z ##[endgroup]
+2025-07-28T21:29:47.7060153Z Temporarily overriding HOME='/__w/_temp/5f9e9a03-f82f-4d06-a5a6-ae511f5de469' before making global git config changes
+2025-07-28T21:29:47.7061078Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-28T21:29:47.7067383Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-28T21:29:47.7104727Z Deleting the contents of '/__w/dash/dash'
+2025-07-28T21:29:47.7109164Z ##[group]Initializing the repository
+2025-07-28T21:29:47.7113195Z [command]/usr/bin/git init /__w/dash/dash
+2025-07-28T21:29:47.7148286Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-28T21:29:47.7149229Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-28T21:29:47.7150064Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-28T21:29:47.7150651Z hint: 
+2025-07-28T21:29:47.7151005Z hint: 	git config --global init.defaultBranch <name>
+2025-07-28T21:29:47.7151527Z hint: 
+2025-07-28T21:29:47.7151993Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-28T21:29:47.7152790Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-28T21:29:47.7153419Z hint: 
+2025-07-28T21:29:47.7153737Z hint: 	git branch -m <name>
+2025-07-28T21:29:47.7156546Z Initialized empty Git repository in /__w/dash/dash/.git/
+2025-07-28T21:29:47.7168464Z [command]/usr/bin/git remote add origin https://github.com/DashCoreAutoGuix/dash
+2025-07-28T21:29:47.7198787Z ##[endgroup]
+2025-07-28T21:29:47.7199160Z ##[group]Disabling automatic garbage collection
+2025-07-28T21:29:47.7203031Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-28T21:29:47.7230353Z ##[endgroup]
+2025-07-28T21:29:47.7230694Z ##[group]Setting up auth
+2025-07-28T21:29:47.7237666Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-28T21:29:47.7266937Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-28T21:29:47.7487361Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-28T21:29:47.7519141Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-28T21:29:47.7732112Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-28T21:29:47.7767582Z ##[endgroup]
+2025-07-28T21:29:47.7768153Z ##[group]Fetching the repository
+2025-07-28T21:29:47.7777279Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=50 origin +a7c0e1af3ce7bd518d22a663c39bd27f0992753b:refs/remotes/origin/backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:49.9302460Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-28T21:29:49.9303403Z  * [new ref]         a7c0e1af3ce7bd518d22a663c39bd27f0992753b -> origin/backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:49.9328332Z ##[endgroup]
+2025-07-28T21:29:49.9333042Z ##[group]Determining the checkout info
+2025-07-28T21:29:49.9334733Z ##[endgroup]
+2025-07-28T21:29:49.9336826Z [command]/usr/bin/git sparse-checkout disable
+2025-07-28T21:29:49.9377818Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-28T21:29:49.9407193Z ##[group]Checking out the ref
+2025-07-28T21:29:49.9412863Z [command]/usr/bin/git checkout --progress --force -B backport-0.26-batch-488-pr-28587 refs/remotes/origin/backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:50.3313120Z Switched to a new branch 'backport-0.26-batch-488-pr-28587'
+2025-07-28T21:29:50.3313927Z branch 'backport-0.26-batch-488-pr-28587' set up to track 'origin/backport-0.26-batch-488-pr-28587'.
+2025-07-28T21:29:50.3340646Z ##[endgroup]
+2025-07-28T21:29:50.3379856Z [command]/usr/bin/git log -1 --format=%H
+2025-07-28T21:29:50.3405481Z a7c0e1af3ce7bd518d22a663c39bd27f0992753b
+2025-07-28T21:29:50.3605317Z ##[group]Run git config --global --add safe.directory "$PWD"
+2025-07-28T21:29:50.3605839Z [36;1mgit config --global --add safe.directory "$PWD"[0m
+2025-07-28T21:29:50.3606175Z [36;1mgit fetch -fu origin develop:develop[0m
+2025-07-28T21:29:50.3610445Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-28T21:29:50.3610749Z ##[endgroup]
+2025-07-28T21:29:50.6436577Z From https://github.com/DashCoreAutoGuix/dash
+2025-07-28T21:29:50.6437214Z  * [new branch]      develop    -> develop
+2025-07-28T21:29:50.6437717Z  * [new branch]      develop    -> origin/develop
+2025-07-28T21:29:50.6573658Z ##[group]Run export BUILD_TARGET="linux64"
+2025-07-28T21:29:50.6574012Z [36;1mexport BUILD_TARGET="linux64"[0m
+2025-07-28T21:29:50.6574265Z [36;1mexport CHECK_DOC=1[0m
+2025-07-28T21:29:50.6574470Z [36;1m[0m
+2025-07-28T21:29:50.6574736Z [36;1m# Determine if this is a PR and set commit range accordingly[0m
+2025-07-28T21:29:50.6575104Z [36;1mif [ "push" = "pull_request_target" ]; then[0m
+2025-07-28T21:29:50.6575463Z [36;1m  export COMMIT_RANGE="$(git merge-base origin/develop HEAD)..HEAD"[0m
+2025-07-28T21:29:50.6575802Z [36;1m  export PULL_REQUEST="true"[0m
+2025-07-28T21:29:50.6576447Z [36;1melif [ "push" = "push" ] && [ "refs/heads/backport-0.26-batch-488-pr-28587" != "refs/heads/develop" ] && [ "refs/heads/backport-0.26-batch-488-pr-28587" != "refs/heads/master" ]; then[0m
+2025-07-28T21:29:50.6577152Z [36;1m  # For push events on feature branches, check against develop[0m
+2025-07-28T21:29:50.6577573Z [36;1m  export COMMIT_RANGE="$(git merge-base origin/develop HEAD)..HEAD"[0m
+2025-07-28T21:29:50.6577899Z [36;1m  export PULL_REQUEST="true"[0m
+2025-07-28T21:29:50.6578647Z [36;1melse[0m
+2025-07-28T21:29:50.6578867Z [36;1m  # For pushes to develop/master or other events[0m
+2025-07-28T21:29:50.6579166Z [36;1m  export COMMIT_RANGE="HEAD~..HEAD"[0m
+2025-07-28T21:29:50.6579433Z [36;1m  export PULL_REQUEST="false"[0m
+2025-07-28T21:29:50.6579655Z [36;1mfi[0m
+2025-07-28T21:29:50.6579813Z [36;1m[0m
+2025-07-28T21:29:50.6579976Z [36;1mecho "Event name: push"[0m
+2025-07-28T21:29:50.6580277Z [36;1mecho "Ref: refs/heads/backport-0.26-batch-488-pr-28587"[0m
+2025-07-28T21:29:50.6580602Z [36;1mecho "COMMIT_RANGE=${COMMIT_RANGE}"[0m
+2025-07-28T21:29:50.6580863Z [36;1mecho "PULL_REQUEST=${PULL_REQUEST}"[0m
+2025-07-28T21:29:50.6581138Z [36;1mecho "Running git log for commit range:"[0m
+2025-07-28T21:29:50.6581495Z [36;1mgit log --oneline ${COMMIT_RANGE} || echo "Could not show commit range"[0m
+2025-07-28T21:29:50.6581830Z [36;1m[0m
+2025-07-28T21:29:50.6581991Z [36;1m./ci/dash/lint.sh[0m
+2025-07-28T21:29:50.6582365Z shell: bash --noprofile --norc -e -o pipefail {0}
+2025-07-28T21:29:50.6644137Z ##[endgroup]
+2025-07-28T21:29:50.7345074Z Event name: push
+2025-07-28T21:29:50.7345560Z Ref: refs/heads/backport-0.26-batch-488-pr-28587
+2025-07-28T21:29:50.7346061Z COMMIT_RANGE=f648039258d2192ec5e505721e34edaa0bda568c..HEAD
+2025-07-28T21:29:50.7346447Z PULL_REQUEST=true
+2025-07-28T21:29:50.7346696Z Running git log for commit range:
+2025-07-28T21:29:50.7483650Z a7c0e1a Merge bitcoin/bitcoin#28587: descriptors: disallow hybrid public keys
+2025-07-28T21:29:50.7484667Z 3b3169d Merge #6783: fix: resolve logical conflict between dash#6691 and dash#6775, compile error
+2025-07-28T21:29:50.7485291Z 0b8fe88 chore: resolve logical conflict between dash#6691 and dash#6775
+2025-07-28T21:29:50.7486064Z 94f0caa Merge #6775: backport: merge bitcoin#25153, #25113, #25249, #25369, #25617, #25611, #25736, #25714, #26612, #27605, #30464, partial bitcoin#25551 (univalue backports)
+2025-07-28T21:29:50.7486768Z 1e694a5 Merge #6779: backport: trivial batch 380
+2025-07-28T21:29:50.7487367Z b0b0ad6 Merge #6770: refactor: follow-up dash#6742, implement review suggestions, avoid redundant transaction queries
+2025-07-28T21:29:50.7488544Z d93878e Merge #6781: trivial: correct typo 'overriden' to 'overridden' in chainparams comment
+2025-07-28T21:29:50.7490044Z be3406f Merge #6769: fix: assign `nKeysLeftSinceAutoBackup` a bit later
+2025-07-28T21:29:50.7490767Z f488c43 fix: remove unnecessary tx fetching in `RemoveMempoolConflictsForLock`
+2025-07-28T21:29:50.7491336Z dd54011 refactor: move inexpensive checks earlier in `ProcessInstantSendLock()`
+2025-07-28T21:29:50.7492181Z c86d886 refactor: abstract away InstantSend parent implementation from signer
+2025-07-28T21:29:50.7493381Z cbfd325 refactor: avoid shared_ptr copies in `{WriteNew,Remove}InstantSendLock()`
+2025-07-28T21:29:50.7494185Z 234a16a refactor: use unordered set for faster duplicates checking
+2025-07-28T21:29:50.7495138Z 0459848 refactor: `constexpr` static string definitions
+2025-07-28T21:29:50.7495645Z 710c504 refactor: s/cs_inputReqests/cs_input_requests/g
+2025-07-28T21:29:50.7496083Z 5b0dbe9 fix: correct typo 'overriden' to 'overridden' in chainparams comment
+2025-07-28T21:29:50.7496539Z bf27280 fix: compilation errors in bitcoin#27069 backport
+2025-07-28T21:29:50.7497038Z 67a651a Merge bitcoin/bitcoin#26829: init: Remove unnecessary sensitive flag from rpcbind
+2025-07-28T21:29:50.7497675Z e7d44c5 Merge bitcoin/bitcoin#26974: refactor: rpc: set TxToJSON default verbosity to SHOW_DETAILS
+2025-07-28T21:29:50.7498611Z 5e6e706 Merge bitcoin/bitcoin#26935: refactor: Fix clang-tidy readability-const-return-type violations
+2025-07-28T21:29:50.7499239Z 5e10d4e Merge bitcoin-core/gui#695: Fix misleading RPC console wallet message
+2025-07-28T21:29:50.7499836Z b79770c Merge bitcoin/bitcoin#26992: refactor: Remove unused CDataStream SerializeMany constructor
+2025-07-28T21:29:50.7500375Z 8ea6753 Merge bitcoin/bitcoin#27069: net: add `Ensure{any}Banman`
+2025-07-28T21:29:50.7500968Z 9f3e4fa Merge #6778: backport: Merge bitcoin/bitcoin#23751: build, qt: No need to set inapplicable QPA backend for Android
+2025-07-28T21:29:50.7501621Z 9380840 Merge bitcoin/bitcoin#23751: build, qt: No need to set inapplicable QPA backend for Android
+2025-07-28T21:29:50.7502242Z ce6908c Merge #6765: chore: remove unused hash variants from proof of work hashing sources
+2025-07-28T21:29:50.7502702Z 68dec34 Merge #6691: test: add comprehensive unit tests for LLMQ subsystem
+2025-07-28T21:29:50.7503259Z 38ddeb3 Merge #6776: chore: classify `wallet/coinjoin.{cpp,h}` as Dash-specific, apply `clang-format`, minor housekeeping
+2025-07-28T21:29:50.7503837Z 10ad0af Merge #6743: refactor: use iwyu analyzer to break circular dependencies
+2025-07-28T21:29:50.7504356Z 6ed64e3 Merge #6777: chore: remove GitLab CI configuration file, remove status badge from README
+2025-07-28T21:29:50.7505150Z 4e62ee9 Merge #6764: fix: avoid short-circuit when evaluating platform identifier for <v0.12.3.x and bail out on macOS, make `feature_unsupported_utxo_db` Linux-only
+2025-07-28T21:29:50.7505783Z 0c5e295 chore: retain only Skein512, remove other variants
+2025-07-28T21:29:50.7506119Z 6fa5ddc chore: retain only Simd512, remove other variants
+2025-07-28T21:29:50.7506455Z 2c5b641 chore: retain only Shavite512, remove other variants
+2025-07-28T21:29:50.7506796Z 9035b5f chore: retain only Luffa512, remove other variants
+2025-07-28T21:29:50.7507124Z 11c0517 chore: retain only Keccak512, remove other variants
+2025-07-28T21:29:50.7507450Z 9fa0bc9 chore: retain only Jh512, remove other variants
+2025-07-28T21:29:50.7507769Z 9229220 chore: retain only Groestl512, remove other variants
+2025-07-28T21:29:50.7508306Z 822e75d chore: retain only Echo512, remove other variants
+2025-07-28T21:29:50.7508662Z 79f3078 chore: retain only Cubehash512, remove other variants
+2025-07-28T21:29:50.7509006Z 05e53e6 chore: retain only Bmw512, remove other variants
+2025-07-28T21:29:50.7509331Z 974b330 chore: retain only Blake512, remove other variants
+2025-07-28T21:29:50.7509646Z 4a31cfb chore: remove unused big-endian AES tables
+2025-07-28T21:29:50.7510031Z 8f86e1b chore: remove GitLab CI configuration file, remove status from README
+2025-07-28T21:29:50.7510445Z f4e1846 trivial: minor housekeeping of `wallet/coinjoin.cpp`
+2025-07-28T21:29:50.7511057Z a93f5cb chore: classify `wallet/coinjoin.*` as Dash-specific, run `clang-format`
+2025-07-28T21:29:50.7511534Z 05e2091 merge bitcoin#30464: Fix MSVC warning C4101 "unreferenced local variable"
+2025-07-28T21:29:50.7511941Z f00dc78 build: drop `-Wdangling-reference` GCC suppression
+2025-07-28T21:29:50.7516429Z 6d81d06 merge bitcoin#27605: Replace global find_value function with UniValue::find_value method
+2025-07-28T21:29:50.7516963Z 203a1c1 merge bitcoin#26612: pass named argument value as string_view
+2025-07-28T21:29:50.7517347Z 41eb3b0 merge bitcoin#25714: Avoid std::string copies
+2025-07-28T21:29:50.7517716Z 6f03a13 merge bitcoin#25736: Remove unused and confusing set*() return value
+2025-07-28T21:29:50.7518652Z 27cffb1 refactor: shed avoidable casts in Dash-specific UniValue-ret functions
+2025-07-28T21:29:50.7519193Z 32958da merge bitcoin#25611: Avoid brittle, narrowing and verbose integral type confusions
+2025-07-28T21:29:50.7519616Z 7802752 merge bitcoin#25617: univalue test cleanups
+2025-07-28T21:29:50.7520056Z 94bbbf1 partial bitcoin#25551: Throw exception on invalid Univalue pushes over silent ignore
+2025-07-28T21:29:50.7520634Z d980870 revert: revert bitcoin#25464 (Reduce Univalue push_backV peak memory usage in listtransactions)
+2025-07-28T21:29:50.7521093Z 1e023e5 merge bitcoin#25369: Unsubtree Univalue
+2025-07-28T21:29:50.7521375Z 6b9e682 merge bitcoin#25249: Bump univalue subtree
+2025-07-28T21:29:50.7521800Z c0c3af9 depends: update 'src/univalue' to bitcoin-core/univalue-subtree@de4f73dd as b3443eeb
+2025-07-28T21:29:50.7522288Z b3443ee Squashed 'src/univalue/' changes from 6c19d050a9..de4f73ddca
+2025-07-28T21:29:50.7522627Z 9db7b12 merge bitcoin#25113: Bump univalue subtree
+2025-07-28T21:29:50.7522975Z 88f794f Squashed 'src/univalue/' changes from a44caf65fe..6c19d050a9
+2025-07-28T21:29:50.7523504Z 774a8ff depends: update 'src/univalue' to bitcoin-core/univalue-subtree@6c19d050 as 88f794f4
+2025-07-28T21:29:50.7524092Z b07e550 merge bitcoin#25153: Use getInt<T> over get_int/get_int64
+2025-07-28T21:29:50.7524567Z f0caaf9 depends: update 'src/univalue' to bitcoin-core/univalue-subtree@a44caf65 as b1ae6f5f
+2025-07-28T21:29:50.7525032Z b1ae6f5 Squashed 'src/univalue/' changes from 2740c4f712..a44caf65fe
+2025-07-28T21:29:50.7525511Z 1780961 revert: bitcoin#25464 (Reduce Univalue push_backV peak memory usage in listtransactions)
+2025-07-28T21:29:50.7525924Z e08d628 chore: run clang-format
+2025-07-28T21:29:50.7526213Z e5431a4 fix: update copyright year to 2025 in LLMQ test files
+2025-07-28T21:29:50.7526572Z 72cbe5f fix: address knst review feedback for LLMQ unit tests
+2025-07-28T21:29:50.7526918Z f97c705 fix: remove trailing whitespace in llmq_tests.h
+2025-07-28T21:29:50.7527234Z d9ddc3f build: add llmq_tests.h to TEST_UTIL_H list
+2025-07-28T21:29:50.7527586Z 9a8eb89 test: address review comments for LLMQ unit tests
+2025-07-28T21:29:50.7528166Z 4744cfc test: add TODO comments for disabled serialization tests
+2025-07-28T21:29:50.7528530Z 3e5a532 build: remove header file from BITCOIN_TESTS list
+2025-07-28T21:29:50.7528877Z 4f3cde6 test: add comprehensive unit tests for LLMQ subsystem
+2025-07-28T21:29:50.7529284Z 9aa039c refactor: removed multiple unused includes; added some must-have headers
+2025-07-28T21:29:50.7529762Z b389d0b refactor: drop several circular dependencies by removing unused headers
+2025-07-28T21:29:50.7530247Z 31065d1 chore: mark `hashBlock` as unused in `HandleNewInputLockRecoveredSig()`
+2025-07-28T21:29:50.7530645Z cf47f14 chore: apply most `clang-format` suggestions
+2025-07-28T21:29:50.7531008Z 63371e0 trivial: move forward declaration above `using` declarations
+2025-07-28T21:29:50.7531346Z d0f94c3 chore: remove Doxygen macro blocks
+2025-07-28T21:29:50.7531608Z 79b9c87 chore: remove commented out code
+2025-07-28T21:29:50.7531903Z b407f87 fix: assign `nKeysLeftSinceAutoBackup` a bit later
+2025-07-28T21:29:50.7532261Z 7ace512 fix: restrict `feature_unsupported_utxo_db` to Linux
+2025-07-28T21:29:50.7532629Z 5c38d5c fix: don't download v0.12.2.x on macOS due to missing releases
+2025-07-28T21:29:50.7533181Z 722997e fix: avoid exclusion of v0.12.2.3 from platform identifier
+2025-07-28T21:29:50.7533591Z fb2648a fix: compare against lower version first to avoid short-circuiting
+2025-07-28T21:29:50.7533995Z 9827091 Squashed 'src/univalue/' changes from 5839ac3..2740c4f
+2025-07-28T21:29:50.7534351Z 313e7f5 Squashed 'src/univalue/' changes from 87d9045..5839ac3
+2025-07-28T21:29:50.7534693Z 2f9f082 Squashed 'src/univalue/' content from commit 87d9045
+2025-07-28T21:29:50.7539977Z Setting specific values in env
+2025-07-28T21:29:50.7540565Z Fallback to default values in env (if not yet set)
+2025-07-28T21:30:22.6328817Z configure.ac:358: overriden ==> overridden
+2025-07-28T21:30:22.6331211Z configure.ac:930: overriden ==> overridden
+2025-07-28T21:30:22.6331807Z contrib/macdeploy/gen-sdk:57: files' ==> file's
+2025-07-28T21:30:22.6332338Z src/Makefile.am:439: OBJEXT ==> OBJECT
+2025-07-28T21:30:22.6332835Z src/Makefile.am:1100: OBJEXT ==> OBJECT
+2025-07-28T21:30:22.6333349Z src/cuckoocache.h:154: copyable ==> copiable
+2025-07-28T21:30:22.6333911Z src/llmq/params.h:127: copyable ==> copiable
+2025-07-28T21:30:22.6334537Z src/masternode/payments.cpp:44: Applyable ==> Applicable
+2025-07-28T21:30:22.6335124Z src/net.cpp:1026: upto ==> up to
+2025-07-28T21:30:22.6335612Z src/net.cpp:3515: IsConnection ==> isconnected
+2025-07-28T21:30:22.6336157Z src/net.cpp:3603: IsConnection ==> isconnected
+2025-07-28T21:30:22.6336710Z src/net.cpp:3605: IsConnection ==> isconnected
+2025-07-28T21:30:22.6337249Z src/net.cpp:3636: IsConnection ==> isconnected
+2025-07-28T21:30:22.6337784Z src/net.cpp:4861: IsConnection ==> isconnected
+2025-07-28T21:30:22.6338508Z src/net.cpp:4862: IsConnection ==> isconnected
+2025-07-28T21:30:22.6339064Z src/net.h:1262: IsConnection ==> isconnected
+2025-07-28T21:30:22.6339592Z src/net.h:1267: IsConnection ==> isconnected
+2025-07-28T21:30:22.6340105Z src/net.h:1275: IsConnection ==> isconnected
+2025-07-28T21:30:22.6340648Z src/net_processing.cpp:261: anounce ==> announce
+2025-07-28T21:30:22.6341240Z src/net_processing.cpp:670: prefered ==> preferred
+2025-07-28T21:30:22.6341830Z src/net_processing.cpp:989: recieved ==> received
+2025-07-28T21:30:22.6342428Z src/net_processing.cpp:3786: succesful ==> successful
+2025-07-28T21:30:22.6343002Z src/node/psbt.cpp:88: minumum ==> minimum
+2025-07-28T21:30:22.6343542Z src/primitives/block.h:150: copyable ==> copiable
+2025-07-28T21:30:22.6344086Z src/qt/guiutil.cpp:1714: dur ==> due
+2025-07-28T21:30:22.6344568Z src/qt/guiutil.cpp:1716: dur ==> due
+2025-07-28T21:30:22.6345024Z src/qt/guiutil.cpp:1717: dur ==> due
+2025-07-28T21:30:22.6345490Z src/qt/guiutil.cpp:1718: dur ==> due
+2025-07-28T21:30:22.6345937Z src/qt/guiutil.cpp:1719: dur ==> due
+2025-07-28T21:30:22.6346403Z src/qt/guiutil.h:430: dur ==> due
+2025-07-28T21:30:22.6346894Z src/qt/transactionview.cpp:163: nd ==> and, 2nd
+2025-07-28T21:30:22.6347428Z src/random.h:106: occuring ==> occurring
+2025-07-28T21:30:22.6348089Z src/random.h:247: Dur ==> Due
+2025-07-28T21:30:22.6348529Z src/random.h:248: Dur ==> Due
+2025-07-28T21:30:22.6348967Z src/random.h:250: Dur ==> Due
+2025-07-28T21:30:22.6349398Z src/rpc/blockchain.cpp:485: nWe ==> new
+2025-07-28T21:30:22.6349998Z src/rpc/rawtransaction_util.h:35: temprorary ==> temporary
+2025-07-28T21:30:22.6350723Z src/support/lockedpool.h:55: copyable ==> copiable
+2025-07-28T21:30:22.6351341Z src/support/lockedpool.h:166: copyable ==> copiable
+2025-07-28T21:30:22.6351902Z src/sync.h:148: exlusive ==> exclusive
+2025-07-28T21:30:22.6352421Z src/test/fuzz/tx_pool.cpp:50: acess ==> access
+2025-07-28T21:30:22.6352985Z src/txorphanage.h:29: orginating ==> originating
+2025-07-28T21:30:22.6353562Z src/util/enumerate.h:13: containter ==> container
+2025-07-28T21:30:22.6354108Z src/util/time.h:91: precicion ==> precision
+2025-07-28T21:30:22.6354621Z src/util/time.h:92: precicion ==> precision
+2025-07-28T21:30:22.6355163Z src/validation.cpp:4376: incorrent ==> incorrect
+2025-07-28T21:30:22.6355715Z src/wallet/bip39_english.h:1739: sting ==> string
+2025-07-28T21:30:22.6356289Z src/wallet/coinselection.h:251: Chooose ==> Choose
+2025-07-28T21:30:22.6357221Z src/wallet/test/fuzz/notifications.cpp:100: inital ==> initial
+2025-07-28T21:30:22.6358136Z src/wallet/test/spend_tests.cpp:57: neccesary ==> necessary
+2025-07-28T21:30:22.6358853Z test/functional/feature_config_args.py:28: files' ==> file's
+2025-07-28T21:30:22.6359588Z test/functional/feature_llmq_singlenode.py:9: signle ==> single
+2025-07-28T21:30:22.6360359Z test/functional/test_framework/v2_p2p.py:154: keypair ==> key pair
+2025-07-28T21:30:22.6361119Z test/functional/wallet_descriptor.py:115: exhaused ==> exhausted
+2025-07-28T21:30:22.6362533Z ^ Warning: codespell identified likely spelling errors. Any false positives? Add them to the list of ignored words in test/lint/spelling.ignore-words.txt
+2025-07-28T21:30:33.4142123Z test/functional/rpc_psbt.py:13:1: F401 'test_framework.messages.ser_compact_size' imported but unused
+2025-07-28T21:30:33.4143256Z test/functional/rpc_psbt.py:15:1: F401 'test_framework.util.assert_greater_than' imported but unused
+2025-07-28T21:30:33.4144381Z test/functional/rpc_psbt.py:22:1: F401 'test_framework.wallet_util.get_generate_key' imported but unused
+2025-07-28T21:30:38.7293910Z Seq  Host  Starttime       JobRuntime  Send  Receive  Exitval  Signal  Command
+2025-07-28T21:30:38.7294537Z 4    :     1753738191.610  0.119       0     0        0        0       /__w/dash/dash/test/lint/lint-submodule.py
+2025-07-28T21:30:38.7295523Z 1    :     1753738191.599  0.851       0     0        0        0       /__w/dash/dash/test/lint/lint-locale-dependence.py
+2025-07-28T21:30:38.7296321Z 3    :     1753738191.605  14.562      0     0        0        0       /__w/dash/dash/test/lint/lint-format-strings.py
+2025-07-28T21:30:38.7297098Z 6    :     1753738192.456  24.769      0     0        0        0       /__w/dash/dash/test/lint/lint-circular-dependencies.py
+2025-07-28T21:30:38.7297568Z 8    :     1753738217.237  0.115       0     0        0        0       /__w/dash/dash/test/lint/lint-shell-locale.py
+2025-07-28T21:30:38.7298541Z 9    :     1753738217.365  0.242       0     0        0        0       /__w/dash/dash/test/lint/lint-python-mutable-default-parameters.py
+2025-07-28T21:30:38.7299090Z 10   :     1753738217.616  5.016       0     2663     0        0       /__w/dash/dash/test/lint/lint-spelling.py
+2025-07-28T21:30:38.7299519Z 11   :     1753738222.644  0.204       0     0        0        0       /__w/dash/dash/test/lint/lint-logs.py
+2025-07-28T21:30:38.7299931Z 12   :     1753738222.862  0.137       0     0        0        0       /__w/dash/dash/test/lint/lint-tests.py
+2025-07-28T21:30:38.7300370Z 13   :     1753738223.008  0.228       0     0        0        0       /__w/dash/dash/test/lint/lint-python-utf8-encoding.py
+2025-07-28T21:30:38.7300810Z 5    :     1753738191.738  31.943      0     0        0        0       /__w/dash/dash/test/lint/lint-shell.py
+2025-07-28T21:30:38.7301207Z 14   :     1753738223.246  0.452       0     0        0        0       /__w/dash/dash/test/lint/lint-files.py
+2025-07-28T21:30:38.7301620Z 16   :     1753738223.708  0.657       0     0        0        0       /__w/dash/dash/test/lint/lint-include-guards.py
+2025-07-28T21:30:38.7302058Z 17   :     1753738224.377  0.569       0     0        0        0       /__w/dash/dash/test/lint/lint-whitespace.py
+2025-07-28T21:30:38.7302476Z 18   :     1753738224.957  0.145       0     0        0        0       /__w/dash/dash/test/lint/lint-assertions.py
+2025-07-28T21:30:38.7302879Z 19   :     1753738225.112  2.834       0     0        0        0       /__w/dash/dash/test/lint/lint-includes.py
+2025-07-28T21:30:38.7303309Z 20   :     1753738227.955  0.782       0     0        0        0       /__w/dash/dash/test/lint/lint-git-commit-check.py
+2025-07-28T21:30:38.7303760Z 15   :     1753738223.693  7.599       0     0        0        0       /__w/dash/dash/test/lint/lint-python-dead-code.py
+2025-07-28T21:30:38.7304185Z 7    :     1753738206.174  27.239      0     308      1        0       /__w/dash/dash/test/lint/lint-python.py
+2025-07-28T21:30:38.7304642Z 2    :     1753738191.602  47.121      0     0        0        0       /__w/dash/dash/test/lint/lint-cppcheck-dash.sh
+2025-07-28T21:30:38.7305229Z ^---- failure generated
+2025-07-28T21:30:38.7393503Z ##[error]Process completed with exit code 1.
+2025-07-28T21:30:38.7489135Z Post job cleanup.
+2025-07-28T21:30:38.7492837Z ##[command]/usr/bin/docker exec  6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399 sh -c "cat /etc/*release | grep ^ID"
+2025-07-28T21:30:38.9438532Z [command]/usr/bin/git version
+2025-07-28T21:30:38.9477384Z git version 2.43.0
+2025-07-28T21:30:38.9517194Z Copying '/github/home/.gitconfig' to '/__w/_temp/72da2a42-b0f5-4bea-8aa2-8bab65fbae10/.gitconfig'
+2025-07-28T21:30:38.9530637Z Temporarily overriding HOME='/__w/_temp/72da2a42-b0f5-4bea-8aa2-8bab65fbae10' before making global git config changes
+2025-07-28T21:30:38.9531882Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-28T21:30:38.9537832Z [command]/usr/bin/git config --global --add safe.directory /__w/dash/dash
+2025-07-28T21:30:38.9581177Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-28T21:30:38.9614848Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-28T21:30:38.9846326Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-28T21:30:38.9871253Z http.https://github.com/.extraheader
+2025-07-28T21:30:38.9884171Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-28T21:30:38.9918991Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-28T21:30:39.0281506Z Stop and remove container: 0ec8131bcb384b44a861112be4899212_ghcriodashcoreautoguixdashdashcorecirunnerbackport026batch488pr28587_cdac18
+2025-07-28T21:30:39.0285988Z ##[command]/usr/bin/docker rm --force 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:30:39.1202301Z 6bf61fb697e4a7fa6b119009ac78a9c39ae14e2d6e7b128bdcaec5465501c399
+2025-07-28T21:30:39.1235066Z Remove container network: github_network_2a0ef7e1785c426f990ab23c802ff15c
+2025-07-28T21:30:39.1239734Z ##[command]/usr/bin/docker network rm github_network_2a0ef7e1785c426f990ab23c802ff15c
+2025-07-28T21:30:39.2378963Z github_network_2a0ef7e1785c426f990ab23c802ff15c
+2025-07-28T21:30:39.2453701Z Cleaning up orphan processes

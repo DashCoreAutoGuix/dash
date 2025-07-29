@@ -10,19 +10,14 @@ from itertools import product
 
 from test_framework.descriptors import descsum_create
 from test_framework.key import ECKey
-from test_framework.messages import ser_compact_size
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_approx,
     assert_equal,
-    assert_greater_than,
     assert_raises_rpc_error,
     find_output
 )
-from test_framework.wallet_util import (
-    bytes_to_wif,
-    get_generate_key
-)
+from test_framework.wallet_util import bytes_to_wif
 
 import json
 import os
