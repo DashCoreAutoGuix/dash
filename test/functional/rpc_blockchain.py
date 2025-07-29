@@ -25,6 +25,7 @@ from decimal import Decimal
 import http.client
 import os
 import subprocess
+import textwrap
 
 from test_framework.blocktools import (
     MAX_FUTURE_BLOCK_TIME,
@@ -55,6 +56,7 @@ from test_framework.wallet import MiniWallet
 
 HEIGHT = 200  # blocks mined
 TIME_RANGE_STEP = 156  # two and a half minute steps
+DIFFICULTY_ADJUSTMENT_INTERVAL = 24  # Dash difficulty adjustment interval
 TIME_RANGE_MTP = TIME_GENESIS_BLOCK + (HEIGHT - 6) * TIME_RANGE_STEP
 TIME_RANGE_TIP = TIME_GENESIS_BLOCK + (HEIGHT - 1) * TIME_RANGE_STEP
 TIME_RANGE_END = TIME_GENESIS_BLOCK + HEIGHT * TIME_RANGE_STEP
