@@ -1124,8 +1124,8 @@ UniValue AddrmanTableToJSON(const std::vector<std::pair<AddrInfo, AddressPositio
         key << location.bucket << "/" << location.position;
         // Address manager tables have unique entries so there is no advantage
         // in using UniValue::pushKV, which checks if the key already exists
-        // in O(N). UniValue::pushKVEnd is used instead which currently is O(1).
-        table.pushKVEnd(key.str(), AddrmanEntryToJSON(info));
+        // in O(N). UniValue::pushKV is used since pushKVEnd is not available in Dash.
+        table.pushKV(key.str(), AddrmanEntryToJSON(info));
     }
     return table;
 }
