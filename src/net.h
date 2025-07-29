@@ -1168,16 +1168,7 @@ public:
     struct Options
     {
         ServiceFlags nLocalServices = NODE_NONE;
-<<<<<<< HEAD
-        int nMaxConnections = 0;
-        int m_max_outbound_full_relay = 0;
-        int m_max_outbound_block_relay = 0;
-        int m_max_outbound_onion = 0;
-        int nMaxAddnode = 0;
-        int nMaxFeeler = 0;
-=======
         int m_max_automatic_connections = 0;
->>>>>>> 82ea4e787c (Merge bitcoin/bitcoin#28464: net: improve max-connection limits code)
         CClientUIInterface* uiInterface = nullptr;
         NetEventsInterface* m_msgproc = nullptr;
         BanMan* m_banman = nullptr;
@@ -1205,18 +1196,11 @@ public:
         AssertLockNotHeld(m_total_bytes_sent_mutex);
 
         nLocalServices = connOptions.nLocalServices;
-<<<<<<< HEAD
-        nMaxConnections = connOptions.nMaxConnections;
-        m_max_outbound_full_relay = std::min(connOptions.m_max_outbound_full_relay, connOptions.nMaxConnections);
-        m_max_outbound_block_relay = connOptions.m_max_outbound_block_relay;
-        m_max_outbound_onion = connOptions.m_max_outbound_onion;
-=======
         m_max_automatic_connections = connOptions.m_max_automatic_connections;
         m_max_outbound_full_relay = std::min(MAX_OUTBOUND_FULL_RELAY_CONNECTIONS, m_max_automatic_connections);
         m_max_outbound_block_relay = std::min(MAX_BLOCK_RELAY_ONLY_CONNECTIONS, m_max_automatic_connections - m_max_outbound_full_relay);
         m_max_automatic_outbound = m_max_outbound_full_relay + m_max_outbound_block_relay + m_max_feeler;
         m_max_inbound = std::max(0, m_max_automatic_connections - m_max_automatic_outbound);
->>>>>>> 82ea4e787c (Merge bitcoin/bitcoin#28464: net: improve max-connection limits code)
         m_use_addrman_outgoing = connOptions.m_use_addrman_outgoing;
         m_client_interface = connOptions.uiInterface;
         m_banman = connOptions.m_banman;
@@ -1817,20 +1801,10 @@ private:
     // We do not relay tx or addr messages with these peers
     int m_max_outbound_block_relay;
 
-<<<<<<< HEAD
-    // How many onion outbound peers we want; don't care if full or block only; does not increase m_max_outbound
-    int m_max_outbound_onion;
-
-    int nMaxAddnode;
-    int nMaxFeeler;
-    int m_max_outbound;
-=======
     int m_max_addnode{MAX_ADDNODE_CONNECTIONS};
     int m_max_feeler{MAX_FEELER_CONNECTIONS};
     int m_max_automatic_outbound;
     int m_max_inbound;
-
->>>>>>> 82ea4e787c (Merge bitcoin/bitcoin#28464: net: improve max-connection limits code)
     bool m_use_addrman_outgoing;
     CClientUIInterface* m_client_interface;
     NetEventsInterface* m_msgproc;
