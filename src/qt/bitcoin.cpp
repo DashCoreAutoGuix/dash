@@ -32,6 +32,7 @@
 #include <qt/winshutdownmonitor.h>
 #include <stacktraces.h>
 #include <uint256.h>
+#include <util/exception.h>
 #include <util/string.h>
 #include <util/system.h>
 #include <util/threadnames.h>

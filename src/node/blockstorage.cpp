@@ -11,6 +11,7 @@
 #include <flatfile.h>
 #include <fs.h>
 #include <hash.h>
+#include <logging.h>
 #include <pow.h>
 #include <shutdown.h>
 #include <streams.h>
