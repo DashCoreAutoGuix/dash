@@ -38,8 +38,8 @@ jobs:
         with:
           name: ${{ inputs.bundle-key }}
 
-      - name: Manage releases cache
-        uses: actions/cache@v4
+      - name: Restore releases cache
+        uses: actions/cache/restore@v4
         if: inputs.build-target == 'linux64'
         with:
           path: |
@@ -81,3 +81,11 @@ jobs:
           compression-level: 0
           overwrite: true
           retention-days: 1
+
+      - name: Save releases cache
+        uses: actions/cache/save@v4
+        if: inputs.build-target == 'linux64' && github.event_name != 'pull_request'
+        with:
+          path: |
+            releases
+          key: releases-${{ hashFiles('ci/test/00_setup_env_native_qt5.sh', 'test/get_previous_releases.py') }}
