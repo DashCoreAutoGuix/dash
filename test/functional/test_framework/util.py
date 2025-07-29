@@ -25,6 +25,20 @@ from typing import Callable, Optional
 
 logger = logging.getLogger("TestFramework.utils")
 
+
+def ceildiv(a: int, b: int) -> int:
+    """Return ceil(a/b) as an integer."""
+    return -(-a // b)
+
+
+def get_fee(tx_vsize: int, fee_rate: Decimal) -> int:
+    """
+    Calculate fee (in satoshis) for a transaction with given vsize at fee_rate sat/kvB.
+    Uses transaction vsize and ceil-divides by 1000.
+    """
+    return int(fee_rate * ceildiv(tx_vsize, 1000))
+
+
 # Assert functions
 ##################
 
