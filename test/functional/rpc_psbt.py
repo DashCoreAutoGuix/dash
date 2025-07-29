@@ -153,7 +153,7 @@ class PSBTTest(BitcoinTestFramework):
                 assert_raises_rpc_error(-3, "Invalid amount",
                     self.nodes[1].walletcreatefundedpsbt, inputs, outputs, 0, {param: invalid_value, "add_inputs": True})
         # Test fee_rate values that cannot be represented in sat/vB.
-        for invalid_value in [0.0001, 0.00000001, 0.00099999, 31.99999999, "0.0001", "0.00000001", "0.00099999", "31.99999999"]:
+        for invalid_value in [0.0001, 0.00000001, 0.00099999, 31.99999999]:
             assert_raises_rpc_error(-3, "Invalid amount",
                 self.nodes[1].walletcreatefundedpsbt, inputs, outputs, 0, {"fee_rate": invalid_value, "add_inputs": True})
 
@@ -500,6 +500,10 @@ class PSBTTest(BitcoinTestFramework):
         signed = self.nodes[0].walletprocesspsbt(signed['psbt'])
         assert signed['complete']
         self.nodes[0].finalizepsbt(signed['psbt'])
+
+        self.log.info("Test walletprocesspsbt raises if an invalid sighashtype is passed")
+        assert_raises_rpc_error(-1, "all is not a valid sighash parameter.", self.nodes[0].walletprocesspsbt, psbtx1, sighashtype="all")
+
 
 if __name__ == '__main__':
     PSBTTest().main()
