@@ -144,7 +144,6 @@ using node::DashChainstateSetupClose;
 using node::DEFAULT_ADDRESSINDEX;
 using node::DEFAULT_PRINTPRIORITY;
 using node::DEFAULT_SPENTINDEX;
-using node::DEFAULT_STOPAFTERBLOCKIMPORT;
 using node::DEFAULT_TIMESTAMPINDEX;
 using node::LoadChainstate;
 using node::NodeContext;
@@ -163,6 +162,7 @@ using wallet::DEFAULT_DISABLE_WALLET;
 static constexpr bool DEFAULT_PROXYRANDOMIZE{true};
 static constexpr bool DEFAULT_REST_ENABLE{false};
 static constexpr bool DEFAULT_I2P_ACCEPT_INCOMING{true};
+static constexpr bool DEFAULT_STOPAFTERBLOCKIMPORT{false};
 
 #ifdef WIN32
 // Win32 LevelDB doesn't use filedescriptors, and the ones used for
@@ -2320,6 +2320,11 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     chainman.m_load_block = std::thread(&util::TraceThread, "loadblk", [=, &args, &chainman, &node] {
         ThreadImport(chainman, vImportFiles, args);
+        if (args.GetBoolArg("-stopafterblockimport", DEFAULT_STOPAFTERBLOCKIMPORT)) {
+            LogPrintf("Stopping after block import\n");
+            StartShutdown();
+            return;
+        }
 
         // force UpdatedBlockTip to initialize nCachedBlockHeight for DS, MN payments and budgets
         // but don't call it directly to prevent triggering of other listeners like zmq etc.
