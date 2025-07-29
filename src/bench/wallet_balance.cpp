@@ -16,7 +16,6 @@
 
 using wallet::CreateMockWalletDatabase;
 using wallet::CWallet;
-using wallet::DBErrors;
 using wallet::WALLET_FLAG_DESCRIPTORS;
 
 static void WalletBalance(benchmark::Bench& bench, const bool set_dirty, const bool add_mine, const uint32_t epoch_iters)
@@ -29,7 +28,6 @@ static void WalletBalance(benchmark::Bench& bench, const bool set_dirty, const b
         LOCK(wallet.cs_wallet);
         wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
         wallet.SetupDescriptorScriptPubKeyMans("", "");
-        if (wallet.LoadWallet() != DBErrors::LOAD_OK) assert(false);
     }
     auto handler = test_setup->m_node.chain->handleNotifications({&wallet, [](CWallet*) {}});
 
