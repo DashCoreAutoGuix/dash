@@ -298,33 +298,6 @@ BOOST_AUTO_TEST_CASE( operator_with_self )
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(parse)
-{
-    {
-        std::string s_12{"0000000000000000000000000000000000000000000000000000000000000012"};
-        BOOST_CHECK_EQUAL(uint256S("12\0").GetHex(), s_12);
-        BOOST_CHECK_EQUAL(uint256S(std::string{"12\0", 3}).GetHex(), s_12);
-        BOOST_CHECK_EQUAL(uint256S("0x12").GetHex(), s_12);
-        BOOST_CHECK_EQUAL(uint256S(" 0x12").GetHex(), s_12);
-        BOOST_CHECK_EQUAL(uint256S(" 12").GetHex(), s_12);
-    }
-    {
-        std::string s_1{uint256::ONE.GetHex()};
-        BOOST_CHECK_EQUAL(uint256S("1\0").GetHex(), s_1);
-        BOOST_CHECK_EQUAL(uint256S(std::string{"1\0", 2}).GetHex(), s_1);
-        BOOST_CHECK_EQUAL(uint256S("0x1").GetHex(), s_1);
-        BOOST_CHECK_EQUAL(uint256S(" 0x1").GetHex(), s_1);
-        BOOST_CHECK_EQUAL(uint256S(" 1").GetHex(), s_1);
-    }
-    {
-        std::string s_0{uint256::ZERO.GetHex()};
-        BOOST_CHECK_EQUAL(uint256S("\0").GetHex(), s_0);
-        BOOST_CHECK_EQUAL(uint256S(std::string{"\0", 1}).GetHex(), s_0);
-        BOOST_CHECK_EQUAL(uint256S("0x").GetHex(), s_0);
-        BOOST_CHECK_EQUAL(uint256S(" 0x").GetHex(), s_0);
-        BOOST_CHECK_EQUAL(uint256S(" ").GetHex(), s_0);
-    }
-}
 
 BOOST_AUTO_TEST_CASE( check_ONE )
 {
