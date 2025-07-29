@@ -28,6 +28,7 @@ static Span<const std::byte> SpanFromBlob(sqlite3_stmt* stmt, int col)
     return {reinterpret_cast<const std::byte*>(sqlite3_column_blob(stmt, col)),
             static_cast<size_t>(sqlite3_column_bytes(stmt, col))};
 }
+
 static void ErrorLogCallback(void* arg, int code, const char* msg)
 {
     // From sqlite3_config() documentation for the SQLITE_CONFIG_LOG option:
