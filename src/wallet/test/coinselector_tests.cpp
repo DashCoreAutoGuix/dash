@@ -298,7 +298,6 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         /*tx_noinputs_size=*/ 0,
         /*avoid_partial=*/ false,
     };
-    coin_selection_params_bnb.m_subtract_fee_outputs = true;
 
     {
         std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
@@ -397,6 +396,55 @@ BOOST_AUTO_TEST_CASE(bnb_search_test)
         const auto result13 = SelectCoins(*wallet, coins, 10 * CENT, coin_control, coin_selection_params_bnb);
         BOOST_CHECK(EquivalentResult(expected_result, *result13));
     }
+}
+
+BOOST_AUTO_TEST_CASE(bnb_sffo_restriction)
+{
+    // Verify the coin selection process does not produce a BnB solution when SFFO is enabled.
+    // This is currently problematic because it could require a change output. And BnB is specialized on changeless solutions.
+    // NOTE: In Dash, BnB is already disabled by clearing positive_groups, so this test verifies that behavior remains consistent.
+    std::unique_ptr<CWallet> wallet = std::make_unique<CWallet>(m_node.chain.get(), /*coinjoin_loader=*/nullptr, "", m_args, CreateMockWalletDatabase());
+    wallet->LoadWallet();
+    {
+        LOCK(wallet->cs_wallet);
+        wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+        wallet->SetupDescriptorScriptPubKeyMans("", "");
+        wallet->SetLastBlockProcessed(300, uint256{}); // set a high block so internal UTXOs are selectable
+    }
+
+    FastRandomContext rand{};
+    CoinSelectionParams params{
+            rand,
+            /*change_output_size=*/ 31,  // unused value, p2wpkh output size (wallet default change type)
+            /*change_spend_size=*/ 68,   // unused value, p2wpkh input size (high-r signature)
+            /*min_change_target=*/ 0,    // dummy, set later
+            /*effective_feerate=*/ CFeeRate(3000),
+            /*long_term_feerate=*/ CFeeRate(1000),
+            /*discard_feerate=*/ CFeeRate(1000),
+            /*tx_noinputs_size=*/ 0,
+            /*avoid_partial=*/ false,
+    };
+    params.m_subtract_fee_outputs = true;
+    params.m_change_fee = params.m_effective_feerate.GetFee(params.change_output_size);
+    params.m_cost_of_change = params.m_discard_feerate.GetFee(params.change_spend_size) + params.m_change_fee;
+    params.m_min_change_target = params.m_cost_of_change + 1;
+    
+    // Add spendable coin at the BnB selection upper bound
+    std::vector<COutput> coins;
+    add_coin(coins, *wallet, COIN + params.m_cost_of_change, /*feerate=*/params.m_effective_feerate, /*nAge=*/6, /*fIsFromMe=*/true, /*nInput=*/0, /*spendable=*/true);
+    add_coin(coins, *wallet, 0.5 * COIN + params.m_cost_of_change, /*feerate=*/params.m_effective_feerate, /*nAge=*/6, /*fIsFromMe=*/true, /*nInput=*/0, /*spendable=*/true);
+    add_coin(coins, *wallet, 0.5 * COIN, /*feerate=*/params.m_effective_feerate, /*nAge=*/6, /*fIsFromMe=*/true, /*nInput=*/0, /*spendable=*/true);
+    
+    // Knapsack will only find a changeless solution on an exact match to the satoshi, SRD doesn't look for changeless
+    // If BnB were run, it would produce a single input solution with the best waste score
+    // In Dash, BnB is already disabled, so we expect Knapsack
+    CCoinControl coin_control;
+    auto result = SelectCoins(*wallet, coins, COIN, coin_control, params);
+    BOOST_CHECK(result.has_value());
+    // In Dash, BnB is disabled by clearing positive_groups, so it should never be selected
+    BOOST_CHECK_NE(result->GetAlgo(), SelectionAlgorithm::BNB);
+    // Knapsack is the expected algorithm in Dash
+    BOOST_CHECK(result->GetAlgo() == SelectionAlgorithm::KNAPSACK);
 }
 
 BOOST_AUTO_TEST_CASE(knapsack_solver_test)

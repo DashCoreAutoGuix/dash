@@ -396,8 +396,11 @@ std::optional<SelectionResult> AttemptSelection(const CWallet& wallet, const CAm
     // Note that unlike KnapsackSolver, we do not include the fee for creating a change output as BnB will not create a change output.
     std::vector<OutputGroup> positive_groups = GroupOutputs(wallet, coins, coin_selection_params, eligibility_filter, true /* positive_only */);
     positive_groups.clear(); // Cleared to skip BnB and SRD as they're unaware of mixed coins
-    if (auto bnb_result{SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change)}) {
-        results.push_back(*bnb_result);
+    // SFFO frequently causes issues in the context of changeless input sets: skip BnB when SFFO is active
+    if (!coin_selection_params.m_subtract_fee_outputs) {
+        if (auto bnb_result{SelectCoinsBnB(positive_groups, nTargetValue, coin_selection_params.m_cost_of_change)}) {
+            results.push_back(*bnb_result);
+        }
     }
 
     // The knapsack solver has some legacy behavior where it will spend dust outputs. We retain this behavior, so don't filter for positive only here.
@@ -1016,6 +1019,7 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
     reservedest.KeepDestination();
     fee_calc_out = feeCalc;
 
+    wallet.WalletLogPrintf("Coin Selection: Algorithm:%s, Waste Metric Score:%d\n", GetAlgorithmName(result->m_algo).c_str(), result->GetWaste());
     wallet.WalletLogPrintf("Fee Calculation: Fee:%d Bytes:%u Tgt:%d (requested %d) Reason:\"%s\" Decay %.5f: Estimation: (%g - %g) %.2f%% %.1f/(%.1f %d mem %.1f out) Fail: (%g - %g) %.2f%% %.1f/(%.1f %d mem %.1f out)\n",
               nFeeRet, nBytes, feeCalc.returnedTarget, feeCalc.desiredTarget, StringForFeeReason(feeCalc.reason), feeCalc.est.decay,
               feeCalc.est.pass.start, feeCalc.est.pass.end,

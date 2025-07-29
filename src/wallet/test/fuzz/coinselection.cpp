@@ -81,7 +81,9 @@ FUZZ_TARGET(coinselection)
     GroupCoins(fuzzed_data_provider, utxo_pool, coin_params, /*positive_only=*/false, group_all);
 
     // Run coinselection algorithms
-    const auto result_bnb = SelectCoinsBnB(group_pos, target, cost_of_change);
+    // SFFO frequently causes issues in the context of changeless input sets: skip BnB when SFFO is active
+    const auto result_bnb = coin_params.m_subtract_fee_outputs ? util::Result<SelectionResult>{util::Error{Untranslated("BnB disabled when SFFO is enabled")}} :
+                            SelectCoinsBnB(group_pos, target, cost_of_change);
 
     auto result_srd = SelectCoinsSRD(group_pos, target, fast_random_context);
     if (result_srd) result_srd->ComputeAndSetWaste(cost_of_change);
