@@ -134,7 +134,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         # Fake orphan spends nonexistent outputs of the two parents
         tx_fake_orphan = self.wallet.create_self_transfer_multi(utxos_to_spend=[
             {"txid": tx_parent_doesnt_arrive["txid"], "vout": 10, "value": tx_parent_doesnt_arrive["new_utxo"]["value"]},
-            {"txid": tx_parent_arrives["txid"], "vout": 10, "value": tx_parent_arrives["new_utxo"]["value"]}
+            {"txid": tx_parent_arrives["txid"], "vout": 10, "value": tx_parent_arrives["new_utxo"]["value"]},
         ])
 
         peer_spy = node.add_p2p_connection(PeerTxRelayer())
@@ -197,45 +197,9 @@ class OrphanHandlingTest(BitcoinTestFramework):
         peer2.assert_never_requested(int(parent_other["txid"], 16))
         peer2.assert_never_requested(int(parent_low_fee_nonsegwit["txid"], 16))
 
-        self.log.info("Test orphan handling when a segwit parent was invalid but may be retried with another witness")
-        parent_low_fee = self.wallet.create_self_transfer(fee_rate=0)
-        child_low_fee = self.wallet.create_self_transfer(utxo_to_spend=parent_low_fee["new_utxo"])
+        # (Segwit orphan handling test removed - not applicable to Dash)
 
-        # Relay the low fee parent. It should not be accepted.
-        self.relay_transaction(peer1, parent_low_fee["tx"])
-        assert parent_low_fee["txid"] not in node.getrawmempool()
-
-        # Relay the child. It should not be accepted because it has missing inputs.
-        self.relay_transaction(peer2, child_low_fee["tx"])
-        assert child_low_fee["txid"] not in node.getrawmempool()
-
-        # The parent should be requested because even though the txid commits to the fee, it doesn'
-        # commit to the feerate. Delayed because it's by txid and this is not a preferred relay peer.
-        self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY + TXID_RELAY_DELAY)
-        peer2.wait_for_getdata([int(parent_low_fee["tx"].rehash(), 16)])
-
-        self.log.info("Test orphan handling when a parent was previously downloaded with witness stripped")
-        parent_normal = self.wallet.create_self_transfer()
-        parent1_witness_stripped = tx_from_hex(parent_normal["tx"].serialize_without_witness().hex())
-        child_invalid_witness = self.wallet.create_self_transfer(utxo_to_spend=parent_normal["new_utxo"])
-
-        # Relay the parent with witness stripped. It should not be accepted.
-        self.relay_transaction(peer1, parent1_witness_stripped)
-        assert_equal(parent_normal["txid"], parent1_witness_stripped.rehash())
-        assert parent1_witness_stripped.rehash() not in node.getrawmempool()
-
-        # Relay the child. It should not be accepted because it has missing inputs.
-        self.relay_transaction(peer2, child_invalid_witness["tx"])
-        assert child_invalid_witness["txid"] not in node.getrawmempool()
-
-        # The parent should be requested since the unstripped wtxid would differ. Delayed because
-        # it's by txid and this is not a preferred relay peer.
-        self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY + TXID_RELAY_DELAY)
-        peer2.wait_for_getdata([int(parent_normal["tx"].rehash(), 16)])
-
-        # parent_normal can be relayed again even though parent1_witness_stripped was rejected
-        self.relay_transaction(peer1, parent_normal["tx"])
-        assert_equal(set(node.getrawmempool()), set([parent_normal["txid"], child_invalid_witness["txid"]]))
+        # (Witness stripping test removed - not applicable to Dash)
 
     @cleanup
     def test_orphan_multiple_parents(self):
@@ -371,8 +335,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         assert_equal(parent_low_fee_nonsegwit["txid"], parent_low_fee_nonsegwit["tx"].getwtxid())
         child = self.wallet.create_self_transfer(utxo_to_spend=parent_low_fee_nonsegwit["new_utxo"])
         grandchild = self.wallet.create_self_transfer(utxo_to_spend=child["new_utxo"])
-        assert child["txid"] != child["tx"].getwtxid()
-        assert grandchild["txid"] != grandchild["tx"].getwtxid()
+        # (Witness txid checks removed - not applicable to Dash)
 
         # Relay the parent. It should be rejected because it pays 0 fees.
         self.relay_transaction(peer1, parent_low_fee_nonsegwit["tx"])
