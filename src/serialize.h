@@ -6,6 +6,7 @@
 #ifndef BITCOIN_SERIALIZE_H
 #define BITCOIN_SERIALIZE_H
 
+#include <compat/assumptions.h> // IWYU pragma: keep
 #include <compat/endian.h>
 
 #include <algorithm>
