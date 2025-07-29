@@ -17,7 +17,7 @@ if [ -z "${SKIP_PYTHON_INSTALL}" ]; then
     PYTHON_PATH=/tmp/python
     if [ ! -d "${PYTHON_PATH}/bin" ]; then
       (
-        ${CI_RETRY_EXE} git clone https://github.com/pyenv/pyenv.git
+        git clone https://github.com/pyenv/pyenv.git
         cd pyenv/plugins/python-build || exit 1
         ./install.sh
       )

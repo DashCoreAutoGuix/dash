@@ -1093,7 +1093,7 @@ static RPCHelpMan pruneblockchain()
 
 CoinStatsHashType ParseHashType(const std::string& hash_type_input)
 {
-    if (hash_type_input == "hash_serialized_2") {
+    if (hash_type_input == "hash_serialized_3") {
         return CoinStatsHashType::HASH_SERIALIZED;
     } else if (hash_type_input == "muhash") {
         return CoinStatsHashType::MUHASH;
@@ -1110,7 +1110,7 @@ static RPCHelpMan gettxoutsetinfo()
         "\nReturns statistics about the unspent transaction output set.\n"
         "Note this call may take some time if you are not using coinstatsindex.\n",
         {
-            {"hash_type", RPCArg::Type::STR, RPCArg::Default{"hash_serialized_2"}, "Which UTXO set hash should be calculated. Options: 'hash_serialized_2' (the legacy algorithm), 'muhash', 'none'."},
+            {"hash_type", RPCArg::Type::STR, RPCArg::Default{"hash_serialized_3"}, "Which UTXO set hash should be calculated. Options: 'hash_serialized_3' (the legacy algorithm), 'muhash', 'none'."},
             {"hash_or_height", RPCArg::Type::NUM, RPCArg::Optional::OMITTED_NAMED_ARG, "The block hash or height of the target height (only available with coinstatsindex).", "", {"", "string or numeric"}},
             {"use_index", RPCArg::Type::BOOL, RPCArg::Default{true}, "Use coinstatsindex, if available."},
         },
@@ -1121,7 +1121,7 @@ static RPCHelpMan gettxoutsetinfo()
                 {RPCResult::Type::STR_HEX, "bestblock", "The hash of the block at which these statistics are calculated"},
                 {RPCResult::Type::NUM, "txouts", "The number of unspent transaction outputs"},
                 {RPCResult::Type::NUM, "bogosize", "Database-independent, meaningless metric indicating the UTXO set size"},
-                {RPCResult::Type::STR_HEX, "hash_serialized_2", /* optional */ true, "The serialized hash (only present if 'hash_serialized_2' hash_type is chosen)"},
+                {RPCResult::Type::STR_HEX, "hash_serialized_3", /* optional */ true, "The serialized hash (only present if 'hash_serialized_3' hash_type is chosen)"},
                 {RPCResult::Type::STR_HEX, "muhash", /* optional */ true, "The serialized hash (only present if 'muhash' hash_type is chosen)"},
                 {RPCResult::Type::NUM, "transactions", /* optional */ true, "The number of transactions with unspent outputs (not available when coinstatsindex is used)"},
                 {RPCResult::Type::NUM, "disk_size", /* optional */ true, "The estimated size of the chainstate on disk (not available when coinstatsindex is used)"},
@@ -1181,7 +1181,7 @@ static RPCHelpMan gettxoutsetinfo()
         }
 
         if (stats.m_hash_type == CoinStatsHashType::HASH_SERIALIZED) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "hash_serialized_2 hash type cannot be queried for a specific block");
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "hash_serialized_3 hash type cannot be queried for a specific block");
         }
 
         pindex = ParseHashOrHeight(request.params[1], chainman);
@@ -1205,7 +1205,7 @@ static RPCHelpMan gettxoutsetinfo()
         ret.pushKV("txouts", (int64_t)stats.nTransactionOutputs);
         ret.pushKV("bogosize", (int64_t)stats.nBogoSize);
         if (hash_type == CoinStatsHashType::HASH_SERIALIZED) {
-            ret.pushKV("hash_serialized_2", stats.hashSerialized.GetHex());
+            ret.pushKV("hash_serialized_3", stats.hashSerialized.GetHex());
         }
         if (hash_type == CoinStatsHashType::MUHASH) {
             ret.pushKV("muhash", stats.hashSerialized.GetHex());
