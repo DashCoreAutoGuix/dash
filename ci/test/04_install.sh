@@ -68,10 +68,10 @@ else
 fi
 
 CI_EXEC () {
-  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && $*"
+  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && \"\$@\""
 }
 CI_EXEC_ROOT () {
-  $DOCKER_CI_CMD_PREFIX_ROOT bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && $*"
+  $DOCKER_CI_CMD_PREFIX_ROOT bash -c "export PATH=${BINS_SCRATCH_DIR}:${BASE_ROOT_DIR}/ci/retry:\$PATH && cd \"${BASE_ROOT_DIR}\" && \"\$@\""
 }
 export -f CI_EXEC
 export -f CI_EXEC_ROOT

@@ -6,7 +6,7 @@
 
 export LC_ALL=C
 
-export PATH=$PWD/ci/retry:$PATH
+export PATH=${BASE_ROOT_DIR}/ci/retry:$PATH
 
 ${CI_RETRY_EXE} apt-get update
 # Lint dependencies:
