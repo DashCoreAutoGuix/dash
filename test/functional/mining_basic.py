@@ -22,7 +22,6 @@ from test_framework.messages import (
     CBlock,
     CBlockHeader,
     COIN,
-    ser_uint256,
 )
 from test_framework.p2p import P2PDataStore
 from test_framework.test_framework import BitcoinTestFramework
