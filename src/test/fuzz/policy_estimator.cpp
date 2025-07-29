@@ -23,13 +23,17 @@ void initialize_policy_estimator()
 FUZZ_TARGET(policy_estimator, .init = initialize_policy_estimator)
 {
     FuzzedDataProvider fuzzed_data_provider(buffer.data(), buffer.size());
+    bool good_data{true};
+
     CBlockPolicyEstimator block_policy_estimator;
-    LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 10000) {
+    LIMITED_WHILE(good_data && fuzzed_data_provider.ConsumeBool(), 10'000)
+    {
         CallOneOf(
             fuzzed_data_provider,
             [&] {
                 const std::optional<CMutableTransaction> mtx = ConsumeDeserializable<CMutableTransaction>(fuzzed_data_provider);
                 if (!mtx) {
+                    good_data = false;
                     return;
                 }
                 const CTransaction tx{*mtx};
@@ -40,9 +44,11 @@ FUZZ_TARGET(policy_estimator, .init = initialize_policy_estimator)
             },
             [&] {
                 std::vector<CTxMemPoolEntry> mempool_entries;
-                LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 10000) {
+                LIMITED_WHILE(good_data && fuzzed_data_provider.ConsumeBool(), 10'000)
+    {
                     const std::optional<CMutableTransaction> mtx = ConsumeDeserializable<CMutableTransaction>(fuzzed_data_provider);
                     if (!mtx) {
+                        good_data = false;
                         break;
                     }
                     const CTransaction tx{*mtx};

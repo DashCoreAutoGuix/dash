@@ -50,12 +50,15 @@ void initialize_coins_view()
 FUZZ_TARGET(coins_view, .init = initialize_coins_view)
 {
     FuzzedDataProvider fuzzed_data_provider{buffer.data(), buffer.size()};
+    bool good_data{true};
+
     CCoinsView backend_coins_view;
     CCoinsViewCache coins_view_cache{&backend_coins_view, /*deterministic=*/true};
     COutPoint random_out_point;
     Coin random_coin;
     CMutableTransaction random_mutable_transaction;
-    LIMITED_WHILE(fuzzed_data_provider.ConsumeBool(), 10000) {
+    LIMITED_WHILE(good_data && fuzzed_data_provider.ConsumeBool(), 10'000)
+    {
         CallOneOf(
             fuzzed_data_provider,
             [&] {
@@ -101,6 +104,7 @@ FUZZ_TARGET(coins_view, .init = initialize_coins_view)
             [&] {
                 const std::optional<COutPoint> opt_out_point = ConsumeDeserializable<COutPoint>(fuzzed_data_provider);
                 if (!opt_out_point) {
+                    good_data = false;
                     return;
                 }
                 random_out_point = *opt_out_point;
@@ -108,6 +112,7 @@ FUZZ_TARGET(coins_view, .init = initialize_coins_view)
             [&] {
                 const std::optional<Coin> opt_coin = ConsumeDeserializable<Coin>(fuzzed_data_provider);
                 if (!opt_coin) {
+                    good_data = false;
                     return;
                 }
                 random_coin = *opt_coin;
@@ -115,6 +120,7 @@ FUZZ_TARGET(coins_view, .init = initialize_coins_view)
             [&] {
                 const std::optional<CMutableTransaction> opt_mutable_transaction = ConsumeDeserializable<CMutableTransaction>(fuzzed_data_provider);
                 if (!opt_mutable_transaction) {
+                    good_data = false;
                     return;
                 }
                 random_mutable_transaction = *opt_mutable_transaction;
@@ -122,7 +128,8 @@ FUZZ_TARGET(coins_view, .init = initialize_coins_view)
             [&] {
                 CCoinsMapMemoryResource resource;
                 CCoinsMap coins_map{0, SaltedOutpointHasher{/*deterministic=*/true}, CCoinsMap::key_equal{}, &resource};
-                LIMITED_WHILE (fuzzed_data_provider.ConsumeBool(), 10000) {
+                LIMITED_WHILE(good_data && fuzzed_data_provider.ConsumeBool(), 10'000)
+                {
                     CCoinsCacheEntry coins_cache_entry;
                     coins_cache_entry.flags = fuzzed_data_provider.ConsumeIntegral<unsigned char>();
                     if (fuzzed_data_provider.ConsumeBool()) {
