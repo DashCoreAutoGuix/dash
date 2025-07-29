@@ -74,7 +74,7 @@ void CTxMemPoolEntry::UpdateModifiedFee(CAmount newFeeDelta)
     m_modified_fee = SaturatingAdd(m_modified_fee, newFeeDelta);
 }
 
-void CTxMemPoolEntry::UpdateLockPoints(const LockPoints& lp)
+void CTxMemPoolEntry::UpdateLockPoints(const LockPoints& lp) const
 {
     lockPoints = lp;
 }

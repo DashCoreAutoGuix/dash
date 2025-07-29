@@ -115,7 +115,7 @@ private:
     const bool spendsCoinbase;      //!< keep track of transactions that spend a coinbase
     const int64_t sigOpCount;       //!< Legacy sig ops plus P2SH sig op count
     CAmount m_modified_fee;         //!< Used for determining the priority of the transaction for mining in a block
-    LockPoints lockPoints;          //!< Track the height and time at which tx was final
+    mutable LockPoints lockPoints;          //!< Track the height and time at which tx was final
 
     // Information about descendants of this transaction that are in the
     // mempool; if we remove this transaction we must remove all of these
@@ -154,7 +154,7 @@ public:
     // Updates the modified fees with descendants/ancestors.
     void UpdateModifiedFee(CAmount newFeeDelta);
     // Update the LockPoints after a reorg
-    void UpdateLockPoints(const LockPoints& lp);
+    void UpdateLockPoints(const LockPoints& lp) const;
 
     uint64_t GetCountWithDescendants() const { return nCountWithDescendants; }
     uint64_t GetSizeWithDescendants() const { return nSizeWithDescendants; }
