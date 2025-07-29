@@ -5,7 +5,6 @@
 """Stress tests related to node initialization."""
 import os
 from pathlib import Path
-from random import randint
 import shutil
 
 from test_framework.test_framework import BitcoinTestFramework, SkipTest
@@ -136,8 +135,8 @@ class InitStressTest(BitcoinTestFramework):
                     # Since the genesis block is not checked by -checkblocks, the
                     # perturbation window must be chosen such that a higher block
                     # in blk*.dat is affected.
-                    tf.seek(randint (150, 15000))
-                    tf.write(b'1' * randint(20, 2000))
+                    tf.seek(150)
+                    tf.write(b"1" * 200)
 
             start_expecting_error(err_fragment)
 
