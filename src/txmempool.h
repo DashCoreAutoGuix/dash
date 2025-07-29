@@ -172,7 +172,7 @@ public:
     Parents& GetMemPoolParents() const { return m_parents; }
     Children& GetMemPoolChildren() const { return m_children; }
 
-    mutable size_t vTxHashesIdx; //!< Index in mempool's vTxHashes
+    mutable size_t idx_randomized; //!< Index in mempool's vTxHashes
 
     // If this is a proTx, this will be the hash of the key for which this ProTx was valid
     mutable uint256 validForProTxKey;
@@ -514,7 +514,7 @@ public:
     indexed_transaction_set mapTx GUARDED_BY(cs);
 
     using txiter = indexed_transaction_set::nth_index<0>::type::const_iterator;
-    std::vector<std::pair<uint256, txiter> > vTxHashes GUARDED_BY(cs); //!< All tx hashes/entries in mapTx, in random order
+    std::vector<CTransactionRef> txns_randomized GUARDED_BY(cs); //!< All tx hashes/entries in mapTx, in random order
 
     typedef std::set<txiter, CompareIteratorByHash> setEntries;
 
@@ -791,8 +791,19 @@ public:
         return (mapTx.count(hash) != 0);
     }
 
+    const CTxMemPoolEntry* GetEntry(const Txid& txid) const LIFETIMEBOUND EXCLUSIVE_LOCKS_REQUIRED(cs);
+
+    txiter get_iter_from_wtxid(const uint256& wtxid) const EXCLUSIVE_LOCKS_REQUIRED(cs)
+    {
+        AssertLockHeld(cs);
+        return mapTx.project<0>(mapTx.get<index_by_wtxid>().find(wtxid));
+    }
+
     CTransactionRef get(const uint256& hash) const;
-    TxMempoolInfo info(const uint256& hash) const;
+    TxMempoolInfo info(const GenTxid& gtxid) const;
+    TxMempoolInfo info_for_relay(const GenTxid& gtxid, uint64_t last_sequence) const;
+    
+    std::vector<CTxMemPoolEntryRef> entryAll() const EXCLUSIVE_LOCKS_REQUIRED(cs);
     std::vector<TxMempoolInfo> infoAll() const;
 
     /**

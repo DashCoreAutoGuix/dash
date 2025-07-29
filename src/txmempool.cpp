@@ -510,8 +510,8 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry, setEntries &setAnces
         minerPolicyEstimator->processTransaction(entry, validFeeEstimate);
     }
 
-    vTxHashes.emplace_back(entry.GetTx().GetHash(), newit);
-    newit->vTxHashesIdx = vTxHashes.size() - 1;
+    txns_randomized.emplace_back(newit->GetSharedTx());
+    newit->idx_randomized = txns_randomized.size() - 1;
 
     // Invalid ProTxes should never get this far because transactions should be
     // fully checked by AcceptToMemoryPool() at this point, so we just assume that
@@ -712,14 +712,17 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
 
     RemoveUnbroadcastTx(hash, true /* add logging because unchecked */ );
 
-    if (vTxHashes.size() > 1) {
-        vTxHashes[it->vTxHashesIdx] = std::move(vTxHashes.back());
-        vTxHashes[it->vTxHashesIdx].second->vTxHashesIdx = it->vTxHashesIdx;
-        vTxHashes.pop_back();
-        if (vTxHashes.size() * 2 < vTxHashes.capacity())
-            vTxHashes.shrink_to_fit();
+    if (txns_randomized.size() > 1) {
+        // Swap the item at the position we're removing with the back and pop it
+        unsigned int idx = it->idx_randomized;
+        txns_randomized[idx] = std::move(txns_randomized.back());
+        // Update the index of the moved transaction
+        mapTx.modify(mapTx.find(txns_randomized[idx]->GetHash()), [idx](CTxMemPoolEntry& e) { e.idx_randomized = idx; });
+        txns_randomized.pop_back();
+        if (txns_randomized.size() * 2 < txns_randomized.capacity())
+            txns_randomized.shrink_to_fit();
     } else
-        vTxHashes.clear();
+        txns_randomized.clear();
 
     if (m_dmnman) {
         removeUncheckedProTx(it->GetTx());
@@ -1100,7 +1103,7 @@ void CTxMemPool::removeExpiredAssetUnlock(int nBlockHeight)
 
 void CTxMemPool::_clear()
 {
-    vTxHashes.clear();
+    txns_randomized.clear();
     mapTx.clear();
     mapNextTx.clear();
     mapProTxAddresses.clear();
@@ -1295,6 +1298,17 @@ static TxMempoolInfo GetInfo(CTxMemPool::indexed_transaction_set::const_iterator
     return TxMempoolInfo{it->GetSharedTx(), it->GetTime(), it->GetFee(), it->GetTxSize(), it->GetModifiedFee() - it->GetFee()};
 }
 
+std::vector<CTxMemPoolEntryRef> CTxMemPool::entryAll() const
+{
+    AssertLockHeld(cs);
+    std::vector<CTxMemPoolEntryRef> ret;
+    ret.reserve(mapTx.size());
+    for (const auto& entry : GetSortedDepthAndScore()) {
+        ret.emplace_back(entry);
+    }
+    return ret;
+}
+
 std::vector<TxMempoolInfo> CTxMemPool::infoAll() const
 {
     LOCK(cs);
@@ -1318,13 +1332,32 @@ CTransactionRef CTxMemPool::get(const uint256& hash) const
     return i->GetSharedTx();
 }
 
-TxMempoolInfo CTxMemPool::info(const uint256& hash) const
+const CTxMemPoolEntry* CTxMemPool::GetEntry(const Txid& txid) const
+{
+    AssertLockHeld(cs);
+    auto i = mapTx.find(txid);
+    if (i == mapTx.end()) return nullptr;
+    return &(*i);
+}
+
+TxMempoolInfo CTxMemPool::info(const GenTxid& gtxid) const
 {
     LOCK(cs);
-    indexed_transaction_set::const_iterator i = mapTx.find(hash);
+    indexed_transaction_set::const_iterator i = (gtxid.IsWtxid() ? get_iter_from_wtxid(gtxid.GetHash()) : mapTx.find(gtxid.GetHash()));
     if (i == mapTx.end())
         return TxMempoolInfo();
     return GetInfo(i);
+}
+
+TxMempoolInfo CTxMemPool::info_for_relay(const GenTxid& gtxid, uint64_t last_sequence) const
+{
+    LOCK(cs);
+    indexed_transaction_set::const_iterator i = (gtxid.IsWtxid() ? get_iter_from_wtxid(gtxid.GetHash()) : mapTx.find(gtxid.GetHash()));
+    if (i != mapTx.end() && i->GetSequence() < last_sequence) {
+        return GetInfo(i);
+    } else {
+        return TxMempoolInfo();
+    }
 }
 
 bool CTxMemPool::existsProviderTxConflict(const CTransaction &tx) const {
@@ -1543,7 +1576,7 @@ void CCoinsViewMemPool::PackageAddTransaction(const CTransactionRef& tx)
 size_t CTxMemPool::DynamicMemoryUsage() const {
     LOCK(cs);
     // Estimate the overhead of mapTx to be 12 pointers + an allocation, as no exact formula for boost::multi_index_contained is implemented.
-    return memusage::MallocUsage(sizeof(CTxMemPoolEntry) + 12 * sizeof(void*)) * mapTx.size() + memusage::DynamicUsage(mapNextTx) + memusage::DynamicUsage(mapDeltas) + memusage::DynamicUsage(vTxHashes) + cachedInnerUsage;
+    return memusage::MallocUsage(sizeof(CTxMemPoolEntry) + 15 * sizeof(void*)) * mapTx.size() + memusage::DynamicUsage(mapNextTx) + memusage::DynamicUsage(mapDeltas) + memusage::DynamicUsage(txns_randomized) + cachedInnerUsage;
 }
 
 void CTxMemPool::RemoveUnbroadcastTx(const uint256& txid, const bool unchecked) {

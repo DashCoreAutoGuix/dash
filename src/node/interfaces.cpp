@@ -951,16 +951,10 @@ public:
         if (!m_node.mempool) return true;
         LockPoints lp;
         CTxMemPoolEntry entry(tx, 0, 0, 0, false, 0, lp);
-        CTxMemPool::setEntries ancestors;
-        auto limit_ancestor_count = gArgs.GetIntArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
-        auto limit_ancestor_size = gArgs.GetIntArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) * 1000;
-        auto limit_descendant_count = gArgs.GetIntArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
-        auto limit_descendant_size = gArgs.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000;
         std::string unused_error_string;
         LOCK(m_node.mempool->cs);
-        return m_node.mempool->CalculateMemPoolAncestors(
-            entry, ancestors, limit_ancestor_count, limit_ancestor_size,
-            limit_descendant_count, limit_descendant_size, unused_error_string);
+        auto ancestors{m_node.mempool->AssumeCalculateMemPoolAncestors(__func__, entry, CTxMemPool::Limits::NoLimits(), /*fSearchForParents=*/false)};
+        return m_node.mempool->CheckPackageLimits({tx}, entry.GetTxSize() + entry.GetModifiedFee(), unused_error_string);
     }
     CFeeRate estimateSmartFee(int num_blocks, bool conservative, FeeCalculation* calc) override
     {
@@ -1052,7 +1046,7 @@ public:
     {
         if (!m_node.mempool) return;
         LOCK2(::cs_main, m_node.mempool->cs);
-        for (const CTxMemPoolEntry& entry : m_node.mempool->mapTx) {
+        for (const CTxMemPoolEntry& entry : m_node.mempool->entryAll()) {
             notifications.transactionAddedToMempool(entry.GetSharedTx(), /* nAcceptTime = */ 0, /* mempool_sequence = */ 0);
         }
     }

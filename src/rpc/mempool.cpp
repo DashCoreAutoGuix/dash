@@ -59,32 +59,33 @@ static void entryToJSON(const CTxMemPool& pool, UniValue& info, const CTxMemPool
 {
     AssertLockHeld(pool.cs);
 
-    info.pushKV("vsize", (int)e.GetTxSize());
+    info.pushKVEnd("vsize", (int)e.GetTxSize());
+    info.pushKVEnd("wtxid", e.GetTx().GetWitnessHash().ToString());
     // TODO: top-level fee fields are deprecated. deprecated_fee_fields_enabled blocks should be removed in v24
     const bool deprecated_fee_fields_enabled{IsDeprecatedRPCEnabled("fees")};
     if (deprecated_fee_fields_enabled) {
-        info.pushKV("fee", ValueFromAmount(e.GetFee()));
-        info.pushKV("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
+        info.pushKVEnd("fee", ValueFromAmount(e.GetFee()));
+        info.pushKVEnd("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
     }
-    info.pushKV("time", count_seconds(e.GetTime()));
-    info.pushKV("height", (int)e.GetHeight());
-    info.pushKV("descendantcount", e.GetCountWithDescendants());
-    info.pushKV("descendantsize", e.GetSizeWithDescendants());
+    info.pushKVEnd("time", count_seconds(e.GetTime()));
+    info.pushKVEnd("height", (int)e.GetHeight());
+    info.pushKVEnd("descendantcount", e.GetCountWithDescendants());
+    info.pushKVEnd("descendantsize", e.GetSizeWithDescendants());
     if (deprecated_fee_fields_enabled) {
-        info.pushKV("descendantfees", e.GetModFeesWithDescendants());
+        info.pushKVEnd("descendantfees", e.GetModFeesWithDescendants());
     }
-    info.pushKV("ancestorcount", e.GetCountWithAncestors());
-    info.pushKV("ancestorsize", e.GetSizeWithAncestors());
+    info.pushKVEnd("ancestorcount", e.GetCountWithAncestors());
+    info.pushKVEnd("ancestorsize", e.GetSizeWithAncestors());
     if (deprecated_fee_fields_enabled) {
-        info.pushKV("ancestorfees", e.GetModFeesWithAncestors());
+        info.pushKVEnd("ancestorfees", e.GetModFeesWithAncestors());
     }
 
     UniValue fees(UniValue::VOBJ);
-    fees.pushKV("base", ValueFromAmount(e.GetFee()));
-    fees.pushKV("modified", ValueFromAmount(e.GetModifiedFee()));
-    fees.pushKV("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()));
-    fees.pushKV("descendant", ValueFromAmount(e.GetModFeesWithDescendants()));
-    info.pushKV("fees", fees);
+    fees.pushKVEnd("base", ValueFromAmount(e.GetFee()));
+    fees.pushKVEnd("modified", ValueFromAmount(e.GetModifiedFee()));
+    fees.pushKVEnd("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()));
+    fees.pushKVEnd("descendant", ValueFromAmount(e.GetModFeesWithDescendants()));
+    info.pushKVEnd("fees", fees);
 
     const CTransaction& tx = e.GetTx();
     std::set<std::string> setDepends;
@@ -100,7 +101,7 @@ static void entryToJSON(const CTxMemPool& pool, UniValue& info, const CTxMemPool
         depends.push_back(dep);
     }
 
-    info.pushKV("depends", depends);
+    info.pushKVEnd("depends", depends);
 
     UniValue spent(UniValue::VARR);
     const CTxMemPool::txiter& it = pool.mapTx.find(tx.GetHash());
@@ -109,9 +110,9 @@ static void entryToJSON(const CTxMemPool& pool, UniValue& info, const CTxMemPool
         spent.push_back(child.GetTx().GetHash().ToString());
     }
 
-    info.pushKV("spentby", spent);
-    info.pushKV("instantlock", isman ? (isman->IsLocked(tx.GetHash()) ? "true" : "false") : "unknown");
-    info.pushKV("unbroadcast", pool.IsUnbroadcastTx(tx.GetHash()));
+    info.pushKVEnd("spentby", spent);
+    info.pushKVEnd("instantlock", isman ? (isman->IsLocked(tx.GetHash()) ? "true" : "false") : "unknown");
+    info.pushKVEnd("unbroadcast", pool.IsUnbroadcastTx(tx.GetHash()));
 }
 
 UniValue MempoolToJSON(const CTxMemPool& pool, const llmq::CInstantSendManager* isman, bool verbose, bool include_mempool_sequence)
@@ -148,8 +149,8 @@ UniValue MempoolToJSON(const CTxMemPool& pool, const llmq::CInstantSendManager* 
             return a;
         } else {
             UniValue o(UniValue::VOBJ);
-            o.pushKV("txids", a);
-            o.pushKV("mempool_sequence", mempool_sequence);
+            o.pushKVEnd("txids", a);
+            o.pushKVEnd("mempool_sequence", mempool_sequence);
             return o;
         }
     }
@@ -250,9 +251,7 @@ RPCHelpMan getmempoolancestors()
     }
 
     CTxMemPool::setEntries setAncestors;
-    uint64_t noLimit = std::numeric_limits<uint64_t>::max();
-    std::string dummy;
-    mempool.CalculateMemPoolAncestors(*it, setAncestors, noLimit, noLimit, noLimit, noLimit, dummy, false);
+    setAncestors = mempool.AssumeCalculateMemPoolAncestors(__func__, *it, CTxMemPool::Limits::NoLimits());
 
     if (!fVerbose) {
         UniValue o(UniValue::VARR);
@@ -268,7 +267,7 @@ RPCHelpMan getmempoolancestors()
             const uint256& _hash = e.GetTx().GetHash();
             UniValue info(UniValue::VOBJ);
             entryToJSON(mempool, info, e, llmq_ctx.isman.get());
-            o.pushKV(_hash.ToString(), info);
+            o.pushKVEnd(_hash.ToString(), info);
         }
         return o;
     }
@@ -336,7 +335,7 @@ RPCHelpMan getmempooldescendants()
             const uint256& _hash = e.GetTx().GetHash();
             UniValue info(UniValue::VOBJ);
             entryToJSON(mempool, info, e, llmq_ctx.isman.get());
-            o.pushKV(_hash.ToString(), info);
+            o.pushKVEnd(_hash.ToString(), info);
         }
         return o;
     }
@@ -386,17 +385,17 @@ UniValue MempoolInfoToJSON(const CTxMemPool& pool, const llmq::CInstantSendManag
     // Make sure this call is atomic in the pool.
     LOCK(pool.cs);
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("loaded", pool.IsLoaded());
-    ret.pushKV("size", (int64_t)pool.size());
-    ret.pushKV("bytes", (int64_t)pool.GetTotalTxSize());
-    ret.pushKV("usage", (int64_t)pool.DynamicMemoryUsage());
-    ret.pushKV("total_fee", ValueFromAmount(pool.GetTotalFee()));
+    ret.pushKVEnd("loaded", pool.IsLoaded());
+    ret.pushKVEnd("size", (int64_t)pool.size());
+    ret.pushKVEnd("bytes", (int64_t)pool.GetTotalTxSize());
+    ret.pushKVEnd("usage", (int64_t)pool.DynamicMemoryUsage());
+    ret.pushKVEnd("total_fee", ValueFromAmount(pool.GetTotalFee()));
     int64_t maxmempool{gArgs.GetIntArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000};
-    ret.pushKV("maxmempool", maxmempool);
-    ret.pushKV("mempoolminfee", ValueFromAmount(std::max(pool.GetMinFee(maxmempool), ::minRelayTxFee).GetFeePerK()));
-    ret.pushKV("minrelaytxfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
-    ret.pushKV("instantsendlocks", isman.GetInstantSendLockCount());
-    ret.pushKV("unbroadcastcount", pool.GetUnbroadcastTxs().size());
+    ret.pushKVEnd("maxmempool", maxmempool);
+    ret.pushKVEnd("mempoolminfee", ValueFromAmount(std::max(pool.GetMinFee(maxmempool), ::minRelayTxFee).GetFeePerK()));
+    ret.pushKVEnd("minrelaytxfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
+    ret.pushKVEnd("instantsendlocks", isman.GetInstantSendLockCount());
+    ret.pushKVEnd("unbroadcastcount", pool.GetUnbroadcastTxs().size());
     return ret;
 }
 
@@ -461,7 +460,7 @@ RPCHelpMan savemempool()
     }
 
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("filename", fs::path((args.GetDataDirNet() / "mempool.dat")).utf8string());
+    ret.pushKVEnd("filename", fs::path((args.GetDataDirNet() / "mempool.dat")).utf8string());
 
     return ret;
 },
