@@ -19,6 +19,7 @@
 extern RecursiveMutex cs_main;
 
 class ArgsManager;
+class AutoFile;
 class BlockValidationState;
 class CBlock;
 class CBlockUndo;
@@ -211,7 +212,7 @@ public:
 void CleanupBlockRevFiles();
 
 /** Open a block file (blk?????.dat) */
-FILE* OpenBlockFile(const FlatFilePos& pos, bool fReadOnly = false);
+AutoFile OpenBlockFile(const FlatFilePos& pos, bool fReadOnly = false);
 /** Translation to a filesystem path */
 fs::path GetBlockPosFilename(const FlatFilePos& pos);
 

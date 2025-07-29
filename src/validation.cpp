@@ -4940,7 +4940,7 @@ bool CChainState::LoadGenesisBlock()
 }
 
 void CChainState::LoadExternalBlockFile(
-    FILE* fileIn,
+    AutoFile& fileIn,
     FlatFilePos* dbp,
     std::multimap<uint256, FlatFilePos>* blocks_with_unknown_parent)
 {
@@ -4955,7 +4955,7 @@ void CChainState::LoadExternalBlockFile(
     try {
         unsigned int nMaxBlockSize = MaxBlockSize();
         // This takes over fileIn and calls fclose() on it in the CBufferedFile destructor
-        CBufferedFile blkdat(fileIn, 2*nMaxBlockSize, nMaxBlockSize+8, SER_DISK, CLIENT_VERSION);
+        CBufferedFile blkdat(fileIn.Get(), 2*nMaxBlockSize, nMaxBlockSize+8, SER_DISK, CLIENT_VERSION);
         // nRewind indicates where to resume scanning in case something goes wrong,
         // such as a block fails to deserialize.
         uint64_t nRewind = blkdat.GetPos();

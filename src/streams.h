@@ -596,6 +596,9 @@ public:
     }
 };
 
+/** Alias for CAutoFile to match Bitcoin's naming convention */
+using AutoFile = CAutoFile;
+
 /** Non-refcounted RAII wrapper around a FILE* that implements a ring buffer to
  *  deserialize from. It guarantees the ability to rewind a given number of bytes.
  *

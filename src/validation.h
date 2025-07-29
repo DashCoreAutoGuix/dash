@@ -42,6 +42,7 @@
 #include <utility>
 #include <vector>
 
+class AutoFile;
 class CChainState;
 class CBlockTreeDB;
 class CChainParams;
@@ -634,7 +635,7 @@ public:
      *                                              (only used for reindex)
      * */
     void LoadExternalBlockFile(
-        FILE* fileIn,
+        AutoFile& fileIn,
         FlatFilePos* dbp = nullptr,
         std::multimap<uint256, FlatFilePos>* blocks_with_unknown_parent = nullptr)
         EXCLUSIVE_LOCKS_REQUIRED(!m_chainstate_mutex);
