@@ -164,3 +164,8 @@ def test_unix_socket():
         return False
     else:
         return True
+
+# Address manager constants (from src/addrman_impl.h)
+ADDRMAN_TRIED_BUCKET_COUNT = 1 << 8   # 256
+ADDRMAN_NEW_BUCKET_COUNT = 1 << 10    # 1024  
+ADDRMAN_BUCKET_SIZE = 1 << 6          # 64
