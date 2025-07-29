@@ -455,7 +455,10 @@ static RPCHelpMan loadwallet()
             RPCResult::Type::OBJ, "", "",
             {
                 {RPCResult::Type::STR, "name", "The wallet name if loaded successfully."},
-                {RPCResult::Type::STR, "warning", "Warning message if wallet was not loaded cleanly."},
+                {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to loading the wallet.",
+                {
+                    {RPCResult::Type::STR, "", ""},
+                }},
             }
         },
         RPCExamples{
@@ -480,7 +483,13 @@ static RPCHelpMan loadwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    UniValue warnings_array(UniValue::VARR);
+    for (const auto& warning : warnings) {
+        warnings_array.push_back(warning.original);
+    }
+    if (!warnings_array.empty()) {
+        obj.pushKV("warnings", warnings_array);
+    }
 
     return obj;
 },
@@ -573,7 +582,10 @@ static RPCHelpMan createwallet()
             RPCResult::Type::OBJ, "", "",
             {
                 {RPCResult::Type::STR, "name", "The wallet name if created successfully. If the wallet was created using a full path, the wallet_name will be the full path."},
-                {RPCResult::Type::STR, "warning", "Warning message if wallet was not loaded cleanly."},
+                {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to creating and loading the wallet.",
+                {
+                    {RPCResult::Type::STR, "", ""},
+                }},
             }
         },
         RPCExamples{
@@ -640,7 +652,13 @@ static RPCHelpMan createwallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    UniValue warnings_array(UniValue::VARR);
+    for (const auto& warning : warnings) {
+        warnings_array.push_back(warning.original);
+    }
+    if (!warnings_array.empty()) {
+        obj.pushKV("warnings", warnings_array);
+    }
 
     return obj;
 },
@@ -657,7 +675,10 @@ static RPCHelpMan unloadwallet()
             {"load_on_startup", RPCArg::Type::BOOL, RPCArg::Optional::OMITTED_NAMED_ARG, "Save wallet name to persistent settings and load on startup. True to add wallet to startup list, false to remove, null to leave unchanged."},
         },
         RPCResult{RPCResult::Type::OBJ, "", "", {
-            {RPCResult::Type::STR, "warning", "Warning message if wallet was not unloaded cleanly."},
+            {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to unloading the wallet.",
+            {
+                {RPCResult::Type::STR, "", ""},
+            }},
         }},
         RPCExamples{
             HelpExampleCli("unloadwallet", "wallet_name")
@@ -699,7 +720,13 @@ static RPCHelpMan unloadwallet()
     UnloadWallet(std::move(wallet));
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    UniValue warnings_array(UniValue::VARR);
+    for (const auto& warning : warnings) {
+        warnings_array.push_back(warning.original);
+    }
+    if (!warnings_array.empty()) {
+        result.pushKV("warnings", warnings_array);
+    }
     return result;
 },
     };

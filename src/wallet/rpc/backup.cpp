@@ -2059,7 +2059,7 @@ RPCHelpMan listdescriptors()
 RPCHelpMan backupwallet()
 {
     return RPCHelpMan{"backupwallet",
-        "\nSafely copies current wallet file to destination, which can be a directory or a path with filename.\n",
+        "\nSafely copies the current wallet file to the specified destination, which can either be a directory or a path with a filename.\n",
         {
             {"destination", RPCArg::Type::STR, RPCArg::Optional::NO, "The destination directory or file"},
         },
@@ -2093,7 +2093,7 @@ RPCHelpMan restorewallet()
 {
     return RPCHelpMan{
         "restorewallet",
-        "\nRestore and loads a wallet from backup.\n",
+        "\nRestores and loads a wallet from backup.\n",
         {
             {"wallet_name", RPCArg::Type::STR, RPCArg::Optional::NO, "The name that will be applied to the restored wallet"},
             {"backup_file", RPCArg::Type::STR, RPCArg::Optional::NO, "The backup file that will be used to restore the wallet."},
@@ -2103,7 +2103,10 @@ RPCHelpMan restorewallet()
             RPCResult::Type::OBJ, "", "",
             {
                 {RPCResult::Type::STR, "name", "The wallet name if restored successfully."},
-                {RPCResult::Type::STR, "warning", "Warning message if wallet was not loaded cleanly."},
+                {RPCResult::Type::ARR, "warnings", /*optional=*/true, "Warning messages, if any, related to restoring and loading the wallet.",
+                {
+                    {RPCResult::Type::STR, "", ""},
+                }},
             }
         },
         RPCExamples{
@@ -2133,7 +2136,13 @@ RPCHelpMan restorewallet()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", Join(warnings, Untranslated("\n")).original);
+    UniValue warnings_array(UniValue::VARR);
+    for (const auto& warning : warnings) {
+        warnings_array.push_back(warning.original);
+    }
+    if (!warnings_array.empty()) {
+        obj.pushKV("warnings", warnings_array);
+    }
 
     return obj;
 
