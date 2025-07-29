@@ -30,7 +30,6 @@
 #include <util/check.h>
 #include <util/system.h>
 #include <validation.h>
-#include <validationinterface.h>
 
 #include <masternode/sync.h>
 #include <spork.h>
