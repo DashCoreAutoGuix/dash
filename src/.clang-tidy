@@ -1,6 +1,7 @@
 Checks: '
 -*,
 bugprone-argument-comment,
+bugprone-lambda-function-name,
 modernize-use-nullptr,
 readability-const-return-type,
 readability-redundant-declaration,
