@@ -85,7 +85,7 @@ extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, const CTxM
 
 /* Calculate the difficulty for a given block index.
  */
-double GetDifficulty(const CBlockIndex* blockindex)
+double GetDifficulty(const CBlockIndex& blockindex)
 {
     CHECK_NONFATAL(blockindex);
 
@@ -472,7 +472,7 @@ static RPCHelpMan getdifficulty()
 
     ChainstateManager& chainman = EnsureAnyChainman(request.context);
     LOCK(cs_main);
-    return GetDifficulty(chainman.ActiveChain().Tip());
+    return GetDifficulty(*chainman.ActiveChain().Tip());
 },
     };
 }
@@ -760,7 +760,7 @@ static RPCHelpMan getblockheaders()
     const LLMQContext& llmq_ctx = EnsureLLMQContext(node);
     for (; pblockindex; pblockindex = active_chain.Next(pblockindex))
     {
-        arrHeaders.push_back(blockheaderToJSON(tip, pblockindex, *llmq_ctx.clhandler));
+        arrHeaders.push_back(blockheaderToJSON(*tip, *pblockindex, *llmq_ctx.clhandler));
         if (--nCount <= 0)
             break;
     }
@@ -775,7 +775,7 @@ static CBlock GetBlockChecked(BlockManager& blockman, const CBlockIndex* pblocki
     CBlock block;
     {
         LOCK(cs_main);
-        if (blockman.IsBlockPruned(pblockindex)) {
+        if (blockman.IsBlockPruned(*pblockindex)) {
             throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
         }
     }
@@ -799,12 +799,12 @@ static CBlockUndo GetUndoChecked(BlockManager& blockman, const CBlockIndex* pblo
 
     {
         LOCK(cs_main);
-        if (blockman.IsBlockPruned(pblockindex)) {
+        if (blockman.IsBlockPruned(*pblockindex)) {
             throw JSONRPCError(RPC_MISC_ERROR, "Undo data not available (pruned data)");
         }
     }
 
-    if (!UndoReadFromDisk(blockUndo, pblockindex)) {
+    if (!UndoReadFromDisk(blockUndo, *pblockindex)) {
         throw JSONRPCError(RPC_MISC_ERROR, "Can't read undo data from disk");
     }
 
@@ -1027,7 +1027,7 @@ static RPCHelpMan getblock()
         tx_verbosity = TxVerbosity::SHOW_DETAILS_AND_PREVOUT;
     }
 
-    return blockToJSON(chainman.m_blockman, block, tip, pblockindex, *llmq_ctx.clhandler, *llmq_ctx.isman, tx_verbosity);
+    return blockToJSON(chainman.m_blockman, block, *tip, *pblockindex, *llmq_ctx.clhandler, *llmq_ctx.isman, tx_verbosity);
 },
     };
 }
@@ -1516,7 +1516,7 @@ RPCHelpMan getblockchaininfo()
     obj.pushKV("blocks", height);
     obj.pushKV("headers", chainman.m_best_header ? chainman.m_best_header->nHeight : -1);
     obj.pushKV("bestblockhash", tip.GetBlockHash().GetHex());
-    obj.pushKV("difficulty", GetDifficulty(&tip));
+    obj.pushKV("difficulty", GetDifficulty(tip));
     obj.pushKV("time", tip.GetBlockTime());
     obj.pushKV("mediantime", tip.GetMedianTimePast());
     obj.pushKV("verificationprogress", GuessVerificationProgress(Params().TxData(), &tip));
@@ -1666,7 +1666,7 @@ static RPCHelpMan getchaintips()
         UniValue obj(UniValue::VOBJ);
         obj.pushKV("height", block->nHeight);
         obj.pushKV("hash", block->phashBlock->GetHex());
-        obj.pushKV("difficulty", GetDifficulty(block));
+        obj.pushKV("difficulty", GetDifficulty(*block));
         obj.pushKV("chainwork", block->nChainWork.GetHex());
         obj.pushKV("branchlen", branchLen);
         obj.pushKV("forkpoint", pindexFork->phashBlock->GetHex());

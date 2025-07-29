@@ -418,10 +418,10 @@ const CBlockIndex* BlockManager::GetLastCheckpoint(const CCheckpointData& data)
     return nullptr;
 }
 
-bool BlockManager::IsBlockPruned(const CBlockIndex* pblockindex)
+bool BlockManager::IsBlockPruned(const CBlockIndex& pblockindex)
 {
     AssertLockHeld(::cs_main);
-    return (m_have_pruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
+    return (m_have_pruned && !(pblockindex.nStatus & BLOCK_HAVE_DATA) && pblockindex.nTx > 0);
 }
 
 const CBlockIndex* BlockManager::GetFirstStoredBlock(const CBlockIndex& start_block)
