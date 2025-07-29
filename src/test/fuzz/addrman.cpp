@@ -288,7 +288,21 @@ FUZZ_TARGET(addrman, .init = initialize_addrman)
                 addr_man.SetServices(ConsumeService(fuzzed_data_provider), ConsumeWeakEnum(fuzzed_data_provider, ALL_SERVICE_FLAGS));
             });
     }
-    (void)addr_man.Size();
+    const AddrMan& const_addr_man{addr_man};
+    std::optional<Network> network;
+    if (fuzzed_data_provider.ConsumeBool()) {
+        network = fuzzed_data_provider.PickValueInArray(ALL_NETWORKS);
+    }
+    (void)const_addr_man.GetAddr(
+        /*max_addresses=*/fuzzed_data_provider.ConsumeIntegralInRange<size_t>(0, 4096),
+        /*max_pct=*/fuzzed_data_provider.ConsumeIntegralInRange<size_t>(0, 4096),
+        network);
+    (void)const_addr_man.Select(fuzzed_data_provider.ConsumeBool(), network);
+    std::optional<bool> in_new;
+    if (fuzzed_data_provider.ConsumeBool()) {
+        in_new = fuzzed_data_provider.ConsumeBool();
+    }
+    (void)const_addr_man.Size(network, in_new);
     CDataStream data_stream(SER_NETWORK, PROTOCOL_VERSION);
     data_stream << addr_man;
 }
