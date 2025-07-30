@@ -20,7 +20,6 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.blocktools import (
     COINBASE_MATURITY,
     create_block,
-    add_witness_commitment,
     NORMAL_GBT_REQUEST_PARAMS,
 )
 from test_framework.util import assert_equal
@@ -44,7 +43,6 @@ class MutatedBlocksTest(BitcoinTestFramework):
         # `getblocktxn` roundtrip.
         tx = self.wallet.create_self_transfer()["tx"]
         block = create_block(tmpl=self.nodes[0].getblocktemplate(NORMAL_GBT_REQUEST_PARAMS), txlist=[tx])
-        add_witness_commitment(block)
         block.solve()
 
         # Create mutated version of the block by changing the transaction
@@ -54,7 +52,7 @@ class MutatedBlocksTest(BitcoinTestFramework):
 
         # Announce the new block via a compact block through the honest relayer
         cmpctblock = HeaderAndShortIDs()
-        cmpctblock.initialize_from_block(block, use_witness=True)
+        cmpctblock.initialize_from_block(block)
         honest_relayer.send_message(msg_cmpctblock(cmpctblock.to_p2p()))
 
         # Wait for a `getblocktxn` that attempts to fetch the self-transfer
