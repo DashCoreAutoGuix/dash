@@ -1088,13 +1088,13 @@ class CPartialMerkleTree:
         self.vHash = []
 
     def deserialize(self, f):
-        self.nTransactions = struct.unpack("<I", f.read(4))[0]
+        self.nTransactions = int.from_bytes(f.read(4), "little")
         self.vHash = deser_uint256_vector(f)
         self.vBits = deser_dyn_bitset(f, True)
 
     def serialize(self):
         r = b""
-        r += struct.pack("<I", self.nTransactions)
+        r += self.nTransactions.to_bytes(4, "little")
         r += ser_uint256_vector(self.vHash)
         r += ser_dyn_bitset(self.vBits, True)
         return r
