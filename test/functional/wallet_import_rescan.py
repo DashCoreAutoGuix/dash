@@ -21,10 +21,7 @@ happened previously.
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.governance import EXPECTED_STDERR_NO_GOV_PRUNE
-from test_framework.address import (
-    AddressType,
-    ADDRESS_BCRT1_UNSPENDABLE,
-)
+from test_framework.address import ADDRESS_BCRT1_UNSPENDABLE
 from test_framework.util import (
     assert_equal,
     set_node_times,
