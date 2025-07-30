@@ -21,6 +21,7 @@ happened previously.
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.governance import EXPECTED_STDERR_NO_GOV_PRUNE
+from test_framework.messages import COIN
 from test_framework.util import (
     assert_equal,
     set_node_times,
@@ -125,8 +126,10 @@ TIMESTAMP_WINDOW = 2 * 60 * 60
 AMOUNT_DUST = 0.00000546
 
 
-def get_rand_amount():
-    r = random.uniform(AMOUNT_DUST, 1)
+def get_rand_amount(min_amount=AMOUNT_DUST):
+    assert min_amount <= 1
+    r = random.uniform(min_amount, 1)
+    # note: min_amount can get rounded down here
     return Decimal(str(round(r, 8)))
 
 
@@ -164,7 +167,9 @@ class ImportRescanTest(BitcoinTestFramework):
             variant.label = "label {} {}".format(i, variant)
             variant.address = self.nodes[1].getaddressinfo(self.nodes[1].getnewaddress(variant.label))
             variant.key = self.nodes[1].dumpprivkey(variant.address["address"])
-            variant.initial_amount = get_rand_amount()
+            # Ensure output is large enough to pay for fees: conservatively assuming txsize of
+            # 500 vbytes and feerate of 20 sats/vbytes
+            variant.initial_amount = get_rand_amount(min_amount=((500 * 20 / COIN) + AMOUNT_DUST))
             variant.initial_txid = self.nodes[0].sendtoaddress(variant.address["address"], variant.initial_amount)
             self.generate(self.nodes[0], 1)  # Generate one block for each send
             variant.confirmation_height = self.nodes[0].getblockcount()
