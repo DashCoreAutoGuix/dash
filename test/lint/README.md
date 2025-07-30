@@ -26,17 +26,18 @@ To run all the lint checks in the test runner outside the docker, use:
 ( cd ./test/lint/test_runner/ && cargo fmt && cargo clippy && RUST_BACKTRACE=1 cargo run )
 ```
 
-#### Dependencies
+Dependencies
+------------
 
 | Lint test | Dependency |
 |-----------|:----------:|
-| [`lint-python.py`](lint/lint-python.py) | [flake8](https://gitlab.com/pycqa/flake8)
-| [`lint-python.py`](lint/lint-python.py) | [lief](https://github.com/lief-project/LIEF)
-| [`lint-python.py`](lint/lint-python.py) | [mypy](https://github.com/python/mypy)
-| [`lint-python.py`](lint/lint-python.py) | [pyzmq](https://github.com/zeromq/pyzmq)
-| [`lint-python-dead-code.py`](lint/lint-python-dead-code.py) | [vulture](https://github.com/jendrikseipp/vulture)
-| [`lint-shell.py`](lint/lint-shell.py) | [ShellCheck](https://github.com/koalaman/shellcheck)
-| [`lint-spelling.py`](lint/lint-spelling.py) | [codespell](https://github.com/codespell-project/codespell)
+| [`lint-python.py`](lint/lint-python.py) | [flake8](https://gitlab.com/pycqa/flake8) |
+| [`lint-python.py`](lint/lint-python.py) | [lief](https://github.com/lief-project/LIEF) |
+| [`lint-python.py`](lint/lint-python.py) | [mypy](https://github.com/python/mypy) |
+| [`lint-python.py`](lint/lint-python.py) | [pyzmq](https://github.com/zeromq/pyzmq) |
+| [`lint-python-dead-code.py`](lint/lint-python-dead-code.py) | [vulture](https://github.com/jendrikseipp/vulture) |
+| [`lint-shell.py`](lint/lint-shell.py) | [ShellCheck](https://github.com/koalaman/shellcheck) |
+| [`lint-spelling.py`](lint/lint-spelling.py) | [codespell](https://github.com/codespell-project/codespell) |
 
 In use versions and install instructions are available in the [CI setup](../ci/lint/04_install.sh).
 
@@ -49,7 +50,6 @@ Individual tests can be run by directly calling the test script, e.g.:
 ```
 test/lint/lint-files.py
 ```
->>>>>>> eaede27655 (Merge bitcoin/bitcoin#29408: lint: Check for missing bitcoin-config.h includes)
 
 check-doc.py
 ============
