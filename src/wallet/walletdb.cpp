@@ -1025,44 +1025,6 @@ DBErrors WalletBatch::FindWalletTx(std::vector<uint256>& vTxHash, std::list<CWal
     return result;
 }
 
-DBErrors WalletBatch::ZapSelectTx(std::vector<uint256>& vTxHashIn, std::vector<uint256>& vTxHashOut)
-{
-    // build list of wallet TXs and hashes
-    std::vector<uint256> vTxHash;
-    std::list<CWalletTx> vWtx;
-    DBErrors err = FindWalletTx(vTxHash, vWtx);
-    if (err != DBErrors::LOAD_OK) {
-        return err;
-    }
-
-    std::sort(vTxHash.begin(), vTxHash.end());
-    std::sort(vTxHashIn.begin(), vTxHashIn.end());
-
-    // erase each matching wallet TX
-    bool delerror = false;
-    std::vector<uint256>::iterator it = vTxHashIn.begin();
-    for (const uint256& hash : vTxHash) {
-        while (it < vTxHashIn.end() && (*it) < hash) {
-            it++;
-        }
-        if (it == vTxHashIn.end()) {
-            break;
-        }
-        else if ((*it) == hash) {
-            if(!EraseTx(hash)) {
-                LogPrint(BCLog::WALLETDB, "Transaction was found for deletion but returned database error: %s\n", hash.GetHex());
-                delerror = true;
-            }
-            vTxHashOut.push_back(hash);
-        }
-    }
-
-    if (delerror) {
-        return DBErrors::CORRUPT;
-    }
-    return DBErrors::LOAD_OK;
-}
-
 void MaybeCompactWalletDB(WalletContext& context)
 {
     static std::atomic<bool> fOneThread(false);
