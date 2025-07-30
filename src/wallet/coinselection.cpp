@@ -15,13 +15,36 @@
 #include <optional>
 
 namespace wallet {
-// Descending order comparator
+// Common selection error across the algorithms
+static util::Result<SelectionResult> ErrorMaxWeightExceeded()
+{
+    return util::Error{_("The inputs size exceeds the maximum weight. "
+                         "Please try sending a smaller amount or manually consolidating your wallet's UTXOs")};
+}
+
+// Sort by descending (effective) value prefer lower waste on tie
 struct {
     bool operator()(const OutputGroup& a, const OutputGroup& b) const
     {
+        if (a.GetSelectionAmount() == b.GetSelectionAmount()) {
+            // Lower waste is better when effective_values are tied
+            return (a.fee - a.long_term_fee) < (b.fee - b.long_term_fee);
+        }
         return a.GetSelectionAmount() > b.GetSelectionAmount();
     }
 } descending;
+
+// Sort by descending (effective) value prefer lower weight on tie
+struct {
+    bool operator()(const OutputGroup& a, const OutputGroup& b) const
+    {
+        if (a.GetSelectionAmount() == b.GetSelectionAmount()) {
+            // Sort lower weight to front on tied effective_value
+            return a.m_weight < b.m_weight;
+        }
+        return a.GetSelectionAmount() > b.GetSelectionAmount();
+    }
+} descending_effval_weight;
 
 /*
  * This is the Branch and Bound Coin Selection algorithm designed by Murch. It searches for an input
