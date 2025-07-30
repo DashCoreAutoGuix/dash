@@ -33,6 +33,9 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 /** Path to the icon resource folder */
 #define ICONS_PATH ":icons/"
 
+/* Invalid field background style */
+#define STYLE_INVALID "border: 3px solid #FF8080"
+
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.
  */
