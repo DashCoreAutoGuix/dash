@@ -2,11 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <test/fuzz/util/net.h>
+
 #include <compat/compat.h>
 #include <netaddress.h>
+#include <protocol.h>
 #include <random.h>
+#include <streams.h>
 #include <test/fuzz/FuzzedDataProvider.h>
-#include <test/fuzz/util/net.h>
 #include <util/strencodings.h>
 
 #include <cstdint>
@@ -49,7 +52,7 @@ CNetAddr ConsumeNetAddr(FuzzedDataProvider& fuzzed_data_provider, FastRandomCont
         return addr;
     }
 
-    DataStream s;
+    CDataStream s(SER_NETWORK, PROTOCOL_VERSION | ADDRV2_FORMAT);
 
     s << static_cast<uint8_t>(aux.bip155);
 
@@ -68,7 +71,7 @@ CNetAddr ConsumeNetAddr(FuzzedDataProvider& fuzzed_data_provider, FastRandomCont
     }
     s << addr_bytes;
 
-    s >> CAddress::V2_NETWORK(addr);
+    s >> addr;
 
     return addr;
 }
