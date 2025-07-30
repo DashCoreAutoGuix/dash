@@ -791,7 +791,7 @@ class TestNode():
         self.wait_until(lambda: self.num_test_p2p_connections() == 0)
 
     def wait_until(self, test_function, timeout=60):
-        return wait_until_helper_internal(test_function, timeout=timeout, timeout_factor=self.timeout_factor)
+        return wait_until_helper(test_function, timeout=timeout, timeout_factor=self.timeout_factor)
 
 
 class TestNodeCLIAttr:
