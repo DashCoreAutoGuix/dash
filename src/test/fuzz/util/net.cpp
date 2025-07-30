@@ -11,6 +11,7 @@
 #include <streams.h>
 #include <test/fuzz/FuzzedDataProvider.h>
 #include <util/strencodings.h>
+#include <version.h>
 
 #include <cstdint>
 #include <vector>
