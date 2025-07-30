@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2021 The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,15 +8,16 @@
 
 #include <timedata.h>
 
+#include <common/args.h>
+#include <logging.h>
 #include <netaddress.h>
 #include <node/interface_ui.h>
 #include <sync.h>
 #include <tinyformat.h>
-#include <util/system.h>
 #include <util/translation.h>
 #include <warnings.h>
 
-static Mutex g_timeoffset_mutex;
+static GlobalMutex g_timeoffset_mutex;
 static int64_t nTimeOffset GUARDED_BY(g_timeoffset_mutex) = 0;
 
 /**
@@ -30,11 +31,6 @@ int64_t GetTimeOffset()
 {
     LOCK(g_timeoffset_mutex);
     return nTimeOffset;
-}
-
-int64_t GetAdjustedTime()
-{
-    return GetTime() + GetTimeOffset();
 }
 
 #define BITCOIN_TIMEDATA_MAX_SAMPLES 200
