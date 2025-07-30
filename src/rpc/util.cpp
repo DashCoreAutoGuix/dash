@@ -3,13 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <config/dash-config.h>
 #endif
 
 #include <chainparamsbase.h>
-#include <clientversion.h>
-#include <core_io.h>
-#include <common/args.h>
 #include <consensus/amount.h>
 #include <key_io.h>
 #include <outputtype.h>

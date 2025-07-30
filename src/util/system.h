@@ -12,7 +12,7 @@
 #define BITCOIN_UTIL_SYSTEM_H
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <config/dash-config.h>
 #endif
 
 #include <attributes.h>
