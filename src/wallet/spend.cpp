@@ -845,7 +845,12 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
         }
         return std::nullopt;
     }
-    TRACE5(coin_selection, selected_coins, wallet.GetName().c_str(), GetAlgorithmName(result->m_algo).c_str(), result->m_target, result->GetWaste(), result->GetSelectedValue());
+    TRACE5(coin_selection, selected_coins,
+           wallet.GetName().c_str(),
+           GetAlgorithmName(result->m_algo).c_str(),
+           result->m_target,
+           result->GetWaste(),
+           result->GetSelectedValue());
 
     // Always make a change output
     // We will reduce the fee from this change output later, and remove the output if it is too small.
@@ -1050,8 +1055,11 @@ std::optional<CreatedTransactionResult> CreateTransaction(
     LOCK(wallet.cs_wallet);
 
     std::optional<CreatedTransactionResult> txr_ungrouped = CreateTransactionInternal(wallet, vecSend, change_pos, error, coin_control, fee_calc_out, sign, nExtraPayloadSize);
-    TRACE4(coin_selection, normal_create_tx_internal, wallet.GetName().c_str(), txr_ungrouped.has_value(),
-           txr_ungrouped.has_value() ? txr_ungrouped->fee : 0, txr_ungrouped.has_value() ? txr_ungrouped->change_pos : -1);
+    TRACE4(coin_selection, normal_create_tx_internal,
+           wallet.GetName().c_str(),
+           txr_ungrouped.has_value(),
+           txr_ungrouped.has_value() ? txr_ungrouped->fee : 0,
+           txr_ungrouped.has_value() && txr_ungrouped->change_pos.has_value() ? int32_t(*txr_ungrouped->change_pos) : -1);
     if (!txr_ungrouped) return std::nullopt;
     // try with avoidpartialspends unless it's enabled already
     if (txr_ungrouped->fee > 0 /* 0 means non-functional fee rate estimation */ && wallet.m_max_aps_fee > -1 && !coin_control.m_avoid_partial_spends) {
@@ -1072,7 +1080,12 @@ std::optional<CreatedTransactionResult> CreateTransaction(
             const bool use_aps = txr_grouped->fee <= txr_ungrouped->fee + wallet.m_max_aps_fee;
             wallet.WalletLogPrintf("Fee non-grouped = %lld, grouped = %lld, using %s\n",
                 txr_ungrouped->fee, txr_grouped->fee, use_aps ? "grouped" : "non-grouped");
-            TRACE5(coin_selection, aps_create_tx_internal, wallet.GetName().c_str(), use_aps, true, txr_grouped->fee, txr_grouped->change_pos.has_value() ? int32_t(*txr_grouped->change_pos) : -1);
+            TRACE5(coin_selection, aps_create_tx_internal,
+                   wallet.GetName().c_str(),
+                   use_aps,
+                   true,
+                   txr_grouped->fee,
+                   txr_grouped->change_pos.has_value() ? int32_t(*txr_grouped->change_pos) : -1);
             if (use_aps) return txr_grouped;
         }
     }
