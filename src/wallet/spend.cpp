@@ -1072,7 +1072,7 @@ std::optional<CreatedTransactionResult> CreateTransaction(
             const bool use_aps = txr_grouped->fee <= txr_ungrouped->fee + wallet.m_max_aps_fee;
             wallet.WalletLogPrintf("Fee non-grouped = %lld, grouped = %lld, using %s\n",
                 txr_ungrouped->fee, txr_grouped->fee, use_aps ? "grouped" : "non-grouped");
-            TRACE5(coin_selection, aps_create_tx_internal, wallet.GetName().c_str(), use_aps, true, txr_grouped->fee, txr_grouped->change_pos);
+            TRACE5(coin_selection, aps_create_tx_internal, wallet.GetName().c_str(), use_aps, true, txr_grouped->fee, txr_grouped->change_pos.has_value() ? int32_t(*txr_grouped->change_pos) : -1);
             if (use_aps) return txr_grouped;
         }
     }
