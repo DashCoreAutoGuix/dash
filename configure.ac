@@ -704,11 +704,6 @@ AC_ARG_ENABLE([util-wallet],
   [build_bitcoin_wallet=$enableval],
   [build_bitcoin_wallet=$build_bitcoin_utils])
 
-AC_ARG_WITH([libs],
-  [AS_HELP_STRING([--with-libs],
-  [build libraries (default=yes)])],
-  [build_bitcoin_libs=$withval],
-  [build_bitcoin_libs=yes])
 
 AC_ARG_WITH([daemon],
   [AS_HELP_STRING([--with-daemon],
@@ -1326,7 +1321,6 @@ if test "$enable_fuzz" = "yes"; then
   build_bitcoin_tx=no
   build_bitcoin_wallet=no
   build_bitcoind=no
-  build_bitcoin_libs=no
   bitcoin_enable_qt=no
   bitcoin_enable_qt_test=no
   bitcoin_enable_qt_dbus=no
@@ -1476,7 +1470,7 @@ if test "$use_boost" = "yes"; then
 dnl Check for Boost headers
 AX_BOOST_BASE([1.73.0],[],[AC_MSG_ERROR([Boost is not available!])])
 if test "$want_boost" = "no"; then
-    AC_MSG_ERROR([[only libdashconsensus can be built without boost]])
+    AC_MSG_ERROR([Boost is required])
 fi
 
   dnl we don't use multi_index serialization
@@ -1643,13 +1637,6 @@ AC_MSG_CHECKING([whether to build dash-wallet])
 AM_CONDITIONAL([BUILD_BITCOIN_WALLET], [test $build_bitcoin_wallet = "yes"])
 AC_MSG_RESULT($build_bitcoin_wallet)
 
-AC_MSG_CHECKING([whether to build libraries])
-AM_CONDITIONAL([BUILD_BITCOIN_LIBS], [test $build_bitcoin_libs = "yes"])
-if test "$build_bitcoin_libs" = "yes"; then
-  AC_DEFINE([HAVE_CONSENSUS_LIB], [1], [Define this symbol if the consensus lib has been built])
-  AC_CONFIG_FILES([libdashconsensus.pc:libdashconsensus.pc.in])
-fi
-AC_MSG_RESULT($build_bitcoin_libs)
 
 AC_LANG_POP
 
@@ -1797,7 +1784,7 @@ fi
 AC_MSG_RESULT($dsymutil_needs_flat)
 
 if test "$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoind$bitcoin_enable_qt$enable_fuzz_binary$use_bench$use_tests" = "nononononononono"; then
-  AC_MSG_ERROR([No targets! Please specify at least one of: --with-utils --with-libs --with-daemon --with-gui --enable-fuzz(-binary) --enable-bench or --enable-tests])
+  AC_MSG_ERROR([No targets! Please specify at least one of: --with-utils --with-daemon --with-gui --enable-fuzz(-binary) --enable-bench or --enable-tests])
 fi
 
 AM_CONDITIONAL([TARGET_DARWIN], [test "$TARGET_OS" = "darwin"])
