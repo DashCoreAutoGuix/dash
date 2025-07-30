@@ -75,7 +75,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, const  CTxMemPool
     // Blockchain contextual information (confirmations and blocktime) is not
     // available to code in bitcoin-common, so we query them here and push the
     // data into the returned UniValue.
-    TxToUniv(tx, /*block_hash=*/uint256(), entry, /*include_hex=*/true, txundo, verbosity);
+    TxToUniv(tx, /*block_hash=*/uint256(), entry, /*include_hex=*/true, /*txundo=*/nullptr, verbosity);
 
     uint256 txid = tx.GetHash();
     CSpentIndexTxInfo *txSpentInfoPtr{nullptr};
@@ -262,9 +262,9 @@ static RPCHelpMan getrawtransaction()
     }
 
     // Accept either a bool (true) or a num (>=1) to indicate verbose output.
-    bool fVerbose = false;
+    int verbosity = 1;
     if (!request.params[1].isNull()) {
-        fVerbose = request.params[1].isNum() ? (request.params[1].getInt<int>() != 0) : request.params[1].get_bool();
+        verbosity = request.params[1].isNum() ? request.params[1].getInt<int>() : (request.params[1].get_bool() ? 1 : 0);
     }
 
     if (!request.params[2].isNull()) {
@@ -312,7 +312,7 @@ static RPCHelpMan getrawtransaction()
 
     UniValue result(UniValue::VOBJ);
     if (blockindex) result.pushKV("in_active_chain", in_active_chain);
-    TxToJSON(*tx, hash_block, mempool, chainman.ActiveChainstate(), *llmq_ctx.clhandler, *llmq_ctx.isman, result);
+    TxToJSON(*tx, hash_block, mempool, chainman.ActiveChainstate(), *llmq_ctx.clhandler, *llmq_ctx.isman, result, static_cast<TxVerbosity>(verbosity));
     return result;
 },
     };

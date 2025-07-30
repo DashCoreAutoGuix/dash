@@ -317,7 +317,7 @@ bool CZMQPublishRawBlockNotifier::NotifyBlock(const CBlockIndex *pindex)
         return false;
     }
 
-    ss << TX_WITH_WITNESS(block);
+    ss << block;
 
     return SendZmqMessage(MSG_RAWBLOCK, &(*ss.begin()), ss.size());
 }
@@ -369,8 +369,8 @@ bool CZMQPublishRawTransactionNotifier::NotifyTransaction(const CTransaction &tr
 {
     uint256 hash = transaction.GetHash();
     LogPrint(BCLog::ZMQ, "Publish rawtx %s to %s\n", hash.GetHex(), this->address);
-    DataStream ss;
-    ss << TX_WITH_WITNESS(transaction);
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+    ss << transaction;
     return SendZmqMessage(MSG_RAWTX, &(*ss.begin()), ss.size());
 }
 
