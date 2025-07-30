@@ -110,10 +110,10 @@ BOOST_AUTO_TEST_CASE(db_availability_after_write_error)
 // Test-only statement execution error
 constexpr int TEST_SQLITE_ERROR = -999;
 
-class DbExecBlocker : public SQliteExecHandler
+class DbExecBlocker : public SQLiteExecHandler
 {
 private:
-    SQliteExecHandler m_base_exec;
+    SQLiteExecHandler m_base_exec;
     std::set<std::string> m_blocked_statements;
 public:
     DbExecBlocker(std::set<std::string> blocked_statements) : m_blocked_statements(blocked_statements) {}

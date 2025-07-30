@@ -377,7 +377,7 @@ bool SQLiteDatabase::HasActiveTxn()
     return m_db && sqlite3_get_autocommit(m_db) == 0;
 }
 
-int SQliteExecHandler::Exec(SQLiteDatabase& database, const std::string& statement)
+int SQLiteExecHandler::Exec(SQLiteDatabase& database, const std::string& statement)
 {
     return sqlite3_exec(database.m_db, statement.data(), nullptr, nullptr, nullptr);
 }

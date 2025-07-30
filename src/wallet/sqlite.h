@@ -16,10 +16,10 @@ class SQLiteDatabase;
 
 /** Class responsible for executing SQL statements in SQLite databases.
  *  Methods are virtual so they can be overridden by unit tests testing unusual database conditions. */
-class SQliteExecHandler
+class SQLiteExecHandler
 {
 public:
-    virtual ~SQliteExecHandler() {}
+    virtual ~SQLiteExecHandler() {}
     virtual int Exec(SQLiteDatabase& database, const std::string& statement);
 };
 
@@ -28,7 +28,7 @@ class SQLiteBatch : public DatabaseBatch
 {
 private:
     SQLiteDatabase& m_database;
-    std::unique_ptr<SQliteExecHandler> m_exec_handler{std::make_unique<SQliteExecHandler>()};
+    std::unique_ptr<SQLiteExecHandler> m_exec_handler{std::make_unique<SQLiteExecHandler>()};
 
     bool m_cursor_init = false;
 
@@ -49,7 +49,7 @@ public:
     explicit SQLiteBatch(SQLiteDatabase& database);
     ~SQLiteBatch() override { Close(); }
 
-    void SetExecHandler(std::unique_ptr<SQliteExecHandler>&& handler) { m_exec_handler = std::move(handler); }
+    void SetExecHandler(std::unique_ptr<SQLiteExecHandler>&& handler) { m_exec_handler = std::move(handler); }
 
     /* No-op. See comment on SQLiteDatabase::Flush */
     void Flush() override {}
