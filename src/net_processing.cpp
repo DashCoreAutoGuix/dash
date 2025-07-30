@@ -35,8 +35,8 @@
 #include <txmempool.h>
 #include <txorphanage.h>
 #include <util/check.h>
-#include <util/system.h>
 #include <util/strencodings.h>
+#include <util/system.h>
 #include <util/time.h>
 #include <util/trace.h>
 
