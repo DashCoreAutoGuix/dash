@@ -10,6 +10,7 @@
 #include <sync.h>
 #include <util/strencodings.h>
 #include <util/system.h>
+#include <util/check.h>
 #include <util/translation.h>
 #include <wallet/db.h>
 
@@ -370,6 +371,17 @@ void SQLiteDatabase::Close()
     m_db = nullptr;
 }
 
+bool SQLiteDatabase::HasActiveTxn()
+{
+    // 'sqlite3_get_autocommit' returns true by default, and false if a transaction has begun and not been committed or rolled back.
+    return m_db && sqlite3_get_autocommit(m_db) == 0;
+}
+
+int SQliteExecHandler::Exec(SQLiteDatabase& database, const std::string& statement)
+{
+    return sqlite3_exec(database.m_db, statement.data(), nullptr, nullptr, nullptr);
+}
+
 std::unique_ptr<DatabaseBatch> SQLiteDatabase::MakeBatch(bool flush_on_close)
 {
     // We ignore flush_on_close because we don't do manual flushing for SQLite
@@ -412,6 +424,18 @@ void SQLiteBatch::Close()
                       stmt_description, sqlite3_errstr(res));
         }
         *stmt_prepared = nullptr;
+    }
+}
+
+    if (force_conn_refresh) {
+        m_database.Close();
+        try {
+            m_database.Open();
+        } catch (const std::runtime_error&) {
+            // If open fails, cleanup this object and rethrow the exception
+            m_database.Close();
+            throw;
+        }
     }
 }
 
