@@ -4,10 +4,8 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test that descriptor wallets rescan mempool transactions properly when importing."""
 
-from test_framework.address import (
-    address_to_scriptpubkey,
-    ADDRESS_BCRT1_UNSPENDABLE,
-)
+from test_framework.address import ADDRESS_BCRT1_UNSPENDABLE
+from test_framework.wallet import address_to_scriptpubkey
 from test_framework.messages import COIN
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
@@ -16,9 +14,6 @@ from test_framework.wallet_util import test_address
 
 
 class WalletRescanUnconfirmed(BitcoinTestFramework):
-    def add_options(self, parser):
-        self.add_wallet_options(parser, legacy=False)
-
     def set_test_params(self):
         self.num_nodes = 1
 
