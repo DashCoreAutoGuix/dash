@@ -9,6 +9,7 @@
 #include <index/blockfilterindex.h>
 #include <node/blockstorage.h>
 #include <serialize.h>
+#include <util/check.h>
 
 using node::UndoReadFromDisk;
 
@@ -129,6 +130,18 @@ bool BlockFilterIndex::Init()
         m_next_filter_pos.nFile = 0;
         m_next_filter_pos.nPos = 0;
     }
+    
+    // Read last header from disk if we have a best block index
+    const CBlockIndex* block = CurrentIndex();
+    if (block) {
+        auto op_last_header = ReadFilterHeader(block->nHeight, block->GetBlockHash());
+        if (!op_last_header) {
+            error("Cannot read last block filter header; index may be corrupted");
+            return false;
+        }
+        m_last_header = *op_last_header;
+    }
+    
     return BaseIndex::Init();
 }
 
@@ -217,39 +230,49 @@ size_t BlockFilterIndex::WriteFilterToDisk(FlatFilePos& pos, const BlockFilter& 
     return data_size;
 }
 
+std::optional<uint256> BlockFilterIndex::ReadFilterHeader(int height, const uint256& expected_block_hash)
+{
+    std::pair<uint256, DBVal> read_out;
+    if (!m_db->Read(DBHeightKey(height), read_out)) {
+        return std::nullopt;
+    }
+
+    if (read_out.first != expected_block_hash) {
+        error("%s: previous block header belongs to unexpected block %s; expected %s",
+                         __func__, read_out.first.ToString(), expected_block_hash.ToString());
+        return std::nullopt;
+    }
+
+    return read_out.second.header;
+}
+
 bool BlockFilterIndex::WriteBlock(const CBlock& block, const CBlockIndex* pindex)
 {
     CBlockUndo block_undo;
-    uint256 prev_header;
 
     if (pindex->nHeight > 0) {
         if (!UndoReadFromDisk(block_undo, pindex)) {
             return false;
         }
-
-        std::pair<uint256, DBVal> read_out;
-        if (!m_db->Read(DBHeightKey(pindex->nHeight - 1), read_out)) {
-            return false;
-        }
-
-        uint256 expected_block_hash = pindex->pprev->GetBlockHash();
-        if (read_out.first != expected_block_hash) {
-            return error("%s: previous block header belongs to unexpected block %s; expected %s",
-                         __func__, read_out.first.ToString(), expected_block_hash.ToString());
-        }
-
-        prev_header = read_out.second.header;
     }
 
     BlockFilter filter(m_filter_type, block, block_undo);
 
+    const uint256& header = filter.ComputeHeader(m_last_header);
+    bool res = Write(filter, pindex, header);
+    if (res) m_last_header = header; // update last header
+    return res;
+}
+
+bool BlockFilterIndex::Write(const BlockFilter& filter, const CBlockIndex* pindex, const uint256& filter_header)
+{
     size_t bytes_written = WriteFilterToDisk(m_next_filter_pos, filter);
     if (bytes_written == 0) return false;
 
     std::pair<uint256, DBVal> value;
     value.first = pindex->GetBlockHash();
     value.second.hash = filter.GetHash();
-    value.second.header = filter.ComputeHeader(prev_header);
+    value.second.header = filter_header;
     value.second.pos = m_next_filter_pos;
 
     if (!m_db->Write(DBHeightKey(pindex->nHeight), value)) {
@@ -306,6 +329,9 @@ bool BlockFilterIndex::Rewind(const CBlockIndex* current_tip, const CBlockIndex*
     batch.Write(DB_FILTER_POS, m_next_filter_pos);
     if (!m_db->WriteBatch(batch)) return false;
 
+    // Update cached header
+    m_last_header = *Assert(ReadFilterHeader(new_tip->nHeight, new_tip->GetBlockHash()));
+    
     return BaseIndex::Rewind(current_tip, new_tip);
 }
 
