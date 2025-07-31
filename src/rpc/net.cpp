@@ -1017,7 +1017,10 @@ static RPCHelpMan addpeeraddress()
             success = true;
             if (tried) {
                 // Attempt to move the address to the tried addresses table.
-                node.addrman->Good(address);
+                if (!node.addrman->Good(address)) {
+                    success = false;
+                    obj.pushKV("error", "failed-adding-to-tried");
+                }
             }
         } else {
             obj.pushKV("error", "failed-adding-to-new");

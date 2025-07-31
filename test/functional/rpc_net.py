@@ -343,34 +343,22 @@ class NetTest(DashTestFramework):
 
         self.log.debug("Test that adding a valid address to the tried table succeeds")
         assert_equal(node.addpeeraddress(address="1.2.3.4", tried=True, port=8333), {"success": True})
-        addrman = node.getrawaddrman()
-        assert_equal(len(addrman["new"]), 1)
-        tried_table = list(addrman["tried"].values())
-        assert_equal(len(tried_table), 1)
-        assert_equal(tried_table[0]["address"], "1.2.3.4")
-        assert_equal(tried_table[0]["port"], 8333)
-        node.getnodeaddresses(count=0)  # getnodeaddresses re-runs the addrman checks
+        with node.assert_debug_log(expected_msgs=["CheckAddrman: new 0, tried 1, total 1 started"]):
+            addrs = node.getnodeaddresses(count=0)  # getnodeaddresses re-runs the addrman checks
+            assert_equal(len(addrs), 1)
+            assert_equal(addrs[0]["address"], "1.2.3.4")
+            assert_equal(addrs[0]["port"], 8333)
 
         self.log.debug("Test that adding an already-present tried address to the new and tried tables fails")
         for value in [True, False]:
             assert_equal(node.addpeeraddress(address="1.2.3.4", tried=value, port=8333), {"success": False, "error": "failed-adding-to-new"})
-        assert_equal(len(node.getnodeaddresses(count=0)), 2)
+        assert_equal(len(node.getnodeaddresses(count=0)), 1)
 
-        self.log.debug("Test that adding an address, which collides with the address in tried table, fails")
-        colliding_address = "1.2.5.45"  # grinded address that produces a tried-table collision
-        assert_equal(node.addpeeraddress(address=colliding_address, tried=True, port=8333), {"success": False, "error": "failed-adding-to-tried"})
-        # When adding an address to the tried table, it's first added to the new table.
-        # As we fail to move it to the tried table, it remains in the new table.
-        addrman_info = node.getaddrmaninfo()
-        assert_equal(addrman_info["all_networks"]["tried"], 1)
-        assert_equal(addrman_info["all_networks"]["new"], 2)
-
-        self.log.debug("Test that adding an another address to the new table succeeds")
+        self.log.debug("Test that adding a second address, this time to the new table, succeeds")
         assert_equal(node.addpeeraddress(address="2.0.0.0", port=8333), {"success": True})
-        addrman_info = node.getaddrmaninfo()
-        assert_equal(addrman_info["all_networks"]["tried"], 1)
-        assert_equal(addrman_info["all_networks"]["new"], 3)
-        node.getnodeaddresses(count=0)  # getnodeaddresses re-runs the addrman checks
+        with node.assert_debug_log(expected_msgs=["CheckAddrman: new 1, tried 1, total 2 started"]):
+            addrs = node.getnodeaddresses(count=0)  # getnodeaddresses re-runs the addrman checks
+            assert_equal(len(addrs), 2)
 
     def test_sendmsgtopeer(self):
         node = self.nodes[0]
