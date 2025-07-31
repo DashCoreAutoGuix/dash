@@ -35,11 +35,12 @@ struct TxStateInMempool {
 };
 
 //! State of rejected transaction that conflicts with a confirmed block.
-struct TxStateConflicted {
+struct TxStateBlockConflicted {
     uint256 conflicting_block_hash;
     int conflicting_block_height;
 
-    explicit TxStateConflicted(const uint256& block_hash, int height) : conflicting_block_hash(block_hash), conflicting_block_height(height) {}
+    explicit TxStateBlockConflicted(const uint256& block_hash, int height) : conflicting_block_hash(block_hash), conflicting_block_height(height) {}
+    std::string toString() const { return strprintf("BlockConflicted (block=%s, height=%i)", conflicting_block_hash.ToString(), conflicting_block_height); }
 };
 
 //! State of transaction not confirmed or conflicting with a known block and
@@ -64,7 +65,7 @@ struct TxStateUnrecognized {
 };
 
 //! All possible CWalletTx states
-using TxState = std::variant<TxStateConfirmed, TxStateInMempool, TxStateConflicted, TxStateInactive, TxStateUnrecognized>;
+using TxState = std::variant<TxStateConfirmed, TxStateInMempool, TxStateBlockConflicted, TxStateInactive, TxStateUnrecognized>;
 
 //! Subset of states transaction sync logic is implemented to handle.
 using SyncTxState = std::variant<TxStateConfirmed, TxStateInMempool, TxStateInactive>;
@@ -79,7 +80,7 @@ static inline TxState TxStateInterpretSerialized(TxStateUnrecognized data)
     } else if (data.index >= 0) {
         return TxStateConfirmed{data.block_hash, /*height=*/-1, data.index};
     } else if (data.index == -1) {
-        return TxStateConflicted{data.block_hash, /*height=*/-1};
+        return TxStateBlockConflicted{data.block_hash, /*height=*/-1};
     }
     return data;
 }
@@ -91,7 +92,7 @@ static inline uint256 TxStateSerializedBlockHash(const TxState& state)
         [](const TxStateInactive& inactive) { return inactive.abandoned ? uint256::ONE : uint256::ZERO; },
         [](const TxStateInMempool& in_mempool) { return uint256::ZERO; },
         [](const TxStateConfirmed& confirmed) { return confirmed.confirmed_block_hash; },
-        [](const TxStateConflicted& conflicted) { return conflicted.conflicting_block_hash; },
+        [](const TxStateBlockConflicted& conflicted) { return conflicted.conflicting_block_hash; },
         [](const TxStateUnrecognized& unrecognized) { return unrecognized.block_hash; }
     }, state);
 }
@@ -103,7 +104,7 @@ static inline int TxStateSerializedIndex(const TxState& state)
         [](const TxStateInactive& inactive) { return inactive.abandoned ? -1 : 0; },
         [](const TxStateInMempool& in_mempool) { return 0; },
         [](const TxStateConfirmed& confirmed) { return confirmed.position_in_block; },
-        [](const TxStateConflicted& conflicted) { return -1; },
+        [](const TxStateBlockConflicted& conflicted) { return -1; },
         [](const TxStateUnrecognized& unrecognized) { return unrecognized.index; }
     }, state);
 }
@@ -224,6 +225,14 @@ public:
     CTransactionRef tx;
     TxState m_state;
 
+    // Set of mempool transactions that conflict
+    // directly with the transaction, or that conflict
+    // with an ancestor transaction. This set will be
+    // empty if state is InMempool or Confirmed, but
+    // can be nonempty if state is Inactive or
+    // BlockConflicted.
+    std::set<Txid> mempool_conflicts;
+
     template<typename Stream>
     void Serialize(Stream& s) const
     {
@@ -299,10 +308,13 @@ public:
     template<typename T> T* state() { return std::get_if<T>(&m_state); }
 
     bool isAbandoned() const { return state<TxStateInactive>() && state<TxStateInactive>()->abandoned; }
-    bool isConflicted() const { return state<TxStateConflicted>(); }
-    bool isUnconfirmed() const { return !isAbandoned() && !isConflicted() && !isConfirmed(); }
+    bool isMempoolConflicted() const { return !mempool_conflicts.empty(); }
+    bool isBlockConflicted() const { return state<TxStateBlockConflicted>(); }
+    bool isInactive() const { return state<TxStateInactive>(); }
+    bool isUnconfirmed() const { return !isAbandoned() && !isBlockConflicted() && !isMempoolConflicted() && !isConfirmed(); }
     bool isConfirmed() const { return state<TxStateConfirmed>(); }
     const uint256& GetHash() const LIFETIMEBOUND { return tx->GetHash(); }
+    const uint256& GetWitnessHash() const LIFETIMEBOUND { return tx->GetWitnessHash(); }
     bool IsCoinBase() const { return tx->IsCoinBase(); }
     bool IsPlatformTransfer() const { return tx->IsPlatformTransfer(); }
 

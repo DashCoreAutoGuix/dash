@@ -18,6 +18,8 @@
 #include <saltedhasher.h>
 #include <tinyformat.h>
 #include <util/hasher.h>
+
+#include <functional>
 #include <util/message.h>
 #include <util/string.h>
 #include <util/system.h>
@@ -249,6 +251,13 @@ struct WalletTxHasher
 };
 
 class WalletRescanReserver; //forward declarations for ScanForWalletTransactions/RescanFromTime
+
+/** Indicates the state of transaction update */
+enum class TxUpdate { UNCHANGED, CHANGED };
+
+/** Function to update transaction state */
+using TryUpdatingStateFn = std::function<TxUpdate(CWalletTx& wtx)>;
+
 /**
  * A CWallet maintains a set of transactions and balances, and provides the ability to create new transactions.
  */
@@ -323,6 +332,10 @@ private:
 
     /** Mark a transaction (and its in-wallet descendants) as conflicting with a particular block. */
     void MarkConflicted(const uint256& hashBlock, int conflicting_height, const uint256& hashTx);
+
+    /** Mark a transaction (and its in-wallet descendants) as a particular tx state. */
+    void RecursiveUpdateTxState(const uint256& tx_hash, const TryUpdatingStateFn& try_updating_state) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
+    void RecursiveUpdateTxState(WalletBatch* batch, const uint256& tx_hash, const TryUpdatingStateFn& try_updating_state) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
 
     /** Mark a transaction's inputs dirty, thus forcing the outputs to be recomputed */
     void MarkInputsDirty(const CTransactionRef& tx) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
@@ -512,11 +525,6 @@ public:
      * >=1 : this many blocks deep in the main chain
      */
     int GetTxDepthInMainChain(const CWalletTx& wtx) const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
-    bool IsTxInMainChain(const CWalletTx& wtx) const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet)
-    {
-        AssertLockHeld(cs_wallet);
-        return GetTxDepthInMainChain(wtx) > 0;
-    }
 
     bool IsTxLockedByInstantSend(const CWalletTx& wtx) const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
     bool IsTxChainLocked(const CWalletTx& wtx) const EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);

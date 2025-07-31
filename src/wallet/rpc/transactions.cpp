@@ -46,10 +46,15 @@ static void WalletTxToJSON(const CWallet& wallet, const CWalletTx& wtx, UniValue
     }
     uint256 hash = wtx.GetHash();
     entry.pushKV("txid", hash.GetHex());
+    entry.pushKV("wtxid", wtx.GetWitnessHash().GetHex());
     UniValue conflicts(UniValue::VARR);
     for (const uint256& conflict : wallet.GetTxConflicts(wtx))
         conflicts.push_back(conflict.GetHex());
     entry.pushKV("walletconflicts", conflicts);
+    UniValue mempool_conflicts(UniValue::VARR);
+    for (const uint256& mempool_conflict : wtx.mempool_conflicts)
+        mempool_conflicts.push_back(mempool_conflict.GetHex());
+    entry.pushKV("mempoolconflicts", mempool_conflicts);
     entry.pushKV("time", wtx.GetTxTime());
     entry.pushKV("timereceived", int64_t{wtx.nTimeReceived});
 
