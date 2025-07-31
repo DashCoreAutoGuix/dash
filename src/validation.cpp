@@ -5480,7 +5480,7 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
 
         uint64_t mempool_transactions_to_write = vinfo.size();
         file << mempool_transactions_to_write;
-        LogPrintf("Writing %u mempool transactions to file...\n", mempool_transactions_to_write);
+        LogPrintf("Writing %" PRIu64 " mempool transactions to file...\n", mempool_transactions_to_write);
         for (const auto& i : vinfo) {
             file << *(i.tx);
             file << int64_t{count_seconds(i.m_time)};
@@ -5490,7 +5490,8 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
 
         file << mapDeltas;
 
-        LogPrintf("Writing %d unbroadcast transactions to file.\n", unbroadcast_txids.size());
+        LogPrintf("Writing %" PRIu64 " unbroadcast transactions to file.\n",
+                  static_cast<uint64_t>(unbroadcast_txids.size()));
         file << unbroadcast_txids;
 
         if (!skip_file_commit && !FileCommit(file.Get()))
@@ -5501,8 +5502,15 @@ bool DumpMempool(const CTxMemPool& pool, FopenFn mockable_fopen_function, bool s
         }
         int64_t last = GetTimeMicros();
         std::error_code ec;
-        auto file_size = fs::file_size(gArgs.GetDataDirNet() / "mempool.dat", ec);
-        LogPrintf("Dumped mempool: %gs to copy, %gs to dump, %.2f MB dumped to file\n", (mid-start)*MICRO, (last-mid)*MICRO, file_size / 1e6);
+        const auto file_size = fs::file_size(gArgs.GetDataDirNet() / "mempool.dat", ec);
+        if (ec) {
+            LogPrintf("Dumped mempool: %gs to copy, %gs to dump, <unknown size> (err: %s)\n",
+                      (mid-start)*MICRO, (last-mid)*MICRO, ec.message());
+        } else {
+            LogPrintf("Dumped mempool: %gs to copy, %gs to dump, %.2f MB dumped to file\n",
+                      (mid-start)*MICRO, (last-mid)*MICRO,
+                      static_cast<double>(file_size) / 1e6);
+        }
     } catch (const std::exception& e) {
         LogPrintf("Failed to dump mempool: %s. Continuing anyway.\n", e.what());
         return false;
