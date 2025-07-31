@@ -1181,7 +1181,7 @@ static RPCHelpMan testmempoolaccept()
     CChainState& chainstate = chainman.ActiveChainstate();
     const PackageMempoolAcceptResult package_result = [&] {
         LOCK(::cs_main);
-        if (txns.size() > 1) return ProcessNewPackage(chainstate, mempool, txns, /* test_accept */ true);
+        if (txns.size() > 1) return ProcessNewPackage(chainstate, mempool, txns, /* test_accept */ true, /*client_maxfeerate=*/{});
         return PackageMempoolAcceptResult(txns[0]->GetHash(),
                chainman.ProcessTransaction(txns[0], /*test_accept=*/ true));
     }();
