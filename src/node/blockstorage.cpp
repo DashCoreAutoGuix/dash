@@ -19,6 +19,7 @@
 #include <validation.h>
 #include <walletinitinterface.h>
 
+#include <cassert>
 #include <map>
 #include <ranges>
 #include <unordered_map>
