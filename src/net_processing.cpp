@@ -4932,6 +4932,16 @@ void PeerManagerImpl::ProcessMessage(
 
         LogPrint(BCLog::NET, "received block %s peer=%d\n", pblock->GetHash().ToString(), pfrom.GetId());
 
+        const CBlockIndex* prev_block{WITH_LOCK(cs_main, return LookupBlockIndex(pblock->hashPrevBlock))};
+
+        if (IsBlockMutated(/*block=*/*pblock,
+                           /*check_witness_root=*/false)) { // Always false for Dash - no witness support
+            LogDebug(BCLog::NET, "Received mutated block from peer=%d\n", pfrom.GetId());
+            Misbehaving(pfrom, 100, "mutated block");
+            WITH_LOCK(cs_main, RemoveBlockRequest(pblock->GetHash()));
+            return;
+        }
+
         bool forceProcessing = false;
         const uint256 hash(pblock->GetHash());
         {
