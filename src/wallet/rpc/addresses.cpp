@@ -537,7 +537,7 @@ RPCHelpMan getaddressinfo()
                 }
             }
             if (meta->has_key_origin) {
-                ret.pushKV("hdkeypath", WriteHDKeypath(meta->key_origin.path));
+                ret.pushKV("hdkeypath", WriteHDKeypath(meta->key_origin.path, pwallet->IsLegacy()));
                 ret.pushKV("hdmasterfingerprint", HexStr(meta->key_origin.fingerprint));
             }
         }
