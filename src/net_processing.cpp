@@ -1876,7 +1876,7 @@ bool PeerManagerImpl::MaybePunishNodeForTx(NodeId nodeid, const TxValidationStat
     case TxValidationResult::TX_CONSENSUS:
         {
             LOCK(cs_main);
-            Misbehaving(nodeid, 100, "");
+            Misbehaving(nodeid, 100);
             return true;
         }
     // Conflicting (but not necessarily invalid) data or different policy:
