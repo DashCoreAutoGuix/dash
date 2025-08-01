@@ -1161,25 +1161,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
         // If already conflicted or abandoned, no need to set abandoned
         if (!wtx.isConflicted() && !wtx.isAbandoned()) {
             wtx.m_state = TxStateInactive{/*abandoned=*/true};
-<<<<<<< HEAD
-            wtx.MarkDirty();
-            batch.WriteTx(wtx);
-            NotifyTransactionChanged(wtx.GetHash(), CT_UPDATED);
-            // Iterate over all its outputs, and mark transactions in the wallet that spend them abandoned too
-            for (unsigned int i = 0; i < wtx.tx->vout.size(); ++i) {
-                std::pair<TxSpends::const_iterator, TxSpends::const_iterator> range = mapTxSpends.equal_range(COutPoint(now, i));
-                for (TxSpends::const_iterator iter = range.first; iter != range.second; ++iter) {
-                    if (!done.count(iter->second)) {
-                        todo.insert(iter->second);
-                    }
-                }
-            }
-            // If a transaction changes 'conflicted' state, that changes the balance
-            // available of the outputs it spends. So force those to be recomputed
-            MarkInputsDirty(wtx.tx);
-=======
             return TxUpdate::NOTIFY_CHANGED;
->>>>>>> 7d33ae755d (Merge bitcoin/bitcoin#27145: wallet: when a block is disconnected, update transactions that are no longer conflicted)
         }
         return TxUpdate::UNCHANGED;
     };
@@ -1374,19 +1356,12 @@ void CWallet::blockDisconnected(const CBlock& block, int height)
     // be unconfirmed, whether or not the transaction is added back to the mempool.
     // User may have to call abandontransaction again. It may be addressed in the
     // future with a stickier abandoned state or even removing abandontransaction call.
-<<<<<<< HEAD
     m_last_block_processed_height = height - 1;
     m_last_block_processed = block.hashPrevBlock;
-    WalletBatch batch(GetDatabase());
+
+    int disconnect_height = height;
+
     for (const CTransactionRef& ptx : block.vtx) {
-        SyncTransaction(ptx, TxStateInactive{}, batch);
-=======
-    m_last_block_processed_height = block.height - 1;
-    m_last_block_processed = *Assert(block.prev_hash);
-
-    int disconnect_height = block.height;
-
-    for (const CTransactionRef& ptx : Assert(block.data)->vtx) {
         SyncTransaction(ptx, TxStateInactive{});
 
         for (const CTxIn& tx_in : ptx->vin) {
@@ -1413,7 +1388,6 @@ void CWallet::blockDisconnected(const CBlock& block, int height)
                 RecursiveUpdateTxState(wtx.tx->GetHash(), try_updating_state);
             }
         }
->>>>>>> 7d33ae755d (Merge bitcoin/bitcoin#27145: wallet: when a block is disconnected, update transactions that are no longer conflicted)
     }
 
     // reset cache to make sure no longer mature coins are excluded
