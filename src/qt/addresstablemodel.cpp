@@ -52,15 +52,10 @@ struct AddressTableEntryLessThan
 };
 
 /* Determine address type from address purpose */
-<<<<<<< HEAD
 static AddressTableEntry::Type translateTransactionType(const QString &strPurpose, bool isMine)
-=======
-constexpr AddressTableEntry::Type translateTransactionType(wallet::AddressPurpose purpose, bool isMine)
->>>>>>> edd6d8395f (Merge bitcoin/bitcoin#27662: build: Bump minimum supported GCC to g++-9)
 {
     AddressTableEntry::Type addressType = AddressTableEntry::Hidden;
     // "refund" addresses aren't shown, and change addresses aren't returned by getAddresses at all.
-<<<<<<< HEAD
     if (strPurpose == "send")
         addressType = AddressTableEntry::Sending;
     else if (strPurpose == "receive")
@@ -68,14 +63,6 @@ constexpr AddressTableEntry::Type translateTransactionType(wallet::AddressPurpos
     else if (strPurpose == "unknown" || strPurpose == "") // if purpose not set, guess
         addressType = (isMine ? AddressTableEntry::Receiving : AddressTableEntry::Sending);
     return addressType;
-=======
-    switch (purpose) {
-    case wallet::AddressPurpose::SEND: return AddressTableEntry::Sending;
-    case wallet::AddressPurpose::RECEIVE: return AddressTableEntry::Receiving;
-    case wallet::AddressPurpose::REFUND: return AddressTableEntry::Hidden;
-    } // no default case, so the compiler can warn about missing cases
-    assert(false);
->>>>>>> edd6d8395f (Merge bitcoin/bitcoin#27662: build: Bump minimum supported GCC to g++-9)
 }
 
 // Private implementation

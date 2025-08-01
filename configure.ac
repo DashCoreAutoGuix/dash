@@ -89,10 +89,7 @@ esac
 
 dnl Require C++20 compiler (no GNU extensions)
 AX_CXX_COMPILE_STDCXX([20], [noext], [mandatory])
-<<<<<<< HEAD
-=======
 fi
->>>>>>> edd6d8395f (Merge bitcoin/bitcoin#27662: build: Bump minimum supported GCC to g++-9)
 
 dnl Unless the user specified OBJCXX, force it to be the same as CXX. This ensures
 dnl that we get the same -std flags for both.
