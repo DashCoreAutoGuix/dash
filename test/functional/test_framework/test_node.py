@@ -22,7 +22,10 @@ import sys
 import collections
 from pathlib import Path
 
-from .authproxy import JSONRPCException
+from .authproxy import (
+    JSONRPCException,
+    EncodeDecimal,
+)
 from .descriptors import descsum_create
 from .messages import NODE_P2P_V2
 from .p2p import P2P_SERVICES, P2P_SUBVERSION
@@ -37,7 +40,6 @@ from .util import (
     wait_until_helper,
     p2p_port,
     get_chain_folder,
-    EncodeDecimal,
 )
 
 BITCOIND_PROC_WAIT_TIMEOUT = 60
@@ -425,12 +427,20 @@ class TestNode():
         wait_until_helper(self.is_node_stopped, timeout=timeout, timeout_factor=self.timeout_factor)
 
     @property
+    def datadir_path(self) -> Path:
+        return Path(self.datadir)
+
+    @property
     def chain_path(self) -> Path:
-        return Path(self.datadir) / get_chain_folder(self.datadir, self.chain)
+        return self.datadir_path / get_chain_folder(self.datadir, self.chain)
 
     @property
     def debug_log_path(self) -> Path:
         return self.chain_path / 'debug.log'
+
+    @property
+    def wallets_path(self) -> Path:
+        return self.chain_path / "wallets"
 
     def debug_log_bytes(self) -> int:
         with open(self.debug_log_path, encoding='utf-8') as dl:
