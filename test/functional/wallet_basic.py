@@ -7,6 +7,7 @@ from decimal import Decimal
 from itertools import product
 
 from test_framework.blocktools import COINBASE_MATURITY
+from test_framework.messages import COIN
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_array_result,
@@ -14,6 +15,7 @@ from test_framework.util import (
     assert_fee_amount,
     assert_greater_than,
     assert_raises_rpc_error,
+    chain_transaction,
     count_bytes,
     find_vout_for_address,
 )
@@ -742,6 +744,49 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(self.nodes[2].gettransaction(txid_feeReason_three)['txid'], txid_feeReason_three)
         txid_feeReason_four = self.nodes[2].sendmany(dummy='', amounts={address: 5}, verbose=False)
         assert_equal(self.nodes[2].gettransaction(txid_feeReason_four)['txid'], txid_feeReason_four)
+
+        self.test_chain_listunspent()
+
+    def test_chain_listunspent(self):
+        """Test ancestor tracking in listunspent"""
+        self.log.info("Testing chain listunspent...")
+        
+        # Mine some blocks and have them mature.
+        self.generate(self.nodes[0], COINBASE_MATURITY + 1)
+        
+        # Get a utxo to create a chain
+        utxo = self.nodes[0].listunspent(10)[0]
+        txid = utxo['txid']
+        vout = utxo['vout']
+        value = utxo['amount']
+        
+        # Check that ancestor fields don't exist for confirmed utxos
+        assert 'ancestorcount' not in utxo
+        assert 'ancestorsize' not in utxo
+        assert 'ancestorfees' not in utxo
+        
+        fee = Decimal("0.0001")
+        # Create a chain of 25 transactions
+        chain = []
+        ancestor_vsize = 0
+        ancestor_fees = Decimal(0)
+        
+        # Use MAX_ANCESTORS = 25 as in mempool_packages
+        MAX_ANCESTORS = 25
+        
+        for i in range(MAX_ANCESTORS):
+            (txid, sent_value) = chain_transaction(self.nodes[0], [txid], [0], value, fee, 1)
+            value = sent_value
+            chain.append(txid)
+            
+            # Check that listunspent ancestor{count, size, fees} yield the correct results
+            wallet_unspent = self.nodes[0].listunspent(minconf=0)
+            this_unspent = next(utxo_info for utxo_info in wallet_unspent if utxo_info['txid'] == txid)
+            assert_equal(this_unspent['ancestorcount'], i + 1)
+            ancestor_vsize += self.nodes[0].getrawtransaction(txid=txid, verbose=True)['size']
+            assert_equal(this_unspent['ancestorsize'], ancestor_vsize)
+            ancestor_fees -= self.nodes[0].gettransaction(txid=txid)['fee']
+            assert_equal(this_unspent['ancestorfees'], ancestor_fees * COIN)
 
 
 if __name__ == '__main__':
