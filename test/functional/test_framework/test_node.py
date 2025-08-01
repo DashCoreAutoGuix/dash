@@ -425,21 +425,6 @@ class TestNode():
         expected_ret_code = 1 if expect_error else 0  # Whether node shutdown return EXIT_FAILURE or EXIT_SUCCESS
         wait_until_helper(lambda: self.is_node_stopped(expected_ret_code=expected_ret_code), timeout=timeout, timeout_factor=self.timeout_factor)
 
-    def replace_in_config(self, replacements):
-        """
-        Perform replacements in the configuration file.
-        The substitutions are passed as a list of search-replace-tuples, e.g.
-            [("old", "new"), ("foo", "bar"), ...]
-        """
-        with open(self.bitcoinconf, 'r', encoding='utf8') as conf:
-            conf_data = conf.read()
-        for replacement in replacements:
-            assert_equal(len(replacement), 2)
-            old, new = replacement[0], replacement[1]
-            conf_data = conf_data.replace(old, new)
-        with open(self.bitcoinconf, 'w', encoding='utf8') as conf:
-            conf.write(conf_data)
-
     @property
     def chain_path(self) -> Path:
         return Path(self.datadir) / get_chain_folder(self.datadir, self.chain)
