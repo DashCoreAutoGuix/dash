@@ -478,7 +478,7 @@ void FuncDIP3Protx(TestChainSetup& setup)
     // check MN reward payments
     for (size_t i = 0; i < 20; i++) {
         auto dmnExpectedPayee = dmnman.GetListAtChainTip().GetMNPayee(chainman.ActiveChain().Tip());
-        BOOST_ASSERT(dmnExpectedPayee);
+        BOOST_REQUIRE(dmnExpectedPayee);
 
         CBlock block = setup.CreateAndProcessBlock({}, setup.coinbaseKey);
         dmnman.UpdatedBlockTip(chainman.ActiveChain().Tip());
@@ -587,7 +587,7 @@ void FuncDIP3Protx(TestChainSetup& setup)
     bool foundRevived = false;
     for (size_t i = 0; i < 20; i++) {
         auto dmnExpectedPayee = dmnman.GetListAtChainTip().GetMNPayee(chainman.ActiveChain().Tip());
-        BOOST_ASSERT(dmnExpectedPayee);
+        BOOST_REQUIRE(dmnExpectedPayee);
         if (dmnExpectedPayee->proTxHash == dmnHashes[0]) {
             foundRevived = true;
         }
