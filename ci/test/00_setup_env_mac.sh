@@ -7,6 +7,7 @@
 export LC_ALL=C.UTF-8
 
 export CONTAINER_NAME=ci_macos_cross
+export CI_IMAGE_NAME_TAG=ubuntu:22.04
 export HOST=x86_64-apple-darwin
 export PACKAGES="clang cmake lld llvm  zip"
 export XCODE_VERSION=15.0
