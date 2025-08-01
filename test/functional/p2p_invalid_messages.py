@@ -5,8 +5,6 @@
 """Test node responses to invalid network messages."""
 
 import random
-import struct
-import time
 
 from test_framework.messages import (
     CBlockHeader,
