@@ -11,19 +11,19 @@ import time
 from test_framework.messages import (
     CBlockHeader,
     CInv,
-    from_hex,
-    msg_ping,
-    ser_string,
     MAX_HEADERS_COMPRESSED_RESULT,
     MAX_HEADERS_UNCOMPRESSED_RESULT,
     MAX_INV_SIZE,
     MAX_PROTOCOL_MESSAGE_LENGTH,
+    MSG_TX,
+    from_hex,
     msg_getdata,
     msg_headers,
     msg_headers2,
     msg_inv,
-    MSG_TX,
+    msg_ping,
     msg_version,
+    ser_string,
 )
 from test_framework.p2p import (
     P2PDataStore, P2PInterface
