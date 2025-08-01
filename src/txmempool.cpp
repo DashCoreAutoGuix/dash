@@ -416,8 +416,8 @@ void CTxMemPoolEntry::UpdateDescendantState(int64_t modifySize, CAmount modifyFe
     nSizeWithDescendants += modifySize;
     assert(int64_t(nSizeWithDescendants) > 0);
     nModFeesWithDescendants = SaturatingAdd(nModFeesWithDescendants, modifyFee);
-    nCountWithDescendants += modifyCount;
-    assert(int64_t(nCountWithDescendants) > 0);
+    m_count_with_descendants += modifyCount;
+    assert(m_count_with_descendants > 0);
 }
 
 void CTxMemPoolEntry::UpdateAncestorState(int64_t modifySize, CAmount modifyFee, int64_t modifyCount, int64_t modifySigOps)
@@ -425,8 +425,8 @@ void CTxMemPoolEntry::UpdateAncestorState(int64_t modifySize, CAmount modifyFee,
     nSizeWithAncestors += modifySize;
     assert(int64_t(nSizeWithAncestors) > 0);
     nModFeesWithAncestors = SaturatingAdd(nModFeesWithAncestors, modifyFee);
-    nCountWithAncestors += modifyCount;
-    assert(int64_t(nCountWithAncestors) > 0);
+    m_count_with_ancestors += modifyCount;
+    assert(m_count_with_ancestors > 0);
     nSigOpCountWithAncestors += modifySigOps;
     assert(int(nSigOpCountWithAncestors) >= 0);
 }
