@@ -45,9 +45,9 @@ fi
 
 # Make sure default datadir does not exist and is never read by creating a dummy file
 if [ "$CI_OS_NAME" == "macos" ]; then
-  echo > "${HOME}/Library/Application Support/Bitcoin"
+  echo > "${HOME}/Library/Application Support/DashCore"
 else
-  echo > "${HOME}/.bitcoin"
+  echo > "${HOME}/.dashcore"
 fi
 
 if [ -z "$NO_DEPENDS" ]; then
@@ -65,12 +65,12 @@ if [ "$DOWNLOAD_PREVIOUS_RELEASES" = "true" ]; then
   test/get_previous_releases.py -b -t "$PREVIOUS_RELEASES_DIR"
 fi
 
-BITCOIN_CONFIG_ALL="--enable-suppress-external-warnings --disable-dependency-tracking"
+DASH_CONFIG_ALL="--enable-suppress-external-warnings --disable-dependency-tracking"
 if [ -z "$NO_DEPENDS" ]; then
-  BITCOIN_CONFIG_ALL="${BITCOIN_CONFIG_ALL} CONFIG_SITE=$DEPENDS_DIR/$HOST/share/config.site"
+  DASH_CONFIG_ALL="${DASH_CONFIG_ALL} CONFIG_SITE=$DEPENDS_DIR/$HOST/share/config.site"
 fi
 if [ -z "$NO_WERROR" ]; then
-  BITCOIN_CONFIG_ALL="${BITCOIN_CONFIG_ALL} --enable-werror"
+  DASH_CONFIG_ALL="${DASH_CONFIG_ALL} --enable-werror"
 fi
 
 ccache --zero-stats --max-size="${CCACHE_SIZE}"
@@ -79,13 +79,13 @@ PRINT_CCACHE_STATISTICS="ccache --version | head -n 1 && ccache --show-stats"
 if [ -n "$ANDROID_TOOLS_URL" ]; then
   make distclean || true
   ./autogen.sh
-  bash -c "./configure $BITCOIN_CONFIG_ALL $BITCOIN_CONFIG" || ( (cat config.log) && false)
+  bash -c "./configure $DASH_CONFIG_ALL $DASH_CONFIG" || ( (cat config.log) && false)
   make "${MAKEJOBS}" && cd src/qt && ANDROID_HOME=${ANDROID_HOME} ANDROID_NDK_HOME=${ANDROID_NDK_HOME} make apk
   bash -c "${PRINT_CCACHE_STATISTICS}"
   exit 0
 fi
 
-BITCOIN_CONFIG_ALL="${BITCOIN_CONFIG_ALL} --enable-external-signer --prefix=$BASE_OUTDIR"
+DASH_CONFIG_ALL="${DASH_CONFIG_ALL} --enable-external-signer --prefix=$BASE_OUTDIR"
 
 if [ -n "$CONFIG_SHELL" ]; then
   "$CONFIG_SHELL" -c "./autogen.sh"
@@ -96,13 +96,13 @@ fi
 mkdir -p "${BASE_BUILD_DIR}"
 cd "${BASE_BUILD_DIR}"
 
-bash -c "${BASE_ROOT_DIR}/configure --cache-file=config.cache $BITCOIN_CONFIG_ALL $BITCOIN_CONFIG" || ( (cat config.log) && false)
+bash -c "${BASE_ROOT_DIR}/configure --cache-file=config.cache $DASH_CONFIG_ALL $DASH_CONFIG" || ( (cat config.log) && false)
 
 make distdir VERSION="$HOST"
 
-cd "${BASE_BUILD_DIR}/bitcoin-$HOST"
+cd "${BASE_BUILD_DIR}/dash-$HOST"
 
-bash -c "./configure --cache-file=../config.cache $BITCOIN_CONFIG_ALL $BITCOIN_CONFIG" || ( (cat config.log) && false)
+bash -c "./configure --cache-file=../config.cache $DASH_CONFIG_ALL $DASH_CONFIG" || ( (cat config.log) && false)
 
 set -o errtrace
 trap 'bash -c "cat ${BASE_SCRATCH_DIR}/sanitizer-output/* 2> /dev/null"' ERR
@@ -112,7 +112,7 @@ if [[ ${USE_MEMORY_SANITIZER} == "true" ]]; then
   # using the Linux getrandom syscall. Avoid using getrandom by undefining
   # HAVE_SYS_GETRANDOM. See https://github.com/google/sanitizers/issues/852 for
   # details.
-  grep -v HAVE_SYS_GETRANDOM src/config/bitcoin-config.h > src/config/bitcoin-config.h.tmp && mv src/config/bitcoin-config.h.tmp src/config/bitcoin-config.h
+  grep -v HAVE_SYS_GETRANDOM src/config/dash-config.h > src/config/dash-config.h.tmp && mv src/config/dash-config.h.tmp src/config/dash-config.h
 fi
 
 if [[ "${RUN_TIDY}" == "true" ]]; then
@@ -149,7 +149,7 @@ if [ "$RUN_UNIT_TESTS" = "true" ]; then
 fi
 
 if [ "$RUN_UNIT_TESTS_SEQUENTIAL" = "true" ]; then
-  bash -c "${TEST_RUNNER_ENV} DIR_UNIT_TEST_DATA=${DIR_UNIT_TEST_DATA} LD_LIBRARY_PATH=${DEPENDS_DIR}/${HOST}/lib ${BASE_OUTDIR}/bin/test_bitcoin --catch_system_errors=no -l test_suite"
+  bash -c "${TEST_RUNNER_ENV} DIR_UNIT_TEST_DATA=${DIR_UNIT_TEST_DATA} LD_LIBRARY_PATH=${DEPENDS_DIR}/${HOST}/lib ${BASE_OUTDIR}/bin/test_dash --catch_system_errors=no -l test_suite"
 fi
 
 if [ "$RUN_FUNCTIONAL_TESTS" = "true" ]; then
@@ -158,9 +158,9 @@ fi
 
 if [ "${RUN_TIDY}" = "true" ]; then
   set -eo pipefail
-  cd "${BASE_BUILD_DIR}/bitcoin-$HOST/src/"
+  cd "${BASE_BUILD_DIR}/dash-$HOST/src/"
   ( run-clang-tidy-16 -quiet "${MAKEJOBS}" ) | grep -C5 "error"
-  cd "${BASE_BUILD_DIR}/bitcoin-$HOST/"
+  cd "${BASE_BUILD_DIR}/dash-$HOST/"
   python3 "${DIR_IWYU}/include-what-you-use/iwyu_tool.py" \
            src/common/args.cpp \
            src/common/config.cpp \
@@ -206,7 +206,7 @@ if [ "${RUN_TIDY}" = "true" ]; then
            src/util/threadinterrupt.cpp \
            src/zmq \
            -p . "${MAKEJOBS}" \
-           -- -Xiwyu --cxx17ns -Xiwyu --mapping_file="${BASE_BUILD_DIR}/bitcoin-$HOST/contrib/devtools/iwyu/bitcoin.core.imp" \
+           -- -Xiwyu --cxx17ns -Xiwyu --mapping_file="${BASE_BUILD_DIR}/dash-$HOST/contrib/devtools/iwyu/dash.core.imp" \
            2>&1 | tee /tmp/iwyu_ci.out
   cd "${BASE_ROOT_DIR}/src"
   python3 "${DIR_IWYU}/include-what-you-use/fix_includes.py" --nosafe_headers < /tmp/iwyu_ci.out
