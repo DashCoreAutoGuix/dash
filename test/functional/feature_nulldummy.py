@@ -29,11 +29,8 @@ from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
 )
-<<<<<<< HEAD
-=======
 from test_framework.wallet import getnewdestination
 from test_framework.wallet_util import generate_keypair
->>>>>>> 7d65e3372f (Merge bitcoin/bitcoin#27733: test: refactor: introduce `generate_keypair` helper with WIF support)
 
 NULLDUMMY_ERROR = "non-mandatory-script-verify-flag (Dummy CHECKMULTISIG argument must be zero)"
 
@@ -62,7 +59,6 @@ class NULLDUMMYTest(BitcoinTestFramework):
         self.skip_if_no_wallet()
 
     def run_test(self):
-<<<<<<< HEAD
         self.nodes[0].createwallet(wallet_name='wmulti', disable_private_keys=True)
         wmulti = self.nodes[0].get_wallet_rpc('wmulti')
         w0 = self.nodes[0].get_wallet_rpc(self.default_wallet_name)
@@ -72,15 +68,6 @@ class NULLDUMMYTest(BitcoinTestFramework):
         if not self.options.descriptors:
             # Legacy wallets need to import these so that they are watched by the wallet. This is unnecessary (and does not need to be tested) for descriptor wallets
             wmulti.importaddress(self.ms_address)
-=======
-        self.privkey, self.pubkey = generate_keypair(wif=True)
-        cms = self.nodes[0].createmultisig(1, [self.pubkey.hex()])
-        wms = self.nodes[0].createmultisig(1, [self.pubkey.hex()], 'p2sh-segwit')
-        self.ms_address = cms["address"]
-        ms_unlock_details = {"scriptPubKey": address_to_scriptpubkey(self.ms_address).hex(),
-                             "redeemScript": cms["redeemScript"]}
-        self.wit_ms_address = wms['address']
->>>>>>> 7d65e3372f (Merge bitcoin/bitcoin#27733: test: refactor: introduce `generate_keypair` helper with WIF support)
 
         self.coinbase_blocks = self.generate(self.nodes[0], 2)  # block height = 2
         coinbase_txid = []
