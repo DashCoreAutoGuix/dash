@@ -6,6 +6,7 @@
 #define BITCOIN_WALLET_TEST_UTIL_H
 
 #include <memory>
+#include <wallet/db.h>
 
 class ArgsManager;
 class CChain;
@@ -19,6 +20,16 @@ class Loader;
 
 namespace wallet {
 class CWallet;
+class WalletDatabase;
+
+static const DatabaseFormat DATABASE_FORMATS[] = {
+#ifdef USE_SQLITE
+       DatabaseFormat::SQLITE,
+#endif
+#ifdef USE_BDB
+       DatabaseFormat::BERKELEY,
+#endif
+};
 
 std::unique_ptr<CWallet> CreateSyncedWallet(interfaces::Chain& chain, interfaces::CoinJoin::Loader& coinjoin_loader, CChain& cchain, ArgsManager& args, const CKey& key);
 } // namespace wallet
