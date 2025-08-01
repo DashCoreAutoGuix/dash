@@ -35,7 +35,7 @@ class MempoolCompatibilityTest(BitcoinTestFramework):
         ]
         # Delete v18.2.2 cached datadir to avoid making a legacy version try to
         # make sense of our current database formats
-        shutil.rmtree(os.path.join(self.nodes[0].datadir, self.chain))
+        shutil.rmtree(os.path.join(self.nodes[0].chain_path))
         self.start_nodes()
 
     def run_test(self):
@@ -58,8 +58,8 @@ class MempoolCompatibilityTest(BitcoinTestFramework):
         self.stop_node(0)
 
         self.log.info("Move mempool.dat from old to new node")
-        old_node_mempool = os.path.join(old_node.datadir, self.chain, 'mempool.dat')
-        new_node_mempool = os.path.join(new_node.datadir, self.chain, 'mempool.dat')
+        old_node_mempool = os.path.join(old_node.chain_path, 'mempool.dat')
+        new_node_mempool = os.path.join(new_node.chain_path, 'mempool.dat')
         os.rename(old_node_mempool, new_node_mempool)
 
         self.log.info("Start new node and verify mempool contains the tx")

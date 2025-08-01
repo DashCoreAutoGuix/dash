@@ -40,7 +40,7 @@ class MempoolCompatibilityTest(BitcoinTestFramework):
         )
         # Delete v18.2.2 cached datadir to avoid making a legacy version try to
         # make sense of our current database formats
-        shutil.rmtree(os.path.join(self.nodes[2].datadir, self.chain))
+        shutil.rmtree(os.path.join(self.nodes[2].chain_path))
         self.start_nodes()
         self.connect_nodes(0, 1)
         self.connect_nodes(1, 2)
