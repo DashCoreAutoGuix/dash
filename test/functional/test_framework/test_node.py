@@ -701,7 +701,7 @@ class TestNode():
             dst_addr_and_port = f"{p2p_conn.dstaddr}:{p2p_conn.dstport}"
             info = [peer for peer in self.getpeerinfo() if peer["addr"] == our_addr_and_port and peer["addrbind"] == dst_addr_and_port]
             assert_equal(len(info), 1)
-            assert_equal(info[0]["subver"], p2p_conn.strSubVer)
+            assert_equal(info[0]["subver"], P2P_SUBVERSION)
 
         return p2p_conn
 
