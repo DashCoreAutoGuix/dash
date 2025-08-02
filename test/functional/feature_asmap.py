@@ -26,7 +26,7 @@ The tests are order-independent.
 import os
 import shutil
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import DashTestFramework
 
 DEFAULT_ASMAP_FILENAME = 'ip_asn.map' # defined in src/init.cpp
 ASMAP = '../../src/test/data/asmap.raw' # path to unit test skeleton asmap
@@ -36,15 +36,15 @@ def expected_messages(filename):
     return [f'Opened asmap file "{filename}" (59 bytes) from disk',
             f'Using asmap version {VERSION} for IP bucketing']
 
-class AsmapTest(BitcoinTestFramework):
+class AsmapTest(DashTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
         # Do addrman checks on all operations and use deterministic addrman
         self.extra_args = [["-checkaddrman=1", "-test=addrman"]]
 
     def fill_addrman(self, node_id):
-        """Add 1 tried address to the addrman, followed by 1 new address."""
-        for addr, tried in [[0, True], [1, False]]:
+        """Add 2 tried addresses to the addrman, followed by 2 new addresses."""
+        for addr, tried in [[0, True], [1, True], [2, False], [3, False]]:
             self.nodes[node_id].addpeeraddress(address=f"101.{addr}.0.0", tried=tried, port=8333)
 
     def test_without_asmap_arg(self):
