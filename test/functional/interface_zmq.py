@@ -13,7 +13,6 @@ from test_framework.blocktools import create_block, create_coinbase
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.messages import (
     dashhash,
-    hash256,
     tx_from_hex,
 )
 from test_framework.util import (
@@ -31,9 +30,6 @@ try:
     import zmq
 except ImportError:
     pass
-
-def hash256_reversed(byte_str):
-    return hash256(byte_str)[::-1]
 
 def dashhash_reversed(byte_str):
     return dashhash(byte_str)[::-1]
@@ -240,8 +236,9 @@ class ZMQTest (BitcoinTestFramework):
             #       islocked txes
 
             # Should receive the broadcasted raw transaction.
-            hex = rawtx.receive()
-            assert_equal(payment_txid, hash256_reversed(hex).hex())
+            tx = tx_from_hex(rawtx.receive().hex())
+            tx.calc_sha256()
+            assert_equal(payment_txid, tx.hash)
 
             # Mining the block with this tx should result in second notification
             # after coinbase tx notification
