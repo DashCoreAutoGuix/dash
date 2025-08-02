@@ -887,12 +887,6 @@ void ThreadImport(ChainstateManager& chainman, std::vector<fs::path> vImportFile
                 return;
             }
         }
-
-        if (args.GetBoolArg("-stopafterblockimport", DEFAULT_STOPAFTERBLOCKIMPORT)) {
-            LogPrintf("Stopping after block import\n");
-            StartShutdown();
-            return;
-        }
     } // End scope of CImportingNow
 
     chainman.ActiveChainstate().LoadMempool(args);
