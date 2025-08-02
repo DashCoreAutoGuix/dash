@@ -683,8 +683,7 @@ def LegacySignatureHash(*args, **kwargs):
     msg = LegacySignatureMsg(*args, **kwargs)
     if msg is None:
         return (HASH_ONE, "error")  # Simplified error handling for now
-    else:
-        return (hash256(msg), None)
+    return (hash256(msg), None)
 
 def sign_input_legacy(tx, input_index, input_scriptpubkey, privkey, sighash_type=SIGHASH_ALL):
     """Add legacy ECDSA signature for a given transaction input. Note that the signature

@@ -136,7 +136,7 @@ class MiniWallet:
             # with the DER header/skeleton data of 6 bytes added, plus 2 bytes scriptSig overhead
             # (OP_PUSHn and SIGHASH_ALL), this leads to a scriptSig target size of 73 bytes
             tx.vin[0].scriptSig = b''
-            while not len(tx.vin[0].scriptSig) == 73:
+            while len(tx.vin[0].scriptSig) != 73:
                 tx.vin[0].scriptSig = b''
                 sign_input_legacy(tx, 0, self._scriptPubKey, self._priv_key)
                 if not fixed_length:
