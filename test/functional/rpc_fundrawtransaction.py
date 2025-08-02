@@ -19,6 +19,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
     count_bytes,
     find_vout_for_address,
+    get_fee,
     satoshi_round,
 )
 from test_framework.wallet_util import bytes_to_wif
@@ -550,6 +551,10 @@ class RawTransactionsTest(BitcoinTestFramework):
     def test_locked_wallet(self):
         self.log.info("Test fundrawtxn with locked wallet and hardened derivation")
 
+
+        # This test is not meant to exercise fee estimation. Making sure all txs are sent at a consistent fee rate.
+        self.nodes[1].settxfee(self.min_relay_tx_fee)
+
         self.nodes[1].encryptwallet("test")
 
         if self.options.descriptors:
@@ -573,7 +578,10 @@ class RawTransactionsTest(BitcoinTestFramework):
         # Choose 2 inputs
         # bnb doesn't work same way as in bitcoin, so, `value` is also calculated by different way
         inputs = self.nodes[1].listunspent()
-        value = sum(inp["amount"] for inp in inputs) - Decimal("0.00002200")
+
+        # Deduce exact fee to produce a changeless transaction
+        # Dash uses different transaction sizes than Bitcoin, but apply the same concept
+        value = sum(inp["amount"] for inp in inputs) - get_fee(200, self.min_relay_tx_fee)  # Approximate tx size for Dash
         outputs = {self.nodes[0].getnewaddress():value}
         rawtx = self.nodes[1].createrawtransaction(inputs, outputs)
         # fund a transaction that does not require a new key for the change output
