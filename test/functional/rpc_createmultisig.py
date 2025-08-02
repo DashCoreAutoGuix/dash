@@ -20,6 +20,7 @@ from test_framework.wallet_util import bytes_to_wif
 from test_framework.wallet import (
     MiniWallet,
     getnewdestination,
+    address_to_scriptpubkey,
 )
 
 class RpcCreateMultiSigTest(BitcoinTestFramework):
@@ -158,8 +159,8 @@ class RpcCreateMultiSigTest(BitcoinTestFramework):
             assert mredeemw == mredeem
             wmulti.unloadwallet()
 
-        spk = bytes.fromhex(node0.validateaddress(madd)["scriptPubKey"])
-        txid, _ = self.wallet.send_to(from_node=self.nodes[0], scriptPubKey=spk, amount=2000)
+        spk = address_to_scriptpubkey(madd)
+        txid = self.wallet.send_to(from_node=self.nodes[0], scriptPubKey=spk, amount=2000)["txid"]
         tx = node0.getrawtransaction(txid, True)
         vout = [v["n"] for v in tx["vout"] if madd == v["scriptPubKey"]["address"]]
         assert len(vout) == 1
