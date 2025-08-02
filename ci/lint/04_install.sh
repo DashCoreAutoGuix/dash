@@ -1,4 +1,4 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 #
 # Copyright (c) 2018-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
@@ -15,7 +15,7 @@ ${CI_RETRY_EXE} apt-get install -y curl xz-utils git gpg
 
 if [ -z "${SKIP_PYTHON_INSTALL}" ]; then
     PYTHON_PATH=/tmp/python
-    if [ \! -d "${PYTHON_PATH}/bin" ]; then
+    if [ ! -d "${PYTHON_PATH}/bin" ]; then
       (
         git clone https://github.com/pyenv/pyenv.git
         cd pyenv/plugins/python-build || exit 1
@@ -45,4 +45,3 @@ SHELLCHECK_VERSION=v0.8.0
 curl -sL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | \
     tar --xz -xf - --directory /tmp/
 mv "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/bin/
-EOF < /dev/null
