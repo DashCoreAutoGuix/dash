@@ -278,6 +278,12 @@ ChainTestingSetup::~ChainTestingSetup()
     m_node.chainman.reset();
 }
 
+void ChainTestingSetup::LoadVerifyActivateChainstate()
+{
+    // In Dash, chainstate is loaded in TestingSetup constructor
+    // This function exists for Bitcoin compatibility but is not needed
+}
+
 TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const char*>& extra_args)
     : ChainTestingSetup(chainName, extra_args)
 {
