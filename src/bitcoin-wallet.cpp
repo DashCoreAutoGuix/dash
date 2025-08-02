@@ -8,12 +8,12 @@
 
 #include <chainparams.h>
 #include <chainparamsbase.h>
+#include <clientversion.h>
 #include <common/url.h>
 #include <compat/compat.h>
+#include <key.h>
 #include <logging.h>
 #include <util/strencodings.h>
-#include <clientversion.h>
-#include <key.h>
 #include <pubkey.h>
 #include <tinyformat.h>
 #include <util/system.h>

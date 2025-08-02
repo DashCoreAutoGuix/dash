@@ -20,3 +20,5 @@ std::string urlDecode(const std::string &urlEncoded) {
     }
     return res;
 }
+
+UrlDecodeFn* const URL_DECODE = &urlDecode;
