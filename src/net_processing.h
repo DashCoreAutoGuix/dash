@@ -30,7 +30,8 @@ struct LLMQContext;
 
 /** Default for -maxorphantxsize, maximum size in megabytes the orphan map can grow before entries are removed */
 static const unsigned int DEFAULT_MAX_ORPHAN_TRANSACTIONS_SIZE = 10; // this allows around 100 TXs of max size (and many more of normal size)
-/** Default number of orphan+recently-replaced txn to keep around for block reconstruction */
+/** Default number of non-mempool transactions to keep around for block reconstruction. Includes
+    orphan, replaced, and rejected transactions. */
 static const unsigned int DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN = 100;
 static const bool DEFAULT_PEERBLOOMFILTERS = true;
 static const bool DEFAULT_PEERBLOCKFILTERS = false;

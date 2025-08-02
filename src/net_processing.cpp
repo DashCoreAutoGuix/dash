@@ -44,6 +44,7 @@
 #include <chrono>
 #include <future>
 #include <list>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <ranges>
@@ -1047,7 +1048,7 @@ private:
      *  these are kept in a ring buffer */
     std::vector<std::pair<uint256, CTransactionRef>> vExtraTxnForCompact GUARDED_BY(g_cs_orphans);
     /** Offset into vExtraTxnForCompact to insert the next tx */
-    size_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
+    uint32_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
 };
 
 // Keeps track of the time (in microseconds) when transactions were requested last time
@@ -1770,7 +1771,8 @@ bool PeerManagerImpl::GetNodeStateStats(NodeId nodeid, CNodeStateStats& stats) c
 
 void PeerManagerImpl::AddToCompactExtraTransactions(const CTransactionRef& tx) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans)
 {
-    size_t max_extra_txn = gArgs.GetIntArg("-blockreconstructionextratxn", DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN);
+    auto value = gArgs.GetIntArg("-blockreconstructionextratxn", DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN);
+    uint32_t max_extra_txn = uint32_t(std::clamp<int64_t>(value, 0, std::numeric_limits<uint32_t>::max()));
     if (max_extra_txn <= 0)
         return;
     if (!vExtraTxnForCompact.size())
