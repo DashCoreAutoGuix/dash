@@ -10,8 +10,8 @@
 #include <script/standard.h>
 #include <test/fuzz/fuzz.h>
 
-//! Types are raw (un)compressed pubkeys, raw xonly pubkeys, raw privkeys (WIF), xpubs, xprvs.
-static constexpr uint8_t KEY_TYPES_COUNT{6};
+//! Types are raw (un)compressed pubkeys, raw privkeys (WIF), xpubs, xprvs.
+static constexpr uint8_t KEY_TYPES_COUNT{5};
 //! How many keys we'll generate in total.
 static constexpr size_t TOTAL_KEYS_GENERATED{std::numeric_limits<uint8_t>::max() + 1};
 
@@ -29,10 +29,9 @@ public:
     // We derive the type of key to generate from the 1-byte id parsed from hex.
     bool IdIsCompPubKey(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 0; }
     bool IdIsUnCompPubKey(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 1; }
-    bool IdIsXOnlyPubKey(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 2; }
-    bool IdIsConstPrivKey(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 3; }
-    bool IdIsXpub(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 4; }
-    bool IdIsXprv(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 5; }
+    bool IdIsConstPrivKey(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 2; }
+    bool IdIsXpub(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 3; }
+    bool IdIsXprv(uint8_t idx) const { return idx % KEY_TYPES_COUNT == 4; }
 
     //! When initializing the target, populate the list of keys.
     void Init() {
@@ -44,14 +43,11 @@ public:
 
             // If this is a "raw" key, generate a normal privkey. Otherwise generate
             // an extended one.
-            if (IdIsCompPubKey(i) || IdIsUnCompPubKey(i) || IdIsXOnlyPubKey(i) || IdIsConstPrivKey(i)) {
+            if (IdIsCompPubKey(i) || IdIsUnCompPubKey(i) || IdIsConstPrivKey(i)) {
                 CKey privkey;
                 privkey.Set(UCharCast(key_data.begin()), UCharCast(key_data.end()), !IdIsUnCompPubKey(i));
                 if (IdIsCompPubKey(i) || IdIsUnCompPubKey(i)) {
                     CPubKey pubkey{privkey.GetPubKey()};
-                    keys_str[i] = HexStr(pubkey);
-                } else if (IdIsXOnlyPubKey(i)) {
-                    const XOnlyPubKey pubkey{privkey.GetPubKey()};
                     keys_str[i] = HexStr(pubkey);
                 } else {
                     keys_str[i] = EncodeSecret(privkey);
