@@ -199,7 +199,6 @@ class BIP68Test(BitcoinTestFramework):
             else:
                 # This raw transaction should be accepted
                 self.wallet.sendrawtransaction(from_node=self.nodes[0], tx_hex=tx.serialize().hex())
-                self.wallet.rescan_utxos()
                 utxos = self.wallet.get_utxos(include_immature_coinbase=False)
 
     # Test that sequence locks on unconfirmed inputs must have nSequence
@@ -211,7 +210,6 @@ class BIP68Test(BitcoinTestFramework):
         cur_height = self.nodes[0].getblockcount()
 
         # Create a mempool tx.
-        self.wallet.rescan_utxos()
         tx1 = self.wallet.send_self_transfer(from_node=self.nodes[0])["tx"]
         tx1.rehash()
 
@@ -395,7 +393,6 @@ class BIP68Test(BitcoinTestFramework):
     # Use self.nodes[1] to test that version 2 transactions are standard.
     def test_version2_relay(self):
         mini_wallet = MiniWallet(self.nodes[1])
-        mini_wallet.rescan_utxos()
         tx = mini_wallet.create_self_transfer()["tx"]
         tx.nVersion = 2
         mini_wallet.sendrawtransaction(from_node=self.nodes[1], tx_hex=tx.serialize().hex())
