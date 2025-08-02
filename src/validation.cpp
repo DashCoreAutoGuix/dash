@@ -853,7 +853,8 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
         }
     }
 
-    entry.reset(new CTxMemPoolEntry(ptx, ws.m_base_fees, nAcceptTime, m_active_chainstate.m_chain.Height(),
+    entry.reset(new CTxMemPoolEntry(ptx, ws.m_base_fees, nAcceptTime, m_active_chainstate.m_chain.Height(), 
+            bypass_limits ? 0 : m_pool.GetSequence(),
             fSpendsCoinbase, nSigOps, lp));
     ws.m_vsize = entry->GetTxSize();
 

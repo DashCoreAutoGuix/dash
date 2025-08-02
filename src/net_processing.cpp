@@ -102,8 +102,6 @@ static const unsigned int MAX_GETDATA_SZ = 1000;
 
 /** How long to cache transactions in mapRelay for normal relay */
 static constexpr auto RELAY_TX_CACHE_TIME = 15min;
-/** How long a transaction has to be in the mempool before it can unconditionally be relayed (even when not in mapRelay). */
-static constexpr auto UNCONDITIONAL_RELAY_DELAY = 2min;
 /** Headers download timeout.
  *  Timeout = base + per_header * (expected number of headers) */
 static constexpr auto HEADERS_DOWNLOAD_TIMEOUT_BASE = 15min;
@@ -181,13 +179,6 @@ static constexpr auto OUTBOUND_INVENTORY_BROADCAST_INTERVAL{2s};
 static constexpr unsigned int INVENTORY_BROADCAST_PER_SECOND = 7;
 /** Maximum number of inventory items to send per transmission. */
 static constexpr unsigned int INVENTORY_BROADCAST_MAX_PER_1MB_BLOCK = 4 * INVENTORY_BROADCAST_PER_SECOND * count_seconds(INBOUND_INVENTORY_BROADCAST_INTERVAL);
-/** The number of most recently announced transactions a peer can request. */
-static constexpr unsigned int INVENTORY_MAX_RECENT_RELAY = 3500;
-/** Verify that INVENTORY_MAX_RECENT_RELAY is enough to cache everything typically
- *  relayed before unconditional relay from the mempool kicks in. This is only a
- *  lower bound, and it should be larger to account for higher inv rate to outbound
- *  peers, and random variations in the broadcast mechanism. */
-static_assert(INVENTORY_MAX_RECENT_RELAY >= INVENTORY_BROADCAST_PER_SECOND * UNCONDITIONAL_RELAY_DELAY / std::chrono::seconds{1}, "INVENTORY_RELAY_MAX too low");
 /** Maximum number of compact filters that may be requested with one getcfilters. See BIP 157. */
 static constexpr uint32_t MAX_GETCFILTERS_SIZE = 1000;
 /** Maximum number of cf hashes that may be requested with one getcfheaders. See BIP 157. */
@@ -312,11 +303,12 @@ struct Peer {
          *  permitted if the peer has NetPermissionFlags::Mempool or we advertise
          *  NODE_BLOOM. See BIP35. */
         bool m_send_mempool GUARDED_BY(m_tx_inventory_mutex){false};
-        /** The last time a BIP35 `mempool` request was serviced. */
-        std::atomic<std::chrono::seconds> m_last_mempool_req{0s};
         /** The next time after which we will send an `inv` message containing
          *  transaction announcements to this peer. */
         std::chrono::microseconds m_next_inv_send_time GUARDED_BY(NetEventsInterface::g_msgproc_mutex){0};
+        /** The mempool sequence num at which we sent the last `inv` message to this peer.
+         *  Can relay txs with lower sequence numbers than this (see CTxMempool::info_for_relay). */
+        uint64_t m_last_inv_sequence GUARDED_BY(NetEventsInterface::g_msgproc_mutex){1};
     };
 
     /**
@@ -582,9 +574,6 @@ struct CNodeState {
 
     //! Whether this peer is an inbound connection
     const bool m_is_inbound;
-
-    //! A rolling bloom filter of all announced tx CInvs to this peer.
-    CRollingBloomFilter m_recently_announced_invs = CRollingBloomFilter{INVENTORY_MAX_RECENT_RELAY, 0.000001};
 
     CNodeState(bool is_inbound) : m_is_inbound(is_inbound) {}
 };
@@ -1010,7 +999,8 @@ private:
     std::atomic<std::chrono::seconds> m_last_tip_update{0s};
 
     /** Determine whether or not a peer can request a transaction, and return it (or nullptr if not found or not allowed). */
-    CTransactionRef FindTxForGetData(const CNode* peer, const uint256& txid, const std::chrono::seconds mempool_req, const std::chrono::seconds now) LOCKS_EXCLUDED(cs_main);
+    CTransactionRef FindTxForGetData(const Peer::TxRelay& tx_relay, const uint256& txid)
+        EXCLUSIVE_LOCKS_REQUIRED(!m_most_recent_block_mutex, NetEventsInterface::g_msgproc_mutex);
 
     void ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic<bool>& interruptMsgProc) EXCLUSIVE_LOCKS_REQUIRED(peer.m_getdata_requests_mutex) LOCKS_EXCLUDED(::cs_main);
 
@@ -2660,29 +2650,23 @@ void PeerManagerImpl::ProcessGetBlockData(CNode& pfrom, Peer& peer, const CInv& 
     }
 }
 
-//! Determine whether or not a peer can request a transaction, and return it (or nullptr if not found or not allowed).
-CTransactionRef PeerManagerImpl::FindTxForGetData(const CNode* peer, const uint256& txid, const std::chrono::seconds mempool_req, const std::chrono::seconds now)
+CTransactionRef PeerManagerImpl::FindTxForGetData(const Peer::TxRelay& tx_relay, const uint256& txid)
 {
-    auto txinfo = m_mempool.info(txid);
+    // If a tx was in the mempool prior to the last INV for this peer, permit the request.
+    auto txinfo = m_mempool.info_for_relay(txid, tx_relay.m_last_inv_sequence);
     if (txinfo.tx) {
-        // If a TX could have been INVed in reply to a MEMPOOL request,
-        // or is older than UNCONDITIONAL_RELAY_DELAY, permit the request
-        // unconditionally.
-        if ((mempool_req.count() && txinfo.m_time <= mempool_req) || txinfo.m_time <= now - UNCONDITIONAL_RELAY_DELAY) {
-            return std::move(txinfo.tx);
-        }
+        return std::move(txinfo.tx);
     }
 
+    // Or it might be from the most recent block
     {
-        LOCK(cs_main);
-
-        // Otherwise, the transaction must have been announced recently.
-        if (State(peer->GetId())->m_recently_announced_invs.contains(txid)) {
-            // If it was, it can be relayed from either the mempool...
-            if (txinfo.tx) return std::move(txinfo.tx);
-            // ... or the relay pool.
-            auto mi = mapRelay.find(txid);
-            if (mi != mapRelay.end()) return mi->second;
+        LOCK(m_most_recent_block_mutex);
+        if (m_most_recent_block) {
+            for (const auto& tx : m_most_recent_block->vtx) {
+                if (tx->GetHash() == txid) {
+                    return tx;
+                }
+            }
         }
     }
 
@@ -2698,11 +2682,6 @@ void PeerManagerImpl::ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic
     std::deque<CInv>::iterator it = peer.m_getdata_requests.begin();
     std::vector<CInv> vNotFound;
     const CNetMsgMaker msgMaker(pfrom.GetCommonVersion());
-
-    const auto now{GetTime<std::chrono::seconds>()};
-    // Get last mempool request time
-    const auto mempool_req = tx_relay != nullptr ? tx_relay->m_last_mempool_req.load()
-                                                 : std::chrono::seconds::min();
 
     // Process as many TX items from the front of the getdata queue as
     // possible, since they're common and it's efficient to batch process
@@ -2731,7 +2710,7 @@ void PeerManagerImpl::ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic
 
         bool push = false;
         if (inv.IsGenTxMsg()) {
-            CTransactionRef tx = FindTxForGetData(&pfrom, inv.hash, mempool_req, now);
+            CTransactionRef tx = FindTxForGetData(*tx_relay, inv.hash);
             if (tx) {
                 CCoinJoinBroadcastTx dstx;
                 if (inv.IsMsgDstx()) {
@@ -2744,30 +2723,6 @@ void PeerManagerImpl::ProcessGetData(CNode& pfrom, Peer& peer, const std::atomic
                 }
                 m_mempool.RemoveUnbroadcastTx(tx->GetHash());
                 push = true;
-
-                // As we're going to send tx, make sure its unconfirmed parents are made requestable.
-                std::vector<uint256> parent_ids_to_add;
-                {
-                    LOCK(m_mempool.cs);
-                    auto txiter = m_mempool.GetIter(tx->GetHash());
-                    if (txiter) {
-                        const CTxMemPoolEntry::Parents& parents = (*txiter)->GetMemPoolParentsConst();
-                        parent_ids_to_add.reserve(parents.size());
-                        for (const CTxMemPoolEntry& parent : parents) {
-                            if (parent.GetTime() > now - UNCONDITIONAL_RELAY_DELAY) {
-                                parent_ids_to_add.push_back(parent.GetTx().GetHash());
-                            }
-                        }
-                    }
-                }
-
-                for (const uint256& parent_txid : parent_ids_to_add) {
-                    // Relaying a transaction with a recent but unconfirmed parent.
-                    if (WITH_LOCK(tx_relay->m_tx_inventory_mutex, return !tx_relay->m_tx_inventory_known_filter.contains(parent_txid))) {
-                        LOCK(cs_main);
-                        State(pfrom.GetId())->m_recently_announced_invs.insert(parent_txid);
-                    }
-                }
             }
         }
 
@@ -6054,7 +6009,6 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
 
         auto queueAndMaybePushInv = [this, pto, peer, &vInv, &msgMaker](const CInv& invIn) {
             LogPrint(BCLog::NET, "SendMessages -- queued inv: %s  index=%d peer=%d\n", invIn.ToString(), vInv.size(), pto->GetId());
-            // Responses to MEMPOOL requests bypass the m_recently_announced_invs filter.
             vInv.push_back(invIn);
             if (vInv.size() == MAX_INV_SZ) {
                 LogPrint(BCLog::NET, "SendMessages -- pushing invs: count=%d peer=%d\n", vInv.size(), pto->GetId());
@@ -6119,7 +6073,6 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     tx_relay->m_tx_inventory_known_filter.insert(chainlockHash);
                     queueAndMaybePushInv(CInv(MSG_CLSIG, chainlockHash));
                 }
-                tx_relay->m_last_mempool_req = std::chrono::duration_cast<std::chrono::seconds>(current_time);
             }
 
             // Determine transactions to relay
@@ -6161,7 +6114,6 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     }
                     if (tx_relay->m_bloom_filter && !tx_relay->m_bloom_filter->IsRelevantAndUpdate(*txinfo.tx)) continue;
                     // Send
-                    State(pto->GetId())->m_recently_announced_invs.insert(hash);
                     nRelayedTransactions++;
                     {
                         // Expire old relay messages
@@ -6180,6 +6132,10 @@ bool PeerManagerImpl::SendMessages(CNode* pto)
                     tx_relay->m_tx_inventory_known_filter.insert(hash);
                     queueAndMaybePushInv(CInv(nInvType, hash));
                 }
+
+                // Ensure we'll respond to GETDATA requests for anything we've just announced
+                LOCK(m_mempool.cs);
+                tx_relay->m_last_inv_sequence = m_mempool.GetSequence();
             }
         }
         {

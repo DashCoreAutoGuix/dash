@@ -49,13 +49,14 @@ bool TestLockPointValidity(CChain& active_chain, const LockPoints& lp)
 }
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef& tx, CAmount fee,
-                                 int64_t time, unsigned int entry_height,
+                                 int64_t time, unsigned int entry_height, uint64_t entry_sequence,
                                  bool spends_coinbase, int64_t sigops_count, LockPoints lp)
     : tx{tx},
       nFee{fee},
       nTxSize(tx->GetTotalSize()),
       nUsageSize{RecursiveDynamicUsage(tx)},
       nTime{time},
+      entry_sequence{entry_sequence},
       entryHeight{entry_height},
       spendsCoinbase{spends_coinbase},
       sigOpCount{sigops_count},
@@ -1325,6 +1326,17 @@ TxMempoolInfo CTxMemPool::info(const uint256& hash) const
     if (i == mapTx.end())
         return TxMempoolInfo();
     return GetInfo(i);
+}
+
+TxMempoolInfo CTxMemPool::info_for_relay(const uint256& txid, uint64_t last_sequence) const
+{
+    LOCK(cs);
+    indexed_transaction_set::const_iterator i = mapTx.find(txid);
+    if (i != mapTx.end() && i->GetSequence() < last_sequence) {
+        return GetInfo(i);
+    } else {
+        return TxMempoolInfo();
+    }
 }
 
 bool CTxMemPool::existsProviderTxConflict(const CTransaction &tx) const {
