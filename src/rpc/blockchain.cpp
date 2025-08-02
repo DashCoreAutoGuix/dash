@@ -1189,7 +1189,6 @@ static RPCHelpMan gettxoutsetinfo()
         if (!stats.index_requested) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot set use_index to false when querying for a specific block");
         }
-
         pindex = ParseHashOrHeight(request.params[1], chainman);
     }
 
