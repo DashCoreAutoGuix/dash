@@ -7,6 +7,7 @@
 
 #include <context.h>
 
+class AddrMan;
 class ArgsManager;
 class CBlockPolicyEstimator;
 class CConnman;
@@ -34,5 +35,7 @@ LLMQContext& EnsureLLMQContext(const node::NodeContext& node);
 LLMQContext& EnsureAnyLLMQContext(const CoreContext& context);
 CConnman& EnsureConnman(const node::NodeContext& node);
 PeerManager& EnsurePeerman(const node::NodeContext& node);
+AddrMan& EnsureAddrman(const node::NodeContext& node);
+AddrMan& EnsureAnyAddrman(const CoreContext& context);
 
 #endif // BITCOIN_RPC_SERVER_UTIL_H
