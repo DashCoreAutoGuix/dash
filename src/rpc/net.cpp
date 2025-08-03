@@ -992,11 +992,7 @@ static RPCHelpMan addpeeraddress()
         },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
-
-    const NodeContext& node = EnsureAnyNodeContext(request.context);
-    if (!node.addrman) {
-        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Address manager functionality missing or disabled");
-    }
+    AddrMan& addrman = EnsureAnyAddrman(request.context);
 
     const std::string& addr_string{request.params[0].get_str()};
     const uint16_t port = request.params[1].getInt<int>();
@@ -1012,11 +1008,11 @@ static RPCHelpMan addpeeraddress()
         address.nTime = Now<NodeSeconds>();
         // The source address is set equal to the address. This is equivalent to the peer
         // announcing itself.
-        if (node.addrman->Add({address}, address)) {
+        if (addrman.Add({address}, address)) {
             success = true;
             if (tried) {
                 // Attempt to move the address to the tried addresses table.
-                node.addrman->Good(address);
+                addrman.Good(address);
             }
         }
     }
