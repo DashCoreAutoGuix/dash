@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 
+class CBlockIndex;
 class CChain;
 class CChainState;
 extern RecursiveMutex cs_main;
