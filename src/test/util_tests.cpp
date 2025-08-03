@@ -1859,7 +1859,6 @@ BOOST_AUTO_TEST_CASE(clearshrink_test)
     }
 }
 
-
 BOOST_AUTO_TEST_CASE(padding_test)
 {
     /* By default strings will be padded to the left */
