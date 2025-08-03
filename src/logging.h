@@ -67,6 +67,8 @@ namespace BCLog {
 #endif
         BLOCKSTORE  = (1 << 26),
         TXRECONCILIATION = (1 << 27),
+        SCAN        = (uint64_t)1 << 28,
+        TXPACKAGES  = (uint64_t)1 << 29,
 
         //Start Dash
         CHAINLOCKS  = ((uint64_t)1 << 32),

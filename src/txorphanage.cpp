@@ -36,7 +36,7 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
     unsigned int sz = GetSerializeSize(*tx, CTransaction::CURRENT_VERSION);
     if (sz > MAX_STANDARD_TX_SIZE)
     {
-        LogPrint(BCLog::MEMPOOL, "ignoring large orphan tx (size: %u, hash: %s)\n", sz, hash.ToString());
+        LogPrint(BCLog::TXPACKAGES, "ignoring large orphan tx (size: %u, txid: %s)\n", sz, hash.ToString());
         return false;
     }
 
@@ -49,7 +49,7 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
 
     m_orphan_tx_size += sz;
 
-    LogPrint(BCLog::MEMPOOL, "stored orphan tx %s (mapsz %u outsz %u)\n", hash.ToString(),
+    LogPrint(BCLog::TXPACKAGES, "stored orphan tx %s (mapsz %u outsz %u)\n", hash.ToString(),
              m_orphans.size(), m_outpoint_to_orphan_it.size());
     ::g_stats_client->inc("transactions.orphans.add", 1.0f);
     ::g_stats_client->gauge("transactions.orphans", m_orphans.size());
@@ -82,6 +82,7 @@ int TxOrphanage::EraseTx(const uint256& txid)
         m_orphan_list[old_pos] = it_last;
         it_last->second.list_pos = old_pos;
     }
+    LogPrint(BCLog::TXPACKAGES, "   removed orphan tx %s\n", txid.ToString());
     m_orphan_list.pop_back();
 
     assert(m_orphan_tx_size >= it->second.nTxSize);
@@ -106,7 +107,7 @@ void TxOrphanage::EraseForPeer(NodeId peer)
             nErased += EraseTx(maybeErase->second.tx->GetHash());
         }
     }
-    if (nErased > 0) LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx from peer=%d\n", nErased, peer);
+    if (nErased > 0) LogPrint(BCLog::TXPACKAGES, "Erased %d orphan tx from peer=%d\n", nErased, peer);
 }
 
 unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
@@ -132,7 +133,7 @@ unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
         }
         // Sweep again 5 minutes after the next entry that expires in order to batch the linear scan.
         nNextSweep = nMinExpTime + ORPHAN_TX_EXPIRE_INTERVAL;
-        if (nErased > 0) LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx due to expiration\n", nErased);
+        if (nErased > 0) LogPrint(BCLog::TXPACKAGES, "Erased %d orphan tx due to expiration\n", nErased);
     }
     FastRandomContext rng;
     while (!m_orphans.empty() && m_orphan_tx_size > max_orphans_size)
@@ -142,6 +143,7 @@ unsigned int TxOrphanage::LimitOrphans(unsigned int max_orphans_size)
         EraseTx(m_orphan_list[randompos]->first);
         ++nEvicted;
     }
+    if (nEvicted > 0) LogPrint(BCLog::TXPACKAGES, "orphanage overflow, removed %u tx\n", nEvicted);
     return nEvicted;
 }
 
@@ -153,6 +155,8 @@ void TxOrphanage::AddChildrenToWorkSet(const CTransaction& tx, std::set<uint256>
         if (it_by_prev != m_outpoint_to_orphan_it.end()) {
             for (const auto& elem : it_by_prev->second) {
                 orphan_work_set.insert(elem->first);
+                LogPrint(BCLog::TXPACKAGES, "added %s to peer %d workset\n",
+                         elem->first.ToString(), elem->second.fromPeer);
             }
         }
     }
@@ -222,6 +226,6 @@ void TxOrphanage::EraseForBlock(const CBlock& block)
         for (const uint256& orphanHash : vOrphanErase) {
             nErased += EraseTx(orphanHash);
         }
-        LogPrint(BCLog::MEMPOOL, "Erased %d orphan tx included or conflicted by block\n", nErased);
+        LogPrint(BCLog::TXPACKAGES, "Erased %d orphan tx included or conflicted by block\n", nErased);
     }
 }
