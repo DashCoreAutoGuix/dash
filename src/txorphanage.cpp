@@ -23,7 +23,6 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
     AssertLockHeld(g_cs_orphans);
 
     const uint256& hash = tx->GetHash();
-    const uint256& wtxid = tx->GetWitnessHash();
     if (m_orphans.count(hash))
         return false;
 
@@ -37,7 +36,7 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
     unsigned int sz = GetSerializeSize(*tx, CTransaction::CURRENT_VERSION);
     if (sz > MAX_STANDARD_TX_SIZE)
     {
-        LogPrint(BCLog::TXPACKAGES, "ignoring large orphan tx (size: %u, txid: %s, wtxid: %s)\n", sz, hash.ToString(), wtxid.ToString());
+        LogPrint(BCLog::TXPACKAGES, "ignoring large orphan tx (size: %u, txid: %s)\n", sz, hash.ToString());
         return false;
     }
 
@@ -50,7 +49,7 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
 
     m_orphan_tx_size += sz;
 
-    LogPrint(BCLog::TXPACKAGES, "stored orphan tx %s (wtxid=%s) (mapsz %u outsz %u)\n", hash.ToString(), wtxid.ToString(),
+    LogPrint(BCLog::TXPACKAGES, "stored orphan tx %s (mapsz %u outsz %u)\n", hash.ToString(),
              m_orphans.size(), m_outpoint_to_orphan_it.size());
     ::g_stats_client->inc("transactions.orphans.add", 1.0f);
     ::g_stats_client->gauge("transactions.orphans", m_orphans.size());
@@ -83,8 +82,7 @@ int TxOrphanage::EraseTx(const uint256& txid)
         m_orphan_list[old_pos] = it_last;
         it_last->second.list_pos = old_pos;
     }
-    const auto& wtxid = it->second.tx->GetWitnessHash();
-    LogPrint(BCLog::TXPACKAGES, "   removed orphan tx %s (wtxid=%s)\n", txid.ToString(), wtxid.ToString());
+    LogPrint(BCLog::TXPACKAGES, "   removed orphan tx %s\n", txid.ToString());
     m_orphan_list.pop_back();
 
     assert(m_orphan_tx_size >= it->second.nTxSize);
