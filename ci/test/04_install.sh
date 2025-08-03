@@ -43,7 +43,7 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
 
   # shellcheck disable=SC2086
   DOCKER_ID=$(docker run $DOCKER_ADMIN -idt \
-                  --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
+                  --mount type=bind,src=$BASE_ROOT_DIR,dst=$BASE_ROOT_DIR,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
                   --mount type=bind,src=$DEPENDS_DIR,dst=$DEPENDS_DIR \
                   --mount type=bind,src=$PREVIOUS_RELEASES_DIR,dst=$PREVIOUS_RELEASES_DIR \
@@ -125,7 +125,11 @@ CI_EXEC mkdir -p "${BASE_SCRATCH_DIR}/sanitizer-output/"
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Create $BASE_ROOT_DIR"
-  CI_EXEC rsync -a /ro_base/ "$BASE_ROOT_DIR"
+  # BASE_ROOT_DIR is already mounted directly, no need to copy from /ro_base
+  
+  # Fixes permission issues when there is a container UID/GID mismatch with the owner
+  # of the git source code directory.
+  CI_EXEC git config --global --add safe.directory \"*\"
 fi
 
 if [ "$USE_BUSY_BOX" = "true" ]; then
