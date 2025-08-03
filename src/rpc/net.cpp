@@ -1120,25 +1120,22 @@ static RPCHelpMan getaddrmaninfo()
                       },
                       [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
                       {
-                          NodeContext& node = EnsureAnyNodeContext(request.context);
-                          if (!node.addrman) {
-                              throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Address manager functionality missing or disabled");
-                          }
+                          AddrMan& addrman = EnsureAnyAddrman(request.context);
 
                           UniValue ret(UniValue::VOBJ);
                           for (int n = 0; n < NET_MAX; ++n) {
                               enum Network network = static_cast<enum Network>(n);
                               if (network == NET_UNROUTABLE || network == NET_INTERNAL) continue;
                               UniValue obj(UniValue::VOBJ);
-                              obj.pushKV("new", node.addrman->Size(network, true));
-                              obj.pushKV("tried", node.addrman->Size(network, false));
-                              obj.pushKV("total", node.addrman->Size(network));
+                              obj.pushKV("new", addrman.Size(network, true));
+                              obj.pushKV("tried", addrman.Size(network, false));
+                              obj.pushKV("total", addrman.Size(network));
                               ret.pushKV(GetNetworkName(network), obj);
                           }
                           UniValue obj(UniValue::VOBJ);
-                          obj.pushKV("new", node.addrman->Size(std::nullopt, true));
-                          obj.pushKV("tried", node.addrman->Size(std::nullopt, false));
-                          obj.pushKV("total", node.addrman->Size());
+                          obj.pushKV("new", addrman.Size(std::nullopt, true));
+                          obj.pushKV("tried", addrman.Size(std::nullopt, false));
+                          obj.pushKV("total", addrman.Size());
                           ret.pushKV("all_networks", obj);
                           return ret;
                       },
