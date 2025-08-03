@@ -8,8 +8,6 @@ import time
 from test_framework.messages import (
     CInv,
     MSG_TX,
-    MSG_WITNESS_TX,
-    MSG_WTX,
     msg_getdata,
     msg_inv,
     msg_notfound,
@@ -79,14 +77,13 @@ class PeerTxRelayer(P2PTxInvStore):
         self._getdata_received.append(message)
 
     def wait_for_parent_requests(self, txids):
-        """Wait for requests for missing parents by txid with witness data (MSG_WITNESS_TX or
-        WitnessTx). Requires that the getdata message match these txids exactly; all txids must be
+        """Wait for requests for missing parents by txid. Requires that the getdata message match these txids exactly; all txids must be
         requested and no additional requests are allowed."""
         def test_function():
             last_getdata = self.last_message.get('getdata')
             if not last_getdata:
                 return False
-            return len(last_getdata.inv) == len(txids) and all([item.type == MSG_WITNESS_TX and item.hash in txids for item in last_getdata.inv])
+            return len(last_getdata.inv) == len(txids) and all([item.type == MSG_TX and item.hash in txids for item in last_getdata.inv])
         self.wait_until(test_function, timeout=10)
 
     def assert_no_immediate_response(self, message):
@@ -117,14 +114,14 @@ class OrphanHandlingTest(BitcoinTestFramework):
         """Create package with 1 parent and 1 child, normal fees (no cpfp)."""
         parent = self.wallet.create_self_transfer()
         child = self.wallet.create_self_transfer(utxo_to_spend=parent['new_utxo'])
-        return child["tx"].getwtxid(), child["tx"], parent["tx"]
+        return child["tx"].rehash(), child["tx"], parent["tx"]
 
     def relay_transaction(self, peer, tx):
-        """Relay transaction using MSG_WTX"""
-        wtxid = int(tx.getwtxid(), 16)
-        peer.send_and_ping(msg_inv([CInv(t=MSG_WTX, h=wtxid)]))
+        """Relay transaction using MSG_TX"""
+        txid = int(tx.rehash(), 16)
+        peer.send_and_ping(msg_inv([CInv(t=MSG_TX, h=txid)]))
         self.nodes[0].bumpmocktime(TXREQUEST_TIME_SKIP)
-        peer.wait_for_getdata([wtxid])
+        peer.wait_for_getdata([txid])
         peer.send_and_ping(msg_tx(tx))
 
     @cleanup
@@ -157,7 +154,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         # Spy peer should not be able to query the node for the parent yet, since it hasn't been
         # announced / insufficient time has elapsed.
-        parent_inv = CInv(t=MSG_WTX, h=int(tx_parent_arrives["tx"].getwtxid(), 16))
+        parent_inv = CInv(t=MSG_TX, h=int(tx_parent_arrives["tx"].rehash(), 16))
         assert_equal(len(peer_spy.get_invs()), 0)
         peer_spy.assert_no_immediate_response(msg_getdata([parent_inv]))
 
@@ -178,7 +175,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         self.log.info("Test orphan handling when a nonsegwit parent is known to be invalid")
         parent_low_fee_nonsegwit = self.wallet_nonsegwit.create_self_transfer(fee_rate=0)
-        assert_equal(parent_low_fee_nonsegwit["txid"], parent_low_fee_nonsegwit["tx"].getwtxid())
+        assert_equal(parent_low_fee_nonsegwit["txid"], parent_low_fee_nonsegwit["tx"].rehash())
         parent_other = self.wallet_nonsegwit.create_self_transfer()
         child_nonsegwit = self.wallet_nonsegwit.create_self_transfer_multi(
             utxos_to_spend=[parent_other["new_utxo"], parent_low_fee_nonsegwit["new_utxo"]])
@@ -283,7 +280,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
         # Even though the peer would send a notfound for the "old" confirmed transaction, the node
         # doesn't give up on the orphan. Once all of the missing parents are received, it should be
         # submitted to mempool.
-        peer.send_message(msg_notfound(vec=[CInv(MSG_WITNESS_TX, int(txid_conf_old, 16))]))
+        peer.send_message(msg_notfound(vec=[CInv(MSG_TX, int(txid_conf_old, 16))]))
         peer.send_and_ping(msg_tx(missing_tx["tx"]))
         peer.sync_with_ping()
         assert_equal(node.getmempoolentry(orphan["txid"])["ancestorcount"], 3)
@@ -315,12 +312,12 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         # The wtxid and txid need to be the same for the node to recognize that the missing input
         # and in-flight request for inflight_parent_AB are the same transaction.
-        assert_equal(inflight_parent_AB["txid"], inflight_parent_AB["tx"].getwtxid())
+        assert_equal(inflight_parent_AB["txid"], inflight_parent_AB["tx"].rehash())
 
         # Announce inflight_parent_AB and wait for getdata
-        peer_txrequest.send_and_ping(msg_inv([CInv(t=MSG_WTX, h=int(inflight_parent_AB["tx"].getwtxid(), 16))]))
+        peer_txrequest.send_and_ping(msg_inv([CInv(t=MSG_TX, h=int(inflight_parent_AB["tx"].rehash(), 16))]))
         self.nodes[0].bumpmocktime(NONPREF_PEER_TX_DELAY)
-        peer_txrequest.wait_for_getdata([int(inflight_parent_AB["tx"].getwtxid(), 16)])
+        peer_txrequest.wait_for_getdata([int(inflight_parent_AB["tx"].rehash(), 16)])
 
         self.log.info("Test that the node does not request a parent if it has an in-flight txrequest")
         # Relay orphan child_A
@@ -370,11 +367,11 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         self.log.info("Test that an orphan with rejected parents, along with any descendants, cannot be retried with an alternate witness")
         parent_low_fee_nonsegwit = self.wallet_nonsegwit.create_self_transfer(fee_rate=0)
-        assert_equal(parent_low_fee_nonsegwit["txid"], parent_low_fee_nonsegwit["tx"].getwtxid())
+        assert_equal(parent_low_fee_nonsegwit["txid"], parent_low_fee_nonsegwit["tx"].rehash())
         child = self.wallet.create_self_transfer(utxo_to_spend=parent_low_fee_nonsegwit["new_utxo"])
         grandchild = self.wallet.create_self_transfer(utxo_to_spend=child["new_utxo"])
-        assert child["txid"] != child["tx"].getwtxid()
-        assert grandchild["txid"] != grandchild["tx"].getwtxid()
+        assert child["txid"] != child["tx"].rehash()
+        assert grandchild["txid"] != grandchild["tx"].rehash()
 
         # Relay the parent. It should be rejected because it pays 0 fees.
         self.relay_transaction(peer1, parent_low_fee_nonsegwit["tx"])
@@ -391,7 +388,7 @@ class OrphanHandlingTest(BitcoinTestFramework):
             self.relay_transaction(peer2, grandchild["tx"])
         assert_equal(0, len(node.getrawmempool()))
         peer2.assert_never_requested(child["txid"])
-        peer2.assert_never_requested(child["tx"].getwtxid())
+        peer2.assert_never_requested(child["tx"].rehash())
 
         # The child should never be requested, even if announced again with potentially different witness.
         peer3.send_and_ping(msg_inv([CInv(t=MSG_TX, h=int(child["txid"], 16))]))
