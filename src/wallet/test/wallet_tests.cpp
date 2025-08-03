@@ -25,6 +25,7 @@
 #include <util/translation.h>
 #include <policy/settings.h>
 #include <validation.h>
+#include <validationinterface.h>
 #include <wallet/coincontrol.h>
 #include <wallet/context.h>
 #include <wallet/receive.h>

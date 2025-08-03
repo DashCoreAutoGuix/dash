@@ -19,6 +19,7 @@
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index_container.hpp>
 
+class ArgsManager;
 class CBlockIndex;
 class CChainParams;
 class CChainstateHelper;
@@ -28,6 +29,8 @@ class CEvoDB;
 class CMNHFManager;
 class CScript;
 struct LLMQContext;
+class Chainstate;
+class ChainstateManager;
 
 namespace Consensus { struct Params; };
 namespace llmq {

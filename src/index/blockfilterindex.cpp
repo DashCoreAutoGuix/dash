@@ -9,6 +9,9 @@
 #include <index/blockfilterindex.h>
 #include <node/blockstorage.h>
 #include <serialize.h>
+#include <undo.h>
+#include <util/fs_helpers.h>
+#include <validation.h>
 
 using node::UndoReadFromDisk;
 
