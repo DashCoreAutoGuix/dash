@@ -157,8 +157,8 @@ void TxOrphanage::AddChildrenToWorkSet(const CTransaction& tx, std::set<uint256>
         if (it_by_prev != m_outpoint_to_orphan_it.end()) {
             for (const auto& elem : it_by_prev->second) {
                 orphan_work_set.insert(elem->first);
-                LogPrint(BCLog::TXPACKAGES, "added %s (wtxid=%s) to peer %d workset\n",
-                         tx.GetHash().ToString(), tx.GetWitnessHash().ToString(), elem->second.fromPeer);
+                LogPrint(BCLog::TXPACKAGES, "added %s to peer %d workset\n",
+                         elem->first.ToString(), elem->second.fromPeer);
             }
         }
     }
