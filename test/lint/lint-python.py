@@ -10,13 +10,13 @@ Check for specified flake8 and mypy warnings in python files.
 
 import os
 import pkg_resources
+from pathlib import Path
 import subprocess
 import sys
 
 # Customize mypy cache dir via environment variable
-# Using BASE_ROOT_DIR to maintain Dash-specific path structure
-cache_dir = f"{os.getenv('BASE_ROOT_DIR', '')}/test/.mypy_cache"
-os.environ["MYPY_CACHE_DIR"] = cache_dir
+cache_dir = Path(__file__).parent.parent / ".mypy_cache"
+os.environ["MYPY_CACHE_DIR"] = str(cache_dir)
 
 DEPS = ['flake8', 'lief', 'mypy', 'pyzmq']
 FILES_ARGS = ['git', 'ls-files', '--','test/functional/*.py', 'contrib/devtools/*.py', ':(exclude)contrib/devtools/github-merge.py']
