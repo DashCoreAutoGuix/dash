@@ -19,6 +19,8 @@ from test_framework.util import (
     try_rpc,
 )
 
+DEFAULT_MEMPOOL_EXPIRY_HOURS = 336
+
 class ResendWalletTransactionsTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
@@ -32,7 +34,9 @@ class ResendWalletTransactionsTest(BitcoinTestFramework):
         peer_first = node.add_p2p_connection(P2PTxInvStore())
 
         self.log.info("Create a new transaction and wait until it's broadcast")
-        txid = node.sendtoaddress(node.getnewaddress(), 1)
+        parent_utxo, indep_utxo = node.listunspent()[:2]
+        addr = node.getnewaddress()
+        txid = node.send(outputs=[{addr: 1}], inputs=[parent_utxo])["txid"]
 
         # Wallet rebroadcast is first scheduled 1 min sec after startup (see
         # nNextResend in ResendWalletTransactions()). Tell scheduler to call
@@ -41,10 +45,7 @@ class ResendWalletTransactionsTest(BitcoinTestFramework):
         node.mockscheduler(60)
 
         # Can take a few seconds due to transaction trickling
-        def wait_p2p():
-            self.bump_mocktime(1)
-            return peer_first.tx_invs_received[int(txid, 16)] >= 1
-        self.wait_until(wait_p2p)
+        peer_first.wait_for_broadcast([txid])
 
         # Add a second peer since txs aren't rebroadcast to the same peer (see m_tx_inventory_known_filter)
         peer_second = node.add_p2p_connection(P2PTxInvStore())
@@ -81,8 +82,6 @@ class ResendWalletTransactionsTest(BitcoinTestFramework):
         node.setmocktime(self.mocktime + 36 * 60 * 60 + 600)
         peer_second.wait_for_broadcast([txid])
 
-<<<<<<< HEAD
-=======
         self.log.info("Chain of unconfirmed not-in-mempool txs are rebroadcast")
         # This tests that the node broadcasts the parent transaction before the child transaction.
         # To test that scenario, we need a method to reliably get a child transaction placed
@@ -150,7 +149,6 @@ class ResendWalletTransactionsTest(BitcoinTestFramework):
         node.getmempoolentry(txid)
         node.getmempoolentry(child_txid)
 
->>>>>>> 9d5150ac47 (Merge bitcoin/bitcoin#28540: tests: Fix wallet_resendwallettransactions.py intermittent failure by using manual bumps instead of bumpfee)
 
 if __name__ == '__main__':
     ResendWalletTransactionsTest().main()
