@@ -181,7 +181,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(interfaces::Nod
             {
                 strAddress = mapValue["to"];
             }
-            
+
             TransactionRecord sub(hash, nTime, TransactionRecord::CoinJoinSend, strAddress, -nDebit, nCredit);
             sub.txDest = address;
             sub.updateLabel(wallet);
@@ -192,14 +192,14 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(interfaces::Nod
         {
             // Check for CoinJoin special transactions based on pattern
             bool handled = false;
-            
+
             // Only check for make collaterals and create denominations if all inputs are from us
             isminetype fAllToMe = ISMINE_SPENDABLE;
             for (const isminetype mine : wtx.txout_is_mine)
             {
                 if(fAllToMe > mine) fAllToMe = mine;
             }
-            
+
             if(fAllFromMe && fAllToMe)
             {
                 // Check for CoinJoin make collaterals
@@ -216,7 +216,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(interfaces::Nod
                     // <case3>, see CCoinJoinClientSession::MakeCollateralAmounts
                     fMakeCollateral = coinJoinOptions.isCollateralAmount(wtx.tx->vout[0].nValue);
                 }
-                
+
                 if (fMakeCollateral) {
                     TransactionRecord sub(hash, nTime, TransactionRecord::CoinJoinMakeCollaterals, "", -(nDebit - wtx.change), nCredit - wtx.change);
                     sub.idx = parts.size();
@@ -237,7 +237,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(interfaces::Nod
                         }
                     }
                 }
-                
+
                 // Check for collateral payment pattern
                 if (!handled && wtx.tx->vin.size() == 1 && wtx.tx->vout.size() == 1
                     && coinJoinOptions.isCollateralAmount(nDebit)
@@ -251,7 +251,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(interfaces::Nod
                     handled = true;
                 }
             }
-            
+
             if (!handled) {
                 // Mixed debit transaction, can't break down payees
                 parts.append(TransactionRecord(hash, nTime, TransactionRecord::Other, "", nNet, 0));
