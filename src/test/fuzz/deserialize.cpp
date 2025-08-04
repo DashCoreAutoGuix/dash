@@ -78,7 +78,7 @@ T Deserialize(CDataStream ds)
 }
 
 template <typename T>
-void DeserializeFromFuzzingInput(FuzzBufferType buffer, T&& obj)
+void DeserializeFromFuzzingInput(FuzzBufferType buffer, T& obj)
 {
     CDataStream ds{buffer, SER_NETWORK, INIT_PROTO_VERSION};
     {
