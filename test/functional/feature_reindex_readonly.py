@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2024 The Dash Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test running bitcoind with -reindex from a read-only blockstore
@@ -49,7 +50,7 @@ class BlockstoreReindexTest(BitcoinTestFramework):
         self.log.debug("Attempt to restart and reindex the node with the unwritable block file")
         with self.nodes[0].assert_debug_log(expected_msgs=['FlushStateToDisk', 'failed to open file'], unexpected_msgs=[]):
             self.nodes[0].assert_start_raises_init_error(extra_args=['-reindex', '-fastprune'],
-                expected_msg="Error: A fatal internal error occurred, see debug.log for details")
+                                                        expected_msg="Error: A fatal internal error occurred, see debug.log for details")
 
         if used_chattr:
             subprocess.check_call(['chattr', '-i', filename])
