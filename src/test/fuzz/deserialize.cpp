@@ -229,21 +229,21 @@ FUZZ_TARGET_DESERIALIZE(netaddr_deserialize, {
     }
     AssertEqualAfterSerializeDeserialize(na, INIT_PROTO_VERSION | ADDRV2_FORMAT);
 })
-FUZZ_TARGET_DESERIALIZE(service_deserialize, {
-    CService s;
-    DeserializeFromFuzzingInput(buffer, s);
+FUZZ_TARGET(service_deserialize, .init = initialize_deserialize)
+{
+    FuzzedDataProvider fdp{buffer.data(), buffer.size()};
+    const auto ser_params{ConsumeDeserializationParams<CNetAddr::SerParams>(fdp)};
+    const auto maybe_s{ConsumeDeserializable<CService>(fdp, ser_params)};
+    if (!maybe_s) return;
+    const CService& s{*maybe_s};
     if (s.IsAddrV1Compatible()) {
         AssertEqualAfterSerializeDeserialize(s, CNetAddr::V1);
     }
-    AssertEqualAfterSerializeDeserialize(s, INIT_PROTO_VERSION | ADDRV2_FORMAT);
-    CService s1;
-    DeserializeFromFuzzingInput(buffer, s1, INIT_PROTO_VERSION);
-    AssertEqualAfterSerializeDeserialize(s1, INIT_PROTO_VERSION);
-    assert(s1.IsAddrV1Compatible());
-    CService s2;
-    DeserializeFromFuzzingInput(buffer, s2, INIT_PROTO_VERSION | ADDRV2_FORMAT);
-    AssertEqualAfterSerializeDeserialize(s2, INIT_PROTO_VERSION | ADDRV2_FORMAT);
-})
+    AssertEqualAfterSerializeDeserialize(s, CNetAddr::V2);
+    if (ser_params.enc == CNetAddr::Encoding::V1) {
+        assert(s.IsAddrV1Compatible());
+    }
+}
 FUZZ_TARGET_DESERIALIZE(messageheader_deserialize, {
     CMessageHeader mh;
     DeserializeFromFuzzingInput(buffer, mh);
