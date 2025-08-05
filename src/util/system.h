@@ -318,7 +318,6 @@ protected:
 
     fs::path GetBackupsDirPath();
 
-
     /**
      * Clear cached directory paths
      */
