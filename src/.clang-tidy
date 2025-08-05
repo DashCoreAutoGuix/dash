@@ -13,4 +13,3 @@ modernize-use-nullptr,
 readability-redundant-declaration,
 readability-redundant-string-init,
 '
-EOF < /dev/null
