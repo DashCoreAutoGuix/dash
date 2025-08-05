@@ -912,7 +912,7 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel, interfaces::BlockAndH
         }
 #endif
         // Disable top bar menu actions
-        appMenuBar->clear()
+        appMenuBar->clear();
     }
 
     updateCoinJoinVisibility();
