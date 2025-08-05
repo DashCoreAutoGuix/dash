@@ -2728,7 +2728,7 @@ UniValue CreateUTXOSnapshot(
         tip->nHeight, tip->GetBlockHash().ToString(),
         fs::PathToString(path), fs::PathToString(temppath)));
 
-    SnapshotMetadata metadata{tip->GetBlockHash(), stats.coins_count, tip->nChainTx};
+    SnapshotMetadata metadata{tip->GetBlockHash(), stats.coins_count};
 
     afile << metadata;
 
