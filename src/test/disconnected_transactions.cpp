@@ -4,7 +4,7 @@
 //
 #include <boost/test/unit_test.hpp>
 #include <core_memusage.h>
-#include <kernel/disconnected_transactions.h>
+#include <node/disconnected_transactions.h>
 #include <test/util/setup_common.h>
 
 BOOST_FIXTURE_TEST_SUITE(disconnected_transactions, TestChain100Setup)
