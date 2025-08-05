@@ -406,21 +406,18 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
         qInfo() << "Platform customization:" << gArgs.GetArg("-uiplatform", BitcoinGUI::DEFAULT_UIPLATFORM).c_str();
         clientModel = new ClientModel(node(), optionsModel);
         window->setClientModel(clientModel, &tip_info);
-
-        // If '-min' option passed, start window minimized (iconified) or minimized to tray
-        bool start_minimized = gArgs.GetBoolArg("-min", false);
 #ifdef ENABLE_WALLET
         if (WalletModel::isWalletEnabled()) {
             m_wallet_controller = new WalletController(*clientModel, this);
-            window->setWalletController(m_wallet_controller, /*show_loading_minimized=*/start_minimized);
+            window->setWalletController(m_wallet_controller);
             if (paymentServer) {
                 paymentServer->setOptionsModel(optionsModel);
             }
         }
 #endif // ENABLE_WALLET
 
-        // Show or minimize window
-        if (!start_minimized) {
+        // If -min option passed, start window minimized (iconified) or minimized to tray
+        if (!gArgs.GetBoolArg("-min", false)) {
             window->show();
         } else if (clientModel->getOptionsModel()->getMinimizeToTray() && window->hasTrayIcon()) {
             // do nothing as the window is managed by the tray icon

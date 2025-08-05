@@ -99,7 +99,7 @@ protected:
     interfaces::Node& node() const { return m_wallet_controller->m_node; }
     QObject* worker() const { return m_wallet_controller->m_activity_worker; }
 
-    void showProgressDialog(const QString& title_text, const QString& label_text, bool show_minimized=false);
+    void showProgressDialog(const QString& title_text, const QString& label_text);
 
     WalletController* const m_wallet_controller;
     QWidget* const m_parent_widget;
@@ -155,7 +155,7 @@ class LoadWalletsActivity : public WalletControllerActivity
 public:
     LoadWalletsActivity(WalletController* wallet_controller, QWidget* parent_widget);
 
-    void load(bool show_loading_minimized);
+    void load();
 };
 
 class RestoreWalletActivity : public WalletControllerActivity
