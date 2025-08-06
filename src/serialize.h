@@ -6,7 +6,11 @@
 #ifndef BITCOIN_SERIALIZE_H
 #define BITCOIN_SERIALIZE_H
 
+#include <attributes.h>
+#include <compat/assumptions.h> // IWYU pragma: keep
 #include <compat/endian.h>
+#include <prevector.h>
+#include <span.h>
 
 #include <algorithm>
 #include <atomic>
@@ -20,16 +24,12 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <string.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include <support/allocators/secure.h>
-#include <prevector.h>
-#include <span.h>
-
 /**
  * The maximum size of a serialized object in bytes or number of elements
  * (for eg vectors) when the size is encoded as CompactSize.

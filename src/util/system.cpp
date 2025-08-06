@@ -54,6 +54,7 @@
 
 #else
 
+#include <compat/compat.h>
 #include <codecvt>
 
 #include <io.h> /* for _commit */
