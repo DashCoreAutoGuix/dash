@@ -33,6 +33,17 @@ if [ -z "${SKIP_PYTHON_INSTALL}" ]; then
     python3 --version
 fi
 
+export LINT_RUNNER_PATH="/lint_test_runner"
+if [ ! -d "${LINT_RUNNER_PATH}" ]; then
+  ${CI_RETRY_EXE} apt-get install -y cargo
+  (
+    cd ./test/lint/test_runner || exit 1
+    cargo build
+    mkdir -p "${LINT_RUNNER_PATH}"
+    mv target/debug/test_runner "${LINT_RUNNER_PATH}"
+  )
+fi
+
 ${CI_RETRY_EXE} pip3 install codespell==2.0.0
 ${CI_RETRY_EXE} pip3 install flake8==3.8.3
 ${CI_RETRY_EXE} pip3 install lief==0.13.1
