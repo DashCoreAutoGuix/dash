@@ -382,8 +382,6 @@ private:
     const RPCExamples m_examples;
 };
 
-void PushWarnings(const UniValue& warnings, UniValue& obj);
-void PushWarnings(const std::vector<bilingual_str>& warnings, UniValue& obj);
 RPCErrorCode RPCErrorFromTransactionError(TransactionError terr);
 UniValue JSONRPCTransactionError(TransactionError terr, const std::string& err_string = "");
 
