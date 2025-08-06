@@ -11,30 +11,23 @@ Check include guards.
 import re
 import sys
 from subprocess import check_output
-from typing import List
 
 
 HEADER_ID_PREFIX = 'BITCOIN_'
 HEADER_ID_SUFFIX = '_H'
 
-EXCLUDE_FILES_WITH_PREFIX = ['src/crypto/ctaes',
+EXCLUDE_FILES_WITH_PREFIX = ['contrib/devtools/bitcoin-tidy',
+                             'src/crypto/ctaes',
                              'src/leveldb',
                              'src/crc32c',
                              'src/secp256k1',
                              'src/minisketch',
                              'src/tinyformat.h',
                              'src/bench/nanobench.h',
-                             'src/test/fuzz/FuzzedDataProvider.h',
-                             'src/bls',
-                             'src/crypto/x11/sph',
-                             'src/ctpl_stl.h',
-                             'src/dashbls',
-                             'src/gsl',
-                             'src/immer',
-                             'src/util/expected.h']
+                             'src/test/fuzz/FuzzedDataProvider.h']
 
 
-def _get_header_file_lst() -> List[str]:
+def _get_header_file_lst() -> list[str]:
     """ Helper function to get a list of header filepaths to be
         checked for include guards.
     """

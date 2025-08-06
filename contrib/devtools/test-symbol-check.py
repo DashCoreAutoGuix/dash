@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2020-2021 The Bitcoin Core developers
+# Copyright (c) 2020-2022 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
@@ -7,26 +7,29 @@ Test script for symbol-check.py
 '''
 import os
 import subprocess
-from typing import List
 import unittest
 
 from utils import determine_wellknown_cmd
 
-def call_symbol_check(cc: List[str], source, executable, options):
+def call_symbol_check(cc: list[str], source, executable, options):
     # This should behave the same as AC_TRY_LINK, so arrange well-known flags
     # in the same order as autoconf would.
     #
     # See the definitions for ac_link in autoconf's lib/autoconf/c.m4 file for
     # reference.
-    env_flags: List[str] = []
+    env_flags: list[str] = []
     for var in ['CFLAGS', 'CPPFLAGS', 'LDFLAGS']:
         env_flags += filter(None, os.environ.get(var, '').split(' '))
 
     subprocess.run([*cc,source,'-o',executable] + env_flags + options, check=True)
-    p = subprocess.run([os.path.join(os.path.dirname(__file__), 'symbol-check.py'), executable], stdout=subprocess.PIPE, universal_newlines=True)
+    p = subprocess.run([os.path.join(os.path.dirname(__file__), 'symbol-check.py'), executable], stdout=subprocess.PIPE, text=True)
     os.remove(source)
     os.remove(executable)
     return (p.returncode, p.stdout.rstrip())
+
+def get_machine(cc: list[str]):
+    p = subprocess.run([*cc,'-dumpmachine'], stdout=subprocess.PIPE, text=True)
+    return p.stdout.rstrip()
 
 class TestSymbolChecks(unittest.TestCase):
     def test_ELF(self):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021 The Bitcoin Core developers
+# Copyright (c) 2021-2022 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,7 +11,7 @@ import os
 import re
 import sys
 from subprocess import check_output
-from typing import Dict, Optional, NoReturn
+from typing import Optional, NoReturn
 
 CMD_TOP_LEVEL = ["git", "rev-parse", "--show-toplevel"]
 CMD_ALL_FILES = ["git", "ls-files", "-z", "--full-name", "--stage"]
@@ -21,7 +21,7 @@ ALL_SOURCE_FILENAMES_REGEXP = r"^.*\.(cpp|h|py|sh)$"
 ALLOWED_FILENAME_REGEXP = "^[a-zA-Z0-9/_.@][a-zA-Z0-9/_.@-]*$"
 ALLOWED_SOURCE_FILENAME_REGEXP = "^[a-z0-9_./-]+$"
 ALLOWED_SOURCE_FILENAME_EXCEPTION_REGEXP = (
-    "^src/(dashbls/|immer/|secp256k1/|minisketch/|test/fuzz/FuzzedDataProvider.h)"
+    "^src/(secp256k1/|minisketch/|test/fuzz/FuzzedDataProvider.h)"
 )
 ALLOWED_PERMISSION_NON_EXECUTABLES = 0o644
 ALLOWED_PERMISSION_EXECUTABLES = 0o755
@@ -69,7 +69,7 @@ class FileMeta(object):
             return None
 
 
-def get_git_file_metadata() -> Dict[str, FileMeta]:
+def get_git_file_metadata() -> dict[str, FileMeta]:
     '''
     Return a dictionary mapping the name of all files in the repository to git tree metadata.
     '''
@@ -87,10 +87,9 @@ def check_all_filenames(files) -> int:
     """
     filenames = files.keys()
     filename_regex = re.compile(ALLOWED_FILENAME_REGEXP)
-    filename_exception_regex = re.compile(ALLOWED_SOURCE_FILENAME_EXCEPTION_REGEXP)
     failed_tests = 0
     for filename in filenames:
-        if not filename_regex.match(filename) and not filename_exception_regex.match(filename):
+        if not filename_regex.match(filename):
             print(
                 f"""File {repr(filename)} does not not match the allowed filename regexp ('{ALLOWED_FILENAME_REGEXP}')."""
             )
@@ -124,12 +123,8 @@ def check_all_file_permissions(files) -> int:
 
     Additionally checks that for executable files, the file contains a shebang line
     """
-    filename_exception_regex = re.compile(ALLOWED_SOURCE_FILENAME_EXCEPTION_REGEXP)
-
     failed_tests = 0
     for filename, file_meta in files.items():
-        if filename_exception_regex.match(filename):
-            continue
         if file_meta.permissions == ALLOWED_PERMISSION_EXECUTABLES:
             with open(filename, "rb") as f:
                 shebang = f.readline().rstrip(b"\n")
@@ -176,12 +171,9 @@ def check_shebang_file_permissions(files_meta) -> int:
     # The git grep command we use returns files which contain a shebang on any line within the file
     # so we need to filter the list to only files with the shebang on the first line
     filenames = [filename.split(":1:")[0] for filename in filenames if ":1:" in filename]
-    filename_exception_regex = re.compile(ALLOWED_SOURCE_FILENAME_EXCEPTION_REGEXP)
 
     failed_tests = 0
     for filename in filenames:
-        if filename_exception_regex.match(filename):
-            continue
         file_meta = files_meta[filename]
         if file_meta.permissions != ALLOWED_PERMISSION_EXECUTABLES:
             # These file types are typically expected to be sourced and not executed directly
