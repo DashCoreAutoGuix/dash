@@ -82,6 +82,33 @@ class ListTransactionsTest(BitcoinTestFramework):
                             {"category": "receive", "amount": Decimal("0.44")},
                             {"txid": txid} )
 
+        self.log.info('Check "coin-join" transaction')
+        input_0 = next(i for i in self.nodes[0].listunspent(query_options={"minimumAmount": 0.2}, include_unsafe=False))
+        input_1 = next(i for i in self.nodes[1].listunspent(query_options={"minimumAmount": 0.2}, include_unsafe=False))
+        raw_hex = self.nodes[0].createrawtransaction(
+            inputs=[
+                {
+                    "txid": input_0["txid"],
+                    "vout": input_0["vout"],
+                },
+                {
+                    "txid": input_1["txid"],
+                    "vout": input_1["vout"],
+                },
+            ],
+            outputs={
+                self.nodes[0].getnewaddress(): 0.123,
+                self.nodes[1].getnewaddress(): 0.123,
+            },
+        )
+        raw_hex = self.nodes[0].signrawtransactionwithwallet(raw_hex)["hex"]
+        raw_hex = self.nodes[1].signrawtransactionwithwallet(raw_hex)["hex"]
+        txid_join = self.nodes[0].sendrawtransaction(hexstring=raw_hex, maxfeerate=0)
+        fee_join = self.nodes[0].getmempoolentry(txid_join)["fees"]["base"]
+        # Fee should be correct: assert_equal(fee_join, self.nodes[0].gettransaction(txid_join)['fee'])
+        # But it is not, see for example https://github.com/bitcoin/bitcoin/issues/14136:
+        assert fee_join != self.nodes[0].gettransaction(txid_join)["fee"]
+
         if not self.options.descriptors:
             # include_watchonly is a legacy wallet feature, so don't test it for descriptor wallets
             self.log.info("Test 'include_watchonly' feature (legacy wallet)")
