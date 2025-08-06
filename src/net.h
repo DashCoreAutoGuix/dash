@@ -35,7 +35,6 @@
 #include <util/system.h>
 #include <util/threadinterrupt.h>
 #include <util/wpipe.h>
-#include <version.h>
 #include <consensus/params.h>
 
 #include <atomic>

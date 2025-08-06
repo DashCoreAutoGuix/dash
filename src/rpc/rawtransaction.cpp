@@ -46,7 +46,6 @@
 #include <util/translation.h>
 #include <validation.h>
 #include <validationinterface.h>
-#include <version.h>
 #include <util/irange.h>
 
 #include <chainlock/chainlock.h>
