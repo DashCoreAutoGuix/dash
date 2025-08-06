@@ -6,6 +6,7 @@
 
 export LC_ALL=C.UTF-8
 
+export CI_IMAGE_NAME_TAG="docker.io/ubuntu:24.04"
 export PACKAGES="clang llvm python3-zmq qtbase5-dev qttools5-dev qttools5-dev-tools libevent-dev bsdmainutils libboost-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev libqrencode-dev"
 export NO_DEPENDS=1
 export TEST_RUNNER_EXTRA="--timeout-factor=4"  # Increase timeout because sanitizers slow down
