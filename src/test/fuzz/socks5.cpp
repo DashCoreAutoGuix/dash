@@ -14,10 +14,11 @@
 #include <vector>
 
 namespace {
-int default_socks5_recv_timeout;
+std::chrono::milliseconds default_socks5_recv_timeout;
 };
 
-extern int g_socks5_recv_timeout;
+extern std::chrono::milliseconds g_socks5_recv_timeout;
+extern CThreadInterrupt g_socks5_interrupt;
 
 void initialize_socks5()
 {
@@ -31,10 +32,12 @@ FUZZ_TARGET(socks5, .init = initialize_socks5)
     ProxyCredentials proxy_credentials;
     proxy_credentials.username = fuzzed_data_provider.ConsumeRandomLengthString(512);
     proxy_credentials.password = fuzzed_data_provider.ConsumeRandomLengthString(512);
-    InterruptSocks5(fuzzed_data_provider.ConsumeBool());
+    if (fuzzed_data_provider.ConsumeBool()) {
+        g_socks5_interrupt();
+    }
     // Set FUZZED_SOCKET_FAKE_LATENCY=1 to exercise recv timeout code paths. This
     // will slow down fuzzing.
-    g_socks5_recv_timeout = (fuzzed_data_provider.ConsumeBool() && std::getenv("FUZZED_SOCKET_FAKE_LATENCY") != nullptr) ? 1 : default_socks5_recv_timeout;
+    g_socks5_recv_timeout = (fuzzed_data_provider.ConsumeBool() && std::getenv("FUZZED_SOCKET_FAKE_LATENCY") != nullptr) ? std::chrono::milliseconds{1} : default_socks5_recv_timeout;
     FuzzedSock fuzzed_sock = ConsumeSock(fuzzed_data_provider);
     // This Socks5(...) fuzzing harness would have caught CVE-2017-18350 within
     // a few seconds of fuzzing.
