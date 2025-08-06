@@ -121,12 +121,7 @@ void WalletInit::AddWalletOptions(ArgsManager& argsman) const
 #endif
 
     argsman.AddArg("-walletrejectlongchains", strprintf("Wallet will not create transactions that violate mempool chain limits (default: %u)", DEFAULT_WALLET_REJECT_LONG_CHAINS), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::WALLET_DEBUG_TEST);
-<<<<<<< HEAD
-
-    argsman.AddHiddenArgs({"-zapwallettxes"});
-=======
     argsman.AddArg("-walletcrosschain", strprintf("Allow reusing wallet files across chains (default: %u)", DEFAULT_WALLETCROSSCHAIN), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::WALLET_DEBUG_TEST);
->>>>>>> 19d1ba1b41 (Merge bitcoin/bitcoin#28787: init: completely remove `-zapwallettxes` (remaining hidden option))
 }
 
 bool WalletInit::ParameterInteraction() const
@@ -148,11 +143,6 @@ bool WalletInit::ParameterInteraction() const
 
     if (gArgs.GetBoolArg("-blocksonly", DEFAULT_BLOCKSONLY) && gArgs.SoftSetBoolArg("-walletbroadcast", false)) {
         LogPrintf("%s: parameter interaction: -blocksonly=1 -> setting -walletbroadcast=0\n", __func__);
-    }
-
-<<<<<<< HEAD
-    if (gArgs.IsArgSet("-zapwallettxes")) {
-        return InitError(Untranslated("-zapwallettxes has been removed. If you are attempting to remove a stuck transaction from your wallet, please use abandontransaction instead."));
     }
 
     int rescan_mode = gArgs.GetIntArg("-rescan", 0);
@@ -185,9 +175,6 @@ bool WalletInit::ParameterInteraction() const
     if (CMnemonic::Generate(gArgs.GetIntArg("-mnemonicbits", CHDChain::DEFAULT_MNEMONIC_BITS)) == SecureString()) {
         return InitError(strprintf(_("Invalid '%s'. Allowed values: 128, 160, 192, 224, 256."), "-mnemonicbits"));
     }
-
-=======
->>>>>>> 19d1ba1b41 (Merge bitcoin/bitcoin#28787: init: completely remove `-zapwallettxes` (remaining hidden option))
     return true;
 }
 
