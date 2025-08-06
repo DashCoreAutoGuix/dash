@@ -850,6 +850,76 @@ bool RPCResult::MatchesType(const UniValue& result) const
     NONFATAL_UNREACHABLE();
 }
 
+<<<<<<< HEAD
+=======
+UniValue RPCResult::MatchesType(const UniValue& result) const
+{
+    if (m_skip_type_check) {
+        return true;
+    }
+
+    const auto exp_type = ExpectedType(m_type);
+    if (!exp_type) return true; // can be any type, so nothing to check
+
+    if (*exp_type != result.getType()) {
+        return strprintf("returned type is %s, but declared as %s in doc", uvTypeName(result.getType()), uvTypeName(*exp_type));
+    }
+
+    if (UniValue::VARR == result.getType()) {
+        UniValue errors(UniValue::VOBJ);
+        for (size_t i{0}; i < result.get_array().size(); ++i) {
+            // If there are more results than documented, reuse the last doc_inner.
+            const RPCResult& doc_inner{m_inner.at(std::min(m_inner.size() - 1, i))};
+            UniValue match{doc_inner.MatchesType(result.get_array()[i])};
+            if (!match.isTrue()) errors.pushKV(strprintf("%d", i), match);
+        }
+        if (errors.empty()) return true; // empty result array is valid
+        return errors;
+    }
+
+    if (UniValue::VOBJ == result.getType()) {
+        if (!m_inner.empty() && m_inner.at(0).m_type == Type::ELISION) return true;
+        UniValue errors(UniValue::VOBJ);
+        if (m_type == Type::OBJ_DYN) {
+            const RPCResult& doc_inner{m_inner.at(0)}; // Assume all types are the same, randomly pick the first
+            for (size_t i{0}; i < result.get_obj().size(); ++i) {
+                UniValue match{doc_inner.MatchesType(result.get_obj()[i])};
+                if (!match.isTrue()) errors.pushKV(result.getKeys()[i], match);
+            }
+            if (errors.empty()) return true; // empty result obj is valid
+            return errors;
+        }
+        std::set<std::string> doc_keys;
+        for (const auto& doc_entry : m_inner) {
+            doc_keys.insert(doc_entry.m_key_name);
+        }
+        std::map<std::string, UniValue> result_obj;
+        result.getObjMap(result_obj);
+        for (const auto& result_entry : result_obj) {
+            if (doc_keys.find(result_entry.first) == doc_keys.end()) {
+                errors.pushKV(result_entry.first, "key returned that was not in doc");
+            }
+        }
+
+        for (const auto& doc_entry : m_inner) {
+            const auto result_it{result_obj.find(doc_entry.m_key_name)};
+            if (result_it == result_obj.end()) {
+                if (!doc_entry.m_optional) {
+                    errors.pushKV(doc_entry.m_key_name, "key missing, despite not being optional in doc");
+                }
+                continue;
+            }
+            UniValue match{doc_entry.MatchesType(result_it->second)};
+            if (!match.isTrue()) errors.pushKV(doc_entry.m_key_name, match);
+        }
+        if (errors.empty()) return true;
+        return errors;
+    }
+
+    return true;
+}
+
+>>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
 void RPCResult::CheckInnerDoc() const
 {
     if (m_type == Type::OBJ) {

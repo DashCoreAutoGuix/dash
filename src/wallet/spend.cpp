@@ -1012,7 +1012,7 @@ static std::optional<CreatedTransactionResult> CreateTransactionInternal(
     }
 
     // Before we return success, we assume any change key will be used to prevent
-    // accidental re-use.
+    // accidental reuse.
     reservedest.KeepDestination();
     fee_calc_out = feeCalc;
 
@@ -1060,8 +1060,13 @@ std::optional<CreatedTransactionResult> CreateTransaction(
         tmp_cc.m_avoid_partial_spends = true;
         bilingual_str error2; // fired and forgotten; if an error occurs, we discard the results
 
+<<<<<<< HEAD
         // Re-use the change destination from the first creation attempt to avoid skipping BIP44 indexes
         const int ungrouped_change_pos = txr_ungrouped->change_pos;
+=======
+        // Reuse the change destination from the first creation attempt to avoid skipping BIP44 indexes
+        const int ungrouped_change_pos = txr_ungrouped.change_pos;
+>>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
         if (ungrouped_change_pos != -1) {
             ExtractDestination(txr_ungrouped->tx->vout[ungrouped_change_pos].scriptPubKey, tmp_cc.destChange);
         }

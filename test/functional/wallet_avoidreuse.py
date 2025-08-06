@@ -237,7 +237,23 @@ class AvoidReuseTest(BitcoinTestFramework):
         assert_balances(self.nodes[1], mine={"used": 0, "trusted": 5})
 
         if not self.options.descriptors:
+<<<<<<< HEAD
             self.nodes[0].sendtoaddress(fundaddr, 10)
+=======
+            # For the second send, we transmute it to a related single-key address
+            # to make sure it's also detected as reuse
+            fund_spk = address_to_scriptpubkey(fundaddr).hex()
+            fund_decoded = self.nodes[0].decodescript(fund_spk)
+            if second_addr_type == "p2sh-segwit":
+                new_fundaddr = fund_decoded["segwit"]["p2sh-segwit"]
+            elif second_addr_type == "bech32":
+                new_fundaddr = fund_decoded["segwit"]["address"]
+            else:
+                new_fundaddr = fundaddr
+                assert_equal(second_addr_type, "legacy")
+
+            self.nodes[0].sendtoaddress(new_fundaddr, 10)
+>>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
             self.generate(self.nodes[0], 1)
 
             # listunspent should show 2 total outputs (5, 10 btc), one unused (5), one reused (10)

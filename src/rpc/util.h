@@ -361,6 +361,47 @@ public:
     RPCHelpMan(std::string name, std::string description, std::vector<RPCArg> args, RPCResults results, RPCExamples examples, RPCMethodImpl fun);
 
     UniValue HandleRequest(const JSONRPCRequest& request) const;
+<<<<<<< HEAD
+=======
+    /**
+     * Helper to get a request argument.
+     * This function only works during m_fun(), i.e. it should only be used in
+     * RPC method implementations. The helper internally checks whether the
+     * user-passed argument isNull() and parses (from JSON) and returns the
+     * user-passed argument, or the default value derived from the RPCArg
+     * documentation, or a falsy value if no default was given.
+     *
+     * Use Arg<Type>(i) to get the argument or its default value. Otherwise,
+     * use MaybeArg<Type>(i) to get the optional argument or a falsy value.
+     *
+     * The Type passed to this helper must match the corresponding
+     * RPCArg::Type.
+     */
+    template <typename R>
+    auto Arg(size_t i) const
+    {
+        // Return argument (required or with default value).
+        if constexpr (std::is_integral_v<R> || std::is_floating_point_v<R>) {
+            // Return numbers by value.
+            return ArgValue<R>(i);
+        } else {
+            // Return everything else by reference.
+            return ArgValue<const R&>(i);
+        }
+    }
+    template <typename R>
+    auto MaybeArg(size_t i) const
+    {
+        // Return optional argument (without default).
+        if constexpr (std::is_integral_v<R> || std::is_floating_point_v<R>) {
+            // Return numbers by value, wrapped in optional.
+            return ArgValue<std::optional<R>>(i);
+        } else {
+            // Return other types by pointer.
+            return ArgValue<const R*>(i);
+        }
+    }
+>>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
     std::string ToString() const;
     /** Return the named args that need to be converted from string to another JSON type */
     UniValue GetArgMap() const;
