@@ -850,8 +850,6 @@ bool RPCResult::MatchesType(const UniValue& result) const
     NONFATAL_UNREACHABLE();
 }
 
-<<<<<<< HEAD
-=======
 UniValue RPCResult::MatchesType(const UniValue& result) const
 {
     if (m_skip_type_check) {
@@ -918,8 +916,6 @@ UniValue RPCResult::MatchesType(const UniValue& result) const
 
     return true;
 }
-
->>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
 void RPCResult::CheckInnerDoc() const
 {
     if (m_type == Type::OBJ) {

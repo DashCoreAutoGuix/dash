@@ -361,8 +361,6 @@ public:
     RPCHelpMan(std::string name, std::string description, std::vector<RPCArg> args, RPCResults results, RPCExamples examples, RPCMethodImpl fun);
 
     UniValue HandleRequest(const JSONRPCRequest& request) const;
-<<<<<<< HEAD
-=======
     /**
      * Helper to get a request argument.
      * This function only works during m_fun(), i.e. it should only be used in
@@ -401,7 +399,6 @@ public:
             return ArgValue<const R*>(i);
         }
     }
->>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
     std::string ToString() const;
     /** Return the named args that need to be converted from string to another JSON type */
     UniValue GetArgMap() const;

@@ -65,14 +65,9 @@ static constexpr unsigned int DEFAULT_DESCENDANT_SIZE_LIMIT{101};
 static constexpr unsigned int EXTRA_DESCENDANT_TX_SIZE_LIMIT{10000};
 /**
  * Standard script verification flags that standard transactions will comply
-<<<<<<< HEAD
- * with. However scripts violating these flags may still be present in valid
- * blocks and we must accept those blocks.
-=======
  * with. However we do not ban/disconnect nodes that forward txs violating
  * the additional (non-mandatory) rules here, to improve forwards and
  * backwards compatibility.
->>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
  */
 static constexpr unsigned int STANDARD_SCRIPT_VERIFY_FLAGS{MANDATORY_SCRIPT_VERIFY_FLAGS |
                                                              SCRIPT_VERIFY_DERSIG |

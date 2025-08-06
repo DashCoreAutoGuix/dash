@@ -182,8 +182,6 @@ public:
      */
     std::vector<CAddress> GetAddr(size_t max_addresses, size_t max_pct, std::optional<Network> network) const;
 
-<<<<<<< HEAD
-=======
     /**
      * Returns an information-location pair for all addresses in the selected addrman table.
      * If an address appears multiple times in the new table, an information-location pair
@@ -194,8 +192,6 @@ public:
      * @return                   A vector consisting of pairs of AddrInfo and AddressPosition.
      */
     std::vector<std::pair<AddrInfo, AddressPosition>> GetEntries(bool from_tried) const;
-
->>>>>>> 22025d06e5 (Merge bitcoin/bitcoin#28605: Fix typos)
     /** We have successfully connected to this peer. Calling this function
      *  updates the CAddress's nTime, which is used in our IsTerrible()
      *  decisions and gossiped to peers. Callers should be careful that updating
