@@ -23,6 +23,7 @@ from test_framework.messages import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_greater_than,
     assert_raises_rpc_error,
     find_vout_for_address,
 )
@@ -57,7 +58,7 @@ class RawTransactionsTest(BitcoinTestFramework):
             [],  # by default Tx Index is enabled
             ["-txindex"],
             ["-txindex"],
-            ["-notxindex"],
+            ["-notxindex", "-fastprune", "-prune=1"],
         ]
         # whitelist all peers to speed up tx relay / mempool sync
         for args in self.extra_args:
@@ -184,6 +185,23 @@ class RawTransactionsTest(BitcoinTestFramework):
         self.log.info("Test getrawtransaction on genesis block coinbase returns an error")
         block = self.nodes[0].getblock(self.nodes[0].getblockhash(0))
         assert_raises_rpc_error(-5, "The genesis block coinbase is not considered an ordinary transaction", self.nodes[0].getrawtransaction, block['merkleroot'])
+
+        self.log.info("Test getrawtransaction with pruned node (regression test for bitcoin#29003)")
+        # Generate blocks and prune to test mempool tx behavior
+        self.generate(self.nodes[3], 400)
+        assert_greater_than(self.nodes[3].pruneblockchain(250), 0)
+        
+        # Create a mempool transaction
+        addr = self.nodes[3].getnewaddress()
+        mempool_txid = self.nodes[3].sendtoaddress(addr, 1.0)
+        
+        # This should not crash even with verbosity=true on a pruned node
+        try:
+            tx_verbose = self.nodes[3].getrawtransaction(mempool_txid, True)
+            assert 'hex' in tx_verbose
+        except Exception as e:
+            self.log.error(f"getrawtransaction failed on pruned node: {e}")
+            raise
 
     def createrawtransaction_tests(self):
         self.log.info("Test createrawtransaction")
