@@ -8,7 +8,6 @@ Test script for security-check.py
 import lief
 import os
 import subprocess
-from typing import List
 import unittest
 
 from utils import determine_wellknown_cmd
@@ -28,13 +27,13 @@ def clean_files(source, executable):
     os.remove(source)
     os.remove(executable)
 
-def env_flags() -> List[str]:
+def env_flags() -> list[str]:
     # This should behave the same as AC_TRY_LINK, so arrange well-known flags
     # in the same order as autoconf would.
     #
     # See the definitions for ac_link in autoconf's lib/autoconf/c.m4 file for
     # reference.
-    flags: List[str] = []
+    flags: list[str] = []
     for var in ['CFLAGS', 'CPPFLAGS', 'LDFLAGS']:
         flags += filter(None, os.environ.get(var, '').split(' '))
     return flags
