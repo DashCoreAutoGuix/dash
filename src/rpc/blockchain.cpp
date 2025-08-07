@@ -185,7 +185,7 @@ UniValue blockToJSON(BlockManager& blockman, const CBlock& block, const CBlockIn
                 // coinbase transaction (i.e. i == 0) doesn't have undo data
                 const CTxUndo* txundo = (have_undo && i > 0) ? &blockUndo.vtxundo.at(i - 1) : nullptr;
                 UniValue objTx(UniValue::VOBJ);
-                TxToUniv(*tx, /*block_hash=*/uint256(), /*entry=*/objTx, /*include_hex=*/true, /*serialize_flags=*/0, txundo, verbosity);
+                TxToUniv(*tx, /*block_hash=*/uint256(), /*entry=*/objTx, /*include_hex=*/true, txundo, verbosity);
                 bool fLocked = isman.IsLocked(tx->GetHash());
                 objTx.pushKV("instantlock", fLocked || result["chainlock"].get_bool());
                 objTx.pushKV("instantlock_internal", fLocked);
@@ -1011,7 +1011,7 @@ static RPCHelpMan getblock()
 
     if (verbosity <= 0)
     {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
+        DataStream ssBlock;
         ssBlock << block;
         std::string strHex = HexStr(ssBlock);
         return strHex;
