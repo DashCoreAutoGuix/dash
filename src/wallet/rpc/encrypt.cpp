@@ -216,27 +216,31 @@ RPCHelpMan walletlock()
 RPCHelpMan encryptwallet()
 {
     return RPCHelpMan{"encryptwallet",
-        "\nEncrypts the wallet with 'passphrase'. This is for first time encryption.\n"
-        "After this, any calls that interact with private keys such as sending or signing \n"
-        "will require the passphrase to be set prior the making these calls.\n"
-        "Use the walletpassphrase call for this, and then walletlock call.\n"
-        "If the wallet is already encrypted, use the walletpassphrasechange call.\n",
-        {
-            {"passphrase", RPCArg::Type::STR, RPCArg::Optional::NO, "The pass phrase to encrypt the wallet with. It must be at least 1 character, but should be long."},
-        },
-        RPCResult{RPCResult::Type::STR, "", "A string with further instructions"},
-        RPCExamples{
-    "\nEncrypt your wallet\n"
-    + HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
-    "\nNow set the passphrase to use the wallet, such as for signing or sending Dash\n"
-    + HelpExampleCli("walletpassphrase", "\"my pass phrase\"") +
-    "\nNow we can do something like sign\n"
-    + HelpExampleCli("signmessage", "\"address\" \"test message\"") +
-    "\nNow lock the wallet again by removing the passphrase\n"
-    + HelpExampleCli("walletlock", "") +
-    "\nAs a JSON-RPC call\n"
-    + HelpExampleRpc("encryptwallet", "\"my pass phrase\"")
-        },
+                "\nEncrypts the wallet with 'passphrase'. This is for first time encryption.\n"
+                "After this, any calls that interact with private keys such as sending or signing \n"
+                "will require the passphrase to be set prior the making these calls.\n"
+                "Use the walletpassphrase call for this, and then walletlock call.\n"
+                "If the wallet is already encrypted, use the walletpassphrasechange call.\n"
+                "** IMPORTANT **\n"
+                "For security reasons, the encryption process will generate a new HD seed, resulting\n"
+                "in the creation of a fresh set of active descriptors. Therefore, it is crucial to\n"
+                "securely back up the newly generated wallet file using the backupwallet RPC.\n",
+                {
+                    {"passphrase", RPCArg::Type::STR, RPCArg::Optional::NO, "The pass phrase to encrypt the wallet with. It must be at least 1 character, but should be long."},
+                },
+                RPCResult{RPCResult::Type::STR, "", "A string with further instructions"},
+                RPCExamples{
+            "\nEncrypt your wallet\n"
+            + HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
+            "\nNow set the passphrase to use the wallet, such as for signing or sending Dash\n"
+            + HelpExampleCli("walletpassphrase", "\"my pass phrase\"") +
+            "\nNow we can do something like sign\n"
+            + HelpExampleCli("signmessage", "\"address\" \"test message\"") +
+            "\nNow lock the wallet again by removing the passphrase\n"
+            + HelpExampleCli("walletlock", "") +
+            "\nAs a JSON-RPC call\n"
+            + HelpExampleRpc("encryptwallet", "\"my pass phrase\"")
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     std::shared_ptr<CWallet> const pwallet = GetWalletForJSONRPCRequest(request);
@@ -263,10 +267,7 @@ RPCHelpMan encryptwallet()
         throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Error: Failed to encrypt the wallet.");
     }
 
-    if (pwallet->IsHDEnabled()) {
-        return "wallet encrypted; If you forget the passphrase, you will lose access to your funds. Make sure that you have backup of your seed or mnemonic.";
-    }
-    return "wallet encrypted; The keypool has been flushed. You need to make a new backup.";
+    return "wallet encrypted; The keypool has been flushed and a new HD seed was generated. You need to make a new backup with the backupwallet RPC.";
 },
     };
 }
