@@ -49,8 +49,8 @@ static void WalletCreatePlain(benchmark::Bench& bench) { WalletCreate(bench, /*e
 static void WalletCreateEncrypted(benchmark::Bench& bench) { WalletCreate(bench, /*encrypted=*/true); }
 
 #ifdef USE_SQLITE
-BENCHMARK(WalletCreatePlain);
-BENCHMARK(WalletCreateEncrypted);
+BENCHMARK(WalletCreatePlain, benchmark::PriorityLevel::LOW);
+BENCHMARK(WalletCreateEncrypted, benchmark::PriorityLevel::LOW);
 #endif
 
 } // namespace wallet
