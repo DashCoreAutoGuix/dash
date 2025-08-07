@@ -221,19 +221,12 @@ bool ExecuteWalletToolFunc(const ArgsManager& args, const std::string& command)
             return false;
         }
 
-        bool ret = DumpWallet(args, *database, error);        bilingual_str error;
-        std::unique_ptr<WalletDatabase> database = MakeDatabase(path, options, status, error);
-        if (!database) {
-            tfm::format(std::cerr, "%s\n", error.original);
-            return false;
-        }
-
         bool ret = DumpWallet(args, *database, error);
         if (!ret && !error.empty()) {
             tfm::format(std::cerr, "%s\n", error.original);
             return ret;
         }
-        tfm::format(std::cout, "The dumpfile may contain private keys. To ensure the safety of your Bitcoin, do not share the dumpfile.\n");
+        tfm::format(std::cout, "The dumpfile may contain private keys. To ensure the safety of your Dash, do not share the dumpfile.\n");
         return ret;
     } else if (command == "createfromdump") {
         bilingual_str error;
