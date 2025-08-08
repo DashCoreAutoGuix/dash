@@ -146,8 +146,12 @@ def main():
         command.extend(lines)
         if args.style:
             command.extend(["-style", args.style])
+        else:
+            command.extend(["-style", "file"])
         if args.fallback_style:
             command.extend(["-fallback-style", args.fallback_style])
+        else:
+            command.extend(["-fallback-style", "none"])
 
         try:
             p = subprocess.Popen(
@@ -161,7 +165,7 @@ def main():
             # Give the user more context when clang-format isn't
             # found/isn't executable, etc.
             raise RuntimeError(
-                'Failed to run "%s" - %s"' % (" ".join(command), e.strerror)
+                'Failed to run "%s" - %s' % (" ".join(command), e.strerror)
             )
 
         stdout, stderr = p.communicate()
