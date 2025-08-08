@@ -15,6 +15,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <set>
 
 namespace wallet {
 BOOST_FIXTURE_TEST_SUITE(db_tests, BasicTestingSetup)
@@ -94,7 +95,7 @@ static std::vector<std::unique_ptr<WalletDatabase>> TestDatabases(const fs::path
 #ifdef USE_SQLITE
     dbs.emplace_back(MakeSQLiteDatabase(path_root / "sqlite", options, status, error));
 #endif
-    dbs.emplace_back(CreateMockableWalletDatabase());
+    dbs.emplace_back(CreateMockWalletDatabase());
     return dbs;
 }
 
@@ -226,10 +227,10 @@ BOOST_AUTO_TEST_CASE(erase_prefix)
 // Test-only statement execution error
 constexpr int TEST_SQLITE_ERROR = -999;
 
-class DbExecBlocker : public SQliteExecHandler
+class DbExecBlocker : public SQLiteExecHandler
 {
 private:
-    SQliteExecHandler m_base_exec;
+    SQLiteExecHandler m_base_exec;
     std::set<std::string> m_blocked_statements;
 public:
     DbExecBlocker(std::set<std::string> blocked_statements) : m_blocked_statements(blocked_statements) {}
@@ -291,9 +292,9 @@ BOOST_AUTO_TEST_CASE(concurrent_txn_dont_interfere)
     BOOST_CHECK(handler->Write(key, value));
     BOOST_CHECK(handler->Exists(key));
 
-    // But, the same key, does not exist in another handler
+    // But, the same key does not exist in another handler
     std::unique_ptr<DatabaseBatch> handler2 = Assert(database)->MakeBatch();
-    BOOST_CHECK(handler2->Exists(key));
+    BOOST_CHECK(!handler2->Exists(key));
 
     // Attempt to commit the handler txn calling the handler2 methods.
     // Which, must not be possible.

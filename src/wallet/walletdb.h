@@ -16,6 +16,7 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
+#include <string_view>
 
 struct CBlockLocator;
 class CScript;
@@ -230,6 +231,11 @@ public:
     bool WriteDestData(const std::string &address, const std::string &key, const std::string &value);
     /// Erase destination data tuple from wallet database
     bool EraseDestData(const std::string &address, const std::string &key);
+
+    /// Write address previously spent flag
+    bool WriteAddressPreviouslySpent(const PKHash& address_hash, bool spent);
+    /// Erase all address data
+    bool EraseAddressData(const ScriptHash& script_hash);
 
     bool WriteActiveScriptPubKeyMan(const uint256& id, bool internal);
     bool EraseActiveScriptPubKeyMan(bool internal);

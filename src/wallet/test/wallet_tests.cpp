@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE(LoadReceiveRequests)
     BOOST_CHECK_EQUAL(values[1], "val_rr1");
 }
 
-BOOST_FIXTURE_TEST_CASE(LoadReceiveRequests, TestingSetup)
+BOOST_FIXTURE_TEST_CASE(LoadReceiveRequests_DBFormats, TestingSetup)
 {
     for (DatabaseFormat format : DATABASE_FORMATS) {
         const std::string name{strprintf("receive-requests-%i", format)};

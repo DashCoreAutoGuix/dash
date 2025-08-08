@@ -29,6 +29,7 @@
 #include <optional>
 #include <string>
 #include <algorithm>
+#include <unordered_set>
 
 namespace wallet {
 namespace DBKeys {
@@ -1151,6 +1152,16 @@ bool WalletBatch::WriteHDPubKey(const CHDPubKey& hdPubKey, const CKeyMetadata& k
 bool WalletBatch::WriteWalletFlags(const uint64_t flags)
 {
     return WriteIC(DBKeys::FLAGS, flags);
+}
+
+bool WalletBatch::WriteAddressPreviouslySpent(const PKHash& address_hash, bool spent)
+{
+    return WriteIC(std::make_pair(DBKeys::DESTDATA, std::make_pair(EncodeDestination(address_hash), std::string("used"))), spent ? "1" : "0");
+}
+
+bool WalletBatch::EraseAddressData(const ScriptHash& script_hash)
+{
+    return EraseIC(std::make_pair(DBKeys::DESTDATA, EncodeDestination(script_hash)));
 }
 
 bool WalletBatch::EraseRecords(const std::unordered_set<std::string>& types)
