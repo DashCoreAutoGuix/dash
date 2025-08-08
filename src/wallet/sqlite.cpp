@@ -423,8 +423,8 @@ void SQLiteBatch::Close()
         m_database.Close();
         try {
             m_database.Open();
-            // If TxnAbort failed and we refreshed the connection, the semaphore was not released, so release it here to avoid deadlocks on future writes.
-            m_database.m_write_semaphore.post();
+            // Note: TxnAbort already released the semaphore in all cases (success or failure),
+            // so we don't need to release it again here to avoid double-release.
         } catch (const std::runtime_error&) {
             // If open fails, cleanup this object and rethrow the exception
             if (m_database.m_db) {
