@@ -221,9 +221,6 @@ bool LegacyScriptPubKeyMan::CheckDecryptionKey(const CKeyingMaterial& master_key
         if (keyFail || !keyPass) {
             return false;
         }
-        if (!keyPass && (m_hd_chain.IsNull() || !m_hd_chain.IsCrypted())) {
-            return false;
-        }
 
         if(!m_hd_chain.IsNull() && !m_hd_chain.IsCrypted()) {
             // try to decrypt seed and make sure it matches
