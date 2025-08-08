@@ -268,11 +268,11 @@ libbitcoin_ipc_test_mpgen_output = \
   test/ipc_test.capnp.proxy.h
 nodist_libbitcoin_ipc_test_a_SOURCES = $(libbitcoin_ipc_test_mpgen_output)
 CLEANFILES += $(libbitcoin_ipc_test_mpgen_output)
-endif
 
 # Explicitly list dependencies on generated headers as described in
 # https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
 test/libbitcoin_ipc_test_a-ipc_test.$(OBJEXT): test/ipc_test.capnp.h
+endif
 
 test_test_dash_SOURCES = $(BITCOIN_TEST_SUITE) $(BITCOIN_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
 test_test_dash_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(TESTDEFS) $(BOOST_CPPFLAGS) $(EVENT_CFLAGS)
