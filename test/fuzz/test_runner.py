@@ -334,7 +334,7 @@ def parse_test_list(*, fuzz_bin, source_dir):
             **get_fuzz_env(target="", source_dir=source_dir)
         },
         stdout=subprocess.PIPE,
-        text=True,
+        universal_newlines=True,
         check=True,
     ).stdout.splitlines()
     return test_list_all
