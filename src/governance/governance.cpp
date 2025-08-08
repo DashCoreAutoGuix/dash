@@ -282,7 +282,7 @@ void CGovernanceManager::CheckOrphanVotes(CGovernanceObject& govobj, PeerManager
 
     ScopedLockBool guard(cs, fRateChecksEnabled, false);
 
-    int64_t nNow = GetAdjustedTime();
+    int64_t nNow = GetTime();
     const auto tip_mn_list = Assert(m_dmnman)->GetListAtChainTip();
     for (const auto& pairVote : vecVotePairs) {
         bool fRemove = false;
@@ -703,7 +703,7 @@ std::optional<const CGovernanceObject> CGovernanceManager::CreateGovernanceTrigg
     LOCK2(::cs_main, cs);
 
     // Check if identical trigger (equal DataHash()) is already created (signed by other masternode)
-    CGovernanceObject gov_sb(uint256(), 1, GetAdjustedTime(), uint256(), sb_opt.value().GetHexStrData());
+    CGovernanceObject gov_sb(uint256(), 1, GetTime(), uint256(), sb_opt.value().GetHexStrData());
     if (auto identical_sb = FindGovernanceObjectByDataHash(gov_sb.GetDataHash())) {
         // Somebody submitted a trigger with the same data, support it instead of submitting a duplicate
         return std::make_optional<CGovernanceObject>(*identical_sb);
@@ -832,7 +832,7 @@ bool CGovernanceManager::VoteFundingTrigger(const uint256& nHash, const vote_out
                                             const CActiveMasternodeManager& mn_activeman)
 {
     CGovernanceVote vote(mn_activeman.GetOutPoint(), nHash, VOTE_SIGNAL_FUNDING, outcome);
-    vote.SetTime(GetAdjustedTime());
+    vote.SetTime(GetTime());
     vote.Sign(mn_activeman);
 
     CGovernanceException exception;
@@ -1066,7 +1066,7 @@ bool CGovernanceManager::MasternodeRateCheck(const CGovernanceObject& govobj, bo
 
     const COutPoint& masternodeOutpoint = govobj.GetMasternodeOutpoint();
     int64_t nTimestamp = govobj.GetCreationTime();
-    int64_t nNow = GetAdjustedTime();
+    int64_t nNow = GetTime();
     int64_t nSuperblockCycleSeconds = Params().GetConsensus().nSuperblockCycle * Params().GetConsensus().nPowTargetSpacing;
 
     std::string strHash = govobj.GetHash().ToString();
@@ -1210,7 +1210,7 @@ void CGovernanceManager::CheckPostponedObjects(PeerManager& peerman)
 
 
     // Perform additional relays for triggers
-    int64_t nNow = GetAdjustedTime();
+    int64_t nNow = GetTime();
     int64_t nSuperblockCycleSeconds = Params().GetConsensus().nSuperblockCycle * Params().GetConsensus().nPowTargetSpacing;
 
     for (auto it = setAdditionalRelayObjects.begin(); it != setAdditionalRelayObjects.end();) {

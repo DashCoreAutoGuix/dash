@@ -7,6 +7,7 @@
 
 #include <key_io.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
 #include <util/underlying.h>
@@ -136,7 +137,7 @@ bool CProposalValidator::ValidateStartEndEpoch(bool fCheckExpiration)
         return false;
     }
 
-    if (fCheckExpiration && nEndEpoch <= GetAdjustedTime()) {
+    if (fCheckExpiration && nEndEpoch <= GetTime()) {
         strErrorMessages += "expired;";
         return false;
     }

@@ -13,6 +13,7 @@
 #include <messagesigner.h>
 #include <net_processing.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <util/string.h>
 
 std::string CGovernanceVoting::ConvertOutcomeToString(vote_outcome_enum_t nOutcome)
@@ -87,7 +88,7 @@ CGovernanceVote::CGovernanceVote(const COutPoint& outpointMasternodeIn, const ui
     nParentHash(nParentHashIn),
     nVoteOutcome(eVoteOutcomeIn),
     nVoteSignal(eVoteSignalIn),
-    nTime(GetAdjustedTime())
+    nTime(GetTime())
 {
     UpdateHash();
 }
@@ -181,8 +182,8 @@ bool CGovernanceVote::CheckSignature(const CBLSPublicKey& pubKey) const
 
 bool CGovernanceVote::IsValid(const CDeterministicMNList& tip_mn_list, bool useVotingKey) const
 {
-    if (nTime > GetAdjustedTime() + (60 * 60)) {
-        LogPrint(BCLog::GOBJECT, "CGovernanceVote::IsValid -- vote is too far ahead of current time - %s - nTime %lli - Max Time %lli\n", GetHash().ToString(), nTime, GetAdjustedTime() + (60 * 60));
+    if (nTime > GetTime() + (60 * 60)) {
+        LogPrint(BCLog::GOBJECT, "CGovernanceVote::IsValid -- vote is too far ahead of current time - %s - nTime %lli - Max Time %lli\n", GetHash().ToString(), nTime, GetTime() + (60 * 60));
         return false;
     }
 

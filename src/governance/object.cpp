@@ -120,7 +120,7 @@ bool CGovernanceObject::ProcessVote(CMasternodeMetaMan& mn_metaman, CGovernanceM
         LogPrint(BCLog::GOBJECT, "%s\n", msg);
     }
 
-    int64_t nNow = GetAdjustedTime();
+    int64_t nNow = GetTime();
     int64_t nVoteTimeUpdate = voteInstanceRef.nTime;
     if (govman.AreRateChecksEnabled()) {
         int64_t nTimeDelta = nNow - voteInstanceRef.nTime;

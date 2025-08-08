@@ -32,11 +32,6 @@ int64_t GetTimeOffset()
     return nTimeOffset;
 }
 
-int64_t GetAdjustedTime()
-{
-    return GetTime() + GetTimeOffset();
-}
-
 #define BITCOIN_TIMEDATA_MAX_SAMPLES 200
 
 static std::set<CNetAddr> g_sources;

@@ -18,6 +18,7 @@
 #include <rpc/server_util.h>
 #include <rpc/util.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <util/check.h>
 #include <util/strencodings.h>
 #include <validation.h>
@@ -106,7 +107,7 @@ static RPCHelpMan gobject_check()
 
     int nRevision = 1;
 
-    int64_t nTime = GetAdjustedTime();
+    int64_t nTime = GetTime();
     std::string strDataHex = request.params[0].get_str();
 
     CGovernanceObject govobj(hashParent, nRevision, nTime, uint256(), strDataHex);

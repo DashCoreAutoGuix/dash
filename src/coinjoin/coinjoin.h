@@ -13,6 +13,7 @@
 #include <primitives/transaction.h>
 #include <sync.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <univalue.h>
 #include <util/translation.h>
 #include <version.h>
@@ -221,7 +222,7 @@ public:
     [[nodiscard]] bool CheckSignature(const CBLSPublicKey& blsPubKey) const;
 
     /// Check if a queue is too old or too far into the future
-    [[nodiscard]] bool IsTimeOutOfBounds(int64_t current_time = GetAdjustedTime()) const;
+    [[nodiscard]] bool IsTimeOutOfBounds(int64_t current_time = GetTime()) const;
 
     [[nodiscard]] std::string ToString() const;
 

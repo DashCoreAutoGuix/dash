@@ -15,6 +15,7 @@
 #include <protocol.h>
 #include <script/standard.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <util/message.h> // for MESSAGE_MAGIC
 #include <util/ranges.h>
 #include <util/string.h>
@@ -147,7 +148,7 @@ PeerMsgRet CSporkManager::ProcessSpork(const CNode& peer, PeerManager& peerman, 
     std::string strLogMsg{strprintf("SPORK -- hash: %s id: %d value: %10d peer=%d", hash.ToString(), spork.nSporkID,
                                     spork.nValue, peer.GetId())};
 
-    if (spork.nTimeSigned > GetAdjustedTime() + 2 * 60 * 60) {
+    if (spork.nTimeSigned > GetTime() + 2 * 60 * 60) {
         LogPrint(BCLog::SPORK, "CSporkManager::ProcessSpork -- ERROR: too far into the future\n");
         return tl::unexpected{100};
     }
@@ -205,7 +206,7 @@ void CSporkManager::ProcessGetSporks(CNode& peer, CConnman& connman)
 
 bool CSporkManager::UpdateSpork(PeerManager& peerman, SporkId nSporkID, SporkValue nValue)
 {
-    CSporkMessage spork(nSporkID, nValue, GetAdjustedTime());
+    CSporkMessage spork(nSporkID, nValue, GetTime());
 
     {
         LOCK(cs);
@@ -246,7 +247,7 @@ bool CSporkManager::IsSporkActive(SporkId nSporkID) const
 
     SporkValue nSporkValue = GetSporkValue(nSporkID);
     // Get time is somewhat costly it looks like
-    bool ret = nSporkValue < GetAdjustedTime();
+    bool ret = nSporkValue < GetTime();
     // Only cache true values
     if (ret) {
         LOCK(cs_mapSporksCachedActive);

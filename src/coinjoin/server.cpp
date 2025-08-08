@@ -343,7 +343,7 @@ void CCoinJoinServer::CommitFinalTransaction()
         CCoinJoinBroadcastTx dstxNew(finalTransaction,
                                     m_mn_activeman->GetOutPoint(),
                                     m_mn_activeman->GetProTxHash(),
-                                    GetAdjustedTime());
+                                    GetTime());
         dstxNew.Sign(*m_mn_activeman);
         m_dstxman.AddDSTX(dstxNew);
     }
@@ -511,7 +511,7 @@ void CCoinJoinServer::CheckForCompleteQueue()
         CCoinJoinQueue dsq(nSessionDenom,
                             m_mn_activeman->GetOutPoint(),
                             m_mn_activeman->GetProTxHash(),
-                            GetAdjustedTime(), true);
+                            GetTime(), true);
         LogPrint(BCLog::COINJOIN, "CCoinJoinServer::CheckForCompleteQueue -- queue is ready, signing and relaying (%s) " /* Continued */
                                      "with %d participants\n", dsq.ToString(), vecSessionCollaterals.size());
         dsq.Sign(*m_mn_activeman);
@@ -727,7 +727,7 @@ bool CCoinJoinServer::CreateNewSession(const CCoinJoinAccept& dsa, PoolMessage& 
         CCoinJoinQueue dsq(nSessionDenom,
                             m_mn_activeman->GetOutPoint(),
                             m_mn_activeman->GetProTxHash(),
-                            GetAdjustedTime(), false);
+                            GetTime(), false);
         LogPrint(BCLog::COINJOIN, "CCoinJoinServer::CreateNewSession -- signing and relaying new queue: %s\n", dsq.ToString());
         dsq.Sign(*m_mn_activeman);
         m_peerman->RelayDSQ(dsq);

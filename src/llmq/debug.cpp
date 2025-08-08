@@ -6,6 +6,7 @@
 
 #include <chainparams.h>
 #include <timedata.h>
+#include <util/time.h>
 #include <validation.h>
 
 #include <evo/deterministicmns.h>
@@ -152,7 +153,7 @@ void CDKGDebugManager::ResetLocalSessionStatus(Consensus::LLMQType llmqType, int
     }
 
     localStatus.sessions.erase(it);
-    localStatus.nTime = GetAdjustedTime();
+    localStatus.nTime = GetTime();
 }
 
 void CDKGDebugManager::InitLocalSessionStatus(const Consensus::LLMQParams& llmqParams, int quorumIndex, const uint256& quorumHash, int quorumHeight)
@@ -184,7 +185,7 @@ void CDKGDebugManager::UpdateLocalSessionStatus(Consensus::LLMQType llmqType, in
     }
 
     if (func(it->second)) {
-        localStatus.nTime = GetAdjustedTime();
+        localStatus.nTime = GetTime();
     }
 }
 
@@ -198,7 +199,7 @@ void CDKGDebugManager::UpdateLocalMemberStatus(Consensus::LLMQType llmqType, int
     }
 
     if (func(it->second.members.at(memberIdx))) {
-        localStatus.nTime = GetAdjustedTime();
+        localStatus.nTime = GetTime();
     }
 }
 
