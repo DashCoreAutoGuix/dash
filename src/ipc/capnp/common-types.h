@@ -22,7 +22,7 @@ template <typename T>
 struct Serializable {
 private:
     template <typename C>
-    static std::true_type test(decltype(std::declval<C>().Serialize(std::declval<std::nullptr_t&>()))*);
+    static std::true_type test(decltype(std::declval<C>().Serialize(std::declval<DataStream&>()))*);
     template <typename>
     static std::false_type test(...);
 
@@ -36,7 +36,7 @@ template <typename T>
 struct Unserializable {
 private:
     template <typename C>
-    static std::true_type test(decltype(std::declval<C>().Unserialize(std::declval<std::nullptr_t&>()))*);
+    static std::true_type test(decltype(std::declval<C>().Unserialize(std::declval<SpanReader&>()))*);
     template <typename>
     static std::false_type test(...);
 
@@ -99,6 +99,7 @@ decltype(auto) CustomReadField(TypeList<UniValue>, Priority<1>, InvokeContext& i
                                ReadDest&& read_dest)
 {
     return read_dest.update([&](auto& value) {
+        if (!input.has()) return;
         auto data = input.get();
         value.read(std::string_view{data.begin(), data.size()});
     });
