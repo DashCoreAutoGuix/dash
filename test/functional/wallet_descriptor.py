@@ -32,14 +32,14 @@ class WalletDescriptorTest(BitcoinTestFramework):
         self.skip_if_no_sqlite()
         self.skip_if_no_py_sqlite3()
 
-    def test_concurrent_writes(self):
+    def test_concurrent_writes(self) -> None:
         self.log.info("Test sqlite concurrent writes are in the correct order")
         self.restart_node(0, extra_args=["-unsafesqlitesync=0"])
         self.nodes[0].createwallet(wallet_name="concurrency", blank=True)
         wallet = self.nodes[0].get_wallet_rpc("concurrency")
         # First import a descriptor that uses hardened dervation so that topping up
         # Will require writing a ton to db
-        wallet.importdescriptors([{"desc":descsum_create("wpkh(tprv8ZgxMBicQKsPeuVhWwi6wuMQGfPKi9Li5GtX35jVNknACgqe3CY4g5xgkfDDJcmtF7o1QnxWDRYw4H5P26PXq7sbcUkEqeR4fg3Kxp2tigg/0h/0h/*h)"), "timestamp": "now", "active": True}])
+        wallet.importdescriptors([{"desc":descsum_create("pkh(tprv8ZgxMBicQKsPeuVhWwi6wuMQGfPKi9Li5GtX35jVNknACgqe3CY4g5xgkfDDJcmtF7o1QnxWDRYw4H5P26PXq7sbcUkEqeR4fg3Kxp2tigg/0h/0h/*h)"), "timestamp": "now", "active": True}])
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as thread:
             topup = thread.submit(wallet.keypoolrefill, newsize=1000)
 

@@ -427,7 +427,9 @@ void SQLiteBatch::Close()
             m_database.m_write_semaphore.post();
         } catch (const std::runtime_error&) {
             // If open fails, cleanup this object and rethrow the exception
-            m_database.Close();
+            if (m_database.m_db) {
+                m_database.Close();
+            }
             throw;
         }
     }
@@ -588,10 +590,10 @@ bool SQLiteBatch::TxnCommit()
     int res = sqlite3_exec(m_database.m_db, "COMMIT TRANSACTION", nullptr, nullptr, nullptr);
     if (res != SQLITE_OK) {
         LogPrintf("SQLiteBatch: Failed to commit the transaction\n");
-    } else {
-        m_txn = false;
-        m_database.m_write_semaphore.post();
     }
+    // Always release semaphore and reset transaction flag to prevent deadlocks
+    m_txn = false;
+    m_database.m_write_semaphore.post();
     return res == SQLITE_OK;
 }
 
@@ -601,10 +603,10 @@ bool SQLiteBatch::TxnAbort()
     int res = sqlite3_exec(m_database.m_db, "ROLLBACK TRANSACTION", nullptr, nullptr, nullptr);
     if (res != SQLITE_OK) {
         LogPrintf("SQLiteBatch: Failed to abort the transaction\n");
-    } else {
-        m_txn = false;
-        m_database.m_write_semaphore.post();
     }
+    // Always release semaphore and reset transaction flag to prevent deadlocks
+    m_txn = false;
+    m_database.m_write_semaphore.post();
     return res == SQLITE_OK;
 }
 
