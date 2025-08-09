@@ -506,6 +506,7 @@ void SendCoinsDialog::sendButtonClicked([[maybe_unused]] bool checked)
         msgBox.setInformativeText("The PSBT has been copied to the clipboard. You can also save it.");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
         msgBox.setDefaultButton(QMessageBox::Discard);
+        msgBox.setObjectName("psbt_copied_message");
         switch (msgBox.exec()) {
         case QMessageBox::Save: {
             QString selectedFilter;
