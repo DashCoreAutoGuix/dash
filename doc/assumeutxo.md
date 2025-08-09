@@ -107,7 +107,7 @@ sequentially.
 
 Once the tip of the background chainstate hits the base block of the snapshot
 chainstate, we stop use of the background chainstate by setting `m_stop_use` (not yet
-committed - see bitcoin#15606), in `CompleteSnapshotValidation()`, which is checked in
+committed - see bitcoin#15606), in `MaybeCompleteSnapshotValidation()`, which is checked in
 `ActivateBestChain()`). We hash the background chainstate's UTXO set contents and
 ensure it matches the compiled value in `CMainParams::m_assumeutxo_data`.
 
@@ -122,7 +122,7 @@ The background chainstate data lingers on disk until shutdown, when in
 | active chainstate | snapshot |
 
 **Failure consideration:** if dashd unexpectedly halts after `m_stop_use` is set on
-the background chainstate but before `CompleteSnapshotValidation()` can finish, the
+the background chainstate but before `MaybeCompleteSnapshotValidation()` can finish, the
 need to complete snapshot validation will be detected on subsequent init by
 `ChainstateManager::CheckForUncleanShutdown()`.
 
