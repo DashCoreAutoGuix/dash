@@ -188,8 +188,9 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
 
         // Try to obtain the lock; if unsuccessful don't disturb the existing test.
         TryCreateDirectories(m_path_lock);
-        if (util::LockDirectory(m_path_lock, ".lock", /*probe_only=*/false) != util::LockResult::Success) {
-            ExitFailure("Cannot obtain a lock on test data lock directory " + fs::PathToString(m_path_lock) + '\n' + "The test executable is probably already running.");
+        if (!LockDirectory(m_path_lock, ".lock", /*probe_only=*/false)) {
+            ExitFailure("Cannot obtain a lock on test data lock directory " + fs::PathToString(m_path_lock) +
+                        '\n' + "The test executable is probably already running.");
         }
 
         // Always start with a fresh data directory; this doesn't delete the .lock file located one level above.
