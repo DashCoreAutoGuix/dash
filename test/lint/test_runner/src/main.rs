@@ -33,7 +33,7 @@ fn check_output(cmd: &mut std::process::Command) -> Result<String, LintError> {
 
 /// Return the git root as utf8, or panic
 fn get_git_root() -> PathBuf {
-    PathBuf::from(check_output(git().args(["rev-parse", "--show-toplevel"])).unwrap())
+    PathBuf::from(check_output(&mut git().args(["rev-parse", "--show-toplevel"])).unwrap())
 }
 
 /// Return all subtree paths
@@ -182,22 +182,25 @@ fn lint_includes_build_config() -> LintResult {
     let config_path = "./src/config/bitcoin-config.h.in";
     let include_directive = "#include <config/bitcoin-config.h>";
     if !Path::new(config_path).is_file() {
-        assert!(Command::new("./autogen.sh")
+        if !Command::new("./autogen.sh")
             .status()
             .expect("command error")
-            .success());
+            .success() {
+            return Err("./autogen.sh failed to generate config file".to_string());
+        }
     }
     let defines_regex = format!(
         r"^\s*(?!//).*({})",
-        check_output(Command::new("grep").args(["undef ", "--", config_path]))
+        check_output(&mut Command::new("grep").args(["undef ", "--", config_path]))
             .expect("grep failed")
             .lines()
             .map(|line| {
                 line.split("undef ")
                     .nth(1)
-                    .unwrap_or_else(|| panic!("Could not extract name in line: {line}"))
+                    .ok_or_else(|| format!("Could not extract name in line: {line}"))
             })
-            .collect::<Vec<_>>()
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("Error parsing undef lines: {e}"))?
             .join("|")
     );
     let print_affected_files = |mode: bool| {
