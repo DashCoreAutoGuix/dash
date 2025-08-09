@@ -87,6 +87,9 @@ static inline bool InsecureRandBool() { return g_insecure_rand_ctx.randbool(); }
 
 static constexpr CAmount CENT{1000000};
 
+/** Setup unit test specific arguments */
+void SetupUnitTestArgs(ArgsManager& args);
+
 /** Initialize Dash-specific components during chainstate initialization (NodeContext-friendly aliases) */
 void DashChainstateSetup(ChainstateManager& chainman,
                          node::NodeContext& node,

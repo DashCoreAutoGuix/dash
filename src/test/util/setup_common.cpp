@@ -102,6 +102,11 @@ static uint256 GetUintFromEnv(const std::string& env_name)
     return uint256S(num);
 }
 
+void SetupUnitTestArgs(ArgsManager& args)
+{
+    args.AddArg("-testdatadir=<dir>", "Custom data directory for unit tests", false, OptionsCategory::DEBUG_TEST);
+}
+
 void Seed(FastRandomContext& ctx)
 {
     // Should be enough to get the seed once for the process

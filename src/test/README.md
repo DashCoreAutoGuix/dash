@@ -82,7 +82,7 @@ so no leftover state is used.)
 
 ```bash
 $ test_dash --run_test=getarg_tests/doubledash -- -testdatadir=/somewhere/mydatadir
-Test directory (will not be deleted): "/somewhere/mydatadir/test_common_Dash Core/getarg_tests/doubledash/datadir"
+Test directory (will not be deleted): /somewhere/mydatadir/test_common_Dash Core/getarg_tests/doubledash/datadir
 Running 1 test case...
 
 *** No errors detected
