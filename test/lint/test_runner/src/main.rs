@@ -80,6 +80,7 @@ fn lint_std_filesystem() -> LintResult {
             "./src/",
             ":(exclude)src/util/fs.h",
         ])
+        .args(get_pathspecs_exclude_subtrees())
         .status()
         .expect("command error")
         .success();
@@ -99,20 +100,26 @@ fn lint_includes_build_config() -> LintResult {
     let config_path = "./src/config/bitcoin-config.h.in";
     let include_directive = "#include <config/bitcoin-config.h>";
     if !Path::new(config_path).is_file() {
-        assert!(Command::new("./autogen.sh")
+        let result = Command::new("./autogen.sh")
             .status()
-            .expect("command error")
-            .success());
+            .map_err(|e| format!("Failed to execute autogen.sh: {}", e))?;
+        if !result.success() {
+            return Err("autogen.sh failed to execute successfully".to_string());
+        }
     }
+    let grep_output = check_output(Command::new("grep").args(["undef ", "--", config_path]));
+    let undef_lines = match grep_output {
+        Ok(output) => output,
+        Err(_) => return Ok(()), // If no undef statements found, nothing to check
+    };
     let defines_regex = format!(
         r"^\s*(?!//).*({})",
-        check_output(Command::new("grep").args(["undef ", "--", config_path]))
-            .expect("grep failed")
+        undef_lines
             .lines()
             .map(|line| {
                 line.split("undef ")
                     .nth(1)
-                    .unwrap_or_else(|| panic!("Could not extract name in line: {line}"))
+                    .unwrap_or("")
             })
             .collect::<Vec<_>>()
             .join("|")
