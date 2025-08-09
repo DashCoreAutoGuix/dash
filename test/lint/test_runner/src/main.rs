@@ -106,9 +106,12 @@ fn get_pathspecs_exclude_whitespace() -> Vec<String> {
         [
             // Permanent excludes
             "*.patch",
+            "depends/patches/",
+            "contrib/guix/patches/",
             "src/qt/locale",
             "contrib/windeploy/win-codesign.cert",
             "doc/README_windows.txt",
+            "src/util/expected.h",
             // Temporary excludes, or existing violations
             "doc/release-notes/release-notes-0.*",
             "contrib/init/bitcoind.openrc",
