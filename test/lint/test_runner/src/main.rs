@@ -44,6 +44,8 @@ fn get_subtrees() -> Vec<&'static str> {
         "src/leveldb",
         "src/minisketch",
         "src/secp256k1",
+        "src/dashbls",
+        "src/immer",
     ]
 }
 
