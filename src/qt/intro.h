@@ -64,7 +64,8 @@ private Q_SLOTS:
 
 private:
     Ui::Intro *ui;
-    QThread *thread;
+    bool m_prune_checkbox_is_default{true};
+    QThread* thread{nullptr};
     QMutex mutex;
     bool signalled;
     QString pathToCheck;
