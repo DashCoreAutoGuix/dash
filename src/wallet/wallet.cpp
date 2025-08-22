@@ -2223,15 +2223,42 @@ void CWallet::AutoLockMasternodeCollaterals()
     LockProTxCoins(candidates, &batch);
 }
 
-DBErrors CWallet::ZapSelectTx(std::vector<uint256>& vHashIn, std::vector<uint256>& vHashOut)
+bool CWallet::RemoveTxs(std::vector<uint256>& txs_to_remove)
 {
     AssertLockHeld(cs_wallet);
+    WalletBatch batch(GetDatabase());
+    if (!batch.TxnBegin()) {
+        WalletLogPrintf("Error starting db txn for wallet transactions removal\n");
+        return false;
+    }
 
-    WalletLogPrintf("ZapSelectTx started for %d transactions...\n", vHashIn.size());
+    // Check for transaction existence and remove entries from disk
+    using TxIterator = std::unordered_map<uint256, CWalletTx, SaltedTxidHasher>::const_iterator;
+    std::vector<TxIterator> erased_txs;
+    for (const uint256& hash : txs_to_remove) {
+        auto it_wtx = mapWallet.find(hash);
+        if (it_wtx == mapWallet.end()) {
+            WalletLogPrintf("Transaction %s does not belong to this wallet\n", hash.GetHex());
+            batch.TxnAbort();
+            return false;
+        }
+        if (!batch.EraseTx(hash)) {
+            WalletLogPrintf("Failure removing transaction: %s\n", hash.GetHex());
+            batch.TxnAbort();
+            return false;
+        }
+        erased_txs.emplace_back(it_wtx);
+    }
 
-    DBErrors nZapSelectTxRet = WalletBatch(GetDatabase()).ZapSelectTx(vHashIn, vHashOut);
-    for (const uint256& hash : vHashOut) {
-        const auto& it = mapWallet.find(hash);
+    // Dump changes to disk
+    if (!batch.TxnCommit()) {
+        WalletLogPrintf("Error committing db txn for wallet transactions removal\n");
+        return false;
+    }
+
+    // Update the in-memory state and notify upper layers about the removals
+    for (const auto& it : erased_txs) {
+        const uint256 hash{it->first};
         wtxOrdered.erase(it->second.m_it_wtxOrdered);
         for (const auto& txin : it->second.tx->vin)
             mapTxSpends.erase(txin.prevout);
@@ -2239,23 +2266,9 @@ DBErrors CWallet::ZapSelectTx(std::vector<uint256>& vHashIn, std::vector<uint256
         NotifyTransactionChanged(hash, CT_DELETED);
     }
 
-    if (nZapSelectTxRet == DBErrors::NEED_REWRITE)
-    {
-        if (GetDatabase().Rewrite("\x04pool"))
-        {
-            for (const auto& spk_man_pair : m_spk_managers) {
-                spk_man_pair.second->RewriteDB();
-            }
-        }
-    }
-
-    if (nZapSelectTxRet != DBErrors::LOAD_OK)
-        return nZapSelectTxRet;
-
     MarkDirty();
 
-    WalletLogPrintf("ZapSelectTx completed for %d transactions.\n", vHashOut.size());
-    return DBErrors::LOAD_OK;
+    return true;
 }
 
 bool CWallet::SetAddressBookWithDB(WalletBatch& batch, const CTxDestination& address, const std::string& strName, const std::string& strPurpose)

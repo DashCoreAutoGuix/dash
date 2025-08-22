@@ -190,7 +190,6 @@ bool ExecuteWalletToolFunc(const ArgsManager& args, const std::string& command)
         if (wallet_instance == nullptr) return false;
 
         std::vector<uint256> vHash;
-        std::vector<uint256> vHashOut;
 
         LOCK(wallet_instance->cs_wallet);
 
@@ -198,14 +197,14 @@ bool ExecuteWalletToolFunc(const ArgsManager& args, const std::string& command)
             vHash.push_back(txid);
         }
 
-        if (wallet_instance->ZapSelectTx(vHash, vHashOut) != DBErrors::LOAD_OK) {
+        if (!wallet_instance->RemoveTxs(vHash)) {
             tfm::format(std::cerr, "Could not properly delete transactions");
             wallet_instance->Close();
             return false;
         }
 
         wallet_instance->Close();
-        return vHashOut.size() == vHash.size();
+        return true;
 #else
         tfm::format(std::cerr, "Wipetxes command is not available as BDB support is not compiled");
         return false;
