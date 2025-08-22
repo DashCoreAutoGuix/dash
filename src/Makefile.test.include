@@ -120,6 +120,10 @@ BITCOIN_TESTS =\
   test/fs_tests.cpp \
   test/getarg_tests.cpp \
   test/governance_validators_tests.cpp \
+  test/coinjoin_inouts_tests.cpp \
+  test/coinjoin_dstxmanager_tests.cpp \
+  test/coinjoin_basemanager_tests.cpp \
+  test/coinjoin_queue_tests.cpp \
   test/hash_tests.cpp \
   test/httpserver_tests.cpp \
   test/i2p_tests.cpp \
@@ -158,6 +162,7 @@ BITCOIN_TESTS =\
   test/random_tests.cpp \
   test/ratecheck_tests.cpp \
   test/rest_tests.cpp \
+  test/result_tests.cpp \
   test/reverselock_tests.cpp \
   test/rpc_tests.cpp \
   test/sanity_tests.cpp \
@@ -210,6 +215,7 @@ BITCOIN_TESTS += \
   wallet/test/wallet_crypto_tests.cpp \
   wallet/test/wallet_transaction_tests.cpp \
   wallet/test/coinselector_tests.cpp \
+  wallet/test/availablecoins_tests.cpp \
   wallet/test/init_tests.cpp \
   wallet/test/ismine_tests.cpp \
   wallet/test/scriptpubkeyman_tests.cpp

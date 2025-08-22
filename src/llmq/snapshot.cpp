@@ -45,8 +45,8 @@ UniValue CQuorumRotationInfo::ToJson() const
     obj.pushKV("quorumSnapshotAtHMinus2C", quorumSnapshotAtHMinus2C.ToJson());
     obj.pushKV("quorumSnapshotAtHMinus3C", quorumSnapshotAtHMinus3C.ToJson());
 
-    if (extraShare && quorumSnapshotAtHMinus4C.has_value()) {
-        obj.pushKV("quorumSnapshotAtHMinus4C", quorumSnapshotAtHMinus4C->ToJson());
+    if (extraShare) {
+        obj.pushKV("quorumSnapshotAtHMinus4C", quorumSnapshotAtHMinus4C.ToJson());
     }
 
     obj.pushKV("mnListDiffTip", mnListDiffTip.ToJson());
@@ -55,8 +55,8 @@ UniValue CQuorumRotationInfo::ToJson() const
     obj.pushKV("mnListDiffAtHMinus2C", mnListDiffAtHMinus2C.ToJson());
     obj.pushKV("mnListDiffAtHMinus3C", mnListDiffAtHMinus3C.ToJson());
 
-    if (extraShare && mnListDiffAtHMinus4C.has_value()) {
-        obj.pushKV("mnListDiffAtHMinus4C", mnListDiffAtHMinus4C->ToJson());
+    if (extraShare) {
+        obj.pushKV("mnListDiffAtHMinus4C", mnListDiffAtHMinus4C.ToJson());
     }
     UniValue hqclists(UniValue::VARR);
     for (const auto& qc : lastCommitmentPerIndex) {
@@ -267,7 +267,7 @@ bool BuildQuorumRotationInfo(CDeterministicMNManager& dmnman, CQuorumSnapshotMan
             errorRet = strprintf("Can not find quorum snapshot at H-4C");
             return false;
         } else {
-            response.quorumSnapshotAtHMinus4C = std::move(snapshotHMinus4C);
+            response.quorumSnapshotAtHMinus4C = std::move(snapshotHMinus4C.value());
         }
 
         CSimplifiedMNListDiff mn4c;
@@ -283,23 +283,21 @@ bool BuildQuorumRotationInfo(CDeterministicMNManager& dmnman, CQuorumSnapshotMan
         response.mnListDiffAtHMinus4C = std::move(mn4c);
     } else {
         response.extraShare = false;
-        response.quorumSnapshotAtHMinus4C.reset();
-        response.mnListDiffAtHMinus4C.reset();
     }
 
     std::set<int> snapshotHeightsNeeded;
 
-    std::vector<std::pair<int, const CBlockIndex*>> qdata = qblockman.GetLastMinedCommitmentsPerQuorumIndexUntilBlock(llmqType, blockIndex, 0);
+    std::vector<const CBlockIndex*> qdata = qblockman.GetLastMinedCommitmentsPerQuorumIndexUntilBlock(llmqType,
+                                                                                                      blockIndex, 0);
 
     for (const auto& obj : qdata) {
-        uint256 minedBlockHash;
-        llmq::CFinalCommitmentPtr qc = qblockman.GetMinedCommitment(llmqType, obj.second->GetBlockHash(), minedBlockHash);
-        if (qc == nullptr) {
+        auto [qc, minedBlockHash] = qblockman.GetMinedCommitment(llmqType, obj->GetBlockHash());
+        if (minedBlockHash == uint256::ZERO) {
             return false;
         }
-        response.lastCommitmentPerIndex.push_back(*qc);
+        response.lastCommitmentPerIndex.emplace_back(std::move(qc));
 
-        int quorumCycleStartHeight = obj.second->nHeight - (obj.second->nHeight % llmq_params_opt->dkgInterval);
+        int quorumCycleStartHeight = obj->nHeight - (obj->nHeight % llmq_params_opt->dkgInterval);
         snapshotHeightsNeeded.insert(quorumCycleStartHeight - cycleLength);
         snapshotHeightsNeeded.insert(quorumCycleStartHeight - 2 * cycleLength);
         snapshotHeightsNeeded.insert(quorumCycleStartHeight - 3 * cycleLength);

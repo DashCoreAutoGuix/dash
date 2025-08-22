@@ -459,14 +459,6 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
             }
         }
         newList.UpdateMN(payee->proTxHash, newState);
-        if (debugLogs) {
-            dmn = newList.GetMN(payee->proTxHash);
-            // Since the previous GetMN query returned a value, after an update, querying the same
-            // hash *must* give us a result. If it doesn't, that would be a potential logic bug.
-            assert(dmn);
-            LogPrint(BCLog::MNPAYMENTS, "%s -- MN %s, nConsecutivePayments=%d\n", __func__, dmn->proTxHash.ToString(),
-                     dmn->pdmnState->nConsecutivePayments);
-        }
     }
 
     // reset nConsecutivePayments on non-paid EvoNodes
@@ -584,7 +576,7 @@ bool CSpecialTxProcessor::ProcessSpecialTxsInBlock(const CBlock& block, const CB
 
         int64_t nTime5 = GetTimeMicros();
         nTimeQuorum += nTime5 - nTime4;
-        LogPrint(BCLog::BENCHMARK, "      - m_qblockman: %.2fms [%.2fs]\n", 0.001 * (nTime5 - nTime4),
+        LogPrint(BCLog::BENCHMARK, "      - m_qblockman.ProcessBlock: %.2fms [%.2fs]\n", 0.001 * (nTime5 - nTime4),
                  nTimeQuorum * 0.000001);
 
         CDeterministicMNList mn_list;
@@ -603,7 +595,8 @@ bool CSpecialTxProcessor::ProcessSpecialTxsInBlock(const CBlock& block, const CB
 
         int64_t nTime6 = GetTimeMicros();
         nTimeDMN += nTime6 - nTime5;
-        LogPrint(BCLog::BENCHMARK, "      - m_dmnman: %.2fms [%.2fs]\n", 0.001 * (nTime6 - nTime5), nTimeDMN * 0.000001);
+        LogPrint(BCLog::BENCHMARK, "      - m_dmnman.ProcessBlock: %.2fms [%.2fs]\n", 0.001 * (nTime6 - nTime5),
+                 nTimeDMN * 0.000001);
 
         if (opt_cbTx.has_value()) {
             uint256 calculatedMerkleRootMNL;
@@ -657,7 +650,8 @@ bool CSpecialTxProcessor::ProcessSpecialTxsInBlock(const CBlock& block, const CB
 
         int64_t nTime8 = GetTimeMicros();
         nTimeMnehf += nTime8 - nTime7;
-        LogPrint(BCLog::BENCHMARK, "      - m_mnhfman: %.2fms [%.2fs]\n", 0.001 * (nTime8 - nTime7), nTimeMnehf * 0.000001);
+        LogPrint(BCLog::BENCHMARK, "      - m_mnhfman.ProcessBlock: %.2fms [%.2fs]\n", 0.001 * (nTime8 - nTime7),
+                 nTimeMnehf * 0.000001);
 
         if (DeploymentActiveAfter(pindex, m_consensus_params, Consensus::DEPLOYMENT_V19) && bls::bls_legacy_scheme.load()) {
             // NOTE: The block next to the activation is the one that is using new rules.
