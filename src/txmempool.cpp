@@ -201,7 +201,7 @@ bool CTxMemPool::CalculateAncestorsAndCheckLimits(size_t entry_size,
                                                   uint64_t limitDescendantSize,
                                                   std::string &errString) const
 {
-    size_t totalSizeWithAncestors = entry_size;
+    int64_t totalSizeWithAncestors = entry_size;
 
     while (!staged_ancestors.empty()) {
         const CTxMemPoolEntry& stage = staged_ancestors.begin()->get();
