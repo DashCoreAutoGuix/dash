@@ -32,8 +32,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
 )
 from test_framework.wallet import getnewdestination
-from test_framework.key import ECKey
-from test_framework.wallet_util import bytes_to_wif
+from test_framework.wallet_util import generate_keypair
 
 NULLDUMMY_ERROR = "non-mandatory-script-verify-flag (Dummy CHECKMULTISIG argument must be zero)"
 
@@ -67,11 +66,8 @@ class NULLDUMMYTest(BitcoinTestFramework):
         return tx_from_hex(signedtx["hex"])
 
     def run_test(self):
-        eckey = ECKey()
-        eckey.generate()
-        self.privkey = bytes_to_wif(eckey.get_bytes())
-        self.pubkey = eckey.get_pubkey().get_bytes().hex()
-        cms = self.nodes[0].createmultisig(1, [self.pubkey])
+        self.privkey, self.pubkey = generate_keypair(wif=True)
+        cms = self.nodes[0].createmultisig(1, [self.pubkey.hex()])
         self.ms_address = cms["address"]
         ms_unlock_details = {"scriptPubKey": self.nodes[0].validateaddress(self.ms_address)["scriptPubKey"],
                              "redeemScript": cms["redeemScript"]}
