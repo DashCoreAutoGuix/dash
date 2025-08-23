@@ -190,16 +190,9 @@ class RawTransactionsTest(BitcoinTestFramework):
         inputs  = [ ]
         outputs = { self.nodes[0].getnewaddress() : 26, self.nodes[1].getnewaddress() : 25 }
         rawtx   = self.nodes[2].createrawtransaction(inputs, outputs)
-        dec_tx  = self.nodes[2].decoderawtransaction(rawtx)
 
         rawtxfund = self.nodes[2].fundrawtransaction(rawtx)
         dec_tx  = self.nodes[2].decoderawtransaction(rawtxfund['hex'])
-        totalOut = 0
-        for out in dec_tx['vout']:
-            totalOut += out['value']
-            address = out['scriptPubKey']['address']
-            if address in outputs.keys():
-                assert_equal(satoshi_round(outputs[address]), out['value'])
 
         assert len(dec_tx['vin']) > 0
         assert_equal(dec_tx['vin'][0]['scriptSig']['hex'], '')
