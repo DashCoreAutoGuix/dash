@@ -1,4 +1,4 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 #
 # Copyright (c) 2019-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
@@ -13,4 +13,3 @@ export TEST_RUNNER_EXTRA="--exclude rpc_bind,feature_bind_extra --timeout-factor
 export GOAL="install"
 # Temporarily pin dwarf 4, until valgrind can understand clang's dwarf 5
 export BITCOIN_CONFIG="--enable-zmq --with-incompatible-bdb --with-gui=no CC=clang-18 CXX=clang++-18 CFLAGS='-gdwarf-4' CXXFLAGS='-gdwarf-4'"  # TODO enable GUI
-EOF < /dev/null
