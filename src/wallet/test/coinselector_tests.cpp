@@ -961,5 +961,48 @@ BOOST_AUTO_TEST_CASE(minimum_inputs_test)
     BOOST_CHECK_EQUAL(result->GetSelectedValue(), 25 * COIN);
 }
 
+static util::Result<SelectionResult> SelectCoinsSRD(const CAmount& target,
+                                                    const CoinSelectionParams& cs_params,
+                                                    const node::NodeContext& m_node,
+                                                    int max_weight,
+                                                    std::function<CoinsResult(CWallet&)> coin_setup)
+{
+    std::unique_ptr<CWallet> wallet = NewWallet(m_node);
+    CoinEligibilityFilter filter(0, 0, 0); // accept all coins without ancestors
+    Groups group = GroupOutputs(*wallet, coin_setup(*wallet), cs_params, {{filter}})[filter].all_groups;
+    return SelectCoinsSRD(group.positive_group, target, cs_params.m_change_fee, cs_params.rng_fast, max_weight);
+}
+
+BOOST_AUTO_TEST_CASE(srd_tests)
+{
+    FastRandomContext rand;
+    CoinSelectionParams dummy_params{
+            rand,
+            /*change_output_size=*/34,
+            /*change_spend_size=*/68,
+            /*min_change_target=*/CENT,
+            /*effective_feerate=*/CFeeRate(0),
+            /*long_term_feerate=*/CFeeRate(0),
+            /*discard_feerate=*/CFeeRate(0),
+            /*tx_noinputs_size=*/10 + 34,
+            /*avoid_partial=*/false,
+    };
+
+    {
+        CAmount target = 49.5L * COIN;
+        int max_weight = 10000;
+        const auto& res = SelectCoinsSRD(target, dummy_params, m_node, max_weight, [&](CWallet& wallet) {
+            CoinsResult available_coins;
+            for (int j = 0; j < 10; ++j) {
+                add_coin(available_coins, wallet, CAmount(1 * COIN));
+                add_coin(available_coins, wallet, CAmount(2 * COIN));
+            }
+            return available_coins;
+        });
+        BOOST_CHECK(!res);
+        BOOST_CHECK(util::ErrorString(res).empty());
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 } // namespace wallet
