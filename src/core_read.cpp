@@ -177,11 +177,6 @@ std::vector<unsigned char> ParseHexUV(const UniValue& v, const std::string& strN
     return ParseHex(strHex);
 }
 
-/**
- * Returns a sighash value corresponding to the passed in argument.
- *
- * @pre The sighash argument should be string or null.
-*/
 int ParseSighashString(const UniValue& sighash)
 {
     int hash_type = SIGHASH_ALL;
