@@ -1278,17 +1278,16 @@ std::vector<CTxMemPool::indexed_transaction_set::const_iterator> CTxMemPool::Get
     return iters;
 }
 
-void CTxMemPool::queryHashes(std::vector<uint256>& vtxid) const
+std::vector<CTxMemPoolEntryRef> CTxMemPool::entryAll() const
 {
-    LOCK(cs);
-    auto iters = GetSortedDepthAndScore();
-
-    vtxid.clear();
-    vtxid.reserve(mapTx.size());
-
-    for (auto it : iters) {
-        vtxid.push_back(it->GetTx().GetHash());
+    AssertLockHeld(cs);
+    
+    std::vector<CTxMemPoolEntryRef> ret;
+    ret.reserve(mapTx.size());
+    for (const auto& it : GetSortedDepthAndScore()) {
+        ret.emplace_back(*it);
     }
+    return ret;
 }
 
 static TxMempoolInfo GetInfo(CTxMemPool::indexed_transaction_set::const_iterator it) {
