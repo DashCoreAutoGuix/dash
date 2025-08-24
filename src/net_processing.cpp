@@ -1441,7 +1441,7 @@ void PeerManagerImpl::FindNextBlocksToDownload(const Peer& peer, unsigned int co
                 // We reached the end of the window.
                 if (vBlocks.size() == 0 && waitingfor != peer.m_id) {
                     // We aren't able to fetch anything, but we would be if the download window was one larger.
-                    if (nodeStaller) *nodeStaller = waitingfor;
+                    nodeStaller = waitingfor;
                 }
                 return;
             }
