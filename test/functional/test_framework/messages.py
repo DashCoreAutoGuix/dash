@@ -23,7 +23,6 @@ import hashlib
 from io import BytesIO
 import random
 import socket
-import struct
 import time
 import unittest
 
