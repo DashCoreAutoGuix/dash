@@ -57,7 +57,7 @@ struct TransactionStatus {
     /** Current block hash (to know whether cached status is still valid) */
     uint256 m_cur_block_hash{};
 
-    //** Know when to update transaction for chainlocks **/
+    /** Know when to update transaction for chainlocks **/
     int cachedChainLockHeight{-1};
 
     bool needsUpdate{false};
