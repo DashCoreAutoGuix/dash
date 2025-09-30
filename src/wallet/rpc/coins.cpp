@@ -432,32 +432,33 @@ RPCHelpMan listlockunspent()
 
 RPCHelpMan getbalances()
 {
-    return RPCHelpMan{"getbalances",
-                "Returns an object with all balances in " + CURRENCY_UNIT + ".\n",
-                {},
-                RPCResult{
-                    RPCResult::Type::OBJ, "", "",
-                    {
-                        {RPCResult::Type::OBJ, "mine", "balances from outputs that the wallet can sign",
-                            {
-                                {RPCResult::Type::STR_AMOUNT, "trusted", " trusted balance (outputs created by the wallet or confirmed outputs)"},
-                                {RPCResult::Type::STR_AMOUNT, "untrusted_pending", " untrusted pending balance (outputs created by others that are in the mempool)"},
-                                {RPCResult::Type::STR_AMOUNT, "immature", " balance from immature coinbase outputs"},
-                                {RPCResult::Type::STR_AMOUNT, "used", /*optional=*/true, "(only present if avoid_reuse is set) balance from coins sent to addresses that were previously spent from (potentially privacy violating)"},
-                                {RPCResult::Type::STR_AMOUNT, "coinjoin", " CoinJoin balance (outputs with enough rounds created by the wallet via mixing)"},
-                        }},
-                        {RPCResult::Type::OBJ, "watchonly", /*optional=*/true, "watchonly balances (not present if wallet does not watch anything)",
-                            {
-                                {RPCResult::Type::STR_AMOUNT, "trusted", " trusted balance (outputs created by the wallet or confirmed outputs)"},
-                                {RPCResult::Type::STR_AMOUNT, "untrusted_pending", " untrusted pending balance (outputs created by others that are in the mempool)"},
-                                {RPCResult::Type::STR_AMOUNT, "immature", " balance from immature coinbase outputs"},
-                        }},
-                    },
-                },
-                RPCExamples{
-                    HelpExampleCli("getbalances", "") +
-                    HelpExampleRpc("getbalances", "")
-                },
+    return RPCHelpMan{
+        "getbalances",
+        "Returns an object with all balances in " + CURRENCY_UNIT + ".\n",
+        {},
+        RPCResult{
+            RPCResult::Type::OBJ, "", "",
+            {
+                {RPCResult::Type::OBJ, "mine", "balances from outputs that the wallet can sign",
+                {
+                    {RPCResult::Type::STR_AMOUNT, "trusted", "trusted balance (outputs created by the wallet or confirmed outputs)"},
+                    {RPCResult::Type::STR_AMOUNT, "untrusted_pending", "untrusted pending balance (outputs created by others that are in the mempool)"},
+                    {RPCResult::Type::STR_AMOUNT, "immature", "balance from immature coinbase outputs"},
+                    {RPCResult::Type::STR_AMOUNT, "used", /*optional=*/true, "(only present if avoid_reuse is set) balance from coins sent to addresses that were previously spent from (potentially privacy violating)"},
+                    {RPCResult::Type::STR_AMOUNT, "coinjoin", "CoinJoin balance (outputs with enough rounds created by the wallet via mixing)"},
+                }},
+                {RPCResult::Type::OBJ, "watchonly", /*optional=*/true, "watchonly balances (not present if wallet does not watch anything)",
+                {
+                    {RPCResult::Type::STR_AMOUNT, "trusted", "trusted balance (outputs created by the wallet or confirmed outputs)"},
+                    {RPCResult::Type::STR_AMOUNT, "untrusted_pending", "untrusted pending balance (outputs created by others that are in the mempool)"},
+                    {RPCResult::Type::STR_AMOUNT, "immature", "balance from immature coinbase outputs"},
+                }},
+                RESULT_LAST_PROCESSED_BLOCK,
+            }
+            },
+        RPCExamples{
+            HelpExampleCli("getbalances", "") +
+            HelpExampleRpc("getbalances", "")},
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     const std::shared_ptr<const CWallet> rpc_wallet = GetWalletForJSONRPCRequest(request);
@@ -494,6 +495,8 @@ RPCHelpMan getbalances()
         balances_watchonly.pushKV("immature", ValueFromAmount(bal.m_watchonly_immature));
         balances.pushKV("watchonly", balances_watchonly);
     }
+
+    AppendLastProcessedBlock(balances, wallet);
     return balances;
 },
     };

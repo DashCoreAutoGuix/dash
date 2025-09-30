@@ -730,19 +730,21 @@ RPCHelpMan gettransaction()
                                                                                                                        "'send' category of transactions."},
                                     {RPCResult::Type::BOOL, "abandoned", "'true' if the transaction has been abandoned (inputs are respendable)."},
                             }},
-                    }},
-                  {RPCResult::Type::STR_HEX, "hex", "Raw data for transaction"},
-                  {RPCResult::Type::OBJ, "decoded", /*optional=*/true, "the decoded transaction (only present when `verbose` is passed), equivalent to the",
-                  {
-                        {RPCResult::Type::ELISION, "", "RPC decoderawtransaction method, or the RPC getrawtransaction method when `verbose` is passed."},
-                  }},
-                }),
-        },
-        RPCExamples{
-            HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
-    + HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\" true")
-    + HelpExampleRpc("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
-        },
+                        }},
+                        {RPCResult::Type::STR_HEX, "hex", "Raw data for transaction"},
+                        {RPCResult::Type::OBJ, "decoded", /*optional=*/true, "The decoded transaction (only present when `verbose` is passed)",
+                        {
+                            {RPCResult::Type::ELISION, "", "Equivalent to the RPC decoderawtransaction method, or the RPC getrawtransaction method when `verbose` is passed."},
+                        }},
+                        RESULT_LAST_PROCESSED_BLOCK,
+                    })
+                },
+                RPCExamples{
+                    HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
+            + HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\" true")
+            + HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\" false true")
+            + HelpExampleRpc("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
+                },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
     const std::shared_ptr<const CWallet> pwallet = GetWalletForJSONRPCRequest(request);
@@ -795,6 +797,7 @@ RPCHelpMan gettransaction()
         entry.pushKV("decoded", decoded);
     }
 
+    AppendLastProcessedBlock(entry, *pwallet);
     return entry;
 },
     };

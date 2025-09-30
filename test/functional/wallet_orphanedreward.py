@@ -46,17 +46,28 @@ class OrphanedBlockRewardTest(BitcoinTestFramework):
           "immature": Decimal('0E-8'),
           "coinjoin": Decimal('0E-8'),
         })
-        # The following abandontransaction is necessary to make the later
-        # lines succeed, and probably should not be needed; see
-        # https://github.com/bitcoin/bitcoin/issues/14148.
-        self.nodes[1].abandontransaction(txid)
-        assert_equal(self.nodes[1].getbalances()["mine"], {
-          "trusted": Decimal('10.00000000'),
-          "untrusted_pending": Decimal('0.00000000'),
-          "immature": Decimal('0.00000000'),
-          "coinjoin": Decimal('0E-8'),
-        })
-        self.nodes[1].sendtoaddress(self.nodes[0].getnewaddress(), 9)
+        # And the unconfirmed tx to be abandoned
+        assert_equal(self.nodes[1].gettransaction(txid)["details"][0]["abandoned"], True)
+
+        # The abandoning should persist through reloading
+        self.nodes[1].unloadwallet(self.default_wallet_name)
+        self.nodes[1].loadwallet(self.default_wallet_name)
+        assert_equal(self.nodes[1].gettransaction(txid)["details"][0]["abandoned"], True)
+
+        # If the orphaned reward is reorged back into the main chain, any unconfirmed
+        # descendant txs at the time of the original reorg remain abandoned.
+        self.nodes[0].invalidateblock(conflict_block)
+        self.nodes[0].reconsiderblock(blk)
+        assert_equal(self.nodes[0].getbestblockhash(), orig_chain_tip)
+        self.generate(self.nodes[0], 3)
+
+        balances = self.nodes[1].getbalances()
+        del balances["lastprocessedblock"]
+        del pre_reorg_conf_bals["lastprocessedblock"]
+        assert_equal(balances, pre_reorg_conf_bals)
+        assert_equal(self.nodes[1].gettransaction(txid)["details"][0]["abandoned"], True)
+
+
 
 if __name__ == '__main__':
     OrphanedBlockRewardTest().main()
