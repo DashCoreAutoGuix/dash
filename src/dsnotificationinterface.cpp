@@ -12,10 +12,10 @@
 #include <masternode/sync.h>
 #include <validation.h>
 
+#include <chainlock/chainlock.h>
 #include <evo/deterministicmns.h>
 #include <evo/mnauth.h>
 #include <instantsend/instantsend.h>
-#include <llmq/chainlocks.h>
 #include <llmq/context.h>
 #include <llmq/dkgsessionmgr.h>
 #include <llmq/ehf_signals.h>
@@ -92,7 +92,6 @@ void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
 
     m_llmq_ctx->qman->UpdatedBlockTip(pindexNew, m_connman, fInitialDownload);
     m_llmq_ctx->qdkgsman->UpdatedBlockTip(pindexNew, fInitialDownload);
-    m_llmq_ctx->ehfSignalsHandler->UpdatedBlockTip(pindexNew, /* is_masternode = */ m_mn_activeman != nullptr);
 
     if (m_govman.IsValid()) {
         m_govman.UpdatedBlockTip(pindexNew, m_connman, m_peerman, m_mn_activeman);
@@ -143,7 +142,8 @@ void CDSNotificationInterface::NotifyMasternodeListChanged(bool undo, const CDet
     }
 }
 
-void CDSNotificationInterface::NotifyChainLock(const CBlockIndex* pindex, const std::shared_ptr<const llmq::CChainLockSig>& clsig)
+void CDSNotificationInterface::NotifyChainLock(const CBlockIndex* pindex,
+                                               const std::shared_ptr<const chainlock::ChainLockSig>& clsig)
 {
     assert(m_cj_ctx && m_llmq_ctx);
 

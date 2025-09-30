@@ -13,6 +13,7 @@
 #include <consensus/validation.h>
 #include <deploymentstatus.h>
 #include <crypto/sha256.h>
+#include <crypto/x11/dispatch.h>
 #include <index/txindex.h>
 #include <init.h>
 #include <interfaces/chain.h>
@@ -32,6 +33,7 @@
 #include <shutdown.h>
 #include <streams.h>
 #include <test/util/index.h>
+#include <test/util/net.h>
 #include <txdb.h>
 #include <util/strencodings.h>
 #include <util/string.h>
@@ -59,6 +61,7 @@
 #include <flat-database.h>
 #include <governance/governance.h>
 #include <llmq/context.h>
+#include <masternode/active/context.h>
 #include <masternode/meta.h>
 #include <masternode/sync.h>
 #include <netfulfilledman.h>
@@ -177,6 +180,7 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     InitLogging(*m_node.args);
     AppInitParameterInteraction(*m_node.args);
     LogInstance().StartLogging();
+    SapphireAutoDetect();
     SHA256AutoDetect();
     ECC_Start();
     BLSInit();
@@ -200,7 +204,7 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
                       sem_str, GetSupportedSocketEventsStr()));
     }
 
-    m_node.connman = std::make_unique<CConnman>(0x1337, 0x1337, *m_node.addrman, *m_node.netgroupman); // Deterministic randomness for tests.
+    m_node.connman = std::make_unique<ConnmanTestMsg>(0x1337, 0x1337, *m_node.addrman, *m_node.netgroupman); // Deterministic randomness for tests.
 
     fCheckBlockIndex = true;
     m_node.evodb = std::make_unique<CEvoDB>(1 << 20, true, true);
@@ -333,8 +337,8 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
     m_node.banman = std::make_unique<BanMan>(m_args.GetDataDirBase() / "banlist", nullptr, DEFAULT_MISBEHAVING_BANTIME);
     m_node.peerman = PeerManager::make(chainparams, *m_node.connman, *m_node.addrman, m_node.banman.get(),
                                        *m_node.chainman, *m_node.mempool, *m_node.mn_metaman, *m_node.mn_sync,
-                                       *m_node.govman, *m_node.sporkman, /* mn_activeman = */ nullptr, m_node.dmnman,
-                                       m_node.cj_ctx, m_node.llmq_ctx, /* ignore_incoming_txs = */ false);
+                                       *m_node.govman, *m_node.sporkman, /*mn_activeman=*/nullptr, m_node.dmnman,
+                                       /*active_ctx=*/nullptr, m_node.cj_ctx, m_node.llmq_ctx, /*ignore_incoming_txs=*/false);
     {
         CConnman::Options options;
         options.m_msgproc = m_node.peerman.get();
@@ -342,8 +346,8 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
         m_node.connman->Init(options);
     }
 
-    m_node.cj_ctx = std::make_unique<CJContext>(*m_node.chainman, *m_node.connman, *m_node.dmnman, *m_node.mn_metaman, *m_node.mempool,
-                                                /*mn_activeman=*/nullptr, *m_node.mn_sync, *m_node.llmq_ctx->isman, m_node.peerman,
+    m_node.cj_ctx = std::make_unique<CJContext>(*m_node.chainman, *m_node.dmnman, *m_node.mn_metaman, *m_node.mempool,
+                                                /*mn_activeman=*/nullptr, *m_node.mn_sync, *m_node.llmq_ctx->isman,
                                                 /*relay_txes=*/true);
 
 #ifdef ENABLE_WALLET
@@ -442,7 +446,7 @@ TestChainSetup::TestChainSetup(int num_blocks, const std::string& chain_name, co
 
 void TestChainSetup::mineBlocks(int num_blocks)
 {
-    CScript scriptPubKey = CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
+    CScript scriptPubKey = GetScriptForRawPubKey(coinbaseKey.GetPubKey());
     for (int i = 0; i < num_blocks; i++) {
         std::vector<CMutableTransaction> noTxns;
         CBlock b = CreateAndProcessBlock(noTxns, scriptPubKey);
@@ -472,15 +476,6 @@ CBlock TestChainSetup::CreateAndProcessBlock(
     Assert(m_node.chainman)->ProcessNewBlock(chainparams, shared_pblock, true, nullptr);
 
     return block;
-}
-
-CBlock TestChainSetup::CreateAndProcessBlock(
-    const std::vector<CMutableTransaction>& txns,
-    const CKey& scriptKey,
-    CChainState* chainstate)
-{
-    CScript scriptPubKey = CScript() <<  ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
-    return CreateAndProcessBlock(txns, scriptPubKey, chainstate);
 }
 
 CBlock TestChainSetup::CreateBlock(
@@ -545,16 +540,6 @@ CBlock TestChainSetup::CreateBlock(
     CBlock result = block;
     return result;
 }
-
-CBlock TestChainSetup::CreateBlock(
-    const std::vector<CMutableTransaction>& txns,
-    const CKey& scriptKey,
-    CChainState& chainstate)
-{
-    CScript scriptPubKey = CScript() <<  ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
-    return CreateBlock(txns, scriptPubKey, chainstate);
-}
-
 
 CMutableTransaction TestChainSetup::CreateValidMempoolTransaction(CTransactionRef input_transaction,
                                                                   int input_vout,

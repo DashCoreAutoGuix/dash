@@ -80,7 +80,6 @@
 const int64_t nStartupTime = GetTime();
 
 //Dash only features
-bool fMasternodeMode = false;
 const std::string gCoinJoinName = "CoinJoin";
 
 /**
@@ -448,8 +447,7 @@ fs::path ArgsManager::GetDataDir(bool net_specific) const
     LOCK(cs_args);
     fs::path& path = net_specific ? m_cached_network_datadir_path : m_cached_datadir_path;
 
-    // Cache the path to avoid calling fs::create_directories on every call of
-    // this function
+    // Used cached path if available
     if (!path.empty()) return path;
 
     const fs::path datadir{GetPathArg("-datadir")};
@@ -463,15 +461,8 @@ fs::path ArgsManager::GetDataDir(bool net_specific) const
         path = GetDefaultDataDir();
     }
 
-    if (!fs::exists(path)) {
-        fs::create_directories(path / "wallets");
-    }
-
     if (net_specific && !BaseParams().DataDir().empty()) {
         path /= fs::PathFromString(BaseParams().DataDir());
-        if (!fs::exists(path)) {
-            fs::create_directories(path / "wallets");
-        }
     }
 
     return path;
@@ -483,6 +474,27 @@ fs::path ArgsManager::GetBackupsDirPath()
         return GetDataDirNet() / "backups";
 
     return fs::absolute(GetPathArg("-walletbackupsdir"));
+}
+
+void ArgsManager::EnsureDataDir() const
+{
+    /**
+     * "/wallets" subdirectories are created in all **new**
+     * datadirs, because wallet code will create new wallets in the "wallets"
+     * subdirectory only if exists already, otherwise it will create them in
+     * the top-level datadir where they could interfere with other files.
+     * Wallet init code currently avoids creating "wallets" directories itself
+     * for backwards compatibility, but this be changed in the future and
+     * wallet code here could go away (#16220).
+     */
+    auto path{GetDataDir(false)};
+    if (!fs::exists(path)) {
+        fs::create_directories(path / "wallets");
+    }
+    path = GetDataDir(true);
+    if (!fs::exists(path)) {
+        fs::create_directories(path / "wallets");
+    }
 }
 
 void ArgsManager::ClearPathCache()
@@ -530,6 +542,7 @@ bool ArgsManager::IsArgSet(const std::string& strArg) const
 
 bool ArgsManager::InitSettings(std::string& error)
 {
+    EnsureDataDir();
     if (!GetSettingsPath()) {
         return true; // Do nothing if settings file disabled.
     }
@@ -963,6 +976,11 @@ bool ArgsManager::ReadConfigStream(std::istream& stream, const std::string& file
     return true;
 }
 
+fs::path ArgsManager::GetConfigFilePath() const
+{
+    return GetConfigFile(GetPathArg("-conf", BITCOIN_CONF_FILENAME));
+}
+
 bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
 {
     {
@@ -971,8 +989,8 @@ bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
         m_config_sections.clear();
     }
 
-    const fs::path conf_path = GetPathArg("-conf", BITCOIN_CONF_FILENAME);
-    std::ifstream stream{GetConfigFile(conf_path)};
+    const auto conf_path{GetConfigFilePath()};
+    std::ifstream stream{conf_path};
 
     // not ok to have a config file specified that cannot be opened
     if (IsArgSet("-conf") && !stream.good()) {
@@ -1450,23 +1468,6 @@ bool SetupNetworking()
 int GetNumCores()
 {
     return std::thread::hardware_concurrency();
-}
-
-std::string CopyrightHolders(const std::string& strPrefix, unsigned int nStartYear, unsigned int nEndYear)
-{
-//    std::string strCopyrightHolders = strPrefix + strprintf(" %u-%u ", nStartYear, nEndYear) + strprintf(_(COPYRIGHT_HOLDERS).translated, _(COPYRIGHT_HOLDERS_SUBSTITUTION));
-    const auto copyright_devs = strprintf(_(COPYRIGHT_HOLDERS).translated, COPYRIGHT_HOLDERS_SUBSTITUTION);
-    std::string strCopyrightHolders = strPrefix + strprintf(" %u-%u ", nStartYear, nEndYear) + copyright_devs;
-
-    // Check for untranslated substitution to make sure Dash Core copyright is not removed by accident
-    if (copyright_devs.find("Dash Core") == std::string::npos) {
-        strCopyrightHolders += "\n" + strPrefix + strprintf(" %u-%u ", 2014, nEndYear) + "The Dash Core developers";
-    }
-    // Check for untranslated substitution to make sure Bitcoin Core copyright is not removed by accident
-    if (copyright_devs.find("Bitcoin Core") == std::string::npos) {
-        strCopyrightHolders += "\n" + strPrefix + strprintf(" %u-%u ", 2009, nEndYear) + "The Bitcoin Core developers";
-    }
-    return strCopyrightHolders;
 }
 
 // Obtain the application startup time (used for uptime calculation)

@@ -33,12 +33,13 @@
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QListView>
 #include <QPushButton>
+#include <QTableView>
+#include <QTextEdit>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QTextEdit>
-#include <QListView>
-#include <QDialogButtonBox>
 
 using wallet::AddWallet;
 using wallet::CWallet;
@@ -278,7 +279,7 @@ void TestGUI(interfaces::Node& node)
 
 void WalletTests::walletTests()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (QApplication::platformName() == "minimal") {
         // Disable for mac on "minimal" platform to avoid crashes inside the Qt
         // framework when it tries to look up unimplemented cocoa functions,

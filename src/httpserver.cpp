@@ -21,15 +21,17 @@
 
 #include <cstdio>
 #include <deque>
+#include <optional>
 #include <string>
 
 #include <sys/types.h>
 
-#include <event2/thread.h>
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
-#include <event2/util.h>
+#include <event2/http.h>
 #include <event2/keyvalq_struct.h>
+#include <event2/thread.h>
+#include <event2/util.h>
 
 #include <support/events.h>
 
@@ -217,8 +219,10 @@ std::string RequestMethodString(HTTPRequest::RequestMethod m)
 /** HTTP request callback */
 static void http_request_cb(struct evhttp_request* req, void* arg)
 {
-    // Disable reading to work around a libevent bug, fixed in 2.2.0.
-    if (event_get_version_number() >= 0x02010600 && event_get_version_number() < 0x02020001) {
+    // Disable reading to work around a libevent bug, fixed in 2.1.9
+    // See https://github.com/libevent/libevent/commit/5ff8eb26371c4dc56f384b2de35bea2d87814779
+    // and https://github.com/bitcoin/bitcoin/pull/11593.
+    if (event_get_version_number() >= 0x02010600 && event_get_version_number() < 0x02010900) {
         evhttp_connection* conn = evhttp_request_get_connection(req);
         if (conn) {
             bufferevent* bev = evhttp_connection_get_bufferevent(conn);
@@ -614,7 +618,7 @@ void HTTPRequest::WriteReply(int nStatus, const std::string& strReply)
         evhttp_send_reply(req_copy, nStatus, nullptr, nullptr);
         // Re-enable reading from the socket. This is the second part of the libevent
         // workaround above.
-        if (event_get_version_number() >= 0x02010600 && event_get_version_number() < 0x02020001) {
+        if (event_get_version_number() >= 0x02010600 && event_get_version_number() < 0x02010900) {
             evhttp_connection* conn = evhttp_request_get_connection(req_copy);
             if (conn) {
                 bufferevent* bev = evhttp_connection_get_bufferevent(conn);
@@ -668,6 +672,37 @@ HTTPRequest::RequestMethod HTTPRequest::GetRequestMethod() const
     default:
         return UNKNOWN;
     }
+}
+
+std::optional<std::string> HTTPRequest::GetQueryParameter(const std::string& key) const
+{
+    const char* uri{evhttp_request_get_uri(req)};
+
+    return GetQueryParameterFromUri(uri, key);
+}
+
+std::optional<std::string> GetQueryParameterFromUri(const char* uri, const std::string& key)
+{
+    evhttp_uri* uri_parsed{evhttp_uri_parse(uri)};
+    const char* query{evhttp_uri_get_query(uri_parsed)};
+    std::optional<std::string> result;
+
+    if (query) {
+        // Parse the query string into a key-value queue and iterate over it
+        struct evkeyvalq params_q;
+        evhttp_parse_query_str(query, &params_q);
+
+        for (struct evkeyval* param{params_q.tqh_first}; param != nullptr; param = param->next.tqe_next) {
+            if (param->key == key) {
+                result = param->value;
+                break;
+            }
+        }
+        evhttp_clear_headers(&params_q);
+    }
+    evhttp_uri_free(uri_parsed);
+
+    return result;
 }
 
 void RegisterHTTPHandler(const std::string &prefix, bool exactMatch, const HTTPRequestHandler &handler)

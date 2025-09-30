@@ -28,14 +28,6 @@
 #include <sys/un.h>
 #endif
 
-#ifndef WIN32
-#include <fcntl.h>
-#endif
-
-#ifdef USE_POLL
-#include <poll.h>
-#endif
-
 // Settings
 static Mutex g_proxyinfo_mutex;
 static Proxy proxyInfo[NET_MAX] GUARDED_BY(g_proxyinfo_mutex);
@@ -320,7 +312,7 @@ enum class IntrRecvError {
  */
 static IntrRecvError InterruptibleRecv(uint8_t* data, size_t len, int timeout, const Sock& sock)
 {
-    int64_t curTime = GetTimeMillis();
+    int64_t curTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
     int64_t endTime = curTime + timeout;
     while (len > 0 && curTime < endTime) {
         ssize_t ret = sock.Recv(data, len, 0); // Optimistically try the recv first
@@ -345,7 +337,7 @@ static IntrRecvError InterruptibleRecv(uint8_t* data, size_t len, int timeout, c
         }
         if (interruptSocks5Recv)
             return IntrRecvError::Interrupted;
-        curTime = GetTimeMillis();
+        curTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
     }
     return len == 0 ? IntrRecvError::OK : IntrRecvError::Timeout;
 }

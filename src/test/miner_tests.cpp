@@ -7,22 +7,23 @@
 #include <consensus/merkle.h>
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
-#include <evo/evodb.h>
-#include <governance/governance.h>
-#include <llmq/blockprocessor.h>
-#include <llmq/chainlocks.h>
-#include <llmq/context.h>
 #include <node/miner.h>
 #include <policy/policy.h>
 #include <pow.h>
 #include <script/standard.h>
-#include <spork.h>
 #include <uint256.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <util/time.h>
 #include <validation.h>
 #include <versionbits.h>
+
+#include <evo/evodb.h>
+#include <governance/governance.h>
+#include <instantsend/instantsend.h>
+#include <llmq/blockprocessor.h>
+#include <llmq/context.h>
+#include <spork.h>
 
 #include <test/util/setup_common.h>
 
@@ -39,7 +40,9 @@ struct MinerTestingSetup : public TestingSetup {
     bool TestSequenceLocks(const CTransaction& tx) EXCLUSIVE_LOCKS_REQUIRED(::cs_main, m_node.mempool->cs)
     {
         CCoinsViewMemPool view_mempool(&m_node.chainman->ActiveChainstate().CoinsTip(), *m_node.mempool);
-        return CheckSequenceLocksAtTip(m_node.chainman->ActiveChain().Tip(), view_mempool, tx);
+        CBlockIndex* tip{m_node.chainman->ActiveChain().Tip()};
+        const std::optional<LockPoints> lock_points{CalculateLockPointsAtTip(tip, view_mempool, tx)};
+        return lock_points.has_value() && CheckSequenceLocksAtTip(tip, *lock_points);
     }
     BlockAssembler AssemblerForTest(const CChainParams& params);
 };
@@ -386,7 +389,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     //     next->pprev = prev;
     //     next->nHeight = prev->nHeight + 1;
     //     next->BuildSkip();
-    //     m_node.chainman->ActiveChain().SetTip(next);
+    //     m_node.chainman->ActiveChain().SetTip(*next);
     // }
     //BOOST_CHECK(pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey));
     // // Extend to a 210000-long block chain.
@@ -398,7 +401,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     //     next->pprev = prev;
     //     next->nHeight = prev->nHeight + 1;
     //     next->BuildSkip();
-    //     m_node.chainman->ActiveChain().SetTip(next);
+    //     m_node.chainman->ActiveChain().SetTip(*next);
     // }
     //BOOST_CHECK(pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey));
 
@@ -423,7 +426,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     // // Delete the dummy blocks again.
     // while (m_node.chainman->ActiveChain().Tip()->nHeight > nHeight) {
     //     CBlockIndex* del = m_node.chainman->ActiveChain().Tip();
-    //     m_node.chainman->ActiveChain().SetTip(del->pprev);
+    //     m_node.chainman->ActiveChain().SetTip(*Assert(del->pprev));
     //     m_node.chainman->ActiveChainstate().CoinsTip().SetBestBlock(del->pprev->GetBlockHash());
     //     delete del->phashBlock;
     //     delete del;

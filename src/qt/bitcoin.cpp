@@ -49,7 +49,6 @@
 #include <memory>
 
 #include <QApplication>
-#include <QDebug>
 #include <QLatin1String>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -171,6 +170,7 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
 
 static bool InitSettings()
 {
+    gArgs.EnsureDataDir();
     if (!gArgs.GetSettingsPath()) {
         return true; // Do nothing if settings file disabled.
     }

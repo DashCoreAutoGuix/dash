@@ -5,18 +5,20 @@
 #ifndef BITCOIN_TEST_UTIL_LLMQ_TESTS_H
 #define BITCOIN_TEST_UTIL_LLMQ_TESTS_H
 
+#include <test/util/setup_common.h>
+
 #include <arith_uint256.h>
 #include <bls/bls.h>
 #include <consensus/params.h>
-#include <llmq/clsig.h>
-#include <llmq/commitment.h>
-#include <llmq/params.h>
 #include <primitives/transaction.h>
 #include <random.h>
 #include <serialize.h>
 #include <streams.h>
-#include <test/util/setup_common.h>
 #include <uint256.h>
+
+#include <chainlock/clsig.h>
+#include <llmq/commitment.h>
+#include <llmq/params.h>
 
 #include <vector>
 
@@ -64,10 +66,10 @@ inline CFinalCommitment CreateValidCommitment(const Consensus::LLMQParams& param
     return commitment;
 }
 
-inline CChainLockSig CreateChainLock(int32_t height, const uint256& blockHash)
+inline chainlock::ChainLockSig CreateChainLock(int32_t height, const uint256& blockHash)
 {
     CBLSSignature sig = CreateRandomBLSSignature();
-    return CChainLockSig(height, blockHash, sig);
+    return chainlock::ChainLockSig(height, blockHash, sig);
 }
 
 // Helper to create bit vectors with specific patterns
@@ -86,17 +88,19 @@ inline std::vector<bool> CreateBitVector(size_t size, const std::vector<size_t>&
 template <typename T>
 inline bool TestSerializationRoundtrip(const T& obj)
 {
-    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-    ss << obj;
+    // Datastreams we will compare at the end
+    CDataStream ss_obj(SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream ss_obj_rt(SER_NETWORK, PROTOCOL_VERSION);
+    // A temporary datastream to perform serialization round-trip
+    CDataStream ss_tmp(SER_NETWORK, PROTOCOL_VERSION);
+    T obj_rt;
 
-    T deserialized;
-    ss >> deserialized;
+    ss_obj << obj;
+    ss_tmp << obj;
+    ss_tmp >> obj_rt;
+    ss_obj_rt << obj_rt;
 
-    // Re-serialize and compare
-    CDataStream ss2(SER_NETWORK, PROTOCOL_VERSION);
-    ss2 << deserialized;
-
-    return ss.str() == ss2.str();
+    return ss_obj.str() == ss_obj_rt.str();
 }
 
 // Helper to create deterministic test data

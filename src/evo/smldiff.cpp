@@ -9,7 +9,6 @@
 #include <consensus/merkle.h>
 #include <core_io.h>
 #include <deploymentstatus.h>
-#include <evo/cbtx.h>
 #include <evo/deterministicmns.h>
 #include <evo/specialtx.h>
 #include <llmq/blockprocessor.h>
@@ -22,6 +21,9 @@
 #include <validation.h>
 
 using node::ReadBlockFromDisk;
+
+// Forward declaration
+std::optional<std::pair<CBLSSignature, uint32_t>> GetNonNullCoinbaseChainlock(const CBlockIndex* pindex);
 
 CSimplifiedMNListDiff::CSimplifiedMNListDiff() = default;
 
@@ -54,12 +56,11 @@ bool CSimplifiedMNListDiff::BuildQuorumsDiff(const CBlockIndex* baseBlockIndex, 
     for (const auto& p : quorumHashes) {
         const auto& [llmqType, hash] = p;
         if (!baseQuorumHashes.count(p)) {
-            uint256 minedBlockHash;
-            llmq::CFinalCommitmentPtr qc = quorum_block_processor.GetMinedCommitment(llmqType, hash, minedBlockHash);
-            if (qc == nullptr) {
+            auto [qc, minedBlockHash] = quorum_block_processor.GetMinedCommitment(llmqType, hash);
+            if (minedBlockHash == uint256::ZERO) {
                 return false;
             }
-            newQuorums.emplace_back(*qc);
+            newQuorums.emplace_back(std::move(qc));
         }
     }
 
@@ -209,7 +210,7 @@ bool BuildSimplifiedMNListDiff(CDeterministicMNManager& dmnman, const Chainstate
         return false;
     }
 
-    mnListDiffRet.cbTx = block.vtx[0];
+    mnListDiffRet.cbTx = CMutableTransaction(*block.vtx[0]);
 
     std::vector<uint256> vHashes;
     std::vector<bool> vMatch(block.vtx.size(), false);

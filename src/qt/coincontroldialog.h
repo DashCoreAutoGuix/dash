@@ -13,7 +13,6 @@
 #include <QList>
 #include <QMenu>
 #include <QPoint>
-#include <QString>
 #include <QTreeWidgetItem>
 
 class WalletModel;
@@ -102,7 +101,6 @@ private Q_SLOTS:
     void clipboardFee();
     void clipboardAfterFee();
     void clipboardBytes();
-    void clipboardLowOutput();
     void clipboardChange();
     void radioTreeMode(bool);
     void radioListMode(bool);

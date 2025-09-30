@@ -16,7 +16,6 @@
 #include <interfaces/coinjoin.h>
 #include <key_io.h>
 #include <node/blockstorage.h>
-#include <node/context.h>
 #include <policy/policy.h>
 #include <rpc/rawtransaction_util.h>
 #include <rpc/server.h>
@@ -458,7 +457,7 @@ BOOST_AUTO_TEST_CASE(LoadReceiveRequests)
 
 // Test some watch-only LegacyScriptPubKeyMan methods by the procedure of loading (LoadWatchOnly),
 // checking (HaveWatchOnly), getting (GetWatchPubKey) and removing (RemoveWatchOnly) a
-// given PubKey, resp. its corresponding P2PK Script. Results of the the impact on
+// given PubKey, resp. its corresponding P2PK Script. Results of the impact on
 // the address -> PubKey map is dependent on whether the PubKey is a point on the curve
 static void TestWatchOnlyPubKey(LegacyScriptPubKeyMan* spk_man, const CPubKey& add_pubkey)
 {
@@ -554,13 +553,11 @@ public:
     CWalletTx& AddTx(CRecipient recipient)
     {
         CTransactionRef tx;
-        bilingual_str error;
         CCoinControl dummy;
-        FeeCalculation fee_calc_out;
         {
-            std::optional<CreatedTransactionResult> txr = CreateTransaction(*wallet, {recipient}, RANDOM_CHANGE_POSITION, error, dummy, fee_calc_out);
-            BOOST_CHECK(txr.has_value());
-            tx = txr->tx;
+            auto res = CreateTransaction(*wallet, {recipient}, RANDOM_CHANGE_POSITION, dummy);
+            BOOST_CHECK(res);
+            tx = res->tx;
         }
         wallet->CommitTransaction(tx, {}, {});
         CMutableTransaction blocktx;
@@ -615,7 +612,7 @@ BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup)
     // Lock both coins. Confirm number of available coins drops to 0.
     {
         LOCK(wallet->cs_wallet);
-        BOOST_CHECK_EQUAL(AvailableCoinsListUnspent(*wallet).coins.size(), 2U);
+        BOOST_CHECK_EQUAL(AvailableCoinsListUnspent(*wallet).size(), 2U);
     }
     for (const auto& group : list) {
         for (const auto& coin : group.second) {
@@ -625,7 +622,7 @@ BOOST_FIXTURE_TEST_CASE(ListCoinsTest, ListCoinsTestingSetup)
     }
     {
         LOCK(wallet->cs_wallet);
-        BOOST_CHECK_EQUAL(AvailableCoinsListUnspent(*wallet).coins.size(), 0U);
+        BOOST_CHECK_EQUAL(AvailableCoinsListUnspent(*wallet).size(), 0U);
     }
     // Confirm ListCoins still returns same result as before, despite coins
     // being locked.
@@ -646,9 +643,7 @@ BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup)
         wallet->SetMinVersion(FEATURE_LATEST);
         wallet->SetWalletFlag(WALLET_FLAG_DISABLE_PRIVATE_KEYS);
         BOOST_CHECK(!wallet->TopUpKeyPool(1000));
-        CTxDestination dest;
-        bilingual_str error;
-        BOOST_CHECK(!wallet->GetNewDestination("", dest, error));
+        BOOST_CHECK(!wallet->GetNewDestination(""));
     }
     {
         const std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(m_node.chain.get(), m_node.coinjoin_loader.get(), "", m_args, CreateDummyWalletDatabase());
@@ -656,9 +651,7 @@ BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup)
         wallet->SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
         wallet->SetMinVersion(FEATURE_LATEST);
         wallet->SetWalletFlag(WALLET_FLAG_DISABLE_PRIVATE_KEYS);
-        CTxDestination dest;
-        bilingual_str error;
-        BOOST_CHECK(!wallet->GetNewDestination("", dest, error));
+        BOOST_CHECK(!wallet->GetNewDestination(""));
     }
 }
 
@@ -1050,14 +1043,15 @@ public:
         int nChangePos = nChangePosRequest;
         bilingual_str strError;
 
-        FeeCalculation fee_calc_out;
         bool fCreationSucceeded{false};
         {
-            auto txr = wallet::CreateTransaction(*wallet, GetRecipients(vecEntries), nChangePos, strError, coinControl, fee_calc_out);
-            if (txr.has_value()) {
+            auto res = wallet::CreateTransaction(*wallet, GetRecipients(vecEntries), nChangePos, coinControl);
+            if (res) {
                 fCreationSucceeded = true;
-                tx = txr->tx;
-                nChangePos = txr->change_pos;
+                tx = res->tx;
+                nChangePos = res->change_pos;
+            } else {
+                strError = util::ErrorString(res);
             }
         }
         bool fHitMaxTries = strError.original == strExceededMaxTries;
@@ -1109,14 +1103,12 @@ public:
     {
         CTransactionRef tx;
         int nChangePosRet{RANDOM_CHANGE_POSITION};
-        bilingual_str strError;
         CCoinControl coinControl;
-        FeeCalculation fee_calc_out;
         {
-            auto txr = wallet::CreateTransaction(*wallet, GetRecipients(vecEntries), nChangePosRet, strError, coinControl, fee_calc_out);
-            BOOST_CHECK(txr.has_value());
-            tx = txr->tx;
-            nChangePosRet = txr->change_pos;
+            auto res = wallet::CreateTransaction(*wallet, GetRecipients(vecEntries), nChangePosRet, coinControl);
+            BOOST_CHECK(res);
+            tx = res->tx;
+            nChangePosRet = res->change_pos;
         }
         wallet->CommitTransaction(tx, {}, {});
         CMutableTransaction blocktx;
@@ -1315,7 +1307,7 @@ BOOST_FIXTURE_TEST_CASE(CreateTransactionTest, CreateTransactionTestSetup)
         // Lock all other coins which were already in the wallet
         {
             LOCK(wallet->cs_wallet);
-            for (auto coin : AvailableCoinsListUnspent(*wallet).coins) {
+            for (auto coin : AvailableCoinsListUnspent(*wallet).all()) {
                 if (std::find(setCoins.begin(), setCoins.end(), coin.outpoint) == setCoins.end()) {
                     wallet->LockCoin(coin.outpoint);
                 }
@@ -1371,7 +1363,7 @@ BOOST_FIXTURE_TEST_CASE(CreateTransactionTest, CreateTransactionTestSetup)
             // Lock all other coins
             {
                 LOCK(wallet->cs_wallet);
-                for (auto coin : AvailableCoinsListUnspent(*wallet).coins) {
+                for (auto coin : AvailableCoinsListUnspent(*wallet).all()) {
                     wallet->LockCoin(coin.outpoint);
                 }
             }
@@ -1444,18 +1436,18 @@ BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup
     }
 
     // Create two conflicting transactions, add one to the wallet and mine the other one.
-    bilingual_str error;
     CCoinControl dummy;
-    FeeCalculation fee_calc_out;
-    auto txr1 = CreateTransaction(*wallet, {CRecipient{GetScriptForRawPubKey({}), 2 * COIN, true /* subtract fee */}},
-                                  RANDOM_CHANGE_POSITION, error, dummy, fee_calc_out);
-    BOOST_CHECK(txr1.has_value());
-    auto txr2 = CreateTransaction(*wallet, {CRecipient{GetScriptForRawPubKey({}), 1 * COIN, true /* subtract fee */}},
-                                  RANDOM_CHANGE_POSITION, error, dummy, fee_calc_out);
-    BOOST_CHECK(txr2.has_value());
-    wallet->CommitTransaction(txr1->tx, {}, {});
+    auto ret1 = CreateTransaction(*wallet, {CRecipient{GetScriptForRawPubKey({}), 2 * COIN, true /* subtract fee */}},
+                                  RANDOM_CHANGE_POSITION, dummy);
+    BOOST_CHECK(ret1);
+    const auto& txr1 = ret1->tx;
+    auto ret2 = CreateTransaction(*wallet, {CRecipient{GetScriptForRawPubKey({}), 1 * COIN, true /* subtract fee */}},
+                                  RANDOM_CHANGE_POSITION, dummy);
+    BOOST_CHECK(ret2);
+    const auto& txr2 = ret2->tx;
+    wallet->CommitTransaction(txr1, {}, {});
     BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), 0);
-    CreateAndProcessBlock({CMutableTransaction(*txr2->tx)}, GetScriptForRawPubKey({}));
+    CreateAndProcessBlock({CMutableTransaction(*txr2)}, GetScriptForRawPubKey({}));
     {
         LOCK(wallet->cs_wallet);
         wallet->SetLastBlockProcessed(m_node.chainman->ActiveChain().Height(), m_node.chainman->ActiveChain().Tip()->GetBlockHash());
@@ -1468,10 +1460,10 @@ BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup
     BOOST_CHECK_EQUAL(result.status, CWallet::ScanResult::SUCCESS);
     {
         LOCK(wallet->cs_wallet);
-        const auto& conflicts = wallet->GetConflicts(txr2->tx->GetHash());
+        const auto& conflicts = wallet->GetConflicts(txr2->GetHash());
         BOOST_CHECK_EQUAL(conflicts.size(), 2);
-        BOOST_CHECK_EQUAL(conflicts.count(txr1->tx->GetHash()), 1);
-        BOOST_CHECK_EQUAL(conflicts.count(txr2->tx->GetHash()), 1);
+        BOOST_CHECK_EQUAL(conflicts.count(txr1->GetHash()), 1);
+        BOOST_CHECK_EQUAL(conflicts.count(txr2->GetHash()), 1);
     }
 
     // Committed tx is the one that should be marked as "conflicting".
@@ -1485,6 +1477,111 @@ BOOST_FIXTURE_TEST_CASE(select_coins_grouped_by_addresses, ListCoinsTestingSetup
     BOOST_CHECK_EQUAL(vecTally.at(1).outpoints.size(), 1);
     BOOST_CHECK_EQUAL(vecTally.at(0).nAmount + vecTally.at(1).nAmount, (500 + 499) * COIN);
     BOOST_CHECK_EQUAL(GetAvailableBalance(*wallet), (500 + 499) * COIN);
+}
+
+/** RAII class that provides access to a FailDatabase. Which fails if needed. */
+class FailBatch : public DatabaseBatch
+{
+private:
+    bool m_pass{true};
+    bool ReadKey(CDataStream&& key, CDataStream& value) override { return m_pass; }
+    bool WriteKey(CDataStream&& key, CDataStream&& value, bool overwrite=true) override { return m_pass; }
+    bool EraseKey(CDataStream&& key) override { return m_pass; }
+    bool HasKey(CDataStream&& key) override { return m_pass; }
+
+public:
+    explicit FailBatch(bool pass) : m_pass(pass) {}
+    void Flush() override {}
+    void Close() override {}
+
+    bool StartCursor() override { return true; }
+    bool ReadAtCursor(CDataStream& ssKey, CDataStream& ssValue, bool& complete) override { return false; }
+    void CloseCursor() override {}
+    bool TxnBegin() override { return false; }
+    bool TxnCommit() override { return false; }
+    bool TxnAbort() override { return false; }
+};
+
+/** A dummy WalletDatabase that does nothing, only fails if needed.**/
+class FailDatabase : public WalletDatabase
+{
+public:
+    bool m_pass{true}; // false when this db should fail
+
+    void Open() override {};
+    void AddRef() override {}
+    void RemoveRef() override {}
+    bool Rewrite(const char* pszSkip=nullptr) override { return true; }
+    bool Backup(const std::string& strDest) const override { return true; }
+    void Close() override {}
+    void Flush() override {}
+    bool PeriodicFlush() override { return true; }
+    void IncrementUpdateCounter() override { ++nUpdateCounter; }
+    void ReloadDbEnv() override {}
+    std::string Filename() override { return "faildb"; }
+    std::string Format() override { return "faildb"; }
+    std::unique_ptr<DatabaseBatch> MakeBatch(bool flush_on_close = true) override { return std::make_unique<FailBatch>(m_pass); }
+};
+
+/**
+ * Checks a wallet invalid state where the inputs (prev-txs) of a new arriving transaction are not marked dirty,
+ * while the transaction that spends them exist inside the in-memory wallet tx map (not stored on db due a db write failure).
+ */
+BOOST_FIXTURE_TEST_CASE(wallet_sync_tx_invalid_state_test, TestChain100Setup)
+{
+    CWallet wallet(m_node.chain.get(), m_node.coinjoin_loader.get(), "", m_args, std::make_unique<FailDatabase>());
+    {
+        LOCK(wallet.cs_wallet);
+        wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+        wallet.SetupDescriptorScriptPubKeyMans("", "");
+    }
+
+    // Add tx to wallet
+    const auto& op_dest = wallet.GetNewDestination("");
+    BOOST_ASSERT(op_dest);
+
+    CMutableTransaction mtx;
+    mtx.vout.push_back({COIN, GetScriptForDestination(*op_dest)});
+    mtx.vin.push_back(CTxIn(g_insecure_rand_ctx.rand256(), 0));
+    const auto& tx_id_to_spend = wallet.AddToWallet(MakeTransactionRef(mtx), TxStateInMempool{})->GetHash();
+
+    {
+        // Cache and verify available balance for the wtx
+        LOCK(wallet.cs_wallet);
+        const CWalletTx* wtx_to_spend = wallet.GetWalletTx(tx_id_to_spend);
+        BOOST_CHECK_EQUAL(CachedTxGetAvailableCredit(wallet, *wtx_to_spend), 1 * COIN);
+    }
+
+    // Now the good case:
+    // 1) Add a transaction that spends the previously created transaction
+    // 2) Verify that the available balance of this new tx and the old one is updated (prev tx is marked dirty)
+
+    mtx.vin.clear();
+    mtx.vin.push_back(CTxIn(tx_id_to_spend, 0));
+    wallet.transactionAddedToMempool(MakeTransactionRef(mtx), 0, 0);
+    const uint256& good_tx_id = mtx.GetHash();
+
+    {
+        // Verify balance update for the new tx and the old one
+        LOCK(wallet.cs_wallet);
+        const CWalletTx* new_wtx = wallet.GetWalletTx(good_tx_id);
+        BOOST_CHECK_EQUAL(CachedTxGetAvailableCredit(wallet, *new_wtx), 1 * COIN);
+
+        // Now the old wtx
+        const CWalletTx* wtx_to_spend = wallet.GetWalletTx(tx_id_to_spend);
+        BOOST_CHECK_EQUAL(CachedTxGetAvailableCredit(wallet, *wtx_to_spend), 0 * COIN);
+    }
+
+    // Now the bad case:
+    // 1) Make db always fail
+    // 2) Try to add a transaction that spends the previously created transaction and
+    //    verify that we are not moving forward if the wallet cannot store it
+    static_cast<FailDatabase&>(wallet.GetDatabase()).m_pass = false;
+    mtx.vin.clear();
+    mtx.vin.push_back(CTxIn(good_tx_id, 0));
+    BOOST_CHECK_EXCEPTION(wallet.transactionAddedToMempool(MakeTransactionRef(mtx), 0, 0),
+                          std::runtime_error,
+                          HasReason("DB error adding transaction to wallet, write failed"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

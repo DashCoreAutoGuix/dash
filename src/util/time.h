@@ -29,6 +29,8 @@ using SteadySeconds = std::chrono::time_point<std::chrono::steady_clock, std::ch
 using SteadyMilliseconds = std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds>;
 using SteadyMicroseconds = std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds>;
 
+using SystemClock = std::chrono::system_clock;
+
 void UninterruptibleSleep(const std::chrono::microseconds& n);
 
 /**
@@ -69,10 +71,7 @@ using SecondsDouble = std::chrono::duration<double, std::chrono::seconds::period
 int64_t GetTime();
 
 /** Returns the system time (not mockable) */
-int64_t GetTimeMillis();
-/** Returns the system time (not mockable) */
 int64_t GetTimeMicros();
-
 /**
  * DEPRECATED
  * Use SetMockTime with chrono type
@@ -88,8 +87,8 @@ void SetMockTime(std::chrono::seconds mock_time_in);
 std::chrono::seconds GetMockTime();
 
 /**
- * Return the current time point cast to the given precicion. Only use this
- * when an exact precicion is needed, otherwise use T::clock::now() directly.
+ * Return the current time point cast to the given precision. Only use this
+ * when an exact precision is needed, otherwise use T::clock::now() directly.
  */
 template <typename T>
 T Now()

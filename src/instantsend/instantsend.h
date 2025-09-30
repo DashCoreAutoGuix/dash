@@ -25,24 +25,26 @@ class CBlockIndex;
 class CChainState;
 class CDataStream;
 class CMasternodeSync;
-class CNode;
 class CSporkManager;
 class CTxMemPool;
 class PeerManager;
 namespace Consensus {
 struct LLMQParams;
 } // namespace Consensus
+
 namespace instantsend {
 class InstantSendSigner;
-} // namespace instantsend
 
-using NodeId = int64_t;
+struct PendingState {
+    bool m_pending_work{false};
+    std::vector<std::pair<NodeId, MessageProcessingResult>> m_peer_activity{};
+};
+} // namespace instantsend
 
 namespace llmq {
 class CChainLocksHandler;
 class CQuorumManager;
 class CSigningManager;
-class CSigSharesManager;
 
 class CInstantSendManager final : public instantsend::InstantSendSignerParent
 {
@@ -57,56 +59,63 @@ private:
     CTxMemPool& mempool;
     const CMasternodeSync& m_mn_sync;
 
-    std::unique_ptr<instantsend::InstantSendSigner> m_signer{nullptr};
+    std::atomic<instantsend::InstantSendSigner*> m_signer{nullptr};
 
     std::thread workThread;
     CThreadInterrupt workInterrupt;
 
     mutable Mutex cs_pendingLocks;
     // Incoming and not verified yet
-    std::unordered_map<uint256, std::pair<NodeId, instantsend::InstantSendLockPtr>, StaticSaltedHasher> pendingInstantSendLocks GUARDED_BY(cs_pendingLocks);
+    Uint256HashMap<std::pair<NodeId, instantsend::InstantSendLockPtr>> pendingInstantSendLocks GUARDED_BY(cs_pendingLocks);
     // Tried to verify but there is no tx yet
-    std::unordered_map<uint256, std::pair<NodeId, instantsend::InstantSendLockPtr>, StaticSaltedHasher> pendingNoTxInstantSendLocks GUARDED_BY(cs_pendingLocks);
+    Uint256HashMap<std::pair<NodeId, instantsend::InstantSendLockPtr>> pendingNoTxInstantSendLocks GUARDED_BY(cs_pendingLocks);
 
     // TXs which are neither IS locked nor ChainLocked. We use this to determine for which TXs we need to retry IS
     // locking of child TXs
     struct NonLockedTxInfo {
         const CBlockIndex* pindexMined;
         CTransactionRef tx;
-        std::unordered_set<uint256, StaticSaltedHasher> children;
+        Uint256HashSet children;
     };
 
     mutable Mutex cs_nonLocked;
-    std::unordered_map<uint256, NonLockedTxInfo, StaticSaltedHasher> nonLockedTxs GUARDED_BY(cs_nonLocked);
+    Uint256HashMap<NonLockedTxInfo> nonLockedTxs GUARDED_BY(cs_nonLocked);
     std::unordered_map<COutPoint, uint256, SaltedOutpointHasher> nonLockedTxsByOutpoints GUARDED_BY(cs_nonLocked);
 
     mutable Mutex cs_pendingRetry;
-    std::unordered_set<uint256, StaticSaltedHasher> pendingRetryTxs GUARDED_BY(cs_pendingRetry);
+    Uint256HashSet pendingRetryTxs GUARDED_BY(cs_pendingRetry);
 
     mutable Mutex cs_timingsTxSeen;
-    std::unordered_map<uint256, int64_t, StaticSaltedHasher> timingsTxSeen GUARDED_BY(cs_timingsTxSeen);
+    Uint256HashMap<int64_t> timingsTxSeen GUARDED_BY(cs_timingsTxSeen);
 
 public:
     explicit CInstantSendManager(CChainLocksHandler& _clhandler, CChainState& chainstate, CQuorumManager& _qman,
-                                 CSigningManager& _sigman, CSigSharesManager& _shareman, CSporkManager& sporkman,
-                                 CTxMemPool& _mempool, const CMasternodeSync& mn_sync, bool is_masternode,
-                                 bool unitTests, bool fWipe);
+                                 CSigningManager& _sigman, CSporkManager& sporkman, CTxMemPool& _mempool,
+                                 const CMasternodeSync& mn_sync, bool unitTests, bool fWipe);
     ~CInstantSendManager();
+
+    void ConnectSigner(gsl::not_null<instantsend::InstantSendSigner*> signer)
+    {
+        // Prohibit double initialization
+        assert(m_signer.load(std::memory_order_acquire) == nullptr);
+        m_signer.store(signer, std::memory_order_release);
+    }
+    void DisconnectSigner() { m_signer.store(nullptr, std::memory_order_release); }
 
     void Start(PeerManager& peerman);
     void Stop();
     void InterruptWorkerThread() { workInterrupt(); };
 
 private:
-    PeerMsgRet ProcessMessageInstantSendLock(const CNode& pfrom, PeerManager& peerman, const instantsend::InstantSendLockPtr& islock);
-    bool ProcessPendingInstantSendLocks(PeerManager& peerman)
+    instantsend::PendingState ProcessPendingInstantSendLocks()
         EXCLUSIVE_LOCKS_REQUIRED(!cs_nonLocked, !cs_pendingLocks, !cs_pendingRetry);
 
-    std::unordered_set<uint256, StaticSaltedHasher> ProcessPendingInstantSendLocks(
-        const Consensus::LLMQParams& llmq_params, PeerManager& peerman, int signOffset,
-        const std::unordered_map<uint256, std::pair<NodeId, instantsend::InstantSendLockPtr>, StaticSaltedHasher>& pend, bool ban)
+    Uint256HashSet ProcessPendingInstantSendLocks(const Consensus::LLMQParams& llmq_params, int signOffset, bool ban,
+                                                  const Uint256HashMap<std::pair<NodeId, instantsend::InstantSendLockPtr>>& pend,
+                                                  std::vector<std::pair<NodeId, MessageProcessingResult>>& peer_activity)
         EXCLUSIVE_LOCKS_REQUIRED(!cs_nonLocked, !cs_pendingLocks, !cs_pendingRetry);
-    void ProcessInstantSendLock(NodeId from, PeerManager& peerman, const uint256& hash, const instantsend::InstantSendLockPtr& islock)
+    MessageProcessingResult ProcessInstantSendLock(NodeId from, const uint256& hash,
+                                                   const instantsend::InstantSendLockPtr& islock)
         EXCLUSIVE_LOCKS_REQUIRED(!cs_nonLocked, !cs_pendingLocks, !cs_pendingRetry);
 
     void AddNonLockedTx(const CTransactionRef& tx, const CBlockIndex* pindexMined)
@@ -133,7 +142,7 @@ public:
     bool IsWaitingForTx(const uint256& txHash) const EXCLUSIVE_LOCKS_REQUIRED(!cs_pendingLocks);
     instantsend::InstantSendLockPtr GetConflictingLock(const CTransaction& tx) const override;
 
-    PeerMsgRet ProcessMessage(const CNode& pfrom, PeerManager& peerman, std::string_view msg_type, CDataStream& vRecv);
+    [[nodiscard]] MessageProcessingResult ProcessMessage(NodeId from, std::string_view msg_type, CDataStream& vRecv);
 
     void TransactionAddedToMempool(const CTransactionRef& tx)
         EXCLUSIVE_LOCKS_REQUIRED(!cs_nonLocked, !cs_pendingLocks, !cs_pendingRetry);

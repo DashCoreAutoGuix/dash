@@ -112,7 +112,7 @@ public:
     virtual std::string getWalletName() = 0;
 
     // Get a new address.
-    virtual bool getNewDestination(const std::string label, CTxDestination& dest) = 0;
+    virtual util::Result<CTxDestination> getNewDestination(const std::string& label) = 0;
 
     //! Get public key.
     virtual bool getPubKey(const CScript& script, const CKeyID& address, CPubKey& pub_key) = 0;
@@ -167,12 +167,11 @@ public:
     virtual std::vector<COutPoint> listProTxCoins() = 0;
 
     //! Create transaction.
-    virtual CTransactionRef createTransaction(const std::vector<wallet::CRecipient>& recipients,
+    virtual util::Result<CTransactionRef> createTransaction(const std::vector<wallet::CRecipient>& recipients,
         const wallet::CCoinControl& coin_control,
         bool sign,
         int& change_pos,
-        CAmount& fee,
-        bilingual_str& fail_reason) = 0;
+        CAmount& fee) = 0;
 
     //! Commit transaction.
     virtual void commitTransaction(CTransactionRef tx,
@@ -338,6 +337,11 @@ public:
     using CanGetAddressesChangedFn = std::function<void()>;
     virtual std::unique_ptr<Handler> handleCanGetAddressesChanged(CanGetAddressesChangedFn fn) = 0;
 
+    //! Prepare a governance proposal (burns fee).
+    virtual bool prepareProposal(const uint256& govobj_hash, CAmount fee, int32_t revision, int64_t created_time,
+                                 const std::string& data_hex, const COutPoint& outpoint,
+                                 std::string& out_fee_txid, std::string& error) = 0;
+
     //! Return pointer to internal wallet class, useful for testing.
     virtual wallet::CWallet* wallet() { return nullptr; }
 };
@@ -348,35 +352,35 @@ public:
 class WalletLoader : public ChainClient
 {
 public:
-   //! Register non-core wallet RPCs
-   virtual void registerOtherRpcs(const Span<const CRPCCommand>& commands) = 0;
+    //! Register non-core wallet RPCs
+    virtual void registerOtherRpcs(const Span<const CRPCCommand>& commands) = 0;
 
-   //! Create new wallet.
-   virtual std::unique_ptr<Wallet> createWallet(const std::string& name, const SecureString& passphrase, uint64_t wallet_creation_flags, bilingual_str& error, std::vector<bilingual_str>& warnings) = 0;
+    //! Create new wallet.
+    virtual util::Result<std::unique_ptr<Wallet>> createWallet(const std::string& name, const SecureString& passphrase, uint64_t wallet_creation_flags, std::vector<bilingual_str>& warnings) = 0;
 
-   //! Load existing wallet.
-   virtual std::unique_ptr<Wallet> loadWallet(const std::string& name, bilingual_str& error, std::vector<bilingual_str>& warnings) = 0;
+    //! Load existing wallet.
+    virtual util::Result<std::unique_ptr<Wallet>> loadWallet(const std::string& name, std::vector<bilingual_str>& warnings) = 0;
 
-   //! Return default wallet directory.
-   virtual std::string getWalletDir() = 0;
+    //! Return default wallet directory.
+    virtual std::string getWalletDir() = 0;
 
-   //! Restore backup wallet
-   virtual BResult<std::unique_ptr<Wallet>> restoreWallet(const fs::path& backup_file, const std::string& wallet_name, std::vector<bilingual_str>& warnings) = 0;
+    //! Restore backup wallet
+    virtual util::Result<std::unique_ptr<Wallet>> restoreWallet(const fs::path& backup_file, const std::string& wallet_name, std::vector<bilingual_str>& warnings) = 0;
 
-   //! Return available wallets in wallet directory.
-   virtual std::vector<std::string> listWalletDir() = 0;
+    //! Return available wallets in wallet directory.
+    virtual std::vector<std::string> listWalletDir() = 0;
 
-   //! Return interfaces for accessing wallets (if any).
-   virtual std::vector<std::unique_ptr<Wallet>> getWallets() = 0;
+    //! Return interfaces for accessing wallets (if any).
+    virtual std::vector<std::unique_ptr<Wallet>> getWallets() = 0;
 
-   //! Register handler for load wallet messages. This callback is triggered by
-   //! createWallet and loadWallet above, and also triggered when wallets are
-   //! loaded at startup or by RPC.
-   using LoadWalletFn = std::function<void(std::unique_ptr<Wallet> wallet)>;
-   virtual std::unique_ptr<Handler> handleLoadWallet(LoadWalletFn fn) = 0;
+    //! Register handler for load wallet messages. This callback is triggered by
+    //! createWallet and loadWallet above, and also triggered when wallets are
+    //! loaded at startup or by RPC.
+    using LoadWalletFn = std::function<void(std::unique_ptr<Wallet> wallet)>;
+    virtual std::unique_ptr<Handler> handleLoadWallet(LoadWalletFn fn) = 0;
 
-   //! Return pointer to internal context, useful for testing.
-   virtual wallet::WalletContext* context() { return nullptr; }
+    //! Return pointer to internal context, useful for testing.
+    virtual wallet::WalletContext* context() { return nullptr; }
 };
 
 //! Information about one wallet address.

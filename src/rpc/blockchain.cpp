@@ -20,7 +20,6 @@
 #include <index/blockfilterindex.h>
 #include <index/coinstatsindex.h>
 #include <index/txindex.h>
-#include <llmq/context.h>
 #include <logging/timer.h>
 #include <node/blockstorage.h>
 #include <node/coinstats.h>
@@ -49,13 +48,14 @@
 #include <versionbits.h>
 #include <warnings.h>
 
+#include <chainlock/chainlock.h>
 #include <evo/assetlocktx.h>
 #include <evo/cbtx.h>
 #include <evo/evodb.h>
 #include <evo/mnhftx.h>
 #include <evo/specialtx.h>
 #include <instantsend/instantsend.h>
-#include <llmq/chainlocks.h>
+#include <llmq/context.h>
 
 #include <stdint.h>
 
@@ -268,7 +268,7 @@ static RPCHelpMan getbestchainlock()
     const NodeContext& node = EnsureAnyNodeContext(request.context);
 
     const LLMQContext& llmq_ctx = EnsureLLMQContext(node);
-    const llmq::CChainLockSig clsig = llmq_ctx.clhandler->GetBestChainLock();
+    const chainlock::ChainLockSig clsig = llmq_ctx.clhandler->GetBestChainLock();
     if (clsig.IsNull()) {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unable to find any ChainLock");
     }
@@ -481,10 +481,10 @@ static RPCHelpMan getblockfrompeer()
 {
     return RPCHelpMan{
         "getblockfrompeer",
-        "Attempt to fetch block from a given peer.\n"
-        "\nWe must have the header for this block, e.g. using submitheader.\n"
-        "Subsequent calls for the same block and a new peer will cause the response from the previous peer to be ignored.\n"
-        "\nReturns an empty JSON object if the request was successfully scheduled.",
+        "Attempt to fetch block from a given peer.\n\n"
+        "We must have the header for this block, e.g. using submitheader.\n"
+        "Subsequent calls for the same block and a new peer will cause the response from the previous peer to be ignored.\n\n"
+        "Returns an empty JSON object if the request was successfully scheduled.",
         {
             {"blockhash", RPCArg::Type::STR_HEX, RPCArg::Optional::NO, "The block hash to try to fetch"},
             {"peer_id", RPCArg::Type::NUM, RPCArg::Optional::NO, "The peer to fetch it from (see getpeerinfo for peer IDs)"},
@@ -617,8 +617,8 @@ static RPCHelpMan getblockheader()
                     {RPCResult::Type::NUM, "difficulty", "The difficulty"},
                     {RPCResult::Type::STR_HEX, "chainwork", "Expected number of hashes required to produce the current chain"},
                     {RPCResult::Type::NUM, "nTx", "The number of transactions in the block"},
-                    {RPCResult::Type::STR_HEX, "previousblockhash", /* optional */ true, "The hash of the previous block (if available)"},
-                    {RPCResult::Type::STR_HEX, "nextblockhash", /* optional */ true, "The hash of the next block (if available)"},
+                    {RPCResult::Type::STR_HEX, "previousblockhash", /*optional=*/true, "The hash of the previous block (if available)"},
+                    {RPCResult::Type::STR_HEX, "nextblockhash", /*optional=*/true, "The hash of the next block (if available)"},
                     {RPCResult::Type::BOOL, "chainlock", "The state of the block ChainLock"},
                 }},
             RPCResult{"for verbose=false",
@@ -693,8 +693,8 @@ static RPCHelpMan getblockheaders()
                         {RPCResult::Type::NUM, "difficulty", "The difficulty"},
                         {RPCResult::Type::STR_HEX, "chainwork", "Expected number of hashes required to produce the current chain"},
                         {RPCResult::Type::NUM, "nTx", "The number of transactions in the block"},
-                        {RPCResult::Type::STR_HEX, "previousblockhash", /* optional */ true, "The hash of the previous block (if available)"},
-                        {RPCResult::Type::STR_HEX, "nextblockhash", /* optional */ true, "The hash of the next block (if available)"},
+                        {RPCResult::Type::STR_HEX, "previousblockhash", /*optional=*/true, "The hash of the previous block (if available)"},
+                        {RPCResult::Type::STR_HEX, "nextblockhash", /*optional=*/true, "The hash of the next block (if available)"},
                         {RPCResult::Type::BOOL, "chainlock", "The state of the block ChainLock"},
                     }},
                 }},
@@ -916,8 +916,8 @@ static RPCHelpMan getblock()
                                 {RPCResult::Type::NUM, "difficulty", "The difficulty"},
                                 {RPCResult::Type::STR_HEX, "chainwork", "Expected number of hashes required to produce the current chain"},
                                 {RPCResult::Type::NUM, "nTx", "The number of transactions in the block"},
-                                {RPCResult::Type::STR_HEX, "previousblockhash", /* optional */ true, "The hash of the previous block (if available)"},
-                                {RPCResult::Type::STR_HEX, "nextblockhash", /* optional */ true, "The hash of the next block (if available)"},
+                                {RPCResult::Type::STR_HEX, "previousblockhash", /*optional=*/true, "The hash of the previous block (if available)"},
+                                {RPCResult::Type::STR_HEX, "nextblockhash", /*optional=*/true, "The hash of the next block (if available)"},
                                 {RPCResult::Type::BOOL, "chainlock", "The state of the block ChainLock"},
                                 {RPCResult::Type::NUM, "size", "The block size"},
                                 {RPCResult::Type::ARR, "tx", "The transaction ids",
@@ -965,7 +965,7 @@ static RPCHelpMan getblock()
                                         {
                                             {RPCResult::Type::STR, "asm", "The asm"},
                                             {RPCResult::Type::STR, "hex", "The hex"},
-                                            {RPCResult::Type::STR, "address", /*optional=*/ true, "The Dash address (only if a well-defined address exists)"},
+                                            {RPCResult::Type::STR, "address", /*optional=*/true, "The Dash address (only if a well-defined address exists)"},
                                             {RPCResult::Type::STR, "type", "The type, eg 'pubkeyhash'"},
                                         }},
                                     }},
@@ -1086,7 +1086,7 @@ static RPCHelpMan pruneblockchain()
     const CBlockIndex& block{*CHECK_NONFATAL(active_chain.Tip())};
     const CBlockIndex* last_block{active_chainstate.m_blockman.GetFirstStoredBlock(block)};
 
-    return static_cast<uint64_t>(last_block->nHeight);
+    return static_cast<int64_t>(last_block->nHeight - 1);
 },
     };
 }
@@ -1111,7 +1111,7 @@ static RPCHelpMan gettxoutsetinfo()
         "Note this call may take some time if you are not using coinstatsindex.\n",
         {
             {"hash_type", RPCArg::Type::STR, RPCArg::Default{"hash_serialized_2"}, "Which UTXO set hash should be calculated. Options: 'hash_serialized_2' (the legacy algorithm), 'muhash', 'none'."},
-            {"hash_or_height", RPCArg::Type::NUM, RPCArg::Optional::OMITTED_NAMED_ARG, "The block hash or height of the target height (only available with coinstatsindex).", "", {"", "string or numeric"}},
+            {"hash_or_height", RPCArg::Type::NUM, RPCArg::DefaultHint{"the current best block"}, "The block hash or height of the target height (only available with coinstatsindex).", "", {"", "string or numeric"}},
             {"use_index", RPCArg::Type::BOOL, RPCArg::Default{true}, "Use coinstatsindex, if available."},
         },
         RPCResult{
@@ -1121,13 +1121,13 @@ static RPCHelpMan gettxoutsetinfo()
                 {RPCResult::Type::STR_HEX, "bestblock", "The hash of the block at which these statistics are calculated"},
                 {RPCResult::Type::NUM, "txouts", "The number of unspent transaction outputs"},
                 {RPCResult::Type::NUM, "bogosize", "Database-independent, meaningless metric indicating the UTXO set size"},
-                {RPCResult::Type::STR_HEX, "hash_serialized_2", /* optional */ true, "The serialized hash (only present if 'hash_serialized_2' hash_type is chosen)"},
-                {RPCResult::Type::STR_HEX, "muhash", /* optional */ true, "The serialized hash (only present if 'muhash' hash_type is chosen)"},
-                {RPCResult::Type::NUM, "transactions", /* optional */ true, "The number of transactions with unspent outputs (not available when coinstatsindex is used)"},
-                {RPCResult::Type::NUM, "disk_size", /* optional */ true, "The estimated size of the chainstate on disk (not available when coinstatsindex is used)"},
+                {RPCResult::Type::STR_HEX, "hash_serialized_2", /*optional=*/true, "The serialized hash (only present if 'hash_serialized_2' hash_type is chosen)"},
+                {RPCResult::Type::STR_HEX, "muhash", /*optional=*/true, "The serialized hash (only present if 'muhash' hash_type is chosen)"},
+                {RPCResult::Type::NUM, "transactions", /*optional=*/true, "The number of transactions with unspent outputs (not available when coinstatsindex is used)"},
+                {RPCResult::Type::NUM, "disk_size", /*optional=*/true, "The estimated size of the chainstate on disk (not available when coinstatsindex is used)"},
                 {RPCResult::Type::STR_AMOUNT, "total_amount", "The total amount of coins in the UTXO set"},
-                {RPCResult::Type::STR_AMOUNT, "total_unspendable_amount", /* optional */ true, "The total amount of coins permanently excluded from the UTXO set (only available if coinstatsindex is used)"},
-                {RPCResult::Type::OBJ, "block_info", /* optional */ true, "Info on amounts in the block at this block height (only available if coinstatsindex is used)",
+                {RPCResult::Type::STR_AMOUNT, "total_unspendable_amount", /*optional=*/true, "The total amount of coins permanently excluded from the UTXO set (only available if coinstatsindex is used)"},
+                {RPCResult::Type::OBJ, "block_info", /*optional=*/true, "Info on amounts in the block at this block height (only available if coinstatsindex is used)",
                 {
                     {RPCResult::Type::STR_AMOUNT, "prevout_spent", "Total amount of all prevouts spent in this block"},
                     {RPCResult::Type::STR_AMOUNT, "coinbase", "Coinbase subsidy amount of this block"},
@@ -1147,6 +1147,7 @@ static RPCHelpMan gettxoutsetinfo()
                 HelpExampleCli("gettxoutsetinfo", R"("none")") +
                 HelpExampleCli("gettxoutsetinfo", R"("none" 1000)") +
                 HelpExampleCli("gettxoutsetinfo", R"("none" '"00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09"')") +
+                HelpExampleCli("-named gettxoutsetinfo", R"(hash_type='muhash' use_index='false')") +
                 HelpExampleRpc("gettxoutsetinfo", "") +
                 HelpExampleRpc("gettxoutsetinfo", R"("none")") +
                 HelpExampleRpc("gettxoutsetinfo", R"("none", 1000)") +
@@ -1184,6 +1185,9 @@ static RPCHelpMan gettxoutsetinfo()
             throw JSONRPCError(RPC_INVALID_PARAMETER, "hash_serialized_2 hash type cannot be queried for a specific block");
         }
 
+        if (!stats.index_requested) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot set use_index to false when querying for a specific block");
+        }
         pindex = ParseHashOrHeight(request.params[1], chainman);
     }
 
@@ -1268,7 +1272,7 @@ static RPCHelpMan gettxout()
                         {RPCResult::Type::STR, "desc", "Inferred descriptor for the output"},
                         {RPCResult::Type::STR_HEX, "hex", ""},
                         {RPCResult::Type::STR_HEX, "type", "The type, eg pubkeyhash"},
-                        {RPCResult::Type::STR, "address", /* optional */ true, "Dash address (only if a well-defined address exists)"},
+                        {RPCResult::Type::STR, "address", /*optional=*/ true, "Dash address (only if a well-defined address exists)"},
                     }},
                 {RPCResult::Type::BOOL, "coinbase", "Coinbase or not"},
             }},
@@ -1457,33 +1461,33 @@ RPCHelpMan getblockchaininfo()
                 {RPCResult::Type::STR_HEX, "chainwork", "total amount of work in active chain, in hexadecimal"},
                 {RPCResult::Type::NUM, "size_on_disk", "the estimated size of the block and undo files on disk"},
                 {RPCResult::Type::BOOL, "pruned", "if the blocks are subject to pruning"},
-                {RPCResult::Type::NUM, "pruneheight", /* optional */ true, "lowest-height complete block stored (only present if pruning is enabled)"},
-                {RPCResult::Type::BOOL, "automatic_pruning", /* optional */ true, "whether automatic pruning is enabled (only present if pruning is enabled)"},
-                {RPCResult::Type::NUM, "prune_target_size", /* optional */ true, "the target size used by pruning (only present if automatic pruning is enabled)"},
+                {RPCResult::Type::NUM, "pruneheight", /*optional=*/true, "height of the last block pruned, plus one (only present if pruning is enabled)"},
+                {RPCResult::Type::BOOL, "automatic_pruning", /*optional=*/true, "whether automatic pruning is enabled (only present if pruning is enabled)"},
+                {RPCResult::Type::NUM, "prune_target_size", /*optional=*/true, "the target size used by pruning (only present if automatic pruning is enabled)"},
                 {RPCResult::Type::OBJ, "softforks", "status of softforks in progress",
                 {
                     {RPCResult::Type::STR, "type", "one of \"buried\", \"bip9\""},
-                    {RPCResult::Type::OBJ, "bip9", /* optional */ true, "status of bip9 softforks (only for \"bip9\" type)",
+                    {RPCResult::Type::OBJ, "bip9", /*optional=*/true, "status of bip9 softforks (only for \"bip9\" type)",
                     {
                         {RPCResult::Type::STR, "status", "one of \"defined\", \"started\", \"locked_in\", \"active\", \"failed\""},
-                        {RPCResult::Type::NUM, "bit", /* optional */ true, "the bit (0-28) in the block version field used to signal this softfork (only for \"started\" and \"locked_in\" status)"},
+                        {RPCResult::Type::NUM, "bit", /*optional=*/true, "the bit (0-28) in the block version field used to signal this softfork (only for \"started\" and \"locked_in\" status)"},
                         {RPCResult::Type::NUM_TIME, "start_time", "the minimum median time past of a block at which the bit gains its meaning"},
                         {RPCResult::Type::NUM_TIME, "timeout", "the median time past of a block at which the deployment is considered failed if not yet locked in"},
                         {RPCResult::Type::BOOL, "ehf", "returns true for EHF activated forks"},
-                        {RPCResult::Type::NUM, "ehf_height", /* optional */ true, "the minimum height when miner's signals for the deployment matter. Below this height miner signaling cannot trigger hard fork lock-in. Not specified for non-EHF forks"},
+                        {RPCResult::Type::NUM, "ehf_height", /*optional=*/true, "the minimum height when miner's signals for the deployment matter. Below this height miner signaling cannot trigger hard fork lock-in. Not specified for non-EHF forks"},
                         {RPCResult::Type::NUM, "since", "height of the first block to which the status applies"},
                         {RPCResult::Type::NUM, "activation_height", "expected activation height for this softfork (only for \"locked_in\" status)"},
                         {RPCResult::Type::NUM, "min_activation_height", "minimum height of blocks for which the rules may be enforced"},
-                        {RPCResult::Type::OBJ, "statistics", /* optional */ true, "numeric statistics about signalling for a softfork (only for \"started\" and \"locked_in\" status)",
+                        {RPCResult::Type::OBJ, "statistics", /*optional=*/true, "numeric statistics about signalling for a softfork (only for \"started\" and \"locked_in\" status)",
                         {
                             {RPCResult::Type::NUM, "period", "the length in blocks of the signalling period"},
-                            {RPCResult::Type::NUM, "threshold", /* optional */ true, "the number of blocks with the version bit set required to activate the feature (only for \"started\" status)"},
+                            {RPCResult::Type::NUM, "threshold", /*optional=*/true, "the number of blocks with the version bit set required to activate the feature (only for \"started\" status)"},
                             {RPCResult::Type::NUM, "elapsed", "the number of blocks elapsed since the beginning of the current period"},
                             {RPCResult::Type::NUM, "count", "the number of blocks with the version bit set in the current period"},
-                            {RPCResult::Type::BOOL, "possible", /* optional */ true, "returns false if there are not enough blocks left in this period to pass activation threshold (only for \"started\" status)"},
+                            {RPCResult::Type::BOOL, "possible", /*optional=*/true, "returns false if there are not enough blocks left in this period to pass activation threshold (only for \"started\" status)"},
                         }},
                     }},
-                    {RPCResult::Type::NUM, "height", /* optional */ true, "height of the first block which the rules are or will be enforced (only for \"buried\" type, or \"bip9\" type with \"active\" status)"},
+                    {RPCResult::Type::NUM, "height", /*optional=*/true, "height of the first block which the rules are or will be enforced (only for \"buried\" type, or \"bip9\" type with \"active\" status)"},
                     {RPCResult::Type::BOOL, "active", "true if the rules are enforced for the mempool and the next block"},
                 }},
                 {RPCResult::Type::STR, "warnings", "any network and blockchain warnings"},
@@ -1847,9 +1851,9 @@ static RPCHelpMan getchaintxstats()
                         {RPCResult::Type::STR_HEX, "window_final_block_hash", "The hash of the final block in the window"},
                         {RPCResult::Type::NUM, "window_final_block_height", "The height of the final block in the window."},
                         {RPCResult::Type::NUM, "window_block_count", "Size of the window in number of blocks"},
-                        {RPCResult::Type::NUM, "window_tx_count", /* optional */ true, "The number of transactions in the window. Only returned if \"window_block_count\" is > 0"},
-                        {RPCResult::Type::NUM, "window_interval", /* optional */ true, "The elapsed time in the window in seconds. Only returned if \"window_block_count\" is > 0"},
-                        {RPCResult::Type::NUM, "txrate", /* optional */ true, "The average rate of transactions per second in the window. Only returned if \"window_interval\" is > 0"},
+                        {RPCResult::Type::NUM, "window_tx_count", /*optional=*/true, "The number of transactions in the window. Only returned if \"window_block_count\" is > 0"},
+                        {RPCResult::Type::NUM, "window_interval", /*optional=*/true, "The elapsed time in the window in seconds. Only returned if \"window_block_count\" is > 0"},
+                        {RPCResult::Type::NUM, "txrate", /*optional=*/true, "The average rate of transactions per second in the window. Only returned if \"window_interval\" is > 0"},
                     }},
                 RPCExamples{
                     HelpExampleCli("getchaintxstats", "")
@@ -1986,11 +1990,11 @@ static RPCHelpMan getblockstats()
                 RPCResult{
             RPCResult::Type::OBJ, "", "",
             {
-                {RPCResult::Type::NUM, "avgfee", /* optional */ true, "Average fee in the block"},
-                {RPCResult::Type::NUM, "avgfeerate", /* optional */ true, "Average feerate (in duffs per byte)"},
-                {RPCResult::Type::NUM, "avgtxsize", /* optional */ true, "Average transaction size"},
-                {RPCResult::Type::STR_HEX, "blockhash", /* optional */ true, "The block hash (to check for potential reorgs)"},
-                {RPCResult::Type::ARR_FIXED, "feerate_percentiles", /* optional */ true, "Feerates at the 10th, 25th, 50th, 75th, and 90th percentile size unit (in duffs per byte)",
+                {RPCResult::Type::NUM, "avgfee", /*optional=*/true, "Average fee in the block"},
+                {RPCResult::Type::NUM, "avgfeerate", /*optional=*/true, "Average feerate (in duffs per byte)"},
+                {RPCResult::Type::NUM, "avgtxsize", /*optional=*/true, "Average transaction size"},
+                {RPCResult::Type::STR_HEX, "blockhash", /*optional=*/true, "The block hash (to check for potential reorgs)"},
+                {RPCResult::Type::ARR_FIXED, "feerate_percentiles", /*optional=*/true, "Feerates at the 10th, 25th, 50th, 75th, and 90th percentile size unit (in duffs per byte)",
                 {
                     {RPCResult::Type::NUM, "10th_percentile_feerate", "The 10th percentile feerate"},
                     {RPCResult::Type::NUM, "25th_percentile_feerate", "The 25th percentile feerate"},
@@ -1998,26 +2002,26 @@ static RPCHelpMan getblockstats()
                     {RPCResult::Type::NUM, "75th_percentile_feerate", "The 75th percentile feerate"},
                     {RPCResult::Type::NUM, "90th_percentile_feerate", "The 90th percentile feerate"},
                 }},
-                {RPCResult::Type::NUM, "height", /* optional */ true, "The height of the block"},
-                {RPCResult::Type::NUM, "ins", /* optional */ true, "The number of inputs (excluding coinbase)"},
-                {RPCResult::Type::NUM, "maxfee", /* optional */ true, "Maximum fee in the block"},
-                {RPCResult::Type::NUM, "maxfeerate", /* optional */ true, "Maximum feerate (in duffs per virtual byte)"},
-                {RPCResult::Type::NUM, "maxtxsize", /* optional */ true, "Maximum transaction size"},
-                {RPCResult::Type::NUM, "medianfee", /* optional */ true, "Truncated median fee in the block"},
-                {RPCResult::Type::NUM, "mediantime", /* optional */ true, "The block median time past"},
-                {RPCResult::Type::NUM, "mediantxsize", /* optional */ true, "Truncated median transaction size"},
-                {RPCResult::Type::NUM, "minfee", /* optional */ true, "Minimum fee in the block"},
-                {RPCResult::Type::NUM, "minfeerate", /* optional */ true, "Minimum feerate (in duffs per virtual byte)"},
-                {RPCResult::Type::NUM, "mintxsize", /* optional */ true, "Minimum transaction size"},
-                {RPCResult::Type::NUM, "outs", /* optional */ true, "The number of outputs"},
-                {RPCResult::Type::NUM, "subsidy", /* optional */ true, "The block subsidy"},
-                {RPCResult::Type::NUM, "time", /* optional */ true, "The block time"},
-                {RPCResult::Type::NUM, "total_out", /* optional */ true, "Total amount in all outputs (excluding coinbase and thus reward [ie subsidy + totalfee])"},
-                {RPCResult::Type::NUM, "total_size", /* optional */ true, "Total size of all non-coinbase transactions"},
-                {RPCResult::Type::NUM, "totalfee", /* optional */ true, "The fee total"},
-                {RPCResult::Type::NUM, "txs", /* optional */ true, "The number of transactions (including coinbase)"},
-                {RPCResult::Type::NUM, "utxo_increase", /* optional */ true, "The increase/decrease in the number of unspent outputs  (not discounting op_return and similar)"},
-                {RPCResult::Type::NUM, "utxo_size_inc", /* optional */ true, "The increase/decrease in size for the utxo index (not discounting op_return and similar)"},
+                {RPCResult::Type::NUM, "height", /*optional=*/true, "The height of the block"},
+                {RPCResult::Type::NUM, "ins", /*optional=*/true, "The number of inputs (excluding coinbase)"},
+                {RPCResult::Type::NUM, "maxfee", /*optional=*/true, "Maximum fee in the block"},
+                {RPCResult::Type::NUM, "maxfeerate", /*optional=*/true, "Maximum feerate (in duffs per virtual byte)"},
+                {RPCResult::Type::NUM, "maxtxsize", /*optional=*/true, "Maximum transaction size"},
+                {RPCResult::Type::NUM, "medianfee", /*optional=*/true, "Truncated median fee in the block"},
+                {RPCResult::Type::NUM, "mediantime", /*optional=*/true, "The block median time past"},
+                {RPCResult::Type::NUM, "mediantxsize", /*optional=*/true, "Truncated median transaction size"},
+                {RPCResult::Type::NUM, "minfee", /*optional=*/true, "Minimum fee in the block"},
+                {RPCResult::Type::NUM, "minfeerate", /*optional=*/true, "Minimum feerate (in duffs per virtual byte)"},
+                {RPCResult::Type::NUM, "mintxsize", /*optional=*/true, "Minimum transaction size"},
+                {RPCResult::Type::NUM, "outs", /*optional=*/true, "The number of outputs"},
+                {RPCResult::Type::NUM, "subsidy", /*optional=*/true, "The block subsidy"},
+                {RPCResult::Type::NUM, "time", /*optional=*/true, "The block time"},
+                {RPCResult::Type::NUM, "total_out", /*optional=*/true, "Total amount in all outputs (excluding coinbase and thus reward [ie subsidy + totalfee])"},
+                {RPCResult::Type::NUM, "total_size", /*optional=*/true, "Total size of all non-coinbase transactions"},
+                {RPCResult::Type::NUM, "totalfee", /*optional=*/true, "The fee total"},
+                {RPCResult::Type::NUM, "txs", /*optional=*/true, "The number of transactions (including coinbase)"},
+                {RPCResult::Type::NUM, "utxo_increase", /*optional=*/true, "The increase/decrease in the number of unspent outputs  (not discounting op_return and similar)"},
+                {RPCResult::Type::NUM, "utxo_size_inc", /*optional=*/true, "The increase/decrease in size for the utxo index (not discounting op_return and similar)"},
                 {RPCResult::Type::NUM, "utxo_increase_actual", /*optional=*/true, "The increase/decrease in the number of unspent outputs, not counting unspendables"},
                 {RPCResult::Type::NUM, "utxo_size_inc_actual", /*optional=*/true, "The increase/decrease in size for the utxo index, not counting unspendables"},
             }},
@@ -2671,6 +2675,12 @@ static RPCHelpMan dumptxoutset()
 
     FILE* file{fsbridge::fopen(temppath, "wb")};
     CAutoFile afile{file, SER_DISK, CLIENT_VERSION};
+    if (afile.IsNull()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Couldn't open file " + temppath.utf8string() + " for writing.");
+    }
+
     NodeContext& node = EnsureAnyNodeContext(request.context);
     UniValue result = CreateUTXOSnapshot(
         node, node.chainman->ActiveChainstate(), afile, path, temppath);

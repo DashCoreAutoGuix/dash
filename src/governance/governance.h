@@ -14,6 +14,7 @@
 #include <util/check.h>
 
 #include <optional>
+#include <string_view>
 
 class CBloomFilter;
 class CBlockIndex;
@@ -23,6 +24,7 @@ class CFlatDB;
 class CInv;
 class PeerManager;
 
+class CDeterministicMNList;
 class CDeterministicMNManager;
 class CGovernanceManager;
 class CGovernanceObject;
@@ -34,9 +36,6 @@ class CSporkManager;
 
 static constexpr int RATE_BUFFER_SIZE = 5;
 static constexpr bool DEFAULT_GOVERNANCE_ENABLE{true};
-
-class CDeterministicMNList;
-using CDeterministicMNListPtr = std::shared_ptr<CDeterministicMNList>;
 
 class CRateCheckBuffer
 {
@@ -176,7 +175,7 @@ protected:
     vote_cmm_t cmmapOrphanVotes;
     txout_m_t mapLastMasternodeObject;
     // used to check for changed voting keys
-    CDeterministicMNListPtr lastMNListForVotingKeys;
+    std::shared_ptr<CDeterministicMNList> lastMNListForVotingKeys;
 
 public:
     GovernanceStore();
@@ -271,10 +270,10 @@ public:
      */
     bool ConfirmInventoryRequest(const CInv& inv);
 
-    void SyncSingleObjVotes(CNode& peer, PeerManager& peerman, const uint256& nProp, const CBloomFilter& filter, CConnman& connman);
-    PeerMsgRet SyncObjects(CNode& peer, PeerManager& peerman, CConnman& connman) const;
+    [[nodiscard]] MessageProcessingResult SyncSingleObjVotes(CNode& peer, const uint256& nProp, const CBloomFilter& filter, CConnman& connman);
+    [[nodiscard]] MessageProcessingResult SyncObjects(CNode& peer, CConnman& connman) const;
 
-    PeerMsgRet ProcessMessage(CNode& peer, CConnman& connman, PeerManager& peerman, std::string_view msg_type, CDataStream& vRecv);
+    [[nodiscard]] MessageProcessingResult ProcessMessage(CNode& peer, CConnman& connman, PeerManager& peerman, std::string_view msg_type, CDataStream& vRecv);
 
 private:
     void ResetVotedFundingTrigger();

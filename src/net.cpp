@@ -48,8 +48,6 @@
 
 #ifdef WIN32
 #include <string.h>
-#else
-#include <fcntl.h>
 #endif
 
 #if HAVE_DECL_GETIFADDRS && HAVE_DECL_FREEIFADDRS
@@ -1023,7 +1021,7 @@ const std::array<std::string, 40> V2_DASH_IDS = {
 
 /** A complete set of short IDs
  *
- * Bitcoin takes up short IDs upto 128 (lower half) while Dash can take
+ * Bitcoin takes up short IDs up to 128 (lower half) while Dash can take
  * up short IDs between 128 and 256 (upper half) most of the array will
  * have entries that correspond to nothing.
  *
@@ -1803,7 +1801,7 @@ bool CConnman::AttemptToEvictConnection()
             if (node->fDisconnect)
                 continue;
 
-            if (fMasternodeMode) {
+            if (m_active_masternode) {
                 // This handles eviction protected nodes. Nodes are always protected for a short time after the connection
                 // was accepted. This short time is meant for the VERSION/VERACK exchange and the possible MNAUTH that might
                 // follow when the incoming connection is from another masternode. When a message other than MNAUTH
@@ -1945,7 +1943,7 @@ void CConnman::CreateNodeFromAcceptedSocket(std::unique_ptr<Sock>&& sock,
     bool banned = m_banman && m_banman->IsBanned(addr);
     if (!NetPermissions::HasFlag(permission_flags, NetPermissionFlags::NoBan) && banned)
     {
-        LogPrint(BCLog::NET, "%s (banned)\n", strDropped);
+        LogPrint(BCLog::NET_NETCONN, "%s (banned)\n", strDropped);
         return;
     }
 
@@ -1953,7 +1951,7 @@ void CConnman::CreateNodeFromAcceptedSocket(std::unique_ptr<Sock>&& sock,
     bool discouraged = m_banman && m_banman->IsDiscouraged(addr);
     if (!NetPermissions::HasFlag(permission_flags, NetPermissionFlags::NoBan) && nInbound + 1 >= nMaxInbound && discouraged)
     {
-        LogPrint(BCLog::NET, "connection from %s dropped (discouraged)\n", addr.ToStringAddrPort());
+        LogPrint(BCLog::NET_NETCONN, "connection from %s dropped (discouraged)\n", addr.ToStringAddrPort());
         return;
     }
 
@@ -1966,15 +1964,15 @@ void CConnman::CreateNodeFromAcceptedSocket(std::unique_ptr<Sock>&& sock,
     {
         if (!AttemptToEvictConnection()) {
             // No connection to evict, disconnect the new connection
-            LogPrint(BCLog::NET, "failed to find an eviction candidate - connection dropped (full)\n");
+            LogPrint(BCLog::NET_NETCONN, "failed to find an eviction candidate - connection dropped (full)\n");
             return;
         }
         nInbound--;
     }
 
     // don't accept incoming connections until blockchain is synced
-    if (fMasternodeMode && !mn_sync.IsBlockchainSynced()) {
-        LogPrint(BCLog::NET, "AcceptConnection -- blockchain is not synced yet, skipping inbound connection attempt\n");
+    if (m_active_masternode && !mn_sync.IsBlockchainSynced()) {
+        LogPrint(BCLog::NET_NETCONN, "AcceptConnection -- blockchain is not synced yet, skipping inbound connection attempt\n");
         return;
     }
 
@@ -2092,7 +2090,7 @@ void CConnman::DisconnectNodes()
             // Disconnect any connected nodes
             for (CNode* pnode : m_nodes) {
                 if (!pnode->fDisconnect) {
-                    LogPrint(BCLog::NET, "Network not active, dropping peer=%d\n", pnode->GetId());
+                    LogPrint(BCLog::NET_NETCONN, "Network not active, dropping peer=%d\n", pnode->GetId());
                     pnode->fDisconnect = true;
                 }
             }
@@ -2117,9 +2115,9 @@ void CConnman::DisconnectNodes()
                         //   1. vSendMsg must be empty and all messages sent via send(). This is ensured by SocketHandler()
                         //      being called before DisconnectNodes and also by the linger time
                         //   2. Internal socket send buffers must be flushed. This is ensured solely by the linger time
-                        pnode->nDisconnectLingerTime = GetTimeMillis() + 100;
+                        pnode->nDisconnectLingerTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) + 100;
                     }
-                    if (GetTimeMillis() < pnode->nDisconnectLingerTime) {
+                    if (TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) < pnode->nDisconnectLingerTime) {
                         // everything flushed to the kernel?
                         const auto& [to_send, more, _msg_type] = pnode->m_transport->GetBytesToSend(pnode->nSendMsgSize != 0);
                         const bool queue_is_empty{to_send.empty() && !more};
@@ -2539,7 +2537,6 @@ void CConnman::SocketHandlerConnected(const Sock::EventsPerSock& events_per_sock
         // (even if there are pending messages to be sent)
         for (auto it = mapSendableNodes.begin(); it != mapSendableNodes.end(); ) {
             if (!it->second->fCanSendData) {
-                LogPrint(BCLog::NET, "%s -- remove mapSendableNodes, peer=%d\n", __func__, it->second->GetId());
                 it = mapSendableNodes.erase(it);
             } else {
                 ++it;
@@ -2548,7 +2545,6 @@ void CConnman::SocketHandlerConnected(const Sock::EventsPerSock& events_per_sock
         // clean up mapReceivableNodes from nodes that were receivable in the last iteration but aren't anymore
         for (auto it = mapReceivableNodes.begin(); it != mapReceivableNodes.end(); ) {
             if (!it->second->fHasRecvData) {
-                LogPrint(BCLog::NET, "%s -- remove mapReceivableNodes, peer=%d\n", __func__, it->second->GetId());
                 it = mapReceivableNodes.erase(it);
             } else {
                 ++it;
@@ -2638,11 +2634,11 @@ void CConnman::ThreadSocketHandler(CMasternodeSync& mn_sync)
         // Handle sockets before we do the next round of disconnects. This allows us to flush send buffers one last time
         // before actually closing sockets. Receiving is however skipped in case a peer is pending to be disconnected
         SocketHandler(mn_sync);
-        if (GetTimeMillis() - nLastCleanupNodes > 1000) {
+        if (TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nLastCleanupNodes > 1000) {
             ForEachNode(AllNodes, [&](CNode* pnode) {
                 if (InactivityCheck(*pnode)) pnode->fDisconnect = true;
             });
-            nLastCleanupNodes = GetTimeMillis();
+            nLastCleanupNodes = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
         }
         DisconnectNodes();
         NotifyNumConnectionsChanged(mn_sync);
@@ -3399,7 +3395,7 @@ void CConnman::ThreadOpenMasternodeConnections(CDeterministicMNManager& dmnman, 
         if (!fNetworkActive || !m_masternode_thread_active || !mn_sync.IsBlockchainSynced()) continue;
 
         std::unordered_set<CService, CServiceHash> connectedNodes;
-        std::unordered_map<uint256 /*proTxHash*/, bool /*fInbound*/, StaticSaltedHasher> connectedProRegTxHashes;
+        Uint256HashMap</*fInbound=*/bool> connectedProRegTxHashes;
         ForEachNode([&](const CNode* pnode) {
             connectedNodes.emplace(pnode->addr);
             if (auto verifiedProRegTxHash = pnode->GetVerifiedProRegTxHash(); !verifiedProRegTxHash.IsNull()) {
@@ -3650,9 +3646,9 @@ void CConnman::ThreadMessageHandler()
         bool fMoreWork = false;
 
         bool fSkipSendMessagesForMasternodes = true;
-        if (GetTimeMillis() - nLastSendMessagesTimeMasternodes >= 100) {
+        if (TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nLastSendMessagesTimeMasternodes >= 100) {
             fSkipSendMessagesForMasternodes = false;
-            nLastSendMessagesTimeMasternodes = GetTimeMillis();
+            nLastSendMessagesTimeMasternodes = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
         }
 
         // Randomize the order in which we process messages from/to our peers.
@@ -4221,7 +4217,7 @@ std::vector<CAddress> CConnman::GetAddresses(CNode& requestor, size_t max_addres
     auto r = m_addr_response_caches.emplace(cache_id, CachedAddrResponse{});
     CachedAddrResponse& cache_entry = r.first->second;
     if (cache_entry.m_cache_entry_expiration < current_time) { // If emplace() added new one it has expiration 0.
-        cache_entry.m_addrs_response_cache = GetAddresses(max_addresses, max_pct, /* network */ std::nullopt);
+        cache_entry.m_addrs_response_cache = GetAddresses(max_addresses, max_pct, /*network=*/std::nullopt);
         // Choosing a proper cache lifetime is a trade-off between the privacy leak minimization
         // and the usefulness of ADDR responses to honest users.
         //
@@ -4299,7 +4295,7 @@ bool CConnman::AddPendingMasternode(const uint256& proTxHash)
     return true;
 }
 
-void CConnman::SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::unordered_set<uint256, StaticSaltedHasher>& proTxHashes)
+void CConnman::SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash, const Uint256HashSet& proTxHashes)
 {
     LOCK(cs_vPendingMasternodes);
     auto it = masternodeQuorumNodes.emplace(std::make_pair(llmqType, quorumHash), proTxHashes);
@@ -4308,7 +4304,7 @@ void CConnman::SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint
     }
 }
 
-void CConnman::SetMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::unordered_set<uint256, StaticSaltedHasher>& proTxHashes)
+void CConnman::SetMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const Uint256HashSet& proTxHashes)
 {
     {
         LOCK(cs_vPendingMasternodes);
@@ -4339,10 +4335,10 @@ bool CConnman::HasMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint
     return masternodeQuorumNodes.count(std::make_pair(llmqType, quorumHash));
 }
 
-std::unordered_set<uint256, StaticSaltedHasher> CConnman::GetMasternodeQuorums(Consensus::LLMQType llmqType) const
+Uint256HashSet CConnman::GetMasternodeQuorums(Consensus::LLMQType llmqType) const
 {
     LOCK(cs_vPendingMasternodes);
-    std::unordered_set<uint256, StaticSaltedHasher> result;
+    Uint256HashSet result;
     for (const auto& p : masternodeQuorumNodes) {
         if (p.first.first != llmqType) {
             continue;
@@ -4453,10 +4449,17 @@ size_t CConnman::GetNodeCount(ConnectionDirection flags) const
     return nNum;
 }
 
+std::map<CNetAddr, LocalServiceInfo> CConnman::getNetLocalAddresses() const
+{
+    LOCK(g_maplocalhost_mutex);
+    return mapLocalHost;
+}
+
 size_t CConnman::GetMaxOutboundNodeCount()
 {
     return m_max_outbound;
 }
+
 size_t CConnman::GetMaxOutboundOnionNodeCount()
 {
     return m_max_outbound_onion;

@@ -4,6 +4,7 @@
 
 #include <coinjoin/context.h>
 #include <coinjoin/server.h>
+#include <masternode/active/context.h>
 #include <node/context.h>
 #include <rpc/server.h>
 #include <rpc/server_util.h>
@@ -432,19 +433,18 @@ static RPCHelpMan getcoinjoininfo()
                                 {
                                     {RPCResult::Type::STR_HEX, "protxhash", "The ProTxHash of the masternode"},
                                     {RPCResult::Type::STR_HEX, "outpoint", "The outpoint of the masternode"},
-                                    {RPCResult::Type::STR, "service", "The IP address and port of the masternode (DEPRECATED, returned only if config option -deprecatedrpc=service is passed)"},
-                                    {RPCResult::Type::ARR, "addresses", "Network addresses of the masternode",
-                                    {
+                                    {RPCResult::Type::STR, "service", "(DEPRECATED) The IP address and port of the masternode"},
+                                    {RPCResult::Type::ARR, "addrs_core_p2p", "Network addresses of the masternode used for protocol P2P",
                                         {
                                             {RPCResult::Type::STR, "address", ""},
                                         }
-                                    }},
+                                    },
                                     {RPCResult::Type::NUM, "denomination", "The denomination of the mixing session in " + CURRENCY_UNIT + ""},
                                     {RPCResult::Type::STR_HEX, "state", "Current state of the mixing session"},
                                     {RPCResult::Type::NUM, "entries_count", "The number of entries in the mixing session"},
                                 }},
                             }},
-                            {RPCResult::Type::NUM, "keys_left", /* optional */ true, "How many new keys are left since last automatic backup (if applicable)"},
+                            {RPCResult::Type::NUM, "keys_left", /*optional=*/true, "How many new keys are left since last automatic backup (if applicable)"},
                             {RPCResult::Type::STR, "warnings", "Warnings if any"},
                         }},
                     RPCResult{"for masternodes",
@@ -466,14 +466,16 @@ static RPCHelpMan getcoinjoininfo()
 
     const NodeContext& node = EnsureAnyNodeContext(request.context);
     if (node.mn_activeman) {
-        node.cj_ctx->server->GetJsonInfo(obj);
+        node.active_ctx->cj_server->GetJsonInfo(obj);
         return obj;
     }
 
 #ifdef ENABLE_WALLET
     CCoinJoinClientOptions::GetJsonInfo(obj);
 
-    obj.pushKV("queue_size", node.cj_ctx->queueman->GetQueueSize());
+    if (node.cj_ctx->queueman) {
+        obj.pushKV("queue_size", node.cj_ctx->queueman->GetQueueSize());
+    }
 
     const std::shared_ptr<const CWallet> wallet = GetWalletForJSONRPCRequest(request);
     if (!wallet) {

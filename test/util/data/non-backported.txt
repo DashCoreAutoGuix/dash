@@ -4,6 +4,8 @@ src/bls/*.cpp
 src/bls/*.h
 src/cachemap.h
 src/cachemultimap.h
+src/chainlock/*.cpp
+src/chainlock/*.h
 src/coinjoin/*.cpp
 src/coinjoin/*.h
 src/ctpl_stl.h
@@ -20,10 +22,13 @@ src/llmq/*.cpp
 src/llmq/*.h
 src/masternode/*.cpp
 src/masternode/*.h
+src/masternode/active/*.cpp
+src/masternode/active/*.h
 src/messagesigner.*
 src/netfulfilledman.*
 src/qt/governancelist.*
 src/qt/masternodelist.*
+src/qt/proposalwizard.*
 src/rpc/coinjoin.cpp
 src/rpc/evo.cpp
 src/rpc/evo_util.*
@@ -37,6 +42,7 @@ src/stats/*.cpp
 src/stats/*.h
 src/test/block_reward_reallocation_tests.cpp
 src/test/bls_tests.cpp
+src/test/coinjoin_*.cpp
 src/test/dip0020opcodes_tests.cpp
 src/test/dynamic_activation*.cpp
 src/test/evo*.cpp

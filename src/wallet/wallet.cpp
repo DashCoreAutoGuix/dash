@@ -10,7 +10,6 @@
 #include <chainparams.h>
 #include <consensus/amount.h>
 #include <consensus/consensus.h>
-#include <consensus/validation.h>
 #include <crypto/common.h>
 #include <fs.h>
 #include <interfaces/chain.h>
@@ -19,7 +18,6 @@
 #include <key_io.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
-#include <policy/settings.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
 #include <script/descriptor.h>
@@ -28,10 +26,8 @@
 #include <script/signingprovider.h>
 #include <support/cleanse.h>
 #include <txmempool.h>
-#include <util/bip32.h>
 #include <util/check.h>
 #include <util/error.h>
-#include <util/fees.h>
 #include <util/moneystr.h>
 #include <util/string.h>
 #include <util/translation.h>
@@ -40,11 +36,9 @@
 #endif
 #include <wallet/bip39.h> // TODO(refactor): move dependency it to scriptpubkeyman.cpp
 #include <wallet/coincontrol.h>
-#include <wallet/coinselection.h>
 #include <wallet/context.h>
 #include <warnings.h>
 
-#include <coinjoin/common.h>
 #include <coinjoin/options.h>
 #include <evo/providertx.h>
 #include <governance/vote.h>
@@ -170,6 +164,13 @@ std::vector<std::shared_ptr<CWallet>> GetWallets(WalletContext& context)
 {
     LOCK(context.wallets_mutex);
     return context.wallets;
+}
+
+std::shared_ptr<CWallet> GetDefaultWallet(WalletContext& context, size_t& count)
+{
+    LOCK(context.wallets_mutex);
+    count = context.wallets.size();
+    return count == 1 ? context.wallets[0] : nullptr;
 }
 
 std::shared_ptr<CWallet> GetWallet(WalletContext& context, const std::string& name)
@@ -359,11 +360,17 @@ std::shared_ptr<CWallet> CreateWallet(WalletContext& context, const std::string&
                 // TODO: drop this condition after removing option to create non-HD wallets
                 // related backport bitcoin#11250
                 if (wallet->GetVersion() >= FEATURE_HD) {
-                    if (!wallet->GenerateNewHDChain(/*secureMnemonic=*/"", /*secureMnemonicPassphrase=*/"", passphrase)) {
-                       error = Untranslated("Error: Failed to generate encrypted HD wallet");
-                       status = DatabaseStatus::FAILED_CREATE;
-                       return nullptr;
+                    auto spk_man = wallet->GetLegacyScriptPubKeyMan();
+                    if (!spk_man) {
+                        error = Untranslated("Error: Legacy ScriptPubKeyMan is not available");
+                        status = DatabaseStatus::FAILED_ENCRYPT;
+                        return nullptr;
                     }
+
+                    wallet->WithEncryptionKey([&](const CKeyingMaterial& encryption_key) {
+                            spk_man->GenerateNewHDChain(/*secureMnemonic=*/"", /*secureMnemonicPassphrase=*/"", encryption_key);
+                            return true;
+                        });
                 }
             }
 
@@ -421,8 +428,7 @@ std::shared_ptr<CWallet> RestoreWallet(WalletContext& context, const fs::path& b
         error += strprintf(Untranslated("Unexpected exception: %s"), e.what());
     }
     if (!wallet) {
-        fs::remove(wallet_file);
-        fs::remove(wallet_path);
+        fs::remove_all(wallet_path);
     }
 
     return wallet;
@@ -488,13 +494,13 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 return false;
             if (Unlock(_vMasterKey))
             {
-                int64_t nStartTime = GetTimeMillis();
+                int64_t nStartTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
                 crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod);
-                pMasterKey.second.nDeriveIterations = static_cast<unsigned int>(pMasterKey.second.nDeriveIterations * (100 / ((double)(GetTimeMillis() - nStartTime))));
+                pMasterKey.second.nDeriveIterations = static_cast<unsigned int>(pMasterKey.second.nDeriveIterations * (100 / ((double)(TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nStartTime))));
 
-                nStartTime = GetTimeMillis();
+                nStartTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
                 crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod);
-                pMasterKey.second.nDeriveIterations = (pMasterKey.second.nDeriveIterations + static_cast<unsigned int>(pMasterKey.second.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime)))) / 2;
+                pMasterKey.second.nDeriveIterations = (pMasterKey.second.nDeriveIterations + static_cast<unsigned int>(pMasterKey.second.nDeriveIterations * 100 / ((double)(TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nStartTime)))) / 2;
 
                 if (pMasterKey.second.nDeriveIterations < 25000)
                     pMasterKey.second.nDeriveIterations = 25000;
@@ -694,13 +700,13 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
     GetStrongRandBytes(kMasterKey.vchSalt);
 
     CCrypter crypter;
-    int64_t nStartTime = GetTimeMillis();
+    int64_t nStartTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
     crypter.SetKeyFromPassphrase(strWalletPassphrase, kMasterKey.vchSalt, 25000, kMasterKey.nDerivationMethod);
-    kMasterKey.nDeriveIterations = static_cast<unsigned int>(2500000 / ((double)(GetTimeMillis() - nStartTime)));
+    kMasterKey.nDeriveIterations = static_cast<unsigned int>(2500000 / ((double)(TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nStartTime)));
 
-    nStartTime = GetTimeMillis();
+    nStartTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now());
     crypter.SetKeyFromPassphrase(strWalletPassphrase, kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
-    kMasterKey.nDeriveIterations = (kMasterKey.nDeriveIterations + static_cast<unsigned int>(kMasterKey.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime)))) / 2;
+    kMasterKey.nDeriveIterations = (kMasterKey.nDeriveIterations + static_cast<unsigned int>(kMasterKey.nDeriveIterations * 100 / ((double)(TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) - nStartTime)))) / 2;
 
     if (kMasterKey.nDeriveIterations < 25000)
         kMasterKey.nDeriveIterations = 25000;
@@ -1112,7 +1118,13 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransactionRef& ptx, const SyncTxS
             // Block disconnection override an abandoned tx as unconfirmed
             // which means user may have to call abandontransaction again
             TxState tx_state = std::visit([](auto&& s) -> TxState { return s; }, state);
-            return AddToWallet(MakeTransactionRef(tx), tx_state, /*update_wtx=*/nullptr, /*fFlushOnClose=*/false, rescanning_old_block);
+            CWalletTx* wtx = AddToWallet(MakeTransactionRef(tx), tx_state, /*update_wtx=*/nullptr, /*fFlushOnClose=*/false, rescanning_old_block);
+            if (!wtx) {
+                // Can only be nullptr if there was a db write error (missing db, read-only db or a db engine internal writing error).
+                // As we only store arriving transaction in this process, and we don't want an inconsistent state, let's throw an error.
+                throw std::runtime_error("DB error adding transaction to wallet, write failed");
+            }
+            return true;
         }
     }
     return false;
@@ -2339,39 +2351,32 @@ bool CWallet::TopUpKeyPool(unsigned int kpSize)
     return res;
 }
 
-bool CWallet::GetNewDestination(const std::string label, CTxDestination& dest, bilingual_str& error)
+util::Result<CTxDestination> CWallet::GetNewDestination(const std::string label)
 {
-    error.clear();
-    bool result = false;
-
     LOCK(cs_wallet);
     auto spk_man = GetScriptPubKeyMan(false /* internal */);
-    if (spk_man) {
-        spk_man->TopUp();
-        result = spk_man->GetNewDestination(dest, error);
-    } else {
-        error = strprintf(_("Error: No addresses available."));
-    }
-    if (result) {
-        SetAddressBook(dest, label, "receive");
+    if (!spk_man) {
+        return util::Error{_("Error: No addresses available.")};
     }
 
-    return result;
+    spk_man->TopUp();
+    auto op_dest = spk_man->GetNewDestination();
+    if (op_dest) {
+        SetAddressBook(*op_dest, label, "receive");
+    }
+
+    return op_dest;
 }
 
-bool CWallet::GetNewChangeDestination(CTxDestination& dest,  bilingual_str& error)
+util::Result<CTxDestination> CWallet::GetNewChangeDestination()
 {
     LOCK(cs_wallet);
-    error.clear();
 
     ReserveDestination reservedest(this);
-    if (!reservedest.GetReservedDestination(dest, true)) {
-        error = _("Error: Keypool ran out, please call keypoolrefill first");
-        return false;
-    }
+    auto op_dest = reservedest.GetReservedDestination(true);
+    if (op_dest) reservedest.KeepDestination();
 
-    reservedest.KeepDestination();
-    return true;
+    return op_dest;
 }
 
 std::optional<int64_t> CWallet::GetOldestKeyPoolTime() const
@@ -2440,11 +2445,11 @@ std::set<std::string> CWallet::ListAddrBookLabels(const std::string& purpose) co
     return label_set;
 }
 
-bool ReserveDestination::GetReservedDestination(CTxDestination& dest, bool fInternalIn)
+util::Result<CTxDestination> ReserveDestination::GetReservedDestination(bool fInternalIn)
 {
     m_spk_man = pwallet->GetScriptPubKeyMan(fInternalIn);
     if (!m_spk_man) {
-        return false;
+        return util::Error{_("Error: No addresses available.")};
     }
 
     if (nIndex == -1)
@@ -2453,14 +2458,13 @@ bool ReserveDestination::GetReservedDestination(CTxDestination& dest, bool fInte
 
         CKeyPool keypool;
         int64_t index;
-        if (!m_spk_man->GetReservedDestination(fInternalIn, address, index, keypool)) {
-            return false;
-        }
+        auto op_address = m_spk_man->GetReservedDestination(fInternalIn, index, keypool);
+        if (!op_address) return op_address;
+        address = *op_address;
         nIndex = index;
         fInternal = keypool.fInternal;
     }
-    dest = address;
-    return true;
+    return address;
 }
 
 void ReserveDestination::KeepDestination()
@@ -2866,11 +2870,16 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
                         error = strprintf(_("%s -- Incorrect seed, it should be a hex string"), __func__);
                         return nullptr;
                     }
-                    SecureString secureMnemonic = args.GetArg("-mnemonic", "").c_str();
-                    SecureString secureMnemonicPassphrase = args.GetArg("-mnemonicpassphrase", "").c_str();
+
+                    SecureString mnemonic, mnemonic_passphrase;
+                    mnemonic.reserve(256);
+                    mnemonic_passphrase.reserve(256);
+
+                    mnemonic = args.GetArg("-mnemonic", "");
+                    mnemonic_passphrase = args.GetArg("-mnemonicpassphrase", "");
                     LOCK(walletInstance->cs_wallet);
                     if (auto spk_man = walletInstance->GetLegacyScriptPubKeyMan()) {
-                        spk_man->GenerateNewHDChain(secureMnemonic, secureMnemonicPassphrase);
+                        spk_man->GenerateNewHDChain(mnemonic, mnemonic_passphrase);
                     }
                 }
 
@@ -2882,8 +2891,11 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
 
             LOCK(walletInstance->cs_wallet);
             if (walletInstance->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS)) {
-                SecureString mnemonic = args.GetArg("-mnemonic", "").c_str();
-                SecureString mnemonic_passphrase = args.GetArg("-mnemonicpassphrase", "").c_str();
+                SecureString mnemonic, mnemonic_passphrase;
+                mnemonic.reserve(256);
+                mnemonic_passphrase.reserve(256);
+                mnemonic = args.GetArg("-mnemonic", "");
+                mnemonic_passphrase = args.GetArg("-mnemonicpassphrase", "");
                 args.ForceRemoveArg("mnemonic");
                 args.ForceRemoveArg("mnemonicpassphrase");
                 walletInstance->SetupDescriptorScriptPubKeyMans(mnemonic, mnemonic_passphrase);
@@ -2971,7 +2983,7 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
     if (args.IsArgSet("-fallbackfee")) {
         std::optional<CAmount> fallback_fee = ParseMoney(args.GetArg("-fallbackfee", ""));
         if (!fallback_fee) {
-            error = strprintf(_("Invalid amount for -fallbackfee=<amount>: '%s'"), args.GetArg("-fallbackfee", ""));
+            error = strprintf(_("Invalid amount for %s=<amount>: '%s'"), "-fallbackfee", args.GetArg("-fallbackfee", ""));
             return nullptr;
         } else if (fallback_fee.value() > HIGH_TX_FEE_PER_KB) {
             warnings.push_back(AmountHighWarn("-fallbackfee") + Untranslated(" ") +
@@ -2985,7 +2997,7 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
     if (args.IsArgSet("-discardfee")) {
         std::optional<CAmount> discard_fee = ParseMoney(args.GetArg("-discardfee", ""));
         if (!discard_fee) {
-            error = strprintf(_("Invalid amount for -discardfee=<amount>: '%s'"), args.GetArg("-discardfee", ""));
+            error = strprintf(_("Invalid amount for %s=<amount>: '%s'"), "-discardfee", args.GetArg("-discardfee", ""));
             return nullptr;
         } else if (discard_fee.value() > HIGH_TX_FEE_PER_KB) {
             warnings.push_back(AmountHighWarn("-discardfee") + Untranslated(" ") +
@@ -3005,8 +3017,8 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
         }
         walletInstance->m_pay_tx_fee = CFeeRate{pay_tx_fee.value(), 1000};
         if (chain && walletInstance->m_pay_tx_fee < chain->relayMinFee()) {
-            error = strprintf(_("Invalid amount for -paytxfee=<amount>: '%s' (must be at least %s)"),
-                args.GetArg("-paytxfee", ""), chain->relayMinFee().ToString());
+            error = strprintf(_("Invalid amount for %s=<amount>: '%s' (must be at least %s)"),
+                "-paytxfee", args.GetArg("-paytxfee", ""), chain->relayMinFee().ToString());
             return nullptr;
         }
     }
@@ -3017,11 +3029,11 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
             error = AmountErrMsg("maxtxfee", args.GetArg("-maxtxfee", ""));
             return nullptr;
         } else if (max_fee.value() > HIGH_MAX_TX_FEE) {
-            warnings.push_back(_("-maxtxfee is set very high! Fees this large could be paid on a single transaction."));
+            warnings.push_back(strprintf(_("%s is set very high! Fees this large could be paid on a single transaction."), "-maxtxfee"));
         }
         if (chain && CFeeRate{max_fee.value(), 1000} < chain->relayMinFee()) {
-            error = strprintf(_("Invalid amount for -maxtxfee=<amount>: '%s' (must be at least the minrelay fee of %s to prevent stuck transactions)"),
-                args.GetArg("-maxtxfee", ""), chain->relayMinFee().ToString());
+            error = strprintf(_("Invalid amount for %s=<amount>: '%s' (must be at least the minrelay fee of %s to prevent stuck transactions)"),
+                "-maxtxfee", args.GetArg("-maxtxfee", ""), chain->relayMinFee().ToString());
             return nullptr;
         }
 
@@ -3050,6 +3062,7 @@ std::shared_ptr<CWallet> CWallet::Create(WalletContext& context, const std::stri
     walletInstance->TopUpKeyPool();
 
     if (chain && !AttachChain(walletInstance, *chain, error, warnings)) {
+        walletInstance->m_chain_notifications_handler.reset(); // Reset this pointer so that the wallet will actually be unloaded
         return nullptr;
     }
 
@@ -3078,6 +3091,20 @@ bool CWallet::AttachChain(const std::shared_ptr<CWallet>& walletInstance, interf
     // allow setting the chain if it hasn't been set already but prevent changing it
     assert(!walletInstance->m_chain || walletInstance->m_chain == &chain);
     walletInstance->m_chain = &chain;
+
+    // Unless allowed, ensure wallet files are not reused across chains:
+    if (!gArgs.GetBoolArg("-walletcrosschain", DEFAULT_WALLETCROSSCHAIN)) {
+        WalletBatch batch(walletInstance->GetDatabase());
+        CBlockLocator locator;
+        if (batch.ReadBestBlock(locator) && locator.vHave.size() > 0 && chain.getHeight()) {
+            // Wallet is assumed to be from another chain, if genesis block in the active
+            // chain differs from the genesis block known to the wallet.
+            if (chain.getBlockHash(0) != locator.vHave.back()) {
+                error = Untranslated("Wallet files should not be reused across chains. Restart dashd with -walletcrosschain to override.");
+                return false;
+            }
+        }
+    }
 
     // Register wallet with validationinterface. It's done before rescan to avoid
     // missing block connections between end of rescan and validation subscribing.
@@ -3197,44 +3224,8 @@ bool CWallet::UpgradeWallet(int version, bilingual_str& error)
         return false;
     }
 
-    // TODO: consider discourage users to skip passphrase for HD wallets for v21
-    if (/* DISABLES CODE */ (false) && nMaxVersion >= FEATURE_HD && !IsHDEnabled()) {
-        error = Untranslated("You should use upgradetohd RPC to upgrade non-HD wallet to HD");
-        error = strprintf(_("Cannot upgrade a non HD wallet from version %i to version %i which is non-HD wallet. Use upgradetohd RPC"), prev_version, version);
-        return false;
-    }
-
     SetMinVersion(GetClosestWalletFeature(version));
 
-    return true;
-}
-
-bool CWallet::UpgradeToHD(const SecureString& secureMnemonic, const SecureString& secureMnemonicPassphrase, const SecureString& secureWalletPassphrase, bilingual_str& error)
-{
-    LOCK(cs_wallet);
-
-    // Do not do anything to HD wallets
-    if (IsHDEnabled()) {
-        error = Untranslated("Cannot upgrade a wallet to HD if it is already upgraded to HD.");
-        return false;
-    }
-
-    if (IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS)) {
-        error = Untranslated("Private keys are disabled for this wallet");
-        return false;
-    }
-
-    WalletLogPrintf("Upgrading wallet to HD\n");
-    SetMinVersion(FEATURE_HD);
-
-    if (IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS)) {
-        SetupDescriptorScriptPubKeyMans(secureMnemonic, secureMnemonicPassphrase);
-    } else {
-        if (!GenerateNewHDChain(secureMnemonic, secureMnemonicPassphrase, secureWalletPassphrase)) {
-            error = Untranslated("Failed to generate HD wallet");
-            return false;
-        }
-    }
     return true;
 }
 
@@ -3454,7 +3445,7 @@ void CWallet::notifyTransactionLock(const CTransactionRef &tx, const std::shared
     }
 }
 
-void CWallet::notifyChainLock(const CBlockIndex* pindexChainLock, const std::shared_ptr<const llmq::CChainLockSig>& clsig)
+void CWallet::notifyChainLock(const CBlockIndex* pindexChainLock, const std::shared_ptr<const chainlock::ChainLockSig>& clsig)
 {
     NotifyChainLockReceived(pindexChainLock->nHeight);
 }
@@ -3768,64 +3759,6 @@ void CWallet::ConnectScriptPubKeyManNotifiers()
     }
 }
 
-bool CWallet::GenerateNewHDChain(const SecureString& secureMnemonic, const SecureString& secureMnemonicPassphrase, const SecureString& secureWalletPassphrase)
-{
-    auto spk_man = GetLegacyScriptPubKeyMan();
-    if (!spk_man) {
-        throw std::runtime_error(strprintf("%s: spk_man is not available", __func__));
-    }
-
-    if (IsCrypted()) {
-        if (secureWalletPassphrase.empty()) {
-            throw std::runtime_error(strprintf("%s: encrypted but supplied empty wallet passphrase", __func__));
-        }
-
-        bool is_locked = IsLocked();
-
-        CCrypter crypter;
-        CKeyingMaterial vMasterKey;
-
-        // We are intentionally re-locking the wallet so we can validate vMasterKey
-        // by verifying if it can unlock the wallet
-        Lock();
-
-        LOCK(cs_wallet);
-        for (const auto& [_, master_key] : mapMasterKeys) {
-            CKeyingMaterial _vMasterKey;
-            if (!crypter.SetKeyFromPassphrase(secureWalletPassphrase, master_key.vchSalt, master_key.nDeriveIterations, master_key.nDerivationMethod)) {
-                return false;
-            }
-            // Try another key if it cannot be decrypted or the key is incapable of encrypting
-            if (!crypter.Decrypt(master_key.vchCryptedKey, _vMasterKey) || _vMasterKey.size() != WALLET_CRYPTO_KEY_SIZE) {
-                continue;
-            }
-            // The likelihood of the plaintext being gibberish but also of the expected size is low but not zero.
-            // If it can unlock the wallet, it's a good key.
-            if (Unlock(_vMasterKey)) {
-                vMasterKey = _vMasterKey;
-                break;
-            }
-        }
-
-        // We got a gibberish key...
-        if (vMasterKey.empty()) {
-            // Mimicking the error message of RPC_WALLET_PASSPHRASE_INCORRECT as it's possible
-            // that the user may see this error when interacting with the upgradetohd RPC
-            throw std::runtime_error("Error: The wallet passphrase entered was incorrect");
-        }
-
-        spk_man->GenerateNewHDChain(secureMnemonic, secureMnemonicPassphrase, vMasterKey);
-
-        if (is_locked) {
-            Lock();
-        }
-    } else {
-        spk_man->GenerateNewHDChain(secureMnemonic, secureMnemonicPassphrase);
-    }
-
-    return true;
-}
-
 void CWallet::UpdateProgress(const std::string& title, int nProgress)
 {
     ShowProgress(title, nProgress);
@@ -3845,7 +3778,7 @@ void CWallet::SetupDescriptorScriptPubKeyMans(const SecureString& mnemonic_arg, 
     // TODO: remove duplicated code with CHDChain::SetMnemonic
     const SecureString mnemonic = mnemonic_arg.empty() ? CMnemonic::Generate(m_args.GetIntArg("-mnemonicbits", CHDChain::DEFAULT_MNEMONIC_BITS)) : mnemonic_arg;
     if (!CMnemonic::Check(mnemonic)) {
-        throw std::runtime_error(std::string(__func__) + ": invalid mnemonic: `" + std::string(mnemonic.c_str()) + "`");
+        throw std::runtime_error(std::string(__func__) + ": invalid mnemonic: `" + std::string(mnemonic) + "`");
     }
     SecureVector seed_key;
     CMnemonic::ToSeed(mnemonic, mnemonic_passphrase, seed_key);

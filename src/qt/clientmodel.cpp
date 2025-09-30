@@ -50,14 +50,14 @@ ClientModel::ClientModel(interfaces::Node& node, OptionsModel *_optionsModel, QO
     m_peer_table_sort_proxy->setSourceModel(peerTableModel);
 
     banTableModel = new BanTableModel(m_node, this);
-    mnListCached = std::make_shared<CDeterministicMNList>();
+    mnListCached = std::make_unique<CDeterministicMNList>();
 
     QTimer* timer = new QTimer;
     timer->setInterval(MODEL_UPDATE_DELAY);
     connect(timer, &QTimer::timeout, [this] {
         // no locking required at this point
         // the following calls will acquire the required lock
-        Q_EMIT mempoolSizeChanged(m_node.getMempoolSize(), m_node.getMempoolDynamicUsage());
+        Q_EMIT mempoolSizeChanged(m_node.getMempoolSize(), m_node.getMempoolDynamicUsage(), m_node.getMempoolMaxUsage());
         Q_EMIT islockCountChanged(m_node.llmq().getInstantSentLockCount());
     });
     connect(m_thread, &QThread::finished, timer, &QObject::deleteLater);
@@ -101,18 +101,18 @@ int ClientModel::getNumConnections(unsigned int flags) const
 
 void ClientModel::setMasternodeList(const CDeterministicMNList& mnList, const CBlockIndex* tip)
 {
-    LOCK(cs_mnlinst);
+    LOCK(cs_mnlist);
     if (mnListCached->GetBlockHash() == mnList.GetBlockHash()) {
         return;
     }
-    mnListCached = std::make_shared<CDeterministicMNList>(mnList);
+    mnListCached = std::make_unique<CDeterministicMNList>(mnList);
     mnListTip = tip;
     Q_EMIT masternodeListChanged();
 }
 
 std::pair<CDeterministicMNList, const CBlockIndex*> ClientModel::getMasternodeList() const
 {
-    LOCK(cs_mnlinst);
+    LOCK(cs_mnlist);
     return {*mnListCached, mnListTip};
 }
 
@@ -120,7 +120,7 @@ void ClientModel::refreshMasternodeList()
 {
     auto [mnList, tip] = m_node.evo().getListAtChainTip();
 
-    LOCK(cs_mnlinst);
+    LOCK(cs_mnlist);
     setMasternodeList(mnList, tip);
 }
 
@@ -155,6 +155,11 @@ int64_t ClientModel::getHeaderTipTime() const
 void ClientModel::getAllGovernanceObjects(std::vector<CGovernanceObject> &obj)
 {
     m_node.gov().getAllNewerThan(obj, 0);
+}
+
+std::map<CNetAddr, LocalServiceInfo> ClientModel::getNetLocalAddresses() const
+{
+    return m_node.getNetLocalAddresses();
 }
 
 int ClientModel::getNumBlocks() const
@@ -263,7 +268,7 @@ void ClientModel::TipChanged(SynchronizationState sync_state, interfaces::BlockT
 
     // Throttle GUI notifications about (a) blocks during initial sync, and (b) both blocks and headers during reindex.
     const bool throttle = (sync_state != SynchronizationState::POST_INIT && !header) || sync_state == SynchronizationState::INIT_REINDEX;
-    const int64_t now = throttle ? GetTimeMillis() : 0;
+    const int64_t now = throttle ? TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) : 0;
     int64_t& nLastUpdateNotification = header ? nLastHeaderTipUpdateNotification : nLastBlockTipUpdateNotification;
     if (throttle && now < nLastUpdateNotification + count_milliseconds(MODEL_UPDATE_DELAY)) {
         return;

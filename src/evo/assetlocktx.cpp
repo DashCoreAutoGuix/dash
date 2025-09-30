@@ -6,8 +6,8 @@
 #include <evo/specialtx.h>
 
 #include <llmq/commitment.h>
-#include <llmq/signing.h>
 #include <llmq/quorums.h>
+#include <llmq/signhash.h>
 
 #include <chainparams.h>
 #include <consensus/params.h>
@@ -21,6 +21,7 @@
 #include <algorithm>
 
 using node::BlockManager;
+
 
 /**
  *  Common code for Asset Lock and Asset Unlock
@@ -122,11 +123,8 @@ bool CAssetUnlockPayload::VerifySig(const llmq::CQuorumManager& qman, const uint
     const auto& llmq_params_opt = Params().GetLLMQ(llmqType);
     assert(llmq_params_opt.has_value());
 
-    // We check two quorums before DEPLOYMENT_WITHDRAWALS activation
-    // and "all active quorums + 1 the latest inactive" after activation.
-    const int quorums_to_scan = DeploymentActiveAt(*pindexTip, Params().GetConsensus(), Consensus::DEPLOYMENT_WITHDRAWALS)
-                                    ? (llmq_params_opt->signingActiveQuorumCount + 1)
-                                    : 2;
+    // We check all active quorums + 1 the latest inactive
+    const int quorums_to_scan = llmq_params_opt->signingActiveQuorumCount + 1;
     const auto quorums = qman.ScanQuorums(llmqType, pindexTip, quorums_to_scan);
 
     if (bool isActive = std::any_of(quorums.begin(), quorums.end(), [&](const auto &q) { return q->qc->quorumHash == quorumHash; }); !isActive) {
@@ -148,8 +146,8 @@ bool CAssetUnlockPayload::VerifySig(const llmq::CQuorumManager& qman, const uint
 
     const uint256 requestId = ::SerializeHash(std::make_pair(ASSETUNLOCK_REQUESTID_PREFIX, index));
 
-    if (const uint256 signHash = llmq::BuildSignHash(llmqType, quorum->qc->quorumHash, requestId, msgHash);
-            quorumSig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash)) {
+    if (const llmq::SignHash signHash(llmqType, quorum->qc->quorumHash, requestId, msgHash);
+        quorumSig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash.Get())) {
         return true;
     }
 

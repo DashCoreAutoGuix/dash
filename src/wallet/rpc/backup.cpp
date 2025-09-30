@@ -908,8 +908,8 @@ RPCHelpMan dumphdinfo()
 
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("hdseed", HexStr(hdChainCurrent.GetSeed()));
-    obj.pushKV("mnemonic", ssMnemonic.c_str());
-    obj.pushKV("mnemonicpassphrase", ssMnemonicPassphrase.c_str());
+    obj.pushKV("mnemonic", ssMnemonic);
+    obj.pushKV("mnemonicpassphrase", ssMnemonicPassphrase);
 
     return obj;
 },
@@ -1527,11 +1527,11 @@ RPCHelpMan importmulti()
                         {RPCResult::Type::OBJ, "", "",
                          {
                                  {RPCResult::Type::BOOL, "success", ""},
-                                 {RPCResult::Type::ARR, "warnings", /* optional */ true, "",
+                                 {RPCResult::Type::ARR, "warnings", /*optional=*/true, "",
                                   {
                                           {RPCResult::Type::STR, "", ""},
                                   }},
-                                 {RPCResult::Type::OBJ, "error", /* optional */ true, "",
+                                 {RPCResult::Type::OBJ, "error", /*optional=*/true, "",
                                   {
                                           {RPCResult::Type::ELISION, "", "JSONRPC error"},
                                   }},
@@ -1834,11 +1834,11 @@ RPCHelpMan importdescriptors() {
                         {RPCResult::Type::OBJ, "", "",
                         {
                             {RPCResult::Type::BOOL, "success", ""},
-                            {RPCResult::Type::ARR, "warnings", /* optional */ true, "",
+                            {RPCResult::Type::ARR, "warnings", /*optional=*/true, "",
                             {
                                 {RPCResult::Type::STR, "", ""},
                             }},
-                            {RPCResult::Type::OBJ, "error", /* optional */ true, "",
+                            {RPCResult::Type::OBJ, "error", /*optional=*/true, "",
                             {
                                 {RPCResult::Type::ELISION, "", "JSONRPC error"},
                             }},
@@ -1980,7 +1980,8 @@ RPCHelpMan listdescriptors()
                         {RPCResult::Type::NUM, "", "Range start inclusive"},
                         {RPCResult::Type::NUM, "", "Range end inclusive"},
                     }},
-                    {RPCResult::Type::NUM, "next", /*optional=*/true, "The next index to generate addresses from; defined only for ranged descriptors"},
+                    {RPCResult::Type::NUM, "next", /*optional=*/true, "Same as next_index field. Kept for compatibility reason."},
+                    {RPCResult::Type::NUM, "next_index", /*optional=*/true, "The next index to generate addresses from; defined only for ranged descriptors"},
                 }},
             }}
         }},
@@ -2023,8 +2024,8 @@ RPCHelpMan listdescriptors()
             SecureString mnemonic;
             SecureString mnemonic_passphrase;
             if (desc_spk_man->GetMnemonicString(mnemonic, mnemonic_passphrase) && !mnemonic.empty()) {
-                spk.pushKV("mnemonic", mnemonic.c_str());
-                spk.pushKV("mnemonicpassphrase", mnemonic_passphrase.c_str());
+                spk.pushKV("mnemonic", mnemonic);
+                spk.pushKV("mnemonicpassphrase", mnemonic_passphrase);
             }
         }
         spk.pushKV("desc", descriptor);
@@ -2041,6 +2042,7 @@ RPCHelpMan listdescriptors()
             range.push_back(wallet_descriptor.range_end - 1);
             spk.pushKV("range", range);
             spk.pushKV("next", wallet_descriptor.next_index);
+            spk.pushKV("next_index", wallet_descriptor.next_index);
         }
         descriptors.push_back(spk);
     }

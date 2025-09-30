@@ -3,6 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test node disconnect and ban behavior"""
+from pathlib import Path
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
@@ -35,6 +36,17 @@ class DisconnectBanTest(BitcoinTestFramework):
         self.log.info("clearbanned: successfully clear ban list")
         self.nodes[1].clearbanned()
         assert_equal(len(self.nodes[1].listbanned()), 0)
+
+        self.log.info('Test banlist database recreation')
+        self.stop_node(1)
+        target_file = self.nodes[1].chain_path / "banlist.json"
+        Path.unlink(target_file)
+        with self.nodes[1].assert_debug_log(["Recreating the banlist database"]):
+            self.start_node(1)
+
+        assert Path.exists(target_file)
+        assert_equal(self.nodes[1].listbanned(), [])
+
         self.nodes[1].setban("127.0.0.0/24", "add")
 
         self.log.info("setban: fail to ban an already banned subnet")
@@ -44,6 +56,9 @@ class DisconnectBanTest(BitcoinTestFramework):
         self.log.info("setban: fail to ban an invalid subnet")
         assert_raises_rpc_error(-30, "Error: Invalid IP/Subnet", self.nodes[1].setban, "127.0.0.1/42", "add")
         assert_equal(len(self.nodes[1].listbanned()), 1)  # still only one banned ip because 127.0.0.1 is within the range of 127.0.0.0/24
+
+        self.log.info("setban: fail to ban with past absolute timestamp")
+        assert_raises_rpc_error(-8, "Error: Absolute timestamp is in the past", self.nodes[1].setban, "127.27.0.1", "add", 123, True)
 
         self.log.info("setban remove: fail to unban a non-banned subnet")
         assert_raises_rpc_error(-30, "Error: Unban failed", self.nodes[1].setban, "127.0.0.1", "remove")
@@ -62,24 +77,33 @@ class DisconnectBanTest(BitcoinTestFramework):
         self.nodes[1].setban("2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/19", "add", 1000)  # ban for 1000 seconds
         listBeforeShutdown = self.nodes[1].listbanned()
         assert_equal("192.168.0.1/32", listBeforeShutdown[2]['address'])
-        self.bump_mocktime(2)
-        self.wait_until(lambda: len(self.nodes[1].listbanned()) == 3, timeout=10)
+
+        self.log.info("setban: test banning with absolute timestamp")
+        self.nodes[1].setban("192.168.0.2", "add", self.mocktime + 120, True)
+
+        # Move time forward by 3 seconds so the third ban has expired
+        self.bump_mocktime(3)
+        self.wait_until(lambda: len(self.nodes[1].listbanned()) == 4, timeout=10)
 
         self.log.info("Test ban_duration and time_remaining")
         for ban in self.nodes[1].listbanned():
             if ban["address"] in ["127.0.0.0/32", "127.0.0.0/24"]:
                 assert_equal(ban["ban_duration"], 86400)
-                assert_equal(ban["time_remaining"], 86398)
+                assert_equal(ban["time_remaining"], 86397)
             elif ban["address"] == "2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/19":
                 assert_equal(ban["ban_duration"], 1000)
                 assert_equal(ban["time_remaining"], 997)
+            elif ban["address"] == "192.168.0.2/32":
+                assert_equal(ban["ban_duration"], 120)
+                assert_equal(ban["time_remaining"], 117)
 
         self.restart_node(1)
 
         listAfterShutdown = self.nodes[1].listbanned()
         assert_equal("127.0.0.0/24", listAfterShutdown[0]['address'])
         assert_equal("127.0.0.0/32", listAfterShutdown[1]['address'])
-        assert_equal("/19" in listAfterShutdown[2]['address'], True)
+        assert_equal("192.168.0.2/32", listAfterShutdown[2]['address'])
+        assert_equal("/19" in listAfterShutdown[3]['address'], True)
 
         # Clear ban lists
         self.nodes[1].clearbanned()

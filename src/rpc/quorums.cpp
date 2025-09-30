@@ -7,27 +7,28 @@
 #include <index/txindex.h>
 #include <net_processing.h>
 #include <node/context.h>
+#include <rpc/evo_util.h>
 #include <rpc/server.h>
 #include <rpc/server_util.h>
 #include <rpc/util.h>
 #include <util/check.h>
 #include <validation.h>
 
-#include <masternode/node.h>
+#include <chainlock/chainlock.h>
 #include <evo/deterministicmns.h>
-
 #include <llmq/blockprocessor.h>
-#include <llmq/chainlocks.h>
 #include <llmq/commitment.h>
 #include <llmq/context.h>
 #include <llmq/debug.h>
 #include <llmq/dkgsession.h>
 #include <llmq/options.h>
 #include <llmq/quorums.h>
+#include <llmq/signhash.h>
 #include <llmq/signing.h>
 #include <llmq/signing_shares.h>
 #include <llmq/snapshot.h>
 #include <llmq/utils.h>
+#include <masternode/node.h>
 
 #include <iomanip>
 #include <optional>
@@ -205,10 +206,8 @@ static UniValue BuildQuorumInfo(const llmq::CQuorumBlockProcessor& quorum_block_
             const auto& dmn = quorum->members[i];
             UniValue mo(UniValue::VOBJ);
             mo.pushKV("proTxHash", dmn->proTxHash.ToString());
-            if (IsDeprecatedRPCEnabled("service")) {
-                mo.pushKV("service", dmn->pdmnState->netInfo->GetPrimary().ToStringAddrPort());
-            }
-            mo.pushKV("addresses", dmn->pdmnState->netInfo->ToJson());
+            mo.pushKV("service", dmn->pdmnState->netInfo->GetPrimary().ToStringAddrPort());
+            mo.pushKV("addresses", GetNetInfoWithLegacyFields(*dmn->pdmnState, dmn->nType));
             mo.pushKV("pubKeyOperator", dmn->pdmnState->pubKeyOperator.ToString());
             mo.pushKV("valid", static_cast<bool>(quorum->qc->validMembers[i]));
             if (quorum->qc->validMembers[i]) {
@@ -608,8 +607,8 @@ static RPCHelpMan quorum_verify()
         throw JSONRPCError(RPC_INVALID_PARAMETER, "quorum not found");
     }
 
-    uint256 signHash = llmq::BuildSignHash(llmqType, quorum->qc->quorumHash, id, msgHash);
-    return sig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash);
+    llmq::SignHash signHash{llmqType, quorum->qc->quorumHash, id, msgHash};
+    return sig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash.Get());
 },
     };
 }
@@ -1021,7 +1020,8 @@ static RPCHelpMan verifychainlock()
     }
 
     const LLMQContext& llmq_ctx = EnsureLLMQContext(node);
-    return llmq_ctx.clhandler->VerifyChainLock(llmq::CChainLockSig(nBlockHeight, nBlockHash, sig)) == llmq::VerifyRecSigStatus::Valid;
+    return llmq_ctx.clhandler->VerifyChainLock(chainlock::ChainLockSig(nBlockHeight, nBlockHash, sig)) ==
+           llmq::VerifyRecSigStatus::Valid;
 },
     };
 }
@@ -1132,7 +1132,7 @@ static RPCHelpMan submitchainlock()
     }
 
 
-    const auto clsig{llmq::CChainLockSig(nBlockHeight, nBlockHash, sig)};
+    const auto clsig{chainlock::ChainLockSig(nBlockHeight, nBlockHash, sig)};
     const llmq::VerifyRecSigStatus ret{llmq_ctx.clhandler->VerifyChainLock(clsig)};
     if (ret == llmq::VerifyRecSigStatus::NoQuorum) {
         LOCK(cs_main);

@@ -5,17 +5,20 @@
 #ifndef BITCOIN_LLMQ_QUORUMS_H
 #define BITCOIN_LLMQ_QUORUMS_H
 
-#include <llmq/params.h>
-
 #include <bls/bls.h>
 #include <bls/bls_worker.h>
 #include <ctpl_stl.h>
-#include <gsl/pointers.h>
+#include <evo/types.h>
+#include <llmq/params.h>
+#include <llmq/types.h>
+#include <unordered_lru_cache.h>
+
 #include <protocol.h>
 #include <saltedhasher.h>
 #include <util/threadinterrupt.h>
-#include <unordered_lru_cache.h>
 #include <util/time.h>
+
+#include <gsl/pointers.h>
 
 #include <atomic>
 #include <map>
@@ -34,8 +37,6 @@ class CEvoDB;
 class CMasternodeSync;
 class CNode;
 class CSporkManager;
-
-using CDeterministicMNCPtr = std::shared_ptr<const CDeterministicMN>;
 
 namespace llmq
 {
@@ -170,14 +171,6 @@ public:
  * the public key shares of individual members, which are needed to verify signature shares of these members.
  */
 
-class CQuorum;
-using CQuorumPtr = std::shared_ptr<CQuorum>;
-using CQuorumCPtr = std::shared_ptr<const CQuorum>;
-
-class CFinalCommitment;
-using CFinalCommitmentPtr = std::unique_ptr<CFinalCommitment>;
-
-
 class CQuorum
 {
     friend class CQuorumManager;
@@ -248,15 +241,17 @@ private:
     const CSporkManager& m_sporkman;
 
     mutable Mutex cs_map_quorums;
-    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, CQuorumPtr, StaticSaltedHasher>> mapQuorumsCache GUARDED_BY(cs_map_quorums);
+    mutable std::map<Consensus::LLMQType, Uint256LruHashMap<CQuorumPtr>> mapQuorumsCache GUARDED_BY(cs_map_quorums);
     mutable Mutex cs_scan_quorums;
-    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, std::vector<CQuorumCPtr>, StaticSaltedHasher>> scanQuorumsCache GUARDED_BY(cs_scan_quorums);
+    mutable std::map<Consensus::LLMQType, Uint256LruHashMap<std::vector<CQuorumCPtr>>> scanQuorumsCache
+        GUARDED_BY(cs_scan_quorums);
     mutable Mutex cs_cleanup;
-    mutable std::map<Consensus::LLMQType, unordered_lru_cache<uint256, uint256, StaticSaltedHasher>> cleanupQuorumsCache GUARDED_BY(cs_cleanup);
+    mutable std::map<Consensus::LLMQType, Uint256LruHashMap<uint256>> cleanupQuorumsCache GUARDED_BY(cs_cleanup);
 
     mutable Mutex cs_quorumBaseBlockIndexCache;
     // On mainnet, we have around 62 quorums active at any point; let's cache a little more than double that to be safe.
-    mutable unordered_lru_cache<uint256 /*quorum_hash*/, const CBlockIndex* /*pindex*/, StaticSaltedHasher, 128 /*max_size*/> quorumBaseBlockIndexCache;
+    // it maps `quorum_hash` to `pindex`
+    mutable Uint256LruHashMap<const CBlockIndex*, 128 /*max_size*/> quorumBaseBlockIndexCache;
 
     mutable ctpl::thread_pool workerPool;
     mutable CThreadInterrupt quorumThreadInterrupt;
@@ -275,7 +270,7 @@ public:
 
     void UpdatedBlockTip(const CBlockIndex* pindexNew, CConnman& connman, bool fInitialDownload) const;
 
-    PeerMsgRet ProcessMessage(CNode& pfrom, CConnman& connman, const std::string& msg_type, CDataStream& vRecv);
+    [[nodiscard]] MessageProcessingResult ProcessMessage(CNode& pfrom, CConnman& connman, std::string_view msg_type, CDataStream& vRecv);
 
     static bool HasQuorum(Consensus::LLMQType llmqType, const CQuorumBlockProcessor& quorum_block_processor, const uint256& quorumHash);
 

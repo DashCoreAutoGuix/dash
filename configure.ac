@@ -355,7 +355,7 @@ case $host in
 esac
 
 if test "$enable_debug" = "yes"; then
-  dnl If debugging is enabled, and the user hasn't overriden CXXFLAGS, clear
+  dnl If debugging is enabled, and the user hasn't overridden CXXFLAGS, clear
   dnl them, to prevent autoconfs "-g -O2" being added. Otherwise we'd end up
   dnl with "-O0 -g3 -g -O2".
   if test "$CXXFLAGS_overridden" = "no"; then
@@ -378,6 +378,9 @@ if test "$enable_debug" = "yes"; then
   AX_CHECK_PREPROC_FLAG([-DABORT_ON_FAILED_ASSUME], [DEBUG_CPPFLAGS="$DEBUG_CPPFLAGS -DABORT_ON_FAILED_ASSUME"], [], [$CXXFLAG_WERROR])
   AX_CHECK_COMPILE_FLAG([-ftrapv], [DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -ftrapv"], [], [$CXXFLAG_WERROR])
 else
+  dnl If not debugging, enable more aggressive optimizations for sphlib sources
+  AX_CHECK_COMPILE_FLAG([-O3], [SPHLIB_FLAGS="$SPHLIB_FLAGS -O3"], [], [$CXXFLAG_WERROR])
+
     # We always enable at at least -g1 debug info to support proper stacktraces in crash infos
     # Stacktraces will be suboptimal due to optimization, but better than nothing. Also, -fno-omit-frame-pointer
     # mitigates this a little bit
@@ -450,15 +453,6 @@ if test "$enable_werror" = "yes"; then
   fi
   ERROR_CXXFLAGS=$CXXFLAG_WERROR
 
-  dnl -Warray-bounds cause problems with GCC. Do not treat these warnings as errors.
-  dnl Suppress -Warray-bounds entirely because of noisy output, currently unhappy with immer implementation.
-  AX_CHECK_COMPILE_FLAG([-Warray-bounds], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-array-bounds"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
-    #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
-      #error Non-GCC compiler detected, not setting flag
-    #endif
-    int main(void) { return 0; }
-  ])])
-
   dnl -Wattributes cause problems with some versions of GCC. Do not treat these warnings as errors.
   AX_CHECK_COMPILE_FLAG([-Wattributes], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-error=attributes"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
     #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
@@ -478,21 +472,30 @@ if test "$enable_werror" = "yes"; then
     #endif
     int main(void) { return 0; }
   ])])
-
-  dnl -Wstringop-overread and -Wstringop-overflow are broken in GCC. Suppress warnings entirely to avoid noisy output.
-  AX_CHECK_COMPILE_FLAG([-Wstringop-overread], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-stringop-overread"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
-    #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
-      #error Non-GCC compiler detected, not setting flag
-    #endif
-    int main(void) { return 0; }
-  ])])
-  AX_CHECK_COMPILE_FLAG([-Wstringop-overflow], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-stringop-overflow"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
-    #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
-      #error Non-GCC compiler detected, not setting flag
-    #endif
-    int main(void) { return 0; }
-  ])])
 fi
+
+dnl -Warray-bounds cause problems with GCC. Do not treat these warnings as errors.
+dnl Suppress -Warray-bounds entirely because of noisy output, currently unhappy with immer implementation.
+AX_CHECK_COMPILE_FLAG([-Warray-bounds], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-array-bounds"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
+  #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
+    #error Non-GCC compiler detected, not setting flag
+  #endif
+  int main(void) { return 0; }
+])])
+
+dnl -Wstringop-overread and -Wstringop-overflow are broken in GCC. Suppress warnings entirely to avoid noisy output.
+AX_CHECK_COMPILE_FLAG([-Wstringop-overread], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-stringop-overread"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
+  #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
+    #error Non-GCC compiler detected, not setting flag
+  #endif
+  int main(void) { return 0; }
+])])
+AX_CHECK_COMPILE_FLAG([-Wstringop-overflow], [NOWARN_CXXFLAGS="$NOWARN_CXXFLAGS -Wno-stringop-overflow"], [], [$CXXFLAG_WERROR], [AC_LANG_SOURCE([
+  #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__)
+    #error Non-GCC compiler detected, not setting flag
+  #endif
+  int main(void) { return 0; }
+])])
 
 AX_CHECK_COMPILE_FLAG([-Wall], [WARN_CXXFLAGS="$WARN_CXXFLAGS -Wall"], [], [$CXXFLAG_WERROR])
 AX_CHECK_COMPILE_FLAG([-Wextra], [WARN_CXXFLAGS="$WARN_CXXFLAGS -Wextra"], [], [$CXXFLAG_WERROR])
@@ -532,11 +535,15 @@ dnl https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111843. To work around that, se
 dnl -fstack-reuse=none for all gcc builds. (Only gcc understands this flag)
 AX_CHECK_COMPILE_FLAG([-fstack-reuse=none], [CORE_CXXFLAGS="$CORE_CXXFLAGS -fstack-reuse=none"])
 
+enable_arm_aes=no
 enable_arm_crc=no
+enable_arm_neon=no
 enable_arm_shani=no
+enable_ssse3=no
 enable_sse42=no
 enable_sse41=no
 enable_avx2=no
+enable_x86_aesni=no
 enable_x86_shani=no
 
 dnl Check for optional instruction set support. Enabling these does _not_ imply that all code will
@@ -544,9 +551,11 @@ dnl be compiled with them, rather that specific objects/libs may use them after 
 dnl compatibility.
 
 dnl x86
+AX_CHECK_COMPILE_FLAG([-mssse3], [SSSE3_CXXFLAGS="-mssse3"], [], [$CXXFLAG_WERROR])
 AX_CHECK_COMPILE_FLAG([-msse4.2], [SSE42_CXXFLAGS="-msse4.2"], [], [$CXXFLAG_WERROR])
 AX_CHECK_COMPILE_FLAG([-msse4.1], [SSE41_CXXFLAGS="-msse4.1"], [], [$CXXFLAG_WERROR])
 AX_CHECK_COMPILE_FLAG([-mavx -mavx2], [AVX2_CXXFLAGS="-mavx -mavx2"], [], [$CXXFLAG_WERROR])
+AX_CHECK_COMPILE_FLAG([-msse4.1 -maes], [X86_AESNI_CXXFLAGS="-msse4.1 -maes"], [], [$CXXFLAG_WERROR])
 AX_CHECK_COMPILE_FLAG([-msse4 -msha], [X86_SHANI_CXXFLAGS="-msse4 -msha"], [], [$CXXFLAG_WERROR])
 
 enable_clmul=
@@ -566,6 +575,20 @@ if test "$enable_clmul" = "yes"; then
   CLMUL_CXXFLAGS="-mpclmul"
   AC_DEFINE([HAVE_CLMUL], [1], [Define this symbol if clmul instructions can be used])
 fi
+
+TEMP_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$SSSE3_CXXFLAGS $CXXFLAGS"
+AC_MSG_CHECKING([for SSSE3 intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <tmmintrin.h>
+  ]],[[
+    __m64 x = _mm_abs_pi32(_m_from_int(0));
+    return 0;
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_ssse3=yes; AC_DEFINE([ENABLE_SSSE3], [1], [Define this symbol to build code that uses SSSE3 intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CXXFLAGS="$TEMP_CXXFLAGS"
 
 TEMP_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$SSE42_CXXFLAGS $CXXFLAGS"
@@ -637,9 +660,41 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 )
 CXXFLAGS="$TEMP_CXXFLAGS"
 
+TEMP_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$X86_AESNI_CXXFLAGS $CXXFLAGS"
+AC_MSG_CHECKING([for x86 AES-NI intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <stdint.h>
+    #include <immintrin.h>
+    #include <wmmintrin.h>
+  ]],[[
+    __m128i x = _mm_setzero_si128();
+    x = _mm_aesenc_si128(x, _mm_setzero_si128());
+    return _mm_extract_epi32(x, 0);
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_x86_aesni=yes; AC_DEFINE([ENABLE_X86_AESNI], [1], [Define this symbol to build code that uses x86 AES-NI intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CXXFLAGS="$TEMP_CXXFLAGS"
+
 # ARM
 AX_CHECK_COMPILE_FLAG([-march=armv8-a+crc+crypto], [ARM_CRC_CXXFLAGS="-march=armv8-a+crc+crypto"], [], [$CXXFLAG_WERROR])
-AX_CHECK_COMPILE_FLAG([-march=armv8-a+crypto], [ARM_SHANI_CXXFLAGS="-march=armv8-a+crypto"], [], [$CXXFLAG_WERROR])
+AX_CHECK_COMPILE_FLAG([-march=armv8-a+crypto], [ARM_AES_CXXFLAGS="-march=armv8-a+crypto"; ARM_SHANI_CXXFLAGS="-march=armv8-a+crypto"], [], [$CXXFLAG_WERROR])
+
+TEMP_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$ARM_AES_CXXFLAGS $CXXFLAGS"
+AC_MSG_CHECKING([for ARMv8 AES intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <arm_neon.h>
+  ]],[[
+    uint8x16_t a, b;
+    vaesmcq_u8(vaeseq_u8(a, b));
+    return 0;
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_arm_aes=yes; AC_DEFINE([ENABLE_ARM_AES], [1], [Define this symbol to build code that uses ARMv8 AES intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CXXFLAGS="$TEMP_CXXFLAGS"
 
 TEMP_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$ARM_CRC_CXXFLAGS $CXXFLAGS"
@@ -658,6 +713,27 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  [ AC_MSG_RESULT([yes]); enable_arm_crc=yes; ],
  [ AC_MSG_RESULT([no])]
 )
+CXXFLAGS="$TEMP_CXXFLAGS"
+
+ARM_NEON_CXXFLAGS=""
+TEMP_CXXFLAGS="$CXXFLAGS"
+for flag in "-march=armv8-a" "-march=armv7-a -mfpu=neon"; do
+  AX_CHECK_COMPILE_FLAG([$flag], [
+    CXXFLAGS="$CXXFLAGS $flag"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+      #include <arm_neon.h>
+    ]], [[
+      float32x4_t f = vdupq_n_f32(0.0);
+      return 0;
+    ]])], [
+      ARM_NEON_CXXFLAGS="$flag"
+      enable_arm_neon=yes
+      AC_DEFINE([ENABLE_ARM_NEON], [1], [Define this symbol to build code that uses ARM NEON intrinsics])
+      break
+    ])
+    CXXFLAGS="$TEMP_CXXFLAGS"
+  ])
+done
 CXXFLAGS="$TEMP_CXXFLAGS"
 
 TEMP_CXXFLAGS="$CXXFLAGS"
@@ -927,7 +1003,7 @@ if test "$use_lcov" = "yes"; then
     [AC_MSG_ERROR([lcov testing requested but --coverage linker flag does not work])])
   AX_CHECK_COMPILE_FLAG([--coverage],[CORE_CXXFLAGS="$CORE_CXXFLAGS --coverage"],
     [AC_MSG_ERROR([lcov testing requested but --coverage flag does not work])])
-  dnl If coverage is enabled, and the user hasn't overriden CXXFLAGS, clear
+  dnl If coverage is enabled, and the user hasn't overridden CXXFLAGS, clear
   dnl them, to prevent autoconfs "-g -O2" being added. Otherwise we'd end up
   dnl with "--coverage -Og -O0 -g -O2".
   if test "$CXXFLAGS_overridden" = "no"; then
@@ -1817,11 +1893,15 @@ AM_CONDITIONAL([USE_QRCODE], [test "$use_qr" = "yes"])
 AM_CONDITIONAL([USE_LCOV], [test "$use_lcov" = "yes"])
 AM_CONDITIONAL([USE_LIBEVENT], [test "$use_libevent" = "yes"])
 AM_CONDITIONAL([HARDEN], [test "$use_hardening" = "yes"])
+AM_CONDITIONAL([ENABLE_SSSE3], [test "$enable_ssse3" = "yes"])
 AM_CONDITIONAL([ENABLE_SSE42], [test "$enable_sse42" = "yes"])
 AM_CONDITIONAL([ENABLE_SSE41], [test "$enable_sse41" = "yes"])
 AM_CONDITIONAL([ENABLE_AVX2], [test "$enable_avx2" = "yes"])
+AM_CONDITIONAL([ENABLE_X86_AESNI], [test "$enable_x86_aesni" = "yes"])
 AM_CONDITIONAL([ENABLE_X86_SHANI], [test "$enable_x86_shani" = "yes"])
+AM_CONDITIONAL([ENABLE_ARM_AES], [test "$enable_arm_aes" = "yes"])
 AM_CONDITIONAL([ENABLE_ARM_CRC], [test "$enable_arm_crc" = "yes"])
+AM_CONDITIONAL([ENABLE_ARM_NEON], [test "$enable_arm_neon" = "yes"])
 AM_CONDITIONAL([ENABLE_ARM_SHANI], [test "$enable_arm_shani" = "yes"])
 AM_CONDITIONAL([WORDS_BIGENDIAN], [test "$ac_cv_c_bigendian" = "yes"])
 AM_CONDITIONAL([USE_NATPMP], [test "$use_natpmp" = "yes"])
@@ -1874,12 +1954,17 @@ AC_SUBST(PIC_FLAGS)
 AC_SUBST(PIE_FLAGS)
 AC_SUBST(SANITIZER_CXXFLAGS)
 AC_SUBST(SANITIZER_LDFLAGS)
+AC_SUBST(SPHLIB_FLAGS)
+AC_SUBST(SSSE3_CXXFLAGS)
 AC_SUBST(SSE42_CXXFLAGS)
 AC_SUBST(SSE41_CXXFLAGS)
 AC_SUBST(CLMUL_CXXFLAGS)
 AC_SUBST(AVX2_CXXFLAGS)
+AC_SUBST(X86_AESNI_CXXFLAGS)
 AC_SUBST(X86_SHANI_CXXFLAGS)
+AC_SUBST(ARM_AES_CXXFLAGS)
 AC_SUBST(ARM_CRC_CXXFLAGS)
+AC_SUBST(ARM_NEON_CXXFLAGS)
 AC_SUBST(ARM_SHANI_CXXFLAGS)
 AC_SUBST(LIBTOOL_APP_LDFLAGS)
 AC_SUBST(USE_SQLITE)

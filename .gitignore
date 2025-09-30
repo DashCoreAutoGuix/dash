@@ -163,8 +163,14 @@ dist/
 
 /guix-build-*
 
+/ci/scratch/
+
 # cppcheck cache-directory
 test/lint/.cppcheck/*
 
 # flake8 cache location
 .cache/*
+
+# Editor and tooling
+.vscode/
+compile_commands.json

@@ -65,6 +65,7 @@ from test_framework.messages import (
     msg_merkleblock,
     msg_notfound,
     msg_ping,
+    msg_platformban,
     msg_pong,
     msg_qdata,
     msg_qgetdata,
@@ -99,8 +100,8 @@ logger = logging.getLogger("TestFramework.p2p")
 # The minimum P2P version that this test framework supports
 MIN_P2P_VERSION_SUPPORTED = 60001
 # The P2P version that this test framework implements and sends in its `version` message
-# Version 70237 switched cycleHash in isdlock message to using quorum's base block
-P2P_VERSION = 70237
+# Version 70238 introduced platform PoSe ban (dip-0031)
+P2P_VERSION = 70238
 # The services that this test framework offers in its `version` message
 P2P_SERVICES = NODE_NETWORK | NODE_HEADERS_COMPRESSED
 # The P2P user agent string that this test framework sends in its `version` message
@@ -130,9 +131,7 @@ MESSAGEMAP = {
     b"getcfilters": msg_getcfilters,
     b"getdata": msg_getdata,
     b"getheaders": msg_getheaders,
-    b"getheaders2": msg_getheaders2,
     b"headers": msg_headers,
-    b"headers2": msg_headers2,
     b"inv": msg_inv,
     b"mempool": msg_mempool,
     b"merkleblock": msg_merkleblock,
@@ -141,26 +140,53 @@ MESSAGEMAP = {
     b"sendaddrv2": msg_sendaddrv2,
     b"sendcmpct": msg_sendcmpct,
     b"sendheaders": msg_sendheaders,
-    b"sendheaders2": msg_sendheaders2,
     b"sendtxrcncl": msg_sendtxrcncl,
     b"tx": msg_tx,
     b"verack": msg_verack,
     b"version": msg_version,
     # Dash Specific
     b"clsig": msg_clsig,
+    b"dsa": None,
+    b"dsc": None,
+    b"dsf": None,
+    b"dsi": None,
+    b"dsq": None,
+    b"dss": None,
+    b"dssu": None,
+    b"dstx": None,
+    b"getheaders2": msg_getheaders2,
     b"getmnlistd": msg_getmnlistd,
+    b"getqrinfo": None,
     b"getsporks": None,
+    b"govobj": None,
+    b"govobjvote": None,
     b"govsync": None,
+    b"headers2": msg_headers2,
     b"isdlock": msg_isdlock,
+    b"mnauth": None,
     b"mnlistdiff": msg_mnlistdiff,
     b"notfound": msg_notfound,
-    b"qfcommit": None,
-    b"qsendrecsigs": None,
-    b"qgetdata": msg_qgetdata,
+    b"platformban": msg_platformban,
+    b"qbsigs": None,
+    b"qcomplaint": None,
+    b"qcontrib": None,
     b"qdata": msg_qdata,
-    b"qwatch" : None,
+    b"qfcommit": None,
+    b"qgetdata": msg_qgetdata,
+    b"qgetsigs": None,
+    b"qjustify": None,
+    b"qpcommit": None,
+    b"qrinfo": None,
+    b"qsendrecsigs": None,
+    b"qsigrec": None,
+    b"qsigsesann": None,
+    b"qsigshare": None,
+    b"qsigsinv": None,
+    b"qwatch": None,
     b"senddsq": None,
+    b"sendheaders2": msg_sendheaders2,
     b"spork": None,
+    b"ssc": None,
 }
 
 
@@ -554,7 +580,6 @@ class P2PInterface(P2PConnection):
     def on_cfheaders(self, message): pass
     def on_cfilter(self, message): pass
     def on_cmpctblock(self, message): pass
-    def on_feefilter(self, message): pass
     def on_filteradd(self, message): pass
     def on_filterclear(self, message): pass
     def on_filterload(self, message): pass
@@ -593,6 +618,7 @@ class P2PInterface(P2PConnection):
     def on_islock(self, message): pass
     def on_isdlock(self, message): pass
 
+    def on_platformban(self, message): pass
     def on_qgetdata(self, message): pass
     def on_qdata(self, message): pass
     def on_qwatch(self, message): pass
@@ -624,22 +650,22 @@ class P2PInterface(P2PConnection):
 
         wait_until_helper(test_function, timeout=timeout, lock=p2p_lock, timeout_factor=self.timeout_factor)
 
-    def wait_for_connect(self, timeout=60):
+    def wait_for_connect(self, *, timeout=60):
         test_function = lambda: self.is_connected
         self.wait_until(test_function, timeout=timeout, check_connected=False)
 
-    def wait_for_disconnect(self, timeout=60):
+    def wait_for_disconnect(self, *, timeout=60):
         test_function = lambda: not self.is_connected
         self.wait_until(test_function, timeout=timeout, check_connected=False)
 
-    def wait_for_reconnect(self, timeout=60):
+    def wait_for_reconnect(self, *, timeout=60):
         def test_function():
             return self.is_connected and self.last_message.get('version') and not self.supports_v2_p2p
         self.wait_until(test_function, timeout=timeout, check_connected=False)
 
     # Message receiving helper methods
 
-    def wait_for_tx(self, txid, timeout=60):
+    def wait_for_tx(self, txid, *, timeout=60):
         def test_function():
             if not self.last_message.get('tx'):
                 return False
@@ -647,13 +673,13 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_block(self, blockhash, timeout=60):
+    def wait_for_block(self, blockhash, *, timeout=60):
         def test_function():
             return self.last_message.get("block") and self.last_message["block"].block.rehash() == blockhash
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_header(self, blockhash, timeout=60):
+    def wait_for_header(self, blockhash, *, timeout=60):
         def test_function():
             last_headers = self.last_message.get('headers')
             if not last_headers:
@@ -662,7 +688,7 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_merkleblock(self, blockhash, timeout=60):
+    def wait_for_merkleblock(self, blockhash, *, timeout=60):
         def test_function():
             last_filtered_block = self.last_message.get('merkleblock')
             if not last_filtered_block:
@@ -671,8 +697,7 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-
-    def wait_for_getdata(self, hash_list, timeout=60):
+    def wait_for_getdata(self, hash_list, *, timeout=60):
         """Waits for a getdata message.
 
         The object hashes in the inventory vector must match the provided hash_list."""
@@ -684,7 +709,7 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_getheaders(self, timeout=60):
+    def wait_for_getheaders(self, *, timeout=60):
         """Waits for a getheaders message.
 
         Receiving any getheaders message will satisfy the predicate. the last_message["getheaders"]
@@ -697,7 +722,7 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_inv(self, expected_inv, timeout=60):
+    def wait_for_inv(self, expected_inv, *, timeout=60):
         """Waits for an INV message and checks that the first inv object in the message was as expected."""
         if len(expected_inv) > 1:
             raise NotImplementedError("wait_for_inv() will only verify the first inv object")
@@ -709,7 +734,7 @@ class P2PInterface(P2PConnection):
 
         self.wait_until(test_function, timeout=timeout)
 
-    def wait_for_verack(self, timeout=60):
+    def wait_for_verack(self, *, timeout=60):
         def test_function():
             return "verack" in self.last_message
 
@@ -722,11 +747,11 @@ class P2PInterface(P2PConnection):
             self.send_message(self.on_connection_send_msg)
             self.on_connection_send_msg = None  # Never used again
 
-    def send_and_ping(self, message, timeout=60):
+    def send_and_ping(self, message, *, timeout=60):
         self.send_message(message)
         self.sync_with_ping(timeout=timeout)
 
-    def sync_send_with_ping(self, timeout=60):
+    def sync_send_with_ping(self, *, timeout=60):
         """Ensure SendMessages is called on this connection"""
         # Calling sync_with_ping twice requires that the node calls
         # `ProcessMessage` twice, and thus ensures `SendMessages` must have
@@ -734,7 +759,7 @@ class P2PInterface(P2PConnection):
         self.sync_with_ping()
         self.sync_with_ping()
 
-    def sync_with_ping(self, timeout=60):
+    def sync_with_ping(self, *, timeout=60):
         """Ensure ProcessMessages is called on this connection"""
         self.send_message(msg_ping(nonce=self.ping_counter))
 
@@ -771,7 +796,7 @@ class NetworkThread(threading.Thread):
         """Start the network thread."""
         self.network_event_loop.run_forever()
 
-    def close(self, timeout=10):
+    def close(self, *, timeout=10):
         """Close the connections and network event loop."""
         self.network_event_loop.call_soon_threadsafe(self.network_event_loop.stop)
         wait_until_helper(lambda: not self.network_event_loop.is_running(), timeout=timeout)
@@ -991,7 +1016,7 @@ class P2PTxInvStore(P2PInterface):
         with p2p_lock:
             return list(self.tx_invs_received.keys())
 
-    def wait_for_broadcast(self, txns, timeout=60):
+    def wait_for_broadcast(self, txns, *, timeout=60):
         """Waits for the txns (list of txids) to complete initial broadcast.
         The mempool should mark unbroadcast=False for these transactions.
         """

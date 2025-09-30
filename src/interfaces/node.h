@@ -47,6 +47,7 @@ class CCoinControl;
 
 namespace interfaces {
 class Handler;
+class Wallet; // forward declaration for type-safe wallet parameter
 class WalletLoader;
 namespace CoinJoin {
 class Loader;
@@ -72,6 +73,22 @@ public:
     virtual bool getObjLocalValidity(const CGovernanceObject& obj, std::string& error, bool check_collateral) = 0;
     virtual bool isEnabled() = 0;
     virtual bool processVoteAndRelay(const CGovernanceVote& vote, std::string& error) = 0;
+    struct GovernanceInfo {
+        CAmount proposalfee{0};
+        int superblockcycle{0};
+        int superblockmaturitywindow{0};
+        int lastsuperblock{0};
+        int nextsuperblock{0};
+        int fundingthreshold{0};
+        CAmount governancebudget{0};
+        int relayRequiredConfs{1};
+        int requiredConfs{6};
+    };
+    virtual GovernanceInfo getGovernanceInfo() = 0;
+    virtual std::optional<CGovernanceObject> createProposal(int32_t revision, int64_t created_time,
+                                const std::string& data_hex, std::string& error) = 0;
+    virtual bool submitProposal(const uint256& parent, int32_t revision, int64_t created_time, const std::string& data_hex,
+                                const uint256& fee_txid, std::string& out_object_hash, std::string& error) = 0;
     virtual void setContext(node::NodeContext* context) {}
 };
 
@@ -216,11 +233,17 @@ public:
     //! Get mempool dynamic usage.
     virtual size_t getMempoolDynamicUsage() = 0;
 
+    //! Get mempool maximum memory usage.
+    virtual size_t getMempoolMaxUsage() = 0;
+
     //! Get header tip height and time.
     virtual bool getHeaderTip(int& height, int64_t& block_time) = 0;
 
     //! Get num blocks.
     virtual int getNumBlocks() = 0;
+
+    //! Get network local addresses.
+    virtual std::map<CNetAddr, LocalServiceInfo> getNetLocalAddresses() = 0;
 
     //! Get best block hash.
     virtual uint256 getBestBlockHash() = 0;

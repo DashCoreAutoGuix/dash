@@ -73,9 +73,19 @@ LIBBITCOIN_WALLET_TOOL=libbitcoin_wallet_tool.a
 endif
 
 LIBBITCOIN_CRYPTO = $(LIBBITCOIN_CRYPTO_BASE)
+LIBBITCOIN_CRYPTO_SPH = crypto/libbitcoin_crypto_sph.la
+LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SPH)
+if ENABLE_SSSE3
+LIBBITCOIN_CRYPTO_SSSE3 = crypto/libbitcoin_crypto_ssse3.la
+LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SSSE3)
+endif
 if ENABLE_SSE41
 LIBBITCOIN_CRYPTO_SSE41 = crypto/libbitcoin_crypto_sse41.la
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SSE41)
+if ENABLE_X86_AESNI
+LIBBITCOIN_CRYPTO_X86_AESNI = crypto/libbitcoin_crypto_x86_aesni.la
+LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_X86_AESNI)
+endif
 if ENABLE_X86_SHANI
 LIBBITCOIN_CRYPTO_X86_SHANI = crypto/libbitcoin_crypto_x86_shani.la
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_X86_SHANI)
@@ -84,6 +94,14 @@ endif
 if ENABLE_AVX2
 LIBBITCOIN_CRYPTO_AVX2 = crypto/libbitcoin_crypto_avx2.la
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_AVX2)
+endif
+if ENABLE_ARM_AES
+LIBBITCOIN_CRYPTO_ARM_AES = crypto/libbitcoin_crypto_arm_aes.la
+LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_ARM_AES)
+endif
+if ENABLE_ARM_NEON
+LIBBITCOIN_CRYPTO_ARM_NEON = crypto/libbitcoin_crypto_arm_neon.la
+LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_ARM_NEON)
 endif
 if ENABLE_ARM_SHANI
 LIBBITCOIN_CRYPTO_ARM_SHANI = crypto/libbitcoin_crypto_arm_shani.la
@@ -150,6 +168,9 @@ BITCOIN_CORE_H = \
   cachemultimap.h \
   blockfilter.h \
   chain.h \
+  chainlock/chainlock.h \
+  chainlock/clsig.h \
+  chainlock/signing.h \
   chainparams.h \
   chainparamsbase.h \
   chainparamsseeds.h \
@@ -197,7 +218,9 @@ BITCOIN_CORE_H = \
   evo/simplifiedmns.h \
   evo/smldiff.h \
   evo/specialtx.h \
+  evo/specialtx_filter.h \
   evo/specialtxman.h \
+  evo/types.h \
   dsnotificationinterface.h \
   governance/governance.h \
   governance/classes.h \
@@ -239,8 +262,6 @@ BITCOIN_CORE_H = \
   key_io.h \
   limitedmap.h \
   llmq/blockprocessor.h \
-  llmq/chainlocks.h \
-  llmq/clsig.h \
   llmq/commitment.h \
   llmq/context.h \
   llmq/debug.h \
@@ -251,13 +272,17 @@ BITCOIN_CORE_H = \
   llmq/options.h \
   llmq/params.h \
   llmq/quorums.h \
+  llmq/signhash.h \
   llmq/signing.h \
   llmq/signing_shares.h \
   llmq/snapshot.h \
+  llmq/types.h \
   llmq/utils.h \
   logging.h \
   logging/timer.h \
   mapport.h \
+  masternode/active/context.h \
+  masternode/active/notificationinterface.h \
   masternode/node.h \
   masternode/meta.h \
   masternode/payments.h \
@@ -302,6 +327,7 @@ BITCOIN_CORE_H = \
   psbt.h \
   random.h \
   randomenv.h \
+  rest.h \
   rpc/blockchain.h \
   rpc/client.h \
   rpc/evo_util.h \
@@ -355,7 +381,6 @@ BITCOIN_CORE_H = \
   util/enumerate.h \
   util/epochguard.h \
   util/error.h \
-  util/expected.h \
   util/fastrange.h \
   util/fees.h \
   util/golombrice.h \
@@ -434,7 +459,7 @@ BITCOIN_CORE_H = \
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
-	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
+	$(AM_V_GEN) $(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
 libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
@@ -455,6 +480,9 @@ libbitcoin_node_a_SOURCES = \
   blockencodings.cpp \
   blockfilter.cpp \
   chain.cpp \
+  chainlock/chainlock.cpp \
+  chainlock/clsig.cpp \
+  chainlock/signing.cpp \
   coinjoin/coinjoin.cpp \
   coinjoin/context.cpp \
   coinjoin/server.cpp \
@@ -475,6 +503,7 @@ libbitcoin_node_a_SOURCES = \
   evo/simplifiedmns.cpp \
   evo/smldiff.cpp \
   evo/specialtx.cpp \
+  evo/specialtx_filter.cpp \
   evo/specialtxman.cpp \
   flatfile.cpp \
   governance/classes.cpp \
@@ -498,8 +527,6 @@ libbitcoin_node_a_SOURCES = \
   instantsend/lock.cpp \
   instantsend/signing.cpp \
   llmq/blockprocessor.cpp \
-  llmq/chainlocks.cpp \
-  llmq/clsig.cpp \
   llmq/commitment.cpp \
   llmq/context.cpp \
   llmq/debug.cpp \
@@ -509,11 +536,14 @@ libbitcoin_node_a_SOURCES = \
   llmq/ehf_signals.cpp \
   llmq/options.cpp \
   llmq/quorums.cpp \
+  llmq/signhash.cpp \
   llmq/signing.cpp \
   llmq/signing_shares.cpp \
   llmq/snapshot.cpp \
   llmq/utils.cpp \
   mapport.cpp \
+  masternode/active/context.cpp \
+  masternode/active/notificationinterface.cpp \
   masternode/node.cpp \
   masternode/meta.cpp \
   masternode/payments.cpp \
@@ -715,18 +745,29 @@ crypto_libbitcoin_crypto_avx2_la_CXXFLAGS += $(AVX2_CXXFLAGS)
 crypto_libbitcoin_crypto_avx2_la_CPPFLAGS += -DENABLE_AVX2
 crypto_libbitcoin_crypto_avx2_la_SOURCES = crypto/sha256_avx2.cpp
 
-# x11
-crypto_libbitcoin_crypto_base_la_SOURCES += \
-  crypto/x11/aes_helper.c \
+# See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
+# CXXFLAGS above
+crypto_libbitcoin_crypto_sph_la_LDFLAGS = $(AM_LDFLAGS) -static
+crypto_libbitcoin_crypto_sph_la_CXXFLAGS = $(AM_CXXFLAGS) $(SPHLIB_FLAGS) $(PIE_FLAGS) -static
+crypto_libbitcoin_crypto_sph_la_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libbitcoin_crypto_sph_la_CFLAGS = $(SPHLIB_FLAGS)
+crypto_libbitcoin_crypto_sph_la_CPPFLAGS += \
+  -DSPH_SMALL_FOOTPRINT_CUBEHASH=1 \
+  -DSPH_SMALL_FOOTPRINT_JH=1
+crypto_libbitcoin_crypto_sph_la_SOURCES = \
+  crypto/x11/aes.cpp \
+  crypto/x11/aes.h \
   crypto/x11/blake.c \
   crypto/x11/bmw.c \
   crypto/x11/cubehash.c \
-  crypto/x11/echo.c \
+  crypto/x11/dispatch.cpp \
+  crypto/x11/dispatch.h \
+  crypto/x11/echo.cpp \
   crypto/x11/groestl.c \
   crypto/x11/jh.c \
   crypto/x11/keccak.c \
   crypto/x11/luffa.c \
-  crypto/x11/shavite.c \
+  crypto/x11/shavite.cpp \
   crypto/x11/simd.c \
   crypto/x11/skein.c \
   crypto/x11/sph_blake.h \
@@ -740,7 +781,51 @@ crypto_libbitcoin_crypto_base_la_SOURCES += \
   crypto/x11/sph_shavite.h \
   crypto/x11/sph_simd.h \
   crypto/x11/sph_skein.h \
-  crypto/x11/sph_types.h
+  crypto/x11/sph_types.h \
+  crypto/x11/util/consts_aes.hpp \
+  crypto/x11/util/util.hpp
+
+# See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
+# CXXFLAGS above
+crypto_libbitcoin_crypto_arm_aes_la_LDFLAGS = $(AM_LDFLAGS) -static
+crypto_libbitcoin_crypto_arm_aes_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) -static
+crypto_libbitcoin_crypto_arm_aes_la_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libbitcoin_crypto_arm_aes_la_CXXFLAGS += $(ARM_AES_CXXFLAGS)
+crypto_libbitcoin_crypto_arm_aes_la_CPPFLAGS += -DENABLE_ARM_AES
+crypto_libbitcoin_crypto_arm_aes_la_SOURCES = \
+  crypto/x11/arm_crypto/echo.cpp \
+  crypto/x11/arm_crypto/shavite.cpp
+
+# See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
+# CXXFLAGS above
+crypto_libbitcoin_crypto_arm_neon_la_LDFLAGS = $(AM_LDFLAGS) -static
+crypto_libbitcoin_crypto_arm_neon_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) -static
+crypto_libbitcoin_crypto_arm_neon_la_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libbitcoin_crypto_arm_neon_la_CXXFLAGS += $(ARM_NEON_CXXFLAGS)
+crypto_libbitcoin_crypto_arm_neon_la_CPPFLAGS += -DENABLE_ARM_NEON
+crypto_libbitcoin_crypto_arm_neon_la_SOURCES = \
+  crypto/x11/arm_neon/echo.cpp
+
+# See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
+# CXXFLAGS above
+crypto_libbitcoin_crypto_ssse3_la_LDFLAGS = $(AM_LDFLAGS) -static
+crypto_libbitcoin_crypto_ssse3_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) -static
+crypto_libbitcoin_crypto_ssse3_la_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libbitcoin_crypto_ssse3_la_CXXFLAGS += $(SSSE3_CXXFLAGS)
+crypto_libbitcoin_crypto_ssse3_la_CPPFLAGS += -DENABLE_SSSE3
+crypto_libbitcoin_crypto_ssse3_la_SOURCES = \
+  crypto/x11/ssse3/echo.cpp
+
+# See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
+# CXXFLAGS above
+crypto_libbitcoin_crypto_x86_aesni_la_LDFLAGS = $(AM_LDFLAGS) -static
+crypto_libbitcoin_crypto_x86_aesni_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) -static
+crypto_libbitcoin_crypto_x86_aesni_la_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libbitcoin_crypto_x86_aesni_la_CXXFLAGS += $(X86_AESNI_CXXFLAGS)
+crypto_libbitcoin_crypto_x86_aesni_la_CPPFLAGS += -DENABLE_SSE41 -DENABLE_X86_AESNI
+crypto_libbitcoin_crypto_x86_aesni_la_SOURCES = \
+  crypto/x11/x86_aesni/echo.cpp \
+  crypto/x11/x86_aesni/shavite.cpp
 
 # See explanation for -static in crypto_libbitcoin_crypto_base_la's LDFLAGS and
 # CXXFLAGS above
@@ -1006,7 +1091,7 @@ endif
 # dashconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/bitcoinconsensus.h
-libdashconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libbitcoin_crypto_base_la_SOURCES) $(libbitcoin_consensus_a_SOURCES)
+libdashconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libbitcoin_crypto_base_la_SOURCES) $(crypto_libbitcoin_crypto_sph_la_SOURCES) $(libbitcoin_consensus_a_SOURCES)
 
 libdashconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
 libdashconsensus_la_LIBADD = $(LIBDASHBLS) $(LIBSECP256K1) $(GMP_LIBS)
@@ -1071,7 +1156,7 @@ clean-local:
 	-rm -rf *.dSYM test/*.dSYM bench/*.dSYM qt/*.dSYM qt/test/*.dSYM
 
 .rc.o:
-	@test -f $(WINDRES)
+	@test -f $(WINDRES) || (echo "windres $(WINDRES) not found, but is required to compile windows resource files"; exit 1)
 	## FIXME: How to get the appropriate modulename_CPPFLAGS in here?
 	$(AM_V_GEN) $(WINDRES) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) -DWINDRES_PREPROC -i $< -o $@
 
@@ -1130,12 +1215,11 @@ endif
 
 %.raw.h: %.raw
 	@$(MKDIR_P) $(@D)
-	@{ \
+	$(AM_V_GEN) { \
 	 echo "static unsigned const char $(*F)_raw[] = {" && \
 	 $(HEXDUMP) -v -e '8/1 "0x%02x, "' -e '"\n"' $< | $(SED) -e 's/0x  ,//g' && \
 	 echo "};"; \
 	} > "$@.new" && mv -f "$@.new" "$@"
-	@echo "Generated $@"
 
 include Makefile.minisketch.include
 

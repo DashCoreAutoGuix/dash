@@ -142,14 +142,15 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         # By default the wallet is not required. Set to true by skip_if_no_wallet().
         # When False, we ignore wallet_names regardless of what it is.
         self.requires_wallet = False
+        # Disable ThreadOpenConnections by default, so that adding entries to
+        # addrman will not result in automatic connections to them.
+        self.disable_autoconnect = True
         self.set_test_params()
         assert self.wallet_names is None or len(self.wallet_names) <= self.num_nodes
         if self.options.timeout_scale != 1:
             print("DEPRECATED: --timeoutscale option is no longer available, please use --timeout-factor instead")
             if self.options.timeout_factor == 1:
                 self.options.timeout_factor = self.options.timeout_scale
-        if self.options.timeout_factor == 0 :
-            self.options.timeout_factor = 99999
         self.rpc_timeout = int(self.rpc_timeout * self.options.timeout_factor) # optionally, increase timeout by a factor
 
     def main(self):
@@ -223,7 +224,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                             help="run nodes under the valgrind memory error detector: expect at least a ~10x slowdown, valgrind 3.14 or later required. Does not apply to previous release binaries.")
         parser.add_argument("--randomseed", type=int,
                             help="set a random seed for deterministically reproducing a previous test run")
-        parser.add_argument('--timeout-factor', dest="timeout_factor", type=float, default=1.0, help='adjust test timeouts by a factor. Setting it to 0 disables all timeouts')
+        parser.add_argument("--timeout-factor", dest="timeout_factor", type=float, help="adjust test timeouts by a factor. Setting it to 0 disables all timeouts")
         parser.add_argument("--v2transport", dest="v2transport", default=False, action="store_true",
                             help="use BIP324 v2 connections between all nodes by default")
         parser.add_argument("--v1transport", dest="v1transport", default=False, action="store_true",
@@ -237,6 +238,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
         self.add_options(parser)
         self.options = parser.parse_args()
+        if self.options.timeout_factor == 0:
+            self.options.timeout_factor = 99999
+        self.options.timeout_factor = self.options.timeout_factor or (4 if self.options.valgrind else 1)
         self.options.previous_releases_path = previous_releases_path
 
         config = configparser.ConfigParser()
@@ -263,6 +267,23 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
         PortSeed.n = self.options.port_seed
 
+    def set_binary_paths(self):
+        """Update self.options with the paths of all binaries from environment variables or their default values"""
+
+        binaries = {
+            "dashd": ("bitcoind", "DASHD"),
+            "dash-cli": ("bitcoincli", "DASHCLI"),
+            "dash-util": ("bitcoinutil", "DASHUTIL"),
+            "dash-wallet": ("bitcoinwallet", "DASHWALLET"),
+        }
+        for binary, [attribute_name, env_variable_name] in binaries.items():
+            default_filename = os.path.join(
+                self.config["environment"]["BUILDDIR"],
+                "src",
+                binary + self.config["environment"]["EXEEXT"],
+            )
+            setattr(self.options, attribute_name, os.getenv(env_variable_name, default=default_filename))
+
     def setup(self):
         """Call this method to start up the test framework object with options set."""
 
@@ -272,18 +293,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
         config = self.config
 
-        fname_bitcoind = os.path.join(
-            config["environment"]["BUILDDIR"],
-            "src",
-            "dashd" + config["environment"]["EXEEXT"],
-        )
-        fname_bitcoincli = os.path.join(
-            config["environment"]["BUILDDIR"],
-            "src",
-            "dash-cli" + config["environment"]["EXEEXT"],
-        )
-        self.options.bitcoind = os.getenv("BITCOIND", default=fname_bitcoind)
-        self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
+        self.set_binary_paths()
 
         self.extra_args_from_options = self.options.dashd_extra_args
 
@@ -448,7 +458,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
     def setup_nodes(self):
         """Override this method to customize test node setup"""
 
-        """If this method is updated - backport changes to  DashTestFramework.setup_nodes"""
+        """ NOTE! If this method is updated - backport changes to  DashTestFramework.setup_nodes"""
         self.add_nodes(self.num_nodes, self.extra_args)
         self.start_nodes()
         if self.requires_wallet:
@@ -940,7 +950,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         if not os.path.isdir(cache_node_dir):
             self.log.debug("Creating cache directory {}".format(cache_node_dir))
 
-            initialize_datadir(self.options.cachedir, CACHE_NODE_ID, self.chain)
+            initialize_datadir(self.options.cachedir, CACHE_NODE_ID, self.chain, self.disable_autoconnect)
             self.nodes.append(
                 TestNode(
                     CACHE_NODE_ID,
@@ -1005,7 +1015,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             self.log.debug("Copy cache directory {} to node {}".format(cache_node_dir, i))
             to_dir = get_datadir_path(self.options.tmpdir, i)
             shutil.copytree(cache_node_dir, to_dir)
-            initialize_datadir(self.options.tmpdir, i, self.chain)  # Overwrite port/rpcport in dash.conf
+            initialize_datadir(self.options.tmpdir, i, self.chain, self.disable_autoconnect)  # Overwrite port/rpcport in dash.conf
 
     def _initialize_chain_clean(self):
         """Initialize empty blockchain for use by the test.
@@ -1013,7 +1023,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         Create an empty blockchain and num_nodes wallets.
         Useful if a test case wants complete control over initialization."""
         for i in range(self.num_nodes):
-            initialize_datadir(self.options.tmpdir, i, self.chain)
+            initialize_datadir(self.options.tmpdir, i, self.chain, self.disable_autoconnect)
 
     def skip_if_no_py3_zmq(self):
         """Attempt to import the zmq package and skip the test if the import fails."""
@@ -1213,28 +1223,32 @@ class MasternodeInfo:
             raise AssertionError(f"Node at pos {self.nodeIdx} not present, did you start the node?")
         return test.nodes[self.nodeIdx]
 
-    def register(self, node: TestNode, submit: bool, collateral_txid: Optional[str] = None, collateral_vout: Optional[int] = None,
-                 coreP2PAddrs: Union[str, List[str], None] = None, ownerAddr: Optional[str] = None, pubKeyOperator: Optional[str] = None, votingAddr: Optional[str] = None,
-                 operator_reward: Optional[int] = None, rewards_address: Optional[str] = None, fundsAddr: Optional[str] = None,
-                 platform_node_id: Optional[str] = None, platform_p2p_port: Optional[int] = None, platform_http_port: Optional[int] = None,
-                 expected_assert_code: Optional[int] = None, expected_assert_msg: Optional[str] = None) -> Optional[str]:
+    def validate_inputs(self, platform_node_id: Optional[str] = None, addrs_platform_p2p: Union[int, str, List[str], None] = None,
+                        addrs_platform_https: Union[int, str, List[str], None] = None, expected_assert_code: Optional[int] = None,
+                        expected_assert_msg: Optional[str] = None):
         if (expected_assert_code and not expected_assert_msg) or (not expected_assert_code and expected_assert_msg):
             raise AssertionError("Intending to use assert_raises_rpc_error() but didn't specify code and message")
-
-        # EvoNode-specific fields are ignored for regular masternodes
         if self.evo:
             if platform_node_id is None:
                 raise AssertionError("EvoNode but platform_node_id is missing, must be specified!")
-            if platform_p2p_port is None:
-                raise AssertionError("EvoNode but platform_p2p_port is missing, must be specified!")
-            if platform_http_port is None:
-                raise AssertionError("EvoNode but platform_http_port is missing, must be specified!")
+            if addrs_platform_p2p is None:
+                raise AssertionError("EvoNode but addrs_platform_p2p is missing, must be specified!")
+            if addrs_platform_https is None:
+                raise AssertionError("EvoNode but addrs_platform_https is missing, must be specified!")
+
+    def register(self, node: TestNode, submit: bool, collateral_txid: Optional[str] = None, collateral_vout: Optional[int] = None,
+                 addrs_core_p2p: Union[str, List[str], None] = None, ownerAddr: Optional[str] = None, pubKeyOperator: Optional[str] = None,
+                 votingAddr: Optional[str] = None, operator_reward: Optional[int] = None, rewards_address: Optional[str] = None,
+                 fundsAddr: Optional[str] = None, platform_node_id: Optional[str] = None, addrs_platform_p2p: Union[int, str, List[str], None] = None,
+                 addrs_platform_https: Union[int, str, List[str], None] = None, expected_assert_code: Optional[int] = None,
+                 expected_assert_msg: Optional[str] = None) -> Optional[str]:
+        self.validate_inputs(platform_node_id, addrs_platform_p2p, addrs_platform_https, expected_assert_code, expected_assert_msg)
 
         # Common arguments shared between regular masternodes and EvoNodes
         args = [
             collateral_txid or self.collateral_txid,
             collateral_vout or self.collateral_vout,
-            coreP2PAddrs or [f'127.0.0.1:{self.nodePort}'],
+            [f'127.0.0.1:{self.nodePort}'] if addrs_core_p2p is None else addrs_core_p2p,
             ownerAddr or self.ownerAddr,
             pubKeyOperator or self.pubKeyOperator,
             votingAddr or self.votingAddr,
@@ -1254,7 +1268,7 @@ class MasternodeInfo:
         # Construct final command and arguments
         if self.evo:
             command = "register_evo"
-            args = args + [platform_node_id, platform_p2p_port, platform_http_port, address_funds, submit] # type: ignore
+            args = args + [platform_node_id, addrs_platform_p2p, addrs_platform_https, address_funds, submit] # type: ignore
         else:
             command = "register_legacy" if self.legacy else "register"
             args = args + [address_funds, submit] # type: ignore
@@ -1269,22 +1283,13 @@ class MasternodeInfo:
 
         return ret
 
-    def register_fund(self, node: TestNode, submit: bool, collateral_address: Optional[str] = None, coreP2PAddrs: Union[str, List[str], None] = None,
+    def register_fund(self, node: TestNode, submit: bool, collateral_address: Optional[str] = None, addrs_core_p2p: Union[str, List[str], None] = None,
                       ownerAddr: Optional[str] = None, pubKeyOperator: Optional[str] = None, votingAddr: Optional[str] = None,
                       operator_reward: Optional[int] = None, rewards_address: Optional[str] = None, fundsAddr: Optional[str] = None,
-                      platform_node_id: Optional[str] = None, platform_p2p_port: Optional[int] = None, platform_http_port: Optional[int] = None,
-                      expected_assert_code: Optional[int] = None, expected_assert_msg: Optional[str] = None) -> Optional[str]:
-        if (expected_assert_code and not expected_assert_msg) or (not expected_assert_code and expected_assert_msg):
-            raise AssertionError("Intending to use assert_raises_rpc_error() but didn't specify code and message")
-
-        # EvoNode-specific fields are ignored for regular masternodes
-        if self.evo:
-            if platform_node_id is None:
-                raise AssertionError("EvoNode but platform_node_id is missing, must be specified!")
-            if platform_p2p_port is None:
-                raise AssertionError("EvoNode but platform_p2p_port is missing, must be specified!")
-            if platform_http_port is None:
-                raise AssertionError("EvoNode but platform_http_port is missing, must be specified!")
+                      platform_node_id: Optional[str] = None, addrs_platform_p2p: Union[int, str, List[str], None] = None,
+                      addrs_platform_https: Union[int, str, List[str], None] = None, expected_assert_code: Optional[int] = None,
+                      expected_assert_msg: Optional[str] = None) -> Optional[str]:
+        self.validate_inputs(platform_node_id, addrs_platform_p2p, addrs_platform_https, expected_assert_code, expected_assert_msg)
 
         # Use assert_raises_rpc_error if we expect to error out
         use_assert: bool = bool(expected_assert_code and expected_assert_msg)
@@ -1297,7 +1302,7 @@ class MasternodeInfo:
         # Common arguments shared between regular masternodes and EvoNodes
         args = [
             collateral_address or self.collateral_address,
-            coreP2PAddrs or [f'127.0.0.1:{self.nodePort}'],
+            [f'127.0.0.1:{self.nodePort}'] if addrs_core_p2p is None else addrs_core_p2p,
             ownerAddr or self.ownerAddr,
             pubKeyOperator or self.pubKeyOperator,
             votingAddr or self.votingAddr,
@@ -1309,7 +1314,7 @@ class MasternodeInfo:
         # Construct final command and arguments
         if self.evo:
             command = "register_fund_evo"
-            args = args + [platform_node_id, platform_p2p_port, platform_http_port, address_funds, submit] # type: ignore
+            args = args + [platform_node_id, addrs_platform_p2p, addrs_platform_https, address_funds, submit] # type: ignore
         else:
             command = "register_fund_legacy" if self.legacy else "register_fund"
             args = args + [address_funds, submit] # type: ignore
@@ -1408,26 +1413,17 @@ class MasternodeInfo:
 
         return ret
 
-    def update_service(self, node: TestNode, submit: bool, coreP2PAddrs: Union[str, List[str], None] = None, platform_node_id: Optional[str] = None, platform_p2p_port: Optional[int] = None,
-                       platform_http_port: Optional[int] = None, address_operator: Optional[str] = None, fundsAddr: Optional[str] = None,
-                       expected_assert_code: Optional[int] = None, expected_assert_msg: Optional[str] = None) -> Optional[str]:
-        if (expected_assert_code and not expected_assert_msg) or (not expected_assert_code and expected_assert_msg):
-            raise AssertionError("Intending to use assert_raises_rpc_error() but didn't specify code and message")
+    def update_service(self, node: TestNode, submit: bool, addrs_core_p2p: Union[str, List[str], None] = None, platform_node_id: Optional[str] = None,
+                       addrs_platform_p2p: Union[int, str, List[str], None] = None, addrs_platform_https: Union[int, str, List[str], None] = None,
+                       address_operator: Optional[str] = None, fundsAddr: Optional[str] = None, expected_assert_code: Optional[int] = None,
+                       expected_assert_msg: Optional[str] = None) -> Optional[str]:
+        self.validate_inputs(platform_node_id, addrs_platform_p2p, addrs_platform_https, expected_assert_code, expected_assert_msg)
 
         # Update commands should be run from the appropriate MasternodeInfo instance, we do not allow overriding some values for this reason
         if self.proTxHash is None:
             raise AssertionError("proTxHash not set, did you call set_params()")
         if self.keyOperator is None:
             raise AssertionError("keyOperator not set, did you call generate_addresses()")
-
-        # EvoNode-specific fields are ignored for regular masternodes
-        if self.evo:
-            if platform_node_id is None:
-                raise AssertionError("EvoNode but platform_node_id is missing, must be specified!")
-            if platform_p2p_port is None:
-                raise AssertionError("EvoNode but platform_p2p_port is missing, must be specified!")
-            if platform_http_port is None:
-                raise AssertionError("EvoNode but platform_http_port is missing, must be specified!")
 
         # Use assert_raises_rpc_error if we expect to error out
         use_assert: bool = bool(expected_assert_code and expected_assert_msg)
@@ -1440,7 +1436,7 @@ class MasternodeInfo:
         # Common arguments shared between regular masternodes and EvoNodes
         args = [
             self.proTxHash,
-            coreP2PAddrs or [f'127.0.0.1:{self.nodePort}'],
+            [f'127.0.0.1:{self.nodePort}'] if addrs_core_p2p is None else addrs_core_p2p,
             self.keyOperator,
         ]
         address_funds = fundsAddr or self.fundsAddr
@@ -1449,7 +1445,7 @@ class MasternodeInfo:
         # Construct final command and arguments
         if self.evo:
             command = "update_service_evo"
-            args = args + [platform_node_id, platform_p2p_port, platform_http_port, address_operator, address_funds, submit] # type: ignore
+            args = args + [platform_node_id, addrs_platform_p2p, addrs_platform_https, address_operator, address_funds, submit] # type: ignore
         else:
             command = "update_service"
             args = args + [address_operator, address_funds, submit] # type: ignore
@@ -1511,6 +1507,9 @@ class DashTestFramework(BitcoinTestFramework):
             extra_args = [[]] * num_nodes
         assert_equal(len(extra_args), num_nodes)
         self.extra_args = [copy.deepcopy(a) for a in extra_args]
+        # masternodes creates connections for quorums by ThreadOpenConnections too
+        # it can't be disabled for DashTestFramework same as BitcoinTestFramework
+        self.disable_autoconnect = False
 
         # LLMQ default test params (no need to pass -llmqtestparams)
         self.llmq_size = 3
@@ -1522,6 +1521,8 @@ class DashTestFramework(BitcoinTestFramework):
         # This is EXPIRATION_TIMEOUT + EXPIRATION_BIAS in CQuorumDataRequest
         self.quorum_data_request_expiration_timeout = 360
 
+        # used by helper mine_cycle_quorum
+        self.cycle_quorum_is_ready = False
 
     def delay_v20_and_mn_rr(self, height=None):
         self.v20_height = height
@@ -1571,8 +1572,8 @@ class DashTestFramework(BitcoinTestFramework):
     def activate_v20(self, expected_activation_height=None):
         self.activate_by_name('v20', expected_activation_height)
 
-    def activate_mn_rr(self, expected_activation_height=None):
-        self.activate_by_name('mn_rr', expected_activation_height)
+    def activate_mn_rr(self):
+        self.activate_by_name('mn_rr', self.mn_rr_height)
 
     def set_dash_llmq_test_params(self, llmq_size, llmq_threshold):
         self.llmq_size = llmq_size
@@ -1632,8 +1633,8 @@ class DashTestFramework(BitcoinTestFramework):
         mn.generate_addresses(self.nodes[0])
 
         platform_node_id = hash160(b'%d' % rnd).hex() if rnd is not None else hash160(b'%d' % node_p2p_port).hex()
-        platform_p2p_port = node_p2p_port + 101
-        platform_http_port = node_p2p_port + 102
+        addrs_platform_p2p = node_p2p_port + 101
+        addrs_platform_https = node_p2p_port + 102
 
         outputs = {mn.collateral_address: mn.get_collateral_value(), mn.fundsAddr: 1}
         collateral_txid = self.nodes[0].sendmany("", outputs)
@@ -1641,12 +1642,12 @@ class DashTestFramework(BitcoinTestFramework):
         mn.bury_tx(self, genIdx=0, txid=collateral_txid, depth=1)
         collateral_vout = mn.get_collateral_vout(self.nodes[0], collateral_txid)
 
-        coreP2PAddrs = ['127.0.0.1:%d' % node_p2p_port]
+        addrs_core_p2p = ['127.0.0.1:%d' % node_p2p_port]
         operatorReward = idx
 
-        # platform_node_id, platform_p2p_port and platform_http_port are ignored for regular masternodes
-        protx_result = mn.register(self.nodes[0], submit=True, collateral_txid=collateral_txid, collateral_vout=collateral_vout, coreP2PAddrs=coreP2PAddrs, operator_reward=operatorReward,
-                                   platform_node_id=platform_node_id, platform_p2p_port=platform_p2p_port, platform_http_port=platform_http_port)
+        # platform_node_id, addrs_platform_p2p and addrs_platform_https are ignored for regular masternodes
+        protx_result = mn.register(self.nodes[0], submit=True, collateral_txid=collateral_txid, collateral_vout=collateral_vout, addrs_core_p2p=addrs_core_p2p, operator_reward=operatorReward,
+                                   platform_node_id=platform_node_id, addrs_platform_p2p=addrs_platform_p2p, addrs_platform_https=addrs_platform_https)
         assert protx_result is not None
 
         self.bump_mocktime(10 * 60 + 1) # to make tx safe to include in block
@@ -1666,8 +1667,8 @@ class DashTestFramework(BitcoinTestFramework):
         # For the sake of the test, generate random nodeid, p2p and http platform values
         r = rnd if rnd is not None else random.randint(21000, 65000)
         platform_node_id = hash160(b'%d' % r).hex()
-        platform_p2p_port = r + 1
-        platform_http_port = r + 2
+        addrs_platform_p2p = r + 1
+        addrs_platform_https = r + 2
 
         fund_txid = self.nodes[0].sendtoaddress(funds_address, 1)
         self.bump_mocktime(10 * 60 + 1) # to make tx safe to include in block
@@ -1675,11 +1676,11 @@ class DashTestFramework(BitcoinTestFramework):
 
         protx_success = False
         try:
-            protx_result = evo_info.update_service(self.nodes[0], True, f'127.0.0.1:{evo_info.nodePort}', platform_node_id, platform_p2p_port, platform_http_port, operator_reward_address, funds_address)
+            protx_result = evo_info.update_service(self.nodes[0], True, f'127.0.0.1:{evo_info.nodePort}', platform_node_id, addrs_platform_p2p, addrs_platform_https, operator_reward_address, funds_address)
             assert protx_result is not None
             self.bump_mocktime(10 * 60 + 1) # to make tx safe to include in block
             evo_info.bury_tx(self, genIdx=0, txid=protx_result, depth=1)
-            self.log.info("Updated EvoNode %s: platformNodeID=%s, platformP2PPort=%s, platformHTTPPort=%s" % (evo_info.proTxHash, platform_node_id, platform_p2p_port, platform_http_port))
+            self.log.info("Updated EvoNode %s: platformNodeID=%s, platformP2PPort=%s, platformHTTPPort=%s" % (evo_info.proTxHash, platform_node_id, addrs_platform_p2p, addrs_platform_https))
             protx_success = True
         except:
             self.log.info("protx_evo rejected")
@@ -1707,16 +1708,16 @@ class DashTestFramework(BitcoinTestFramework):
         self.nodes[0].sendtoaddress(mn.fundsAddr, 0.001)
 
         port = p2p_port(len(self.nodes) + idx)
-        coreP2PAddrs = ['127.0.0.1:%d' % port]
+        addrs_core_p2p = ['127.0.0.1:%d' % port]
         operatorReward = idx
 
         submit = (idx % 4) < 2
 
         if register_fund:
-            protx_result = mn.register_fund(self.nodes[0], submit=submit, coreP2PAddrs=coreP2PAddrs, operator_reward=operatorReward)
+            protx_result = mn.register_fund(self.nodes[0], submit=submit, addrs_core_p2p=addrs_core_p2p, operator_reward=operatorReward)
         else:
             self.generate(self.nodes[0], 1, sync_fun=self.no_op)
-            protx_result = mn.register(self.nodes[0], submit=submit, collateral_txid=txid, collateral_vout=collateral_vout, coreP2PAddrs=coreP2PAddrs,
+            protx_result = mn.register(self.nodes[0], submit=submit, collateral_txid=txid, collateral_vout=collateral_vout, addrs_core_p2p=addrs_core_p2p,
                                        operator_reward=operatorReward)
         if submit:
             proTxHash = protx_result
@@ -1728,7 +1729,7 @@ class DashTestFramework(BitcoinTestFramework):
         if operatorReward > 0:
             self.generate(self.nodes[0], 1, sync_fun=self.no_op)
             operatorPayoutAddress = self.nodes[0].getnewaddress()
-            mn.update_service(self.nodes[0], submit=True, coreP2PAddrs=coreP2PAddrs, address_operator=operatorPayoutAddress)
+            mn.update_service(self.nodes[0], submit=True, addrs_core_p2p=addrs_core_p2p, address_operator=operatorPayoutAddress)
 
         self.mninfo.append(mn)
         self.log.info("Prepared MN %d: collateral_txid=%s, collateral_vout=%d, protxHash=%s" % (idx, txid, collateral_vout, proTxHash))
@@ -1911,11 +1912,12 @@ class DashTestFramework(BitcoinTestFramework):
         message_hash = tx.hash
 
         llmq_type = 103
+        llmq_cycle_len = 24
 
         rec_sig = self.get_recovered_sig(request_id, message_hash, llmq_type=llmq_type)
 
         block_count = self.mninfo[0].get_node(self).getblockcount()
-        cycle_hash = int(self.mninfo[0].get_node(self).getblockhash(block_count - (block_count % 24)), 16)
+        cycle_hash = int(self.mninfo[0].get_node(self).getblockhash(block_count - (block_count % llmq_cycle_len)), 16)
         isdlock = msg_isdlock(1, inputs, tx.sha256, cycle_hash, bytes.fromhex(rec_sig['sig']))
 
         return isdlock
@@ -1923,7 +1925,7 @@ class DashTestFramework(BitcoinTestFramework):
     # due to privacy reasons random delay is used before sending transaction by network
     # most times is just 2-5 seconds, but once in 1000 it's up to 1000 seconds.
     # it's recommended to bump mocktime for 30 seconds before wait_for_instantlock
-    def wait_for_instantlock(self, txid, node, expected=True, timeout=60):
+    def wait_for_instantlock(self, txid, node, timeout=60):
 
         def check_instantlock():
             try:
@@ -1932,8 +1934,7 @@ class DashTestFramework(BitcoinTestFramework):
                 return False
 
         self.log.info(f"Expecting InstantLock for {txid}")
-        if self.wait_until(check_instantlock, timeout=timeout, do_assert=expected) and not expected:
-            raise AssertionError("waiting unexpectedly succeeded")
+        self.wait_until(check_instantlock, timeout=timeout)
 
     def wait_for_chainlocked_block(self, node, block_hash, expected=True, timeout=15):
         def check_chainlocked_block():
@@ -1946,9 +1947,9 @@ class DashTestFramework(BitcoinTestFramework):
         if self.wait_until(check_chainlocked_block, timeout=timeout, do_assert=expected) and not expected:
             raise AssertionError("waiting unexpectedly succeeded")
 
-    def wait_for_chainlocked_block_all_nodes(self, block_hash, timeout=15, expected=True):
+    def wait_for_chainlocked_block_all_nodes(self, block_hash, timeout=15):
         for node in self.nodes:
-            self.wait_for_chainlocked_block(node, block_hash, expected=expected, timeout=timeout)
+            self.wait_for_chainlocked_block(node, block_hash, timeout=timeout)
 
     def wait_for_best_chainlock(self, node, block_hash, timeout=15):
         self.wait_until(lambda: node.getbestchainlock()["blockhash"] == block_hash, timeout=timeout)
@@ -2072,13 +2073,15 @@ class DashTestFramework(BitcoinTestFramework):
                         continue
                     if c["quorumHash"] != quorum_hash:
                         continue
+                    if c["quorumPublicKey"] == '0' * 96:
+                        continue
                     c_ok = True
                     break
                 if not c_ok:
                     return False
             return True
 
-        self.wait_until(check_dkg_comitments, timeout=timeout, sleep=1)
+        self.wait_until(check_dkg_comitments, timeout=timeout)
 
     def wait_for_quorum_list(self, quorum_hash, nodes, timeout=15, llmq_type_name="llmq_test"):
         def wait_func():
@@ -2121,7 +2124,8 @@ class DashTestFramework(BitcoinTestFramework):
         nodes = [self.nodes[0]] + [mn.get_node(self) for mn in mninfos_online]
 
         # move forward to next DKG
-        skip_count = 24 - (self.nodes[0].getblockcount() % 24)
+        llmq_cycle_len = 24
+        skip_count = llmq_cycle_len - (self.nodes[0].getblockcount() % llmq_cycle_len)
         if skip_count != 0:
             self.bump_mocktime(1)
             self.generate(self.nodes[0], skip_count, sync_fun=lambda: self.sync_blocks(nodes))
@@ -2186,12 +2190,13 @@ class DashTestFramework(BitcoinTestFramework):
 
         return new_quorum
 
-    def mine_cycle_quorum(self, is_first=True):
+    def mine_cycle_quorum(self):
         spork21_active = self.nodes[0].spork('show')['SPORK_21_QUORUM_ALL_CONNECTED'] <= 1
         spork23_active = self.nodes[0].spork('show')['SPORK_23_QUORUM_POSE'] <= 1
 
         llmq_type_name="llmq_test_dip0024"
         llmq_type=103
+        llmq_cycle_len = 24
         expected_connections = (self.llmq_size_dip0024 - 1) if spork21_active else 2
         expected_members = self.llmq_size_dip0024
         expected_contributions = self.llmq_size_dip0024
@@ -2204,14 +2209,15 @@ class DashTestFramework(BitcoinTestFramework):
 
         nodes = [self.nodes[0]] + [mn.get_node(self) for mn in mninfos_online]
 
-        cycle_length = 24
         cur_block = self.nodes[0].getblockcount()
 
-        skip_count = cycle_length - (cur_block % cycle_length)
+        skip_count = llmq_cycle_len - (cur_block % llmq_cycle_len)
         # move forward to next 3 DKG rounds for the first quorum
-        extra_blocks = 24 * 3 if is_first else 0
+        extra_blocks = 0 if self.cycle_quorum_is_ready else llmq_cycle_len * 3
         self.move_blocks(nodes, extra_blocks + skip_count)
         self.log.info('Moved from block %d to %d' % (cur_block, self.nodes[0].getblockcount()))
+
+        self.cycle_quorum_is_ready = True
 
         q_0 = self.nodes[0].getbestblockhash()
         self.log.info("Expected quorum_0 at:" + str(self.nodes[0].getblockcount()))
@@ -2300,13 +2306,16 @@ class DashTestFramework(BitcoinTestFramework):
         self.log.info("New quorum: height=%d, quorumHash=%s, quorumIndex=%d, minedBlock=%s" % (quorum_info_0["height"], q_0, quorum_info_0["quorumIndex"], quorum_info_0["minedBlock"]))
         self.log.info("New quorum: height=%d, quorumHash=%s, quorumIndex=%d, minedBlock=%s" % (quorum_info_1["height"], q_1, quorum_info_1["quorumIndex"], quorum_info_1["minedBlock"]))
 
-        self.log.info("quorum_info_0:"+str(quorum_info_0))
-        self.log.info("quorum_info_1:"+str(quorum_info_1))
+        extra_debug_rotation_info = False
+        if extra_debug_rotation_info:
+            # these logs are useful to debug quorum rotation but it is not useful for all other cases
+            self.log.info("quorum_info_0:"+str(quorum_info_0))
+            self.log.info("quorum_info_1:"+str(quorum_info_1))
 
-        best_block_hash = self.nodes[0].getbestblockhash()
-        block_height = self.nodes[0].getblockcount()
-        quorum_rotation_info = self.nodes[0].quorum("rotationinfo", best_block_hash)
-        self.log.info("h("+str(block_height)+"):"+str(quorum_rotation_info))
+            best_block_hash = self.nodes[0].getbestblockhash()
+            block_height = self.nodes[0].getblockcount()
+            quorum_rotation_info = self.nodes[0].quorum("rotationinfo", best_block_hash)
+            self.log.info("h("+str(block_height)+"):"+str(quorum_rotation_info))
 
         return (quorum_info_0, quorum_info_1)
 

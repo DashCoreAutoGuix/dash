@@ -58,7 +58,6 @@ template <typename MutexType>
 void EnterCritical(const char* pszName, const char* pszFile, int nLine, MutexType* cs, bool fTry = false);
 void LeaveCritical();
 void CheckLastCritical(void* cs, std::string& lockname, const char* guardname, const char* file, int line);
-std::string LocksHeld();
 template <typename MutexType>
 void AssertLockHeldInternal(const char* pszName, const char* pszFile, int nLine, MutexType* cs) EXCLUSIVE_LOCKS_REQUIRED(cs);
 template <typename MutexType>
@@ -145,7 +144,7 @@ using RecursiveMutex = AnnotatedMixin<std::recursive_mutex>;
 /** Wrapped mutex: supports waiting but not recursive locking */
 using Mutex = AnnotatedMixin<std::mutex>;
 
-/** Wrapped shared mutex: supports read locking via .shared_lock, exlusive locking via .lock;
+/** Wrapped shared mutex: supports read locking via .shared_lock, exclusive locking via .lock;
  * does not support recursive locking */
 using SharedMutex = SharedAnnotatedMixin<std::shared_mutex>;
 

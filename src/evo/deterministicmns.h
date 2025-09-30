@@ -7,17 +7,19 @@
 
 #include <evo/dmnstate.h>
 
+#include <evo/dmn_types.h>
+#include <evo/providertx.h>
+#include <evo/types.h>
+
 #include <arith_uint256.h>
 #include <clientversion.h>
 #include <consensus/params.h>
 #include <crypto/common.h>
-#include <evo/dmn_types.h>
-#include <evo/providertx.h>
-#include <gsl/pointers.h>
 #include <saltedhasher.h>
 #include <scheduler.h>
 #include <sync.h>
 
+#include <gsl/pointers.h>
 #include <immer/map.hpp>
 
 #include <atomic>
@@ -32,6 +34,7 @@ class CCoinsViewCache;
 class CEvoDB;
 class CSimplifiedMNList;
 class CSimplifiedMNListEntry;
+class CMasternodeMetaMan;
 class TxValidationState;
 
 extern RecursiveMutex cs_main;
@@ -85,7 +88,6 @@ public:
     [[nodiscard]] std::string ToString() const;
     [[nodiscard]] UniValue ToJson() const;
 };
-using CDeterministicMNCPtr = std::shared_ptr<const CDeterministicMN>;
 
 class CDeterministicMNListDiff;
 
@@ -434,6 +436,7 @@ private:
 #define DMNL_NO_TEMPLATE(name) \
     static_assert(!std::is_same_v<std::decay_t<T>, name>, "GetUniquePropertyHash cannot be templated against " #name)
         DMNL_NO_TEMPLATE(CBLSPublicKey);
+        DMNL_NO_TEMPLATE(ExtNetInfo);
         DMNL_NO_TEMPLATE(MnNetInfo);
         DMNL_NO_TEMPLATE(NetInfoEntry);
         DMNL_NO_TEMPLATE(NetInfoInterface);
@@ -540,6 +543,22 @@ public:
     template <typename Stream>
     void Unserialize(Stream& s)
     {
+        UnserializeImpl(s, false); // Default: new format
+    }
+
+    // Legacy-aware unserialize method
+    template <typename Stream>
+    void UnserializeLegacyFormat(Stream& s)
+    {
+        UnserializeImpl(s, true); // Legacy format
+    }
+
+private:
+    template <typename Stream>
+    void UnserializeImpl(Stream& s, bool isLegacyFormat)
+    {
+        // Reset all collections before reading
+        addedMNs.clear();
         updatedMNs.clear();
         removedMns.clear();
 
@@ -549,9 +568,18 @@ public:
 
         for (size_t to_read = ReadCompactSize(s); to_read > 0; --to_read) {
             uint64_t internalId = ReadVarInt<Stream, VarIntMode::DEFAULT, uint64_t>(s);
-            // CDeterministicMNState can have newer fields but doesn't need migration logic here as CDeterministicMNStateDiff
-            // is always serialised using a bitmask and new fields have a new bit guide value, so we are good to continue.
-            updatedMNs.emplace(internalId, CDeterministicMNStateDiff(deserialize, s));
+            // CDeterministicMNState can have newer fields but doesn't need migration logic here as
+            // CDeterministicMNStateDiff is always serialised using a bitmask and new fields have a new bit guide value,
+            // so we are good to continue. We do need migration logic to change field order though.
+            if (isLegacyFormat) {
+                // Use legacy deserializer for old format
+                CDeterministicMNStateDiffLegacy legacyDiff(deserialize, s);
+                // Convert to new format and store
+                updatedMNs.emplace(internalId, legacyDiff.ToNewFormat());
+            } else {
+                // Use current deserializer for new format
+                updatedMNs.emplace(internalId, CDeterministicMNStateDiff(deserialize, s));
+            }
         }
 
         for (size_t to_read = ReadCompactSize(s); to_read > 0; --to_read) {
@@ -560,6 +588,7 @@ public:
         }
     }
 
+public:
     bool HasChanges() const
     {
         return !addedMNs.empty() || !updatedMNs.empty() || !removedMns.empty();
@@ -600,15 +629,17 @@ private:
     std::atomic<int> to_cleanup {0};
 
     CEvoDB& m_evoDb;
+    CMasternodeMetaMan& m_mn_metaman;
 
-    std::unordered_map<uint256, CDeterministicMNList, StaticSaltedHasher> mnListsCache GUARDED_BY(cs);
-    std::unordered_map<uint256, CDeterministicMNListDiff, StaticSaltedHasher> mnListDiffsCache GUARDED_BY(cs);
+    Uint256HashMap<CDeterministicMNList> mnListsCache GUARDED_BY(cs);
+    Uint256HashMap<CDeterministicMNListDiff> mnListDiffsCache GUARDED_BY(cs);
     const CBlockIndex* tipIndex GUARDED_BY(cs) {nullptr};
     const CBlockIndex* m_initial_snapshot_index GUARDED_BY(cs) {nullptr};
 
 public:
-    explicit CDeterministicMNManager(CEvoDB& evoDb) :
-        m_evoDb(evoDb)
+    explicit CDeterministicMNManager(CEvoDB& evoDb, CMasternodeMetaMan& mn_metaman) :
+        m_evoDb(evoDb),
+        m_mn_metaman(mn_metaman)
     {
     }
     ~CDeterministicMNManager() = default;
@@ -630,6 +661,10 @@ public:
     static bool IsProTxWithCollateral(const CTransactionRef& tx, uint32_t n);
 
     void DoMaintenance() EXCLUSIVE_LOCKS_REQUIRED(!cs);
+
+    // Migration support for nVersion-first CDeterministicMNStateDiff format
+    [[nodiscard]] bool IsMigrationRequired() const EXCLUSIVE_LOCKS_REQUIRED(!cs, ::cs_main);
+    [[nodiscard]] bool MigrateLegacyDiffs(const CBlockIndex* const tip_index) EXCLUSIVE_LOCKS_REQUIRED(!cs, ::cs_main);
 
 private:
     void CleanupCache(int nHeight) EXCLUSIVE_LOCKS_REQUIRED(cs);

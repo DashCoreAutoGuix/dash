@@ -2,12 +2,13 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <llmq/quorums.h>
-#include <llmq/commitment.h>
 #include <llmq/blockprocessor.h>
+#include <llmq/commitment.h>
 #include <llmq/dkgsessionmgr.h>
 #include <llmq/options.h>
 #include <llmq/params.h>
+#include <llmq/quorums.h>
+#include <llmq/signhash.h>
 #include <llmq/utils.h>
 
 #include <bls/bls.h>
@@ -36,8 +37,6 @@ static const std::string DB_QUORUM_QUORUM_VVEC = "q_Qqvvec";
 RecursiveMutex cs_data_requests;
 static std::unordered_map<CQuorumDataRequestKey, CQuorumDataRequest, StaticSaltedHasher> mapQuorumDataRequests GUARDED_BY(cs_data_requests);
 
-// forward declaration to avoid circular dependency
-uint256 BuildSignHash(Consensus::LLMQType llmqType, const uint256& quorumHash, const uint256& id, const uint256& msgHash);
 
 static uint256 MakeQuorumKey(const CQuorum& q)
 {
@@ -371,7 +370,7 @@ void CQuorumManager::CheckQuorumConnections(CConnman& connman, const Consensus::
                 LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- llmqType[%d] h[%d] keeping mn quorum connections for quorum: [%d:%s]\n", __func__, ToUnderlying(llmqParams.type), pindexNew->nHeight, quorum->m_quorum_base_block_index->nHeight, quorum->m_quorum_base_block_index->GetBlockHash().ToString());
             }
         } else if (watchOtherISQuorums && !quorum->IsMember(myProTxHash)) {
-            std::unordered_set<uint256, StaticSaltedHasher> connections;
+            Uint256HashSet connections;
             const auto& cindexes = utils::CalcDeterministicWatchConnections(llmqParams.type, quorum->m_quorum_base_block_index, quorum->members.size(), 1);
             for (auto idx : cindexes) {
                 connections.emplace(quorum->members[idx]->proTxHash);
@@ -397,20 +396,20 @@ void CQuorumManager::CheckQuorumConnections(CConnman& connman, const Consensus::
 CQuorumPtr CQuorumManager::BuildQuorumFromCommitment(const Consensus::LLMQType llmqType, gsl::not_null<const CBlockIndex*> pQuorumBaseBlockIndex, bool populate_cache) const
 {
     const uint256& quorumHash{pQuorumBaseBlockIndex->GetBlockHash()};
-    uint256 minedBlockHash;
-    CFinalCommitmentPtr qc = quorumBlockProcessor.GetMinedCommitment(llmqType, quorumHash, minedBlockHash);
-    if (qc == nullptr) {
+
+    auto [qc, minedBlockHash] = quorumBlockProcessor.GetMinedCommitment(llmqType, quorumHash);
+    if (minedBlockHash == uint256::ZERO) {
         LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- No mined commitment for llmqType[%d] nHeight[%d] quorumHash[%s]\n", __func__, ToUnderlying(llmqType), pQuorumBaseBlockIndex->nHeight, pQuorumBaseBlockIndex->GetBlockHash().ToString());
         return nullptr;
     }
-    assert(qc->quorumHash == pQuorumBaseBlockIndex->GetBlockHash());
+    assert(qc.quorumHash == pQuorumBaseBlockIndex->GetBlockHash());
 
     const auto& llmq_params_opt = Params().GetLLMQ(llmqType);
     assert(llmq_params_opt.has_value());
     auto quorum = std::make_shared<CQuorum>(llmq_params_opt.value(), blsWorker);
-    auto members = utils::GetAllQuorumMembers(qc->llmqType, m_dmnman, m_qsnapman, pQuorumBaseBlockIndex);
+    auto members = utils::GetAllQuorumMembers(qc.llmqType, m_dmnman, m_qsnapman, pQuorumBaseBlockIndex);
 
-    quorum->Init(std::move(qc), pQuorumBaseBlockIndex, minedBlockHash, members);
+    quorum->Init(std::make_unique<CFinalCommitment>(std::move(qc)), pQuorumBaseBlockIndex, minedBlockHash, members);
 
     if (populate_cache && llmq_params_opt->size == 1) {
         WITH_LOCK(cs_map_quorums, mapQuorumsCache[llmqType].insert(quorumHash, quorum));
@@ -703,13 +702,13 @@ size_t CQuorumManager::GetQuorumRecoveryStartOffset(const CQuorumCPtr pQuorum, c
     return nIndex % pQuorum->qc->validMembers.size();
 }
 
-PeerMsgRet CQuorumManager::ProcessMessage(CNode& pfrom, CConnman& connman, const std::string& msg_type, CDataStream& vRecv)
+MessageProcessingResult CQuorumManager::ProcessMessage(CNode& pfrom, CConnman& connman, std::string_view msg_type, CDataStream& vRecv)
 {
     auto strFunc = __func__;
-    auto errorHandler = [&](const std::string& strError, int nScore = 10) -> PeerMsgRet {
+    auto errorHandler = [&](const std::string& strError, int nScore = 10) -> MessageProcessingResult {
         LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- %s: %s, from peer=%d\n", strFunc, msg_type, strError, pfrom.GetId());
         if (nScore > 0) {
-            return tl::unexpected{nScore};
+            return MisbehavingError{nScore};
         }
         return {};
     };
@@ -724,8 +723,8 @@ PeerMsgRet CQuorumManager::ProcessMessage(CNode& pfrom, CConnman& connman, const
 
         auto sendQDATA = [&](CQuorumDataRequest::Errors nError,
                              bool request_limit_exceeded,
-                             const CDataStream& body = CDataStream(SER_NETWORK, PROTOCOL_VERSION)) -> PeerMsgRet {
-            PeerMsgRet ret{};
+                             const CDataStream& body = CDataStream(SER_NETWORK, PROTOCOL_VERSION)) -> MessageProcessingResult {
+            MessageProcessingResult ret{};
             switch (nError) {
                 case (CQuorumDataRequest::Errors::NONE):
                 case (CQuorumDataRequest::Errors::QUORUM_TYPE_INVALID):
@@ -923,11 +922,11 @@ void CQuorumManager::StartQuorumDataRecoveryThread(CConnman& connman, const CQuo
 {
     assert(m_mn_activeman);
 
-    if (pQuorum->fQuorumDataRecoveryThreadRunning) {
+    bool expected = false;
+    if (!pQuorum->fQuorumDataRecoveryThreadRunning.compare_exchange_strong(expected, true)) {
         LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- Already running\n", __func__);
         return;
     }
-    pQuorum->fQuorumDataRecoveryThreadRunning = true;
 
     workerPool.push([&connman, pQuorum, pIndex, nDataMaskIn, this](int threadId) {
         size_t nTries{0};
@@ -1279,8 +1278,8 @@ VerifyRecSigStatus VerifyRecoveredSig(Consensus::LLMQType llmqType, const CChain
         return VerifyRecSigStatus::NoQuorum;
     }
 
-    uint256 signHash = BuildSignHash(llmqType, quorum->qc->quorumHash, id, msgHash);
-    const bool ret = sig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash);
+    SignHash signHash{llmqType, quorum->qc->quorumHash, id, msgHash};
+    const bool ret = sig.VerifyInsecure(quorum->qc->quorumPublicKey, signHash.Get());
     return ret ? VerifyRecSigStatus::Valid : VerifyRecSigStatus::Invalid;
 }
 } // namespace llmq

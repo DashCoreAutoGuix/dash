@@ -14,6 +14,7 @@
 #include <net.h>
 #include <net_processing.h>
 #include <netmessagemaker.h>
+#include <rpc/evo_util.h>
 #include <shutdown.h>
 #include <util/check.h>
 #include <util/irange.h>
@@ -38,33 +39,27 @@ using wallet::CoinType;
 using wallet::CWallet;
 using wallet::ReserveDestination;
 
-PeerMsgRet CCoinJoinClientQueueManager::ProcessMessage(const CNode& peer, CConnman& connman, PeerManager& peerman,
-                                                       std::string_view msg_type, CDataStream& vRecv)
+MessageProcessingResult CCoinJoinClientQueueManager::ProcessMessage(NodeId from, CConnman& connman, PeerManager& peerman,
+                                                                    std::string_view msg_type, CDataStream& vRecv)
 {
+    if (msg_type != NetMsgType::DSQUEUE) {
+        return {};
+    }
+
     if (m_is_masternode) return {};
     if (!m_mn_sync.IsBlockchainSynced()) return {};
 
-    if (msg_type == NetMsgType::DSQUEUE) {
-        return CCoinJoinClientQueueManager::ProcessDSQueue(peer, connman, peerman, vRecv);
-    }
-    return {};
-}
-
-PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnman& connman, PeerManager& peerman,
-                                                       CDataStream& vRecv)
-{
     assert(m_mn_metaman.IsValid());
 
     CCoinJoinQueue dsq;
     vRecv >> dsq;
 
-    {
-        LOCK(::cs_main);
-        peerman.EraseObjectRequest(peer.GetId(), CInv(MSG_DSQ, dsq.GetHash()));
-    }
+    MessageProcessingResult ret{};
+    ret.m_to_erase = CInv{MSG_DSQ, dsq.GetHash()};
 
     if (dsq.masternodeOutpoint.IsNull() && dsq.m_protxHash.IsNull()) {
-        return tl::unexpected{100};
+        ret.m_error = MisbehavingError{100};
+        return ret;
     }
 
     const auto tip_mn_list = m_dmnman.GetListAtChainTip();
@@ -72,7 +67,8 @@ PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnm
         if (auto dmn = tip_mn_list.GetValidMN(dsq.m_protxHash)) {
             dsq.masternodeOutpoint = dmn->collateralOutpoint;
         } else {
-            return tl::unexpected{10};
+            ret.m_error = MisbehavingError{10};
+            return ret;
         }
     }
 
@@ -84,31 +80,32 @@ PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnm
             // process every dsq only once
             for (const auto &q: vecCoinJoinQueue) {
                 if (q == dsq) {
-                    return {};
+                    return ret;
                 }
                 if (q.fReady == dsq.fReady && q.masternodeOutpoint == dsq.masternodeOutpoint) {
                     // no way the same mn can send another dsq with the same readiness this soon
                     LogPrint(BCLog::COINJOIN, /* Continued */
-                             "DSQUEUE -- Peer %s is sending WAY too many dsq messages for a masternode with collateral %s\n",
-                             peer.GetLogString(), dsq.masternodeOutpoint.ToStringShort());
-                    return {};
+                             "DSQUEUE -- Peer %d is sending WAY too many dsq messages for a masternode with collateral %s\n",
+                             from, dsq.masternodeOutpoint.ToStringShort());
+                    return ret;
                 }
             }
         } // cs_vecqueue
 
         LogPrint(BCLog::COINJOIN, "DSQUEUE -- %s new\n", dsq.ToString());
 
-        if (dsq.IsTimeOutOfBounds()) return {};
+        if (dsq.IsTimeOutOfBounds()) return ret;
 
         auto dmn = tip_mn_list.GetValidMNByCollateral(dsq.masternodeOutpoint);
-        if (!dmn) return {};
+        if (!dmn) return ret;
 
         if (dsq.m_protxHash.IsNull()) {
             dsq.m_protxHash = dmn->proTxHash;
         }
 
         if (!dsq.CheckSignature(dmn->pdmnState->pubKeyOperator.Get())) {
-            return tl::unexpected{10};
+            ret.m_error = MisbehavingError{10};
+            return ret;
         }
 
         // if the queue is ready, submit if we can
@@ -117,7 +114,7 @@ PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnm
                 return clientman->TrySubmitDenominate(dmn->proTxHash, connman);
             })) {
             LogPrint(BCLog::COINJOIN, "DSQUEUE -- CoinJoin queue is ready, masternode=%s, queue=%s\n", dmn->proTxHash.ToString(), dsq.ToString());
-            return {};
+            return ret;
         } else {
             int64_t nLastDsq = m_mn_metaman.GetMetaInfo(dmn->proTxHash)->GetLastDsq();
             int64_t nDsqThreshold = m_mn_metaman.GetDsqThreshold(dmn->proTxHash, tip_mn_list.GetValidMNsCount());
@@ -127,7 +124,7 @@ PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnm
             if (nLastDsq != 0 && nDsqThreshold > m_mn_metaman.GetDsqCount()) {
                 LogPrint(BCLog::COINJOIN, "DSQUEUE -- Masternode %s is sending too many dsq messages\n",
                          dmn->proTxHash.ToString());
-                return {};
+                return ret;
             }
 
             m_mn_metaman.AllowMixing(dmn->proTxHash);
@@ -142,7 +139,7 @@ PeerMsgRet CCoinJoinClientQueueManager::ProcessDSQueue(const CNode& peer, CConnm
         }
     } // cs_ProcessDSQueue
     peerman.RelayDSQ(dsq);
-    return {};
+    return ret;
 }
 
 void CCoinJoinClientManager::ProcessMessage(CNode& peer, CChainState& active_chainstate, CConnman& connman, const CTxMemPool& mempool, std::string_view msg_type, CDataStream& vRecv)
@@ -1556,7 +1553,7 @@ bool CCoinJoinClientSession::CreateCollateralTransaction(CMutableTransaction& tx
     AssertLockHeld(m_wallet->cs_wallet);
 
     CCoinControl coin_control(CoinType::ONLY_COINJOIN_COLLATERAL);
-    std::vector<COutput> vCoins{AvailableCoinsListUnspent(*m_wallet, &coin_control).coins};
+    std::vector<COutput> vCoins{AvailableCoinsListUnspent(*m_wallet, &coin_control).all()};
     if (vCoins.empty()) {
         strReason = strprintf("%s requires a collateral transaction and could not locate an acceptable input!", gCoinJoinName);
         return false;
@@ -1575,11 +1572,10 @@ bool CCoinJoinClientSession::CreateCollateralTransaction(CMutableTransaction& tx
     if (txout.nValue >= CoinJoin::GetCollateralAmount() * 2) {
         // make our change address
         CScript scriptChange;
-        CTxDestination dest;
         ReserveDestination reserveDest(m_wallet.get());
-        bool success = reserveDest.GetReservedDestination(dest, true);
-        assert(success); // should never fail, as we just unlocked
-        scriptChange = GetScriptForDestination(dest);
+        auto dest_opt = reserveDest.GetReservedDestination(true);
+        assert(dest_opt); // should never fail, as we just unlocked
+        scriptChange = GetScriptForDestination(*dest_opt);
         reserveDest.KeepDestination();
         // return change
         txCollateral.vout.emplace_back(txout.nValue - CoinJoin::GetCollateralAmount(), scriptChange);
@@ -1877,10 +1873,8 @@ void CCoinJoinClientSession::GetJsonInfo(UniValue& obj) const
         assert(mixingMasternode->pdmnState);
         obj.pushKV("protxhash", mixingMasternode->proTxHash.ToString());
         obj.pushKV("outpoint", mixingMasternode->collateralOutpoint.ToStringShort());
-        if (m_wallet->chain().rpcEnableDeprecated("service")) {
-            obj.pushKV("service", mixingMasternode->pdmnState->netInfo->GetPrimary().ToStringAddrPort());
-        }
-        obj.pushKV("addresses", mixingMasternode->pdmnState->netInfo->ToJson());
+        obj.pushKV("service", mixingMasternode->pdmnState->netInfo->GetPrimary().ToStringAddrPort());
+        obj.pushKV("addrs_core_p2p", mixingMasternode->pdmnState->netInfo->ToJson(NetInfoPurpose::CORE_P2P));
     }
     obj.pushKV("denomination", ValueFromAmount(CoinJoin::DenominationToAmount(nSessionDenom)));
     obj.pushKV("state", GetStateString());

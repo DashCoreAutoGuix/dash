@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QMetaObject>
 #include <QMutexLocker>
+#include <QProgressDialog>
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
@@ -77,6 +78,14 @@ std::map<std::string, bool> WalletController::listWalletDir() const
     return wallets;
 }
 
+void WalletController::removeWallet(WalletModel* wallet_model)
+{
+    // Once the wallet is successfully removed from the node, the model will emit the 'WalletModel::unload' signal.
+    // This signal is already connected and will complete the removal of the view from the GUI.
+    // Look at 'WalletController::getOrCreateWallet' for the signal connection.
+    wallet_model->wallet().remove();
+}
+
 void WalletController::closeWallet(WalletModel* wallet_model, QWidget* parent)
 {
     QMessageBox box(parent);
@@ -87,10 +96,7 @@ void WalletController::closeWallet(WalletModel* wallet_model, QWidget* parent)
     box.setDefaultButton(QMessageBox::Yes);
     if (box.exec() != QMessageBox::Yes) return;
 
-    // First remove wallet from node.
-    wallet_model->wallet().remove();
-    // Now release the model.
-    removeAndDeleteWallet(wallet_model);
+    removeWallet(wallet_model);
 }
 
 void WalletController::closeAllWallets(QWidget* parent)
@@ -103,11 +109,8 @@ void WalletController::closeAllWallets(QWidget* parent)
 
     QMutexLocker locker(&m_mutex);
     for (WalletModel* wallet_model : m_wallets) {
-        wallet_model->wallet().remove();
-        Q_EMIT walletRemoved(wallet_model);
-        delete wallet_model;
+        removeWallet(wallet_model);
     }
-    m_wallets.clear();
 }
 
 WalletModel* WalletController::getOrCreateWallet(std::unique_ptr<interfaces::Wallet> wallet)
@@ -258,9 +261,13 @@ void CreateWalletActivity::createWallet()
     }
 
     QTimer::singleShot(500ms, worker(), [this, name, flags] {
-        std::unique_ptr<interfaces::Wallet> wallet = node().walletLoader().createWallet(name, m_passphrase, flags, m_error_message, m_warning_message);
+        auto wallet{node().walletLoader().createWallet(name, m_passphrase, flags, m_warning_message)};
 
-        if (wallet) m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(wallet));
+        if (wallet) {
+            m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(*wallet));
+        } else {
+            m_error_message = util::ErrorString(wallet);
+        }
 
         QTimer::singleShot(500ms, this, &CreateWalletActivity::finish);
     });
@@ -330,9 +337,13 @@ void OpenWalletActivity::open(const std::string& path)
         tr("Opening Wallet <b>%1</b>…").arg(name.toHtmlEscaped()));
 
     QTimer::singleShot(0, worker(), [this, path] {
-        std::unique_ptr<interfaces::Wallet> wallet = node().walletLoader().loadWallet(path, m_error_message, m_warning_message);
+        auto wallet{node().walletLoader().loadWallet(path, m_warning_message)};
 
-        if (wallet) m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(wallet));
+        if (wallet) {
+            m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(*wallet));
+        } else {
+            m_error_message = util::ErrorString(wallet);
+        }
 
         QTimer::singleShot(0, this, &OpenWalletActivity::finish);
     });
@@ -375,8 +386,11 @@ void RestoreWalletActivity::restore(const fs::path& backup_file, const std::stri
     QTimer::singleShot(0, worker(), [this, backup_file, wallet_name] {
         auto wallet{node().walletLoader().restoreWallet(backup_file, wallet_name, m_warning_message)};
 
-        m_error_message = wallet ? bilingual_str{} : wallet.GetError();
-        if (wallet) m_wallet_model = m_wallet_controller->getOrCreateWallet(wallet.ReleaseObj());
+        if (wallet) {
+            m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(*wallet));
+        } else {
+            m_error_message = util::ErrorString(wallet);
+        }
 
         QTimer::singleShot(0, this, &RestoreWalletActivity::finish);
     });

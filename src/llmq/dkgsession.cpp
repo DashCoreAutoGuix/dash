@@ -469,7 +469,7 @@ void CDKGSession::VerifyConnectionAndMinProtoVersions(CConnman& connman) const
 
     CDKGLogger logger(*this, __func__, __LINE__);
 
-    std::unordered_map<uint256, int, StaticSaltedHasher> protoMap;
+    Uint256HashMap<int> protoMap;
     connman.ForEachNode([&](const CNode* pnode) {
         auto verifiedProRegTxHash = pnode->GetVerifiedProRegTxHash();
         if (verifiedProRegTxHash.IsNull()) {
@@ -492,10 +492,14 @@ void CDKGSession::VerifyConnectionAndMinProtoVersions(CConnman& connman) const
             m->badConnection = true;
             logger.Batch("%s does not have min proto version %d (has %d)", m->dmn->proTxHash.ToString(), MIN_MASTERNODE_PROTO_VERSION, it->second);
         }
-
-        if (m_mn_metaman.GetMetaInfo(m->dmn->proTxHash)->OutboundFailedTooManyTimes()) {
+        const auto meta_info = m_mn_metaman.GetMetaInfo(m->dmn->proTxHash);
+        if (meta_info->OutboundFailedTooManyTimes()) {
             m->badConnection = true;
             logger.Batch("%s failed to connect to it too many times", m->dmn->proTxHash.ToString());
+        }
+        if (meta_info->IsPlatformBanned()) {
+            m->badConnection = true;
+            logger.Batch("%s is Platform PoSe banned", m->dmn->proTxHash.ToString());
         }
     }
 }

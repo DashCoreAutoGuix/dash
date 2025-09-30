@@ -5,9 +5,11 @@
 #ifndef BITCOIN_COINJOIN_CLIENT_H
 #define BITCOIN_COINJOIN_CLIENT_H
 
-#include <coinjoin/util.h>
 #include <coinjoin/coinjoin.h>
+#include <coinjoin/util.h>
+#include <evo/types.h>
 
+#include <net_types.h>
 #include <protocol.h>
 #include <util/ranges.h>
 #include <util/translation.h>
@@ -20,7 +22,6 @@
 class CCoinJoinClientManager;
 class CCoinJoinClientQueueManager;
 class CConnman;
-class CDeterministicMN;
 class CDeterministicMNManager;
 class ChainstateManager;
 class CMasternodeMetaMan;
@@ -31,8 +32,6 @@ class CTxMemPool;
 class PeerManager;
 
 class UniValue;
-
-using CDeterministicMNCPtr = std::shared_ptr<const CDeterministicMN>;
 
 class CPendingDsaRequest
 {
@@ -252,9 +251,9 @@ public:
         m_mn_sync(mn_sync),
         m_is_masternode{is_masternode} {};
 
-    PeerMsgRet ProcessMessage(const CNode& peer, CConnman& connman, PeerManager& peerman, std::string_view msg_type,
-                              CDataStream& vRecv) EXCLUSIVE_LOCKS_REQUIRED(!cs_vecqueue);
-    PeerMsgRet ProcessDSQueue(const CNode& peer, CConnman& connman, PeerManager& peerman, CDataStream& vRecv);
+    [[nodiscard]] MessageProcessingResult ProcessMessage(NodeId from, CConnman& connman, PeerManager& peerman, std::string_view msg_type,
+                                                         CDataStream& vRecv)
+        EXCLUSIVE_LOCKS_REQUIRED(!cs_vecqueue);
     void DoMaintenance();
 };
 

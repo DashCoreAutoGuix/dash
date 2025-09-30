@@ -58,7 +58,7 @@ CDKGSessionHandler::CDKGSessionHandler(CBLSWorker& _blsWorker, CChainState& chai
 
 CDKGSessionHandler::~CDKGSessionHandler() = default;
 
-void CDKGPendingMessages::PushPendingMessage(NodeId from, CDataStream& vRecv, PeerManager& peerman)
+MessageProcessingResult CDKGPendingMessages::PushPendingMessage(NodeId from, CDataStream& vRecv)
 {
     // this will also consume the data, even if we bail out early
     auto pm = std::make_shared<CDataStream>(std::move(vRecv));
@@ -67,8 +67,9 @@ void CDKGPendingMessages::PushPendingMessage(NodeId from, CDataStream& vRecv, Pe
     hw.write(AsWritableBytes(Span{*pm}));
     uint256 hash = hw.GetHash();
 
+    MessageProcessingResult ret{};
     if (from != -1) {
-        WITH_LOCK(::cs_main, peerman.EraseObjectRequest(from, CInv(invType, hash)));
+        ret.m_to_erase = CInv{invType, hash};
     }
 
     LOCK(cs_messages);
@@ -76,16 +77,17 @@ void CDKGPendingMessages::PushPendingMessage(NodeId from, CDataStream& vRecv, Pe
     if (messagesPerNode[from] >= maxMessagesPerNode) {
         // TODO ban?
         LogPrint(BCLog::LLMQ_DKG, "CDKGPendingMessages::%s -- too many messages, peer=%d\n", __func__, from);
-        return;
+        return ret;
     }
     messagesPerNode[from]++;
 
     if (!seenMessages.emplace(hash).second) {
         LogPrint(BCLog::LLMQ_DKG, "CDKGPendingMessages::%s -- already seen %s, peer=%d\n", __func__, hash.ToString(), from);
-        return;
+        return ret;
     }
 
     pendingMessages.emplace_back(std::make_pair(from, std::move(pm)));
+    return ret;
 }
 
 std::list<CDKGPendingMessages::BinaryMessage> CDKGPendingMessages::PopPendingMessages(size_t maxCount)
@@ -150,19 +152,19 @@ void CDKGSessionHandler::UpdatedBlockTip(const CBlockIndex* pindexNew)
              params.name, quorumIndex, currentHeight, pQuorumBaseBlockIndex->nHeight, ToUnderlying(oldPhase), ToUnderlying(phase));
 }
 
-void CDKGSessionHandler::ProcessMessage(const CNode& pfrom, PeerManager& peerman, const std::string& msg_type,
-                                        CDataStream& vRecv)
+MessageProcessingResult CDKGSessionHandler::ProcessMessage(NodeId from, std::string_view msg_type, CDataStream& vRecv)
 {
     // We don't handle messages in the calling thread as deserialization/processing of these would block everything
     if (msg_type == NetMsgType::QCONTRIB) {
-        pendingContributions.PushPendingMessage(pfrom.GetId(), vRecv, peerman);
+        return pendingContributions.PushPendingMessage(from, vRecv);
     } else if (msg_type == NetMsgType::QCOMPLAINT) {
-        pendingComplaints.PushPendingMessage(pfrom.GetId(), vRecv, peerman);
+        return pendingComplaints.PushPendingMessage(from, vRecv);
     } else if (msg_type == NetMsgType::QJUSTIFICATION) {
-        pendingJustifications.PushPendingMessage(pfrom.GetId(), vRecv, peerman);
+        return pendingJustifications.PushPendingMessage(from, vRecv);
     } else if (msg_type == NetMsgType::QPCOMMITMENT) {
-        pendingPrematureCommitments.PushPendingMessage(pfrom.GetId(), vRecv, peerman);
+        return pendingPrematureCommitments.PushPendingMessage(from, vRecv);
     }
+    return {};
 }
 
 void CDKGSessionHandler::StartThread(CConnman& connman, PeerManager& peerman)
@@ -301,13 +303,13 @@ void CDKGSessionHandler::SleepBeforePhase(QuorumPhase curPhase,
     double adjustedPhaseSleepTimePerMember = phaseSleepTimePerMember * randomSleepFactor;
 
     int64_t sleepTime = (int64_t)(adjustedPhaseSleepTimePerMember * curSession->GetMyMemberIndex().value_or(0));
-    int64_t endTime = GetTimeMillis() + sleepTime;
+    int64_t endTime = TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) + sleepTime;
     int heightTmp{currentHeight.load()};
     int heightStart{heightTmp};
 
     LogPrint(BCLog::LLMQ_DKG, "CDKGSessionManager::%s -- %s qi[%d] - starting sleep for %d ms, curPhase=%d\n", __func__, params.name, quorumIndex, sleepTime, ToUnderlying(curPhase));
 
-    while (GetTimeMillis() < endTime) {
+    while (TicksSinceEpoch<std::chrono::milliseconds>(SystemClock::now()) < endTime) {
         if (stopRequested) {
             LogPrint(BCLog::LLMQ_DKG, "CDKGSessionManager::%s -- %s qi[%d] - aborting due to stop/shutdown requested\n", __func__, params.name, quorumIndex);
             throw AbortPhaseException();
@@ -537,7 +539,7 @@ void CDKGSessionHandler::HandleDKGRound(CConnman& connman, PeerManager& peerman)
 
     const CBlockIndex* pQuorumBaseBlockIndex = WITH_LOCK(::cs_main, return m_chainstate.m_blockman.LookupBlockIndex(curQuorumHash));
 
-    if (!InitNewQuorum(pQuorumBaseBlockIndex)) {
+    if (!pQuorumBaseBlockIndex || !InitNewQuorum(pQuorumBaseBlockIndex)) {
         // should actually never happen
         WaitForNewQuorum(curQuorumHash);
         throw AbortPhaseException();

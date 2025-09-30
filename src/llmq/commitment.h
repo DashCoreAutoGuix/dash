@@ -7,6 +7,8 @@
 
 #include <bls/bls.h>
 #include <llmq/params.h>
+#include <llmq/types.h>
+
 #include <primitives/transaction.h>
 #include <util/irange.h>
 #include <util/strencodings.h>
@@ -25,11 +27,16 @@ class CBlockIndex;
 class CDeterministicMNManager;
 class ChainstateManager;
 class TxValidationState;
+template <typename T>
+class CCheckQueueControl;
 
 namespace llmq
 {
 class CQuorumSnapshotManager;
 
+namespace utils {
+struct BlsCheck;
+} // namespace utils
 // This message is an aggregation of all received premature commitments and only valid if
 // enough (>=threshold) premature commitments were aggregated
 // This is mined on-chain as part of TRANSACTION_QUORUM_COMMITMENT
@@ -67,6 +74,9 @@ public:
         return int(std::count(validMembers.begin(), validMembers.end(), true));
     }
 
+    bool VerifySignatureAsync(CDeterministicMNManager& dmnman, CQuorumSnapshotManager& qsnapman,
+                              gsl::not_null<const CBlockIndex*> pQuorumBaseBlockIndex,
+                              CCheckQueueControl<utils::BlsCheck>* queue_control) const;
     bool Verify(CDeterministicMNManager& dmnman, CQuorumSnapshotManager& qsnapman,
                 gsl::not_null<const CBlockIndex*> pQuorumBaseBlockIndex, bool checkSigs) const;
     bool VerifyNull() const;
@@ -148,7 +158,6 @@ private:
         return HexStr(vBytes);
     }
 };
-using CFinalCommitmentPtr = std::unique_ptr<CFinalCommitment>;
 
 class CFinalCommitmentTxPayload
 {

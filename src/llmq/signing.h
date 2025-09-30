@@ -6,15 +6,21 @@
 #define BITCOIN_LLMQ_SIGNING_H
 
 #include <bls/bls.h>
-#include <gsl/pointers.h>
 #include <llmq/params.h>
+#include <llmq/signhash.h>
+#include <llmq/types.h>
+#include <unordered_lru_cache.h>
+
+#include <net_types.h>
 #include <protocol.h>
 #include <random.h>
 #include <saltedhasher.h>
 #include <sync.h>
 #include <util/threadinterrupt.h>
-#include <unordered_lru_cache.h>
 
+#include <gsl/pointers.h>
+
+#include <string_view>
 #include <unordered_map>
 
 class CActiveMasternodeManager;
@@ -23,16 +29,10 @@ class CDataStream;
 class CDBBatch;
 class CDBWrapper;
 class CInv;
-class CNode;
 class PeerManager;
 class UniValue;
 
-using NodeId = int64_t;
-
-namespace llmq
-{
-class CQuorum;
-using CQuorumCPtr = std::shared_ptr<const CQuorum>;
+namespace llmq {
 class CQuorumManager;
 class CSigSharesManager;
 
@@ -68,7 +68,7 @@ public:
         return msgHash;
     }
 
-    [[nodiscard]] uint256 buildSignHash() const;
+    [[nodiscard]] SignHash buildSignHash() const;
 };
 
 class CRecoveredSig : virtual public CSigBase
@@ -116,8 +116,8 @@ private:
 
     mutable Mutex cs_cache;
     mutable unordered_lru_cache<std::pair<Consensus::LLMQType, uint256>, bool, StaticSaltedHasher, 30000> hasSigForIdCache GUARDED_BY(cs_cache);
-    mutable unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForSessionCache GUARDED_BY(cs_cache);
-    mutable unordered_lru_cache<uint256, bool, StaticSaltedHasher, 30000> hasSigForHashCache GUARDED_BY(cs_cache);
+    mutable Uint256LruHashMap<bool, 30000> hasSigForSessionCache GUARDED_BY(cs_cache);
+    mutable Uint256LruHashMap<bool, 30000> hasSigForHashCache GUARDED_BY(cs_cache);
 
 public:
     explicit CRecoveredSigsDb(bool fMemory, bool fWipe);
@@ -166,7 +166,7 @@ private:
     mutable Mutex cs_pending;
     // Incoming and not verified yet
     std::unordered_map<NodeId, std::list<std::shared_ptr<const CRecoveredSig>>> pendingRecoveredSigs GUARDED_BY(cs_pending);
-    std::unordered_map<uint256, std::shared_ptr<const CRecoveredSig>, StaticSaltedHasher> pendingReconstructedRecoveredSigs GUARDED_BY(cs_pending);
+    Uint256HashMap<std::shared_ptr<const CRecoveredSig>> pendingReconstructedRecoveredSigs GUARDED_BY(cs_pending);
 
     FastRandomContext rnd GUARDED_BY(cs_pending);
 
@@ -182,7 +182,7 @@ public:
     bool AlreadyHave(const CInv& inv) const;
     bool GetRecoveredSigForGetData(const uint256& hash, CRecoveredSig& ret) const;
 
-    PeerMsgRet ProcessMessage(const CNode& pnode, PeerManager& peerman, const std::string& msg_type, CDataStream& vRecv);
+    [[nodiscard]] MessageProcessingResult ProcessMessage(NodeId from, std::string_view msg_type, CDataStream& vRecv);
 
     // This is called when a recovered signature was was reconstructed from another P2P message and is known to be valid
     // This is the case for example when a signature appears as part of InstantSend or ChainLocks
@@ -195,9 +195,6 @@ public:
     void TruncateRecoveredSig(Consensus::LLMQType llmqType, const uint256& id);
 
 private:
-    PeerMsgRet ProcessMessageRecoveredSig(const CNode& pfrom, PeerManager& peerman,
-                                          const std::shared_ptr<const CRecoveredSig>& recoveredSig);
-
     void CollectPendingRecoveredSigsToVerify(size_t maxUniqueSessions,
             std::unordered_map<NodeId, std::list<std::shared_ptr<const CRecoveredSig>>>& retSigShares,
             std::unordered_map<std::pair<Consensus::LLMQType, uint256>, CQuorumCPtr, StaticSaltedHasher>& retQuorums);
@@ -266,8 +263,6 @@ void IterateNodesRandom(NodesContainer& nodeStates, Continue&& cont, Callback&& 
         }
     }
 }
-
-uint256 BuildSignHash(Consensus::LLMQType llmqType, const uint256& quorumHash, const uint256& id, const uint256& msgHash);
 
 bool IsQuorumActive(Consensus::LLMQType llmqType, const CQuorumManager& qman, const uint256& quorumHash);
 

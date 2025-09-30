@@ -36,7 +36,6 @@
 
 //Dash only features
 
-extern bool fMasternodeMode;
 extern int nWalletBackups;
 extern const std::string gCoinJoinName;
 
@@ -257,6 +256,11 @@ protected:
     void SelectConfigNetwork(const std::string& network);
 
     [[nodiscard]] bool ParseParameters(int argc, const char* const argv[], std::string& error);
+
+    /**
+     * Return config file path (read-only)
+     */
+    fs::path GetConfigFilePath() const;
     [[nodiscard]] bool ReadConfigFiles(std::string& error, bool ignore_invalid_keys = false);
 
     /**
@@ -302,7 +306,6 @@ protected:
      * Get data directory path
      *
      * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
-     * @post Returned directory path is created unless it is empty
      */
     fs::path GetDataDirBase() const { return GetDataDir(false); }
 
@@ -310,7 +313,6 @@ protected:
      * Get data directory path with appended network identifier
      *
      * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
-     * @post Returned directory path is created unless it is empty
      */
     fs::path GetDataDirNet() const { return GetDataDir(true); }
 
@@ -495,13 +497,18 @@ protected:
      */
     void LogArgs() const;
 
+    /**
+     * If datadir does not exist, create it along with wallets/
+     * subdirectory(s).
+     */
+    void EnsureDataDir() const;
+
 private:
     /**
      * Get data directory path
      *
      * @param net_specific Append network identifier to the returned path
      * @return Absolute path on success, otherwise an empty path when a non-directory path would be returned
-     * @post Returned directory path is created unless it is empty
      */
     fs::path GetDataDir(bool net_specific) const;
 
@@ -549,8 +556,6 @@ namespace ctpl {
     class thread_pool;
 }
 void RenameThreadPool(ctpl::thread_pool& tp, const char* baseName);
-
-std::string CopyrightHolders(const std::string& strPrefix, unsigned int nStartYear, unsigned int nEndYear);
 
 /**
  * On platforms that support it, tell the kernel the calling thread is

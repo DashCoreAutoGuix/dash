@@ -1194,6 +1194,7 @@ public:
         std::vector<std::string> m_added_nodes;
         SocketEventsMode socketEventsMode = SocketEventsMode::Select;
         bool m_i2p_accept_incoming;
+        bool m_active_masternode = false;
     };
 
     void Init(const Options& connOptions) EXCLUSIVE_LOCKS_REQUIRED(!m_added_nodes_mutex, !m_total_bytes_sent_mutex)
@@ -1231,6 +1232,7 @@ public:
         }
         socketEventsMode = connOptions.socketEventsMode;
         m_onion_binds = connOptions.onion_binds;
+        m_active_masternode = connOptions.m_active_masternode;
     }
 
     CConnman(uint64_t seed0, uint64_t seed1, AddrMan& addrman, const NetGroupManager& netgroupman,
@@ -1255,6 +1257,7 @@ public:
     void SetNetworkActive(bool active, CMasternodeSync* const mn_sync);
     bool GetMasternodeThreadActive() const { return m_masternode_thread_active; };
     void SetMasternodeThreadActive(bool active) { m_masternode_thread_active = active; };
+    bool IsActiveMasternode() const { return m_active_masternode; }
     SocketEventsMode GetSocketEventsMode() const { return socketEventsMode; }
 
     enum class MasternodeConn {
@@ -1477,10 +1480,10 @@ public:
         EXCLUSIVE_LOCKS_REQUIRED(!m_unused_i2p_sessions_mutex, !mutexMsgProc);
 
     bool AddPendingMasternode(const uint256& proTxHash);
-    void SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::unordered_set<uint256, StaticSaltedHasher>& proTxHashes);
-    void SetMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::unordered_set<uint256, StaticSaltedHasher>& proTxHashes);
+    void SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash, const Uint256HashSet& proTxHashes);
+    void SetMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const Uint256HashSet& proTxHashes);
     bool HasMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash) const;
-    std::unordered_set<uint256, StaticSaltedHasher> GetMasternodeQuorums(Consensus::LLMQType llmqType) const;
+    Uint256HashSet GetMasternodeQuorums(Consensus::LLMQType llmqType) const;
     // also returns QWATCH nodes
     std::unordered_set<NodeId> GetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash) const;
     void RemoveMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash);
@@ -1489,6 +1492,7 @@ public:
     void AddPendingProbeConnections(const std::set<uint256>& proTxHashes);
 
     size_t GetNodeCount(ConnectionDirection) const;
+    std::map<CNetAddr, LocalServiceInfo> getNetLocalAddresses() const;
     size_t GetMaxOutboundNodeCount();
     size_t GetMaxOutboundOnionNodeCount();
     void GetNodeStats(std::vector<CNodeStats>& vstats) const;
@@ -1740,8 +1744,8 @@ private:
 
     std::vector<uint256> vPendingMasternodes;
     mutable RecursiveMutex cs_vPendingMasternodes;
-    std::map<std::pair<Consensus::LLMQType, uint256>, std::unordered_set<uint256, StaticSaltedHasher>> masternodeQuorumNodes GUARDED_BY(cs_vPendingMasternodes);
-    std::map<std::pair<Consensus::LLMQType, uint256>, std::unordered_set<uint256, StaticSaltedHasher>> masternodeQuorumRelayMembers GUARDED_BY(cs_vPendingMasternodes);
+    std::map<std::pair<Consensus::LLMQType, uint256>, Uint256HashSet> masternodeQuorumNodes GUARDED_BY(cs_vPendingMasternodes);
+    std::map<std::pair<Consensus::LLMQType, uint256>, Uint256HashSet> masternodeQuorumRelayMembers GUARDED_BY(cs_vPendingMasternodes);
     std::set<uint256> masternodePendingProbes GUARDED_BY(cs_vPendingMasternodes);
 
     mutable Mutex cs_mapSocketToNode;
@@ -1840,6 +1844,9 @@ private:
      */
     std::unique_ptr<i2p::sam::Session> m_i2p_sam_session;
 
+    /** Flag for activating masternode mode */
+    bool m_active_masternode{false};
+
     SocketEventsMode socketEventsMode;
     std::unique_ptr<EdgeTriggeredEvents> m_edge_trig_events{nullptr};
     std::unique_ptr<WakeupPipe> m_wakeup_pipe{nullptr};
@@ -1935,7 +1942,6 @@ private:
      */
     static constexpr size_t MAX_UNUSED_I2P_SESSIONS_SIZE{10};
 
-    friend struct CConnmanTest;
     friend struct ConnmanTestMsg;
 };
 

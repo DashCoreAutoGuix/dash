@@ -228,12 +228,6 @@ def check_json_precision():
         raise RuntimeError("JSON encode/decode loses precision")
 
 
-def EncodeDecimal(o):
-    if isinstance(o, Decimal):
-        return str(o)
-    raise TypeError(repr(o) + " is not JSON serializable")
-
-
 def count_bytes(hex_string):
     return len(bytearray.fromhex(hex_string))
 
@@ -377,17 +371,17 @@ def rpc_url(datadir, i, chain, rpchost=None):
 ################
 
 
-def initialize_datadir(dirname, n, chain):
+def initialize_datadir(dirname, n, chain, disable_autoconnect=True):
     datadir = get_datadir_path(dirname, n)
     if not os.path.isdir(datadir):
         os.makedirs(datadir)
-    write_config(os.path.join(datadir, "dash.conf"), n=n, chain=chain)
+    write_config(os.path.join(datadir, "dash.conf"), n=n, chain=chain, disable_autoconnect=disable_autoconnect)
     os.makedirs(os.path.join(datadir, 'stderr'), exist_ok=True)
     os.makedirs(os.path.join(datadir, 'stdout'), exist_ok=True)
     return datadir
 
 
-def write_config(config_path, *, n, chain, extra_config=""):
+def write_config(config_path, *, n, chain, extra_config="", disable_autoconnect=True):
     (chain_name_conf_arg, chain_name_conf_arg_value, chain_name_conf_section) = get_chain_conf_names(chain)
     with open(config_path, 'w', encoding='utf8') as f:
         if chain_name_conf_arg:
@@ -414,6 +408,8 @@ def write_config(config_path, *, n, chain, extra_config=""):
         f.write("shrinkdebugfile=0\n")
         # To improve SQLite wallet performance so that the tests don't timeout, use -unsafesqlitesync
         f.write("unsafesqlitesync=1\n")
+        if disable_autoconnect:
+            f.write("connect=0\n")
         f.write(extra_config)
 
 
@@ -536,6 +532,34 @@ def force_finish_mnsync(node):
     while not node.mnsync("status")['IsSynced']:
         node.mnsync("next")
 
+
+def get_mnemonic(node):
+    """
+    Return mnemonic if known from legacy HD wallets and Descriptor Wallets
+    Raises exception if there is none.
+    """
+    if not node.getwalletinfo()['descriptors']:
+        hd = node.dumphdinfo()
+        return (hd["mnemonic"], hd["mnemonicpassphrase"])
+
+    mnemonic = None
+    mnemonic_passphrase = None
+    descriptors = node.listdescriptors(True)['descriptors']
+    for desc in descriptors:
+        if desc['desc'][:4] == 'pkh(':
+            if mnemonic is None:
+                mnemonic = desc['mnemonic']
+                mnemonic_passphrase = desc['mnemonicpassphrase']
+            else:
+                assert_equal(mnemonic, desc['mnemonic'])
+                assert_equal(mnemonic_passphrase, desc['mnemonicpassphrase'])
+        elif desc['desc'][:6] == 'combo(':
+            assert 'mnemonic' not in desc
+            assert 'mnemonicpassphrase' not in desc
+        else:
+            raise AssertionError(f"Unknown descriptor type: {desc['desc']}")
+    return (mnemonic, mnemonic_passphrase)
+
 # Transaction/Block functions
 #############################
 
@@ -550,39 +574,6 @@ def find_output(node, txid, amount, *, blockhash=None):
         if txdata["vout"][i]["value"] == amount:
             return i
     raise RuntimeError("find_output txid %s : %s not found" % (txid, str(amount)))
-
-
-# Helper to create at least "count" utxos
-# Pass in a fee that is sufficient for relay and mining new transactions.
-def create_confirmed_utxos(test_framework, fee, node, count, **kwargs):
-    to_generate = int(0.5 * count) + 101
-    while to_generate > 0:
-        test_framework.generate(node, min(25, to_generate), **kwargs)
-        to_generate -= 25
-    utxos = node.listunspent()
-    iterations = count - len(utxos)
-    addr1 = node.getnewaddress()
-    addr2 = node.getnewaddress()
-    if iterations <= 0:
-        return utxos
-    for _ in range(iterations):
-        t = utxos.pop()
-        inputs = []
-        inputs.append({"txid": t["txid"], "vout": t["vout"]})
-        outputs = {}
-        send_value = t['amount'] - fee
-        outputs[addr1] = satoshi_round(send_value / 2)
-        outputs[addr2] = satoshi_round(send_value / 2)
-        raw_tx = node.createrawtransaction(inputs, outputs)
-        signed_tx = node.signrawtransactionwithwallet(raw_tx)["hex"]
-        node.sendrawtransaction(signed_tx)
-
-    while (node.getmempoolinfo()['size'] > 0):
-        test_framework.generate(node, 1, **kwargs)
-
-    utxos = node.listunspent()
-    assert len(utxos) >= count
-    return utxos
 
 
 def chain_transaction(node, parent_txids, vouts, value, fee, num_outputs):

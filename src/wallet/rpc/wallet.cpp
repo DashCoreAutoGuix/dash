@@ -28,7 +28,6 @@
 
 #include <coinjoin/client.h>
 #include <coinjoin/options.h>
-#include <llmq/chainlocks.h>
 
 #include <optional>
 
@@ -167,11 +166,11 @@ static RPCHelpMan getwalletinfo()
                             {RPCResult::Type::NUM, "immature_balance", "DEPRECATED. Identical to getbalances().mine.immature"},
                             {RPCResult::Type::NUM, "txcount", "the total number of transactions in the wallet"},
                             {RPCResult::Type::NUM_TIME, "timefirstkey", "the " + UNIX_EPOCH_TIME + " of the oldest known key in the wallet"},
-                            {RPCResult::Type::NUM_TIME, "keypoololdest", /* optional */ true, "the " + UNIX_EPOCH_TIME + " of the oldest pre-generated key in the key pool. Legacy wallets only"},
+                            {RPCResult::Type::NUM_TIME, "keypoololdest", /*optional=*/true, "the " + UNIX_EPOCH_TIME + " of the oldest pre-generated key in the key pool. Legacy wallets only"},
                             {RPCResult::Type::NUM, "keypoolsize", "how many new keys are pre-generated (only counts external keys)"},
-                            {RPCResult::Type::NUM, "keypoolsize_hd_internal", /* optional */ true, "how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is using this feature, otherwise external keys are used)"},
+                            {RPCResult::Type::NUM, "keypoolsize_hd_internal", /*optional=*/true, "how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is using this feature, otherwise external keys are used)"},
                             {RPCResult::Type::NUM, "keys_left", "how many new keys are left since last automatic backup"},
-                            {RPCResult::Type::NUM_TIME, "unlocked_until", /* optional */ true, "the " + UNIX_EPOCH_TIME + " until which the wallet is unlocked for transfers, or 0 if the wallet is locked (only present for passphrase-encrypted wallets)"},
+                            {RPCResult::Type::NUM_TIME, "unlocked_until", /*optional=*/true, "the " + UNIX_EPOCH_TIME + " until which the wallet is unlocked for transfers, or 0 if the wallet is locked (only present for passphrase-encrypted wallets)"},
                             {RPCResult::Type::STR_AMOUNT, "paytxfee", "the transaction fee configuration, set in " + CURRENCY_UNIT + "/kB"},
                             {RPCResult::Type::STR_HEX, "hdchainid", "the ID of the HD chain"},
                             {RPCResult::Type::NUM, "hdaccountcount", "how many accounts of the HD chain are in this wallet"},
@@ -355,9 +354,7 @@ static RPCHelpMan upgradetohd()
             {"walletpassphrase", RPCArg::Type::STR, RPCArg::Default{""}, "If your wallet is encrypted you must have your wallet passphrase here. If your wallet is not encrypted, specifying wallet passphrase will trigger wallet encryption."},
             {"rescan", RPCArg::Type::BOOL, RPCArg::DefaultHint{"false if mnemonic is empty"}, "Whether to rescan the blockchain for missing transactions or not"},
         },
-        RPCResult{
-            RPCResult::Type::BOOL, "", "true if successful"
-        },
+        RPCResult{RPCResult::Type::STR, "", "A string with further instructions"},
         RPCExamples{
             HelpExampleCli("upgradetohd", "")
     + HelpExampleCli("upgradetohd", "\"mnemonicword1 ... mnemonicwordN\"")
@@ -371,51 +368,99 @@ static RPCHelpMan upgradetohd()
     if (!pwallet) return NullUniValue;
 
     bool generate_mnemonic = request.params[0].isNull() || request.params[0].get_str().empty();
-    SecureString secureWalletPassphrase;
-    secureWalletPassphrase.reserve(100);
+    bool mnemonic_passphrase_has_null{false};
+    {
+        LOCK(pwallet->cs_wallet);
 
-    if (request.params[2].isNull()) {
+        SecureString wallet_passphrase;
+        wallet_passphrase.reserve(100);
+
+        if (request.params[2].isNull()) {
+            if (pwallet->IsCrypted()) {
+                throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Wallet encrypted but passphrase not supplied to RPC.");
+            }
+        } else {
+            wallet_passphrase = std::string_view{request.params[2].get_str()};
+        }
+
+        SecureString mnemonic;
+        mnemonic.reserve(256);
+        if (!generate_mnemonic) {
+            mnemonic = std::string_view{request.params[0].get_str()};
+        }
+
+        SecureString mnemonic_passphrase;
+        mnemonic_passphrase.reserve(256);
+        if (!request.params[1].isNull()) {
+            mnemonic_passphrase = std::string_view{request.params[1].get_str()};
+            mnemonic_passphrase_has_null = (mnemonic_passphrase.find('\0') != std::string::npos);
+        }
+
+        // Do not do anything to HD wallets
+        if (pwallet->IsHDEnabled()) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Cannot upgrade a wallet to HD if it is already upgraded to HD");
+        }
+
+        if (pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Private keys are disabled for this wallet");
+        }
+
+        pwallet->WalletLogPrintf("Upgrading wallet to HD\n");
+        pwallet->SetMinVersion(FEATURE_HD);
+
         if (pwallet->IsCrypted()) {
-            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Wallet encrypted but passphrase not supplied to RPC.");
+            if (wallet_passphrase.empty()) {
+                throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: Wallet encrypted but supplied empty wallet passphrase");
+            }
+
+            // We are intentionally re-locking the wallet so we can validate passphrase
+            // by verifying if it can unlock the wallet
+            pwallet->Lock();
+
+            // Unlock the wallet
+            if (!pwallet->Unlock(wallet_passphrase)) {
+                // Check if the passphrase has a null character (see bitcoin#27067 for details)
+                if (wallet_passphrase.find('\0') == std::string::npos) {
+                    throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
+                } else {
+                    throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered is incorrect. "
+                                                                        "It contains a null character (ie - a zero byte). "
+                                                                        "If the passphrase was set with a version of this software prior to 23.0, "
+                                                                        "please try again with only the characters up to — but not including — "
+                                                                        "the first null character. If this is successful, please set a new "
+                                                                        "passphrase to avoid this issue in the future.");
+                }
+            }
         }
-    } else {
-        // TODO: get rid of this .c_str() by implementing SecureString::operator=(std::string)
-        // Alternately, find a way to make request.params[0] mlock()'d to begin with.
-        secureWalletPassphrase = request.params[2].get_str().c_str();
-    }
 
-    SecureString secureMnemonic;
-    secureMnemonic.reserve(256);
-    if (!generate_mnemonic) {
-        secureMnemonic = request.params[0].get_str().c_str();
-    }
+        if (pwallet->IsWalletFlagSet(WALLET_FLAG_DESCRIPTORS)) {
+            pwallet->SetupDescriptorScriptPubKeyMans(mnemonic, mnemonic_passphrase);
+        } else {
+            auto spk_man = pwallet->GetLegacyScriptPubKeyMan();
+            if (!spk_man) {
+                throw JSONRPCError(RPC_WALLET_ERROR, "Error: Legacy ScriptPubKeyMan is not available");
+            }
 
-    SecureString secureMnemonicPassphrase;
-    secureMnemonicPassphrase.reserve(256);
-    if (!request.params[1].isNull()) {
-        secureMnemonicPassphrase = request.params[1].get_str().c_str();
-    }
-
-    // TODO: breaking changes kept for v21!
-    // instead upgradetohd let's use more straightforward 'sethdseed'
-    constexpr bool is_v21 = false;
-    const int previous_version{pwallet->GetVersion()};
-    if (is_v21 && previous_version >= FEATURE_HD) {
-        return JSONRPCError(RPC_WALLET_ERROR, "Already at latest version. Wallet version unchanged.");
-    }
-
-    bilingual_str error;
-    const bool wallet_upgraded{pwallet->UpgradeToHD(secureMnemonic, secureMnemonicPassphrase, secureWalletPassphrase, error)};
-
-    if (!secureWalletPassphrase.empty() && !pwallet->IsCrypted()) {
-        if (!pwallet->EncryptWallet(secureWalletPassphrase)) {
-            throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Failed to encrypt HD wallet");
+            if (pwallet->IsCrypted()) {
+                pwallet->WithEncryptionKey([&](const CKeyingMaterial& encryption_key) {
+                        spk_man->GenerateNewHDChain(mnemonic, mnemonic_passphrase, encryption_key);
+                        return true;
+                    });
+            } else {
+                spk_man->GenerateNewHDChain(mnemonic, mnemonic_passphrase);
+            }
         }
-    }
 
-    if (!wallet_upgraded) {
-        throw JSONRPCError(RPC_WALLET_ERROR, error.original);
-    }
+        if (pwallet->IsCrypted()) {
+            // Relock encrypted wallet
+            pwallet->Lock();
+        } else if (!wallet_passphrase.empty()) {
+            // Encrypt non-encrypted wallet
+            if (!pwallet->EncryptWallet(wallet_passphrase)) {
+                throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Failed to encrypt HD wallet");
+            }
+        }
+    } // pwallet->cs_wallet
 
     // If you are generating new mnemonic it is assumed that the addresses have never gotten a transaction before, so you don't need to rescan for transactions
     bool rescan = request.params[3].isNull() ? !generate_mnemonic : request.params[3].get_bool();
@@ -436,7 +481,17 @@ static RPCHelpMan upgradetohd()
         }
     }
 
-    return true;
+    // Check if the passphrase has a null character (see #27067 for details)
+    if (!mnemonic_passphrase_has_null) {
+        return "Make sure that you have backup of your mnemonic.";
+    } else {
+        return "Make sure that you have backup of your mnemonic. "
+               "Your mnemonic passphrase contains a null character (ie - a zero byte). "
+               "If the passphrase was created with a version of this software prior to 23.0, "
+               "please try again with only the characters up to — but not including — "
+               "the first null character. If this is successful, please set a new "
+               "passphrase to avoid this issue in the future.";
+    }
 },
     };
 }
@@ -505,7 +560,7 @@ static RPCHelpMan setwalletflag()
             {
                 {RPCResult::Type::STR, "flag_name", "The name of the flag that was modified"},
                 {RPCResult::Type::BOOL, "flag_state", "The new state of the flag"},
-                {RPCResult::Type::STR, "warnings", "Any warnings associated with the change"},
+                {RPCResult::Type::STR, "warnings", /*optional=*/true, "Any warnings associated with the change"},
             }
         },
         RPCExamples{
@@ -597,7 +652,7 @@ static RPCHelpMan createwallet()
     passphrase.reserve(100);
     std::vector<bilingual_str> warnings;
     if (!request.params[3].isNull()) {
-        passphrase = request.params[3].get_str().c_str();
+        passphrase = std::string_view{request.params[3].get_str()};
         if (passphrase.empty()) {
             // Empty string means unencrypted
             warnings.emplace_back(Untranslated("Empty string given as passphrase, wallet will not be encrypted."));
@@ -798,7 +853,6 @@ static RPCHelpMan sethdseed()
                 },
         [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
 {
-    // TODO: add mnemonic feature to sethdseed or remove it in favour of upgradetohd
     std::shared_ptr<CWallet> const pwallet = GetWalletForJSONRPCRequest(request);
     if (!pwallet) return NullUniValue;
 
@@ -857,7 +911,8 @@ static RPCHelpMan upgradewallet()
 {
     return RPCHelpMan{"upgradewallet",
         "\nUpgrade the wallet. Upgrades to the latest version if no version number is specified.\n"
-        "New keys may be generated and a new wallet backup will need to be made.",
+        "New keys may be generated and a new wallet backup will need to be made.\n"
+        "Consider using RPC upgradetohd instead upgradewallet if you have BIP39 mnemonic or want to set a wallet passphrase also (encrypt wallet).",
         {
             {"version", RPCArg::Type::NUM, RPCArg::Default{int{FEATURE_LATEST}}, "The version number to upgrade to. Default is the latest wallet version."}
         },
@@ -867,8 +922,8 @@ static RPCHelpMan upgradewallet()
                 {RPCResult::Type::STR, "wallet_name", "Name of wallet this operation was performed on"},
                 {RPCResult::Type::NUM, "previous_version", "Version of wallet before this operation"},
                 {RPCResult::Type::NUM, "current_version", "Version of wallet after this operation"},
-                {RPCResult::Type::STR, "result", /* optional */ true, "Description of result, if no error"},
-                {RPCResult::Type::STR, "error", /* optional */ true, "Error message (if there is one)"}
+                {RPCResult::Type::STR, "result", /*optional=*/true, "Description of result, if no error"},
+                {RPCResult::Type::STR, "error", /*optional=*/true, "Error message (if there is one)"}
             },
         },
         RPCExamples{
