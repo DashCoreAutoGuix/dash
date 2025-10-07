@@ -30,8 +30,6 @@ Before every major release:
   [this pull request](https://github.com/dashpay/dash/pull/5692) for an example. Reviewers can verify the results by running `getchaintxstats <window_block_count> <window_last_block_hash>` with the `window_block_count` and `window_last_block_hash` from your output.
 * [ ] Prune inputs from the qa-assets repo (See [pruning inputs](https://github.com/bitcoin-core/qa-assets#pruning-inputs)).
 
-## Building
-
 ### First time / New builders
 
 Install Guix using one of the installation methods detailed in
