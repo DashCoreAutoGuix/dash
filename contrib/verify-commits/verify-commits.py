@@ -149,6 +149,9 @@ def main():
         if len(parents) == 2 and check_merge and not allow_unclean:
             current_tree = subprocess.check_output([GIT, 'show', '--format=%T', current_commit]).decode('utf8').splitlines()[0]
 
+            subprocess.call([GIT, 'checkout', '--force', '--quiet', parents[0]])
+             subprocess.call([GIT, 'merge', '--no-ff', '--quiet', '--no-gpg-sign', parents[1]], stdout=subprocess.DEVNULL)
+
             # This merge-tree functionality requires git >= 2.38. The
             # --write-tree option was added in order to opt-in to the new
             # behavior. Older versions of git will not recognize the option and
