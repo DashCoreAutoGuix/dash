@@ -77,7 +77,7 @@ int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wall
     return CalculateMaximumSignedTxSize(tx, wallet, txouts, coin_control);
 }
 
-uint64_t CoinsResult::size() const
+size_t CoinsResult::Size() const
 {
     return legacy.size() + other.size();
 }
@@ -91,10 +91,116 @@ std::vector<COutput> CoinsResult::all() const
     return all;
 }
 
-void CoinsResult::clear()
+void CoinsResult::Clear()
 {
     legacy.clear();
     other.clear();
+    total_amount = 0;
+    total_effective_amount = 0;
+}
+
+void CoinsResult::Erase(const std::unordered_set<COutPoint, SaltedOutpointHasher>& coins_to_remove)
+{
+    auto erase_helper = [&](std::vector<COutput>& vec) {
+        auto remove_it = std::remove_if(vec.begin(), vec.end(), [&](const COutput& coin) {
+            // remove it if it's on the set
+            if (coins_to_remove.count(coin.outpoint) == 0) return false;
+
+            // update cached amounts
+            total_amount -= coin.txout.nValue;
+            if (coin.HasEffectiveValue()) total_effective_amount = *total_effective_amount - coin.GetEffectiveValue();
+            return true;
+        });
+        vec.erase(remove_it, vec.end());
+    };
+
+    erase_helper(legacy);
+    erase_helper(other);
+}
+
+void CoinsResult::Shuffle(FastRandomContext& rng_fast)
+{
+    ::Shuffle(legacy.begin(), legacy.end(), rng_fast);
+    ::Shuffle(other.begin(), other.end(), rng_fast);
+}
+
+void CoinsResult::Add(OutputType type, const COutput& out)
+{
+    switch (type) {
+    case OutputType::LEGACY:
+        legacy.emplace_back(out);
+        break;
+    default:
+        other.emplace_back(out);
+        break;
+    }
+    total_amount += out.txout.nValue;
+    if (out.HasEffectiveValue()) {
+        total_effective_amount = total_effective_amount.has_value() ?
+                *total_effective_amount + out.GetEffectiveValue() : out.GetEffectiveValue();
+    }
+}
+
+static OutputType GetOutputType(TxoutType type, bool is_from_p2sh)
+{
+    switch (type) {
+        case TxoutType::WITNESS_V1_TAPROOT:
+            return OutputType::BECH32M;
+        case TxoutType::WITNESS_V0_KEYHASH:
+        case TxoutType::WITNESS_V0_SCRIPTHASH:
+            if (is_from_p2sh) return OutputType::P2SH_SEGWIT;
+            else return OutputType::BECH32;
+        case TxoutType::SCRIPTHASH:
+        case TxoutType::PUBKEYHASH:
+            return OutputType::LEGACY;
+        default:
+            return OutputType::UNKNOWN;
+    }
+}
+
+// Fetch and validate the coin control selected inputs.
+// Coins could be internal (from the wallet) or external.
+util::Result<PreSelectedInputs> FetchSelectedInputs(const CWallet& wallet, const CCoinControl& coin_control,
+                                            const CoinSelectionParams& coin_selection_params) EXCLUSIVE_LOCKS_REQUIRED(wallet.cs_wallet)
+{
+    PreSelectedInputs result;
+    std::vector<COutPoint> vPresetInputs;
+    coin_control.ListSelected(vPresetInputs);
+    for (const COutPoint& outpoint : vPresetInputs) {
+        int input_bytes = -1;
+        CTxOut txout;
+        if (auto ptr_wtx = wallet.GetWalletTx(outpoint.hash)) {
+            // Clearly invalid input, fail
+            if (ptr_wtx->tx->vout.size() <= outpoint.n) {
+                return util::Error{strprintf(_("Invalid pre-selected input %s"), outpoint.ToString())};
+            }
+            txout = ptr_wtx->tx->vout.at(outpoint.n);
+            input_bytes = CalculateMaximumSignedInputSize(txout, &wallet, &coin_control);
+        } else {
+            // The input is external. We did not find the tx in mapWallet.
+            if (!coin_control.GetExternalOutput(outpoint, txout)) {
+                return util::Error{strprintf(_("Not found pre-selected input %s"), outpoint.ToString())};
+            }
+        }
+
+        if (input_bytes == -1) {
+            input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, &coin_control);
+        }
+
+        // If available, override calculated size with coin control specified size
+        if (coin_control.HasInputWeight(outpoint)) {
+            input_bytes = GetVirtualTransactionSize(coin_control.GetInputWeight(outpoint), 0, 0);
+        }
+
+        if (input_bytes == -1) {
+            return util::Error{strprintf(_("Not solvable pre-selected input %s"), outpoint.ToString())}; // Not solvable, can't estimate size for fee
+        }
+
+        /* Set some defaults for depth, spendable, solvable, safe, time, and from_me as these don't matter for preset inputs since no selection is being done. */
+        COutput output(outpoint, txout, /*depth=*/ 0, input_bytes, /*spendable=*/ true, /*solvable=*/ true, /*safe=*/ true, /*time=*/ 0, /*from_me=*/ false, coin_selection_params.m_effective_feerate);
+        result.Insert(output, coin_selection_params.m_subtract_fee_outputs);
+    }
+    return result;
 }
 
 CoinsResult AvailableCoins(const CWallet& wallet,
@@ -238,26 +344,31 @@ CoinsResult AvailableCoins(const CWallet& wallet,
             }
 
             COutput coin(outpoint, output, nDepth, input_bytes, spendable, solvable, safeTx, wtx.GetTxTime(), tx_from_me, feerate);
+
+            // Determine output type for classification
+            OutputType output_type;
             switch (type) {
             case TxoutType::SCRIPTHASH:
             case TxoutType::PUBKEYHASH:
-                result.legacy.push_back(coin);
+                output_type = OutputType::LEGACY;
                 break;
             default:
-                result.other.push_back(coin);
-            };
+                output_type = OutputType::UNKNOWN;
+                break;
+            }
 
-            // Cache total amount as we go
-            result.total_amount += output.nValue;
+            // Use Add() method which properly updates cached amounts
+            result.Add(output_type, coin);
+
             // Checks the sum amount of all UTXO's.
             if (nMinimumSumAmount != MAX_MONEY) {
-                if (result.total_amount >= nMinimumSumAmount) {
+                if (result.GetTotalAmount() >= nMinimumSumAmount) {
                     return result;
                 }
             }
 
             // Checks the maximum number of UTXO's.
-            if (nMaximumCount > 0 && result.size() >= nMaximumCount) {
+            if (nMaximumCount > 0 && result.Size() >= nMaximumCount) {
                 return result;
             }
         }
@@ -280,7 +391,7 @@ CAmount GetAvailableBalance(const CWallet& wallet, const CCoinControl* coinContr
             /*nMaximumAmount=*/ MAX_MONEY,
             /*nMinimumSumAmount=*/ MAX_MONEY,
             /*nMaximumCount=*/ 0
-    ).total_amount;
+    ).GetTotalAmount();
 }
 
 const CTxOut& FindNonChangeParentOutput(const CWallet& wallet, const CTransaction& tx, int output)
@@ -595,10 +706,17 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, CoinsResult& a
         return result;
     }
 
+    // Return early if we cannot cover the target with the wallet's UTXO.
+    // We use the total effective value if we are not subtracting fee from outputs and 'available_coins' contains the data.
+    CAmount available_coins_total_amount = coin_selection_params.m_subtract_fee_outputs ? available_coins.GetTotalAmount() :
+            (available_coins.GetEffectiveTotalAmount().has_value() ? *available_coins.GetEffectiveTotalAmount() : 0);
+    if (selection_target > available_coins_total_amount) {
+        return std::nullopt; // Insufficient funds
+    }
+
     // remove preset inputs from coins so that Coin Selection doesn't pick them.
     if (coin_control.HasSelected()) {
-        available_coins.legacy.erase(remove_if(available_coins.legacy.begin(), available_coins.legacy.end(), [&](const COutput& c) { return preset_coins.count(c.outpoint); }), available_coins.legacy.end());
-        available_coins.other.erase(remove_if(available_coins.other.begin(), available_coins.other.end(), [&](const COutput& c) { return preset_coins.count(c.outpoint); }), available_coins.other.end());
+        available_coins.Erase(preset_coins);
     }
 
     unsigned int limit_ancestor_count = 0;

@@ -500,6 +500,26 @@ void SelectionResult::AddInput(const OutputGroup& group)
     m_use_effective = !group.m_subtract_fee_outputs;
 }
 
+void SelectionResult::AddInputs(const std::set<COutput>& inputs, bool subtract_fee_outputs)
+{
+    util::insert(m_selected_inputs, inputs);
+    m_use_effective = !subtract_fee_outputs;
+}
+
+void SelectionResult::Merge(const SelectionResult& other)
+{
+    // Obtain the expected selected inputs count after the merge (for now, duplicates are not allowed)
+    const size_t expected_count = m_selected_inputs.size() + other.m_selected_inputs.size();
+
+    m_target += other.m_target;
+    m_use_effective |= other.m_use_effective;
+    if (m_algo == SelectionAlgorithm::MANUAL) {
+        m_algo = other.m_algo;
+    }
+    util::insert(m_selected_inputs, other.m_selected_inputs);
+    assert(m_selected_inputs.size() == expected_count);
+}
+
 const std::set<COutput>& SelectionResult::GetInputSet() const
 {
     return m_selected_inputs;
