@@ -148,7 +148,6 @@ def main():
         allow_unclean = current_commit in unclean_merge_allowed
         if len(parents) == 2 and check_merge and not allow_unclean:
             current_tree = subprocess.check_output([GIT, 'show', '--format=%T', current_commit]).decode('utf8').splitlines()[0]
-
             subprocess.call([GIT, 'checkout', '--force', '--quiet', parents[0]])
             subprocess.call([GIT, 'merge', '--no-ff', '--quiet', '--no-gpg-sign', parents[1]], stdout=subprocess.DEVNULL)
 
