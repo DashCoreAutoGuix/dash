@@ -4,6 +4,7 @@
 
 #include <zmq/zmqnotificationinterface.h>
 
+#include <common/args.h>
 #include <netbase.h>
 #include <primitives/block.h>
 #include <util/system.h>

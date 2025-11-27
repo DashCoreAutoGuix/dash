@@ -4,6 +4,7 @@
 
 #include <node/caches.h>
 
+#include <common/args.h>
 #include <txdb.h>
 #include <util/system.h>
 #include <validation.h>

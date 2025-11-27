@@ -157,6 +157,7 @@ BITCOIN_CORE_H = \
   bech32.h \
   bip324.h \
   blockencodings.h \
+  common/args.h \
   common/bloom.h \
   cachemap.h \
   cachemultimap.h \
@@ -178,6 +179,7 @@ BITCOIN_CORE_H = \
   coinjoin/util.h \
   coinjoin/walletman.h \
   coins.h \
+  common/args.h \
   common/bloom.h \
   compat/assumptions.h \
   compat/byteswap.h \

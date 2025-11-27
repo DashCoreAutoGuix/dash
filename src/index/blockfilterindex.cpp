@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include <common/args.h>
 #include <dbwrapper.h>
 #include <hash.h>
 #include <index/blockfilterindex.h>
