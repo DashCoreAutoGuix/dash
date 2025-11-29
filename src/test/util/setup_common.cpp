@@ -35,7 +35,6 @@
 #include <test/util/index.h>
 #include <test/util/net.h>
 #include <txdb.h>
-#include <txmempool.h>
 #include <txmempool_entry.h>
 #include <util/strencodings.h>
 #include <util/string.h>
