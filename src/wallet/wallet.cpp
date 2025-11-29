@@ -1207,11 +1207,7 @@ bool CWallet::AbandonTransaction(const uint256& hashTx)
         return TxUpdate::UNCHANGED;
     };
 
-    // Iterate over all its outputs, and mark transactions in the wallet that spend them abandoned too.
-    // States are not permanent, so these transactions can become unabandoned if they are re-added to the
-    // mempool, or confirmed in a block, or conflicted.
-    // Note: If the reorged coinbase is re-added to the main chain, the descendants that have not had their
-    // states change will remain abandoned and will require manual broadcast if the user wants them.
+    // Iterate over all its outputs, and mark transactions in the wallet that spend them abandoned too
 
     RecursiveUpdateTxState(hashTx, try_updating_state);
 
@@ -1400,7 +1396,7 @@ void CWallet::blockDisconnected(const CBlock& block, int height)
     m_last_block_processed_height = height - 1;
     m_last_block_processed = block.hashPrevBlock;
 
-    int disconnect_height = height;
+    int disconnect_height = block.height;
 
     WalletBatch batch(GetDatabase());
     for (const CTransactionRef& ptx : block.vtx) {
