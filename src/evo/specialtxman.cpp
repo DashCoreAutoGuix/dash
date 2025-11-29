@@ -11,6 +11,7 @@
 #include <hash.h>
 #include <primitives/block.h>
 #include <util/irange.h>
+#include <util/system.h>
 #include <validation.h>
 
 #include <chainlock/chainlock.h>
@@ -175,20 +176,31 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
                                                 BlockValidationState& state, CDeterministicMNList& mnListRet)
 {
     AssertLockHeld(cs_main);
+    CDeterministicMNList oldList = m_dmnman.GetListForBlock(pindexPrev);
+    return RebuildListFromBlock(block, pindexPrev, oldList, view, debugLogs, state, mnListRet);
+}
+
+bool CSpecialTxProcessor::RebuildListFromBlock(const CBlock& block, gsl::not_null<const CBlockIndex*> pindexPrev,
+                                                const CDeterministicMNList& prevList, const CCoinsViewCache& view,
+                                                bool debugLogs, BlockValidationState& state,
+                                                CDeterministicMNList& mnListRet)
+{
+    // Verify that prevList either represents an empty/initial state (default-constructed),
+    // or it matches the previous block's hash.
+    assert(prevList == CDeterministicMNList() || prevList.GetBlockHash() == pindexPrev->GetBlockHash());
 
     int nHeight = pindexPrev->nHeight + 1;
 
-    CDeterministicMNList oldList = m_dmnman.GetListForBlock(pindexPrev);
-    CDeterministicMNList newList = oldList;
+    CDeterministicMNList newList = prevList;
     newList.SetBlockHash(uint256()); // we can't know the final block hash, so better not return a (invalid) block hash
     newList.SetHeight(nHeight);
 
-    auto payee = oldList.GetMNPayee(pindexPrev);
+    auto payee = prevList.GetMNPayee(pindexPrev);
 
-    // we iterate the oldList here and update the newList
+    // we iterate the prevList here and update the newList
     // this is only valid as long these have not diverged at this point, which is the case as long as we don't add
     // code above this loop that modifies newList
-    oldList.ForEachMN(false, [&pindexPrev, &newList, this](auto& dmn) {
+    prevList.ForEachMN(false, [&pindexPrev, &newList, this](auto& dmn) {
         if (!dmn.pdmnState->confirmedHash.IsNull()) {
             // already confirmed
             return;
@@ -206,7 +218,7 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
     newList.DecreaseScores();
 
     const bool isMNRewardReallocation{DeploymentActiveAfter(pindexPrev, m_consensus_params, Consensus::DEPLOYMENT_MN_RR)};
-    const bool is_v23_deployed{DeploymentActiveAfter(pindexPrev, m_consensus_params, Consensus::DEPLOYMENT_V23)};
+    const bool is_v24_deployed{DeploymentActiveAfter(pindexPrev, m_consensus_params, Consensus::DEPLOYMENT_V24)};
 
     // we skip the coinbase
     for (int i = 1; i < (int)block.vtx.size(); i++) {
@@ -234,13 +246,18 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
                 dmn->collateralOutpoint = proTx.collateralOutpoint;
             }
 
-            Coin coin;
-            CAmount expectedCollateral = GetMnType(proTx.nType).collat_amount;
-            if (!proTx.collateralOutpoint.hash.IsNull() && (!view.GetCoin(dmn->collateralOutpoint, coin) ||
-                                                            coin.IsSpent() || coin.out.nValue != expectedCollateral)) {
-                // should actually never get to this point as CheckProRegTx should have handled this case.
-                // We do this additional check nevertheless to be 100% sure
-                return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-collateral");
+            // Complain about spent collaterals only when we process the tip.
+            // This is safe because blocks below the tip were verified
+            // when they were connected initially.
+            if (!view.GetBestBlock().IsNull()) {
+                Coin coin;
+                CAmount expectedCollateral = GetMnType(proTx.nType).collat_amount;
+                if (!proTx.collateralOutpoint.hash.IsNull() && (!view.GetCoin(dmn->collateralOutpoint, coin) ||
+                                                                coin.IsSpent() || coin.out.nValue != expectedCollateral)) {
+                    // should actually never get to this point as CheckProRegTx should have handled this case.
+                    // We do this additional check nevertheless to be 100% sure
+                    return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-collateral");
+                }
             }
 
             auto replacedDmn = newList.GetMNByCollateral(dmn->collateralOutpoint);
@@ -260,6 +277,10 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
             for (const auto& entry : proTx.netInfo->GetEntries()) {
                 if (const auto service_opt{entry.GetAddrPort()}) {
                     if (newList.HasUniqueProperty(*service_opt)) {
+                        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-dup-netinfo-entry");
+                    }
+                } else if (const auto domain_opt{entry.GetDomainPort()}) {
+                    if (newList.HasUniqueProperty(*domain_opt)) {
                         return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-dup-netinfo-entry");
                     }
                 } else {
@@ -298,6 +319,11 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
                         newList.GetUniquePropertyMN(*service_opt)->proTxHash != opt_proTx->proTxHash) {
                         return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-dup-netinfo-entry");
                     }
+                } else if (const auto domain_opt{entry.GetDomainPort()}) {
+                    if (newList.HasUniqueProperty(*domain_opt) &&
+                        newList.GetUniquePropertyMN(*domain_opt)->proTxHash != opt_proTx->proTxHash) {
+                        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-dup-netinfo-entry");
+                    }
                 } else {
                     return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-protx-netinfo-entry");
                 }
@@ -315,8 +341,8 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
             }
 
             auto newState = std::make_shared<CDeterministicMNState>(*dmn->pdmnState);
-            if (is_v23_deployed) {
-                // Extended addresses support in v23 means that the version can be updated
+            if (is_v24_deployed) {
+                // Extended addresses support in v24 means that the version can be updated
                 newState->nVersion = opt_proTx->nVersion;
             }
             newState->netInfo = opt_proTx->netInfo;
@@ -476,7 +502,7 @@ bool CSpecialTxProcessor::BuildNewListFromBlock(const CBlock& block, gsl::not_nu
         newList.UpdateMN(dmn.proTxHash, newState);
     });
 
-    mnListRet = std::move(newList);
+    mnListRet = newList;
 
     return true;
 }

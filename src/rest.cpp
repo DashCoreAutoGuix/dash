@@ -223,7 +223,11 @@ static bool rest_headers(const CoreContext& context,
     } else if (path.size() == 1) {
         // new path with query parameter: /rest/headers/<hash>?count=<count>
         hashStr = path[0];
-        raw_count = req->GetQueryParameter("count").value_or("5");
+        try {
+            raw_count = req->GetQueryParameter("count").value_or("5");
+        } catch (const std::runtime_error& e) {
+            return RESTERR(req, HTTP_BAD_REQUEST, e.what());
+        }
     } else {
         return RESTERR(req, HTTP_BAD_REQUEST, "Invalid URI format. Expected /rest/headers/<hash>.<ext>?count=<count>");
     }
@@ -399,7 +403,11 @@ static bool rest_filter_header(const CoreContext& context, HTTPRequest* req, con
     } else if (uri_parts.size() == 2) {
         // new path with query parameter: /rest/blockfilterheaders/<filtertype>/<blockhash>?count=<count>
         raw_blockhash = uri_parts[1];
-        raw_count = req->GetQueryParameter("count").value_or("5");
+        try {
+            raw_count = req->GetQueryParameter("count").value_or("5");
+        } catch (const std::runtime_error& e) {
+            return RESTERR(req, HTTP_BAD_REQUEST, e.what());
+        }
     } else {
         return RESTERR(req, HTTP_BAD_REQUEST, "Invalid URI format. Expected /rest/blockfilterheaders/<filtertype>/<blockhash>.<ext>?count=<count>");
     }
@@ -620,51 +628,34 @@ static bool rest_chaininfo(const CoreContext& context, HTTPRequest* req, const s
     }
 }
 
-static bool rest_mempool_info(const CoreContext& context, HTTPRequest* req, const std::string& strURIPart)
+static bool rest_mempool(const CoreContext& context, HTTPRequest* req, const std::string& str_uri_part)
 {
     if (!CheckWarmup(req))
         return false;
+
+    std::string param;
+    const RESTResponseFormat rf = ParseDataFormat(param, str_uri_part);
+    if (param != "contents" && param != "info") {
+        return RESTERR(req, HTTP_BAD_REQUEST, "Invalid URI format. Expected /rest/mempool/<info|contents>.json");
+    }
+
     const CTxMemPool* mempool = GetMemPool(context, req);
     if (!mempool) return false;
-    std::string param;
-    const RESTResponseFormat rf = ParseDataFormat(param, strURIPart);
 
     switch (rf) {
     case RESTResponseFormat::JSON: {
         const LLMQContext* llmq_ctx = GetLLMQContext(context, req);
         if (!llmq_ctx) return false;
 
-        UniValue mempoolInfoObject = MempoolInfoToJSON(*mempool, *llmq_ctx->isman);
+        std::string str_json;
+        if (param == "contents") {
+            str_json = MempoolToJSON(*mempool, llmq_ctx->isman.get(), true).write() + "\n";
+        } else {
+            str_json = MempoolInfoToJSON(*mempool, *llmq_ctx->isman).write() + "\n";
+        }
 
-        std::string strJSON = mempoolInfoObject.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");
-        req->WriteReply(HTTP_OK, strJSON);
-        return true;
-    }
-    default: {
-        return RESTERR(req, HTTP_NOT_FOUND, "output format not found (available: json)");
-    }
-    }
-}
-
-static bool rest_mempool_contents(const CoreContext& context, HTTPRequest* req, const std::string& strURIPart)
-{
-    if (!CheckWarmup(req)) return false;
-    const CTxMemPool* mempool = GetMemPool(context, req);
-    if (!mempool) return false;
-    std::string param;
-    const RESTResponseFormat rf = ParseDataFormat(param, strURIPart);
-
-    switch (rf) {
-    case RESTResponseFormat::JSON: {
-        const LLMQContext* llmq_ctx = GetLLMQContext(context, req);
-        if (!llmq_ctx) return false;
-
-        UniValue mempoolObject = MempoolToJSON(*mempool, llmq_ctx->isman.get(), true);
-
-        std::string strJSON = mempoolObject.write() + "\n";
-        req->WriteHeader("Content-Type", "application/json");
-        req->WriteReply(HTTP_OK, strJSON);
+        req->WriteReply(HTTP_OK, str_json);
         return true;
     }
     default: {
@@ -691,7 +682,7 @@ static bool rest_tx(const CoreContext& context, HTTPRequest* req, const std::str
     const NodeContext* const node = GetNodeContext(context, req);
     if (!node) return false;
     uint256 hashBlock = uint256();
-    const CTransactionRef tx = GetTransaction(/* block_index */ nullptr, node->mempool.get(), hash, Params().GetConsensus(), hashBlock);
+    const CTransactionRef tx = GetTransaction(/*block_index=*/nullptr, node->mempool.get(), hash, Params().GetConsensus(), hashBlock);
     if (!tx) {
         return RESTERR(req, HTTP_NOT_FOUND, hashStr + " not found");
     }
@@ -982,8 +973,7 @@ static const struct {
       {"/rest/blockfilter/", rest_block_filter},
       {"/rest/blockfilterheaders/", rest_filter_header},
       {"/rest/chaininfo", rest_chaininfo},
-      {"/rest/mempool/info", rest_mempool_info},
-      {"/rest/mempool/contents", rest_mempool_contents},
+      {"/rest/mempool/", rest_mempool},
       {"/rest/headers/", rest_headers},
       {"/rest/getutxos", rest_getutxos},
       {"/rest/blockhashbyheight/", rest_blockhash_by_height},
