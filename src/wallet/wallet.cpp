@@ -1396,7 +1396,7 @@ void CWallet::blockDisconnected(const CBlock& block, int height)
     m_last_block_processed_height = height - 1;
     m_last_block_processed = block.hashPrevBlock;
 
-    int disconnect_height = block.height;
+    int disconnect_height = height;
 
     WalletBatch batch(GetDatabase());
     for (const CTransactionRef& ptx : block.vtx) {
