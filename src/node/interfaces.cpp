@@ -49,6 +49,7 @@
 #include <support/allocators/secure.h>
 #include <sync.h>
 #include <txmempool.h>
+#include <txmempool_entry.h>
 #include <uint256.h>
 #include <util/check.h>
 #include <util/system.h>

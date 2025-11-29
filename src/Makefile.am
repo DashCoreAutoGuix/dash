@@ -370,6 +370,7 @@ BITCOIN_CORE_H = \
   torcontrol.h \
   txdb.h \
   txmempool.h \
+  txmempool_entry.h \
   txorphanage.h \
   undo.h \
   unordered_lru_cache.h \

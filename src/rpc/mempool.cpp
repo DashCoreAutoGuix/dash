@@ -13,6 +13,7 @@
 #include <rpc/server_util.h>
 #include <rpc/util.h>
 #include <txmempool.h>
+#include <txmempool_entry.h>
 #include <univalue.h>
 #include <util/moneystr.h>
 #include <validation.h>
