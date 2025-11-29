@@ -23,6 +23,10 @@ class FeatureFastpruneTest(BitcoinTestFramework):
         self.log.info("ensure that large blocks don't crash or freeze in -fastprune")
         wallet = MiniWallet(self.nodes[0])
 
+        # Generate blocks to fund the wallet with UTXOs
+        # We need at least 500 UTXOs for 500 transactions
+        self.generate(wallet, 500)
+
         # Create many transactions to make a large block (>64kb)
         # Since Dash doesn't have witness data, we need to create many regular transactions
         txs = []
