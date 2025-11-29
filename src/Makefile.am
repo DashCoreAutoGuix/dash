@@ -18,7 +18,7 @@ AM_LIBTOOLFLAGS = --preserve-dup-deps
 PTHREAD_FLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 EXTRA_LIBRARIES =
 
-lib_LTLIBRARIES = $(LIBBITCOINCONSENSUS)
+lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 
 bin_PROGRAMS =
@@ -49,6 +49,7 @@ LIBBITCOIN_NODE=libbitcoin_node.a
 LIBBITCOIN_COMMON=libbitcoin_common.a
 LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
 LIBBITCOIN_CLI=libbitcoin_cli.a
+LIBBITCOIN_KERNEL=libbitcoin_kernel.a
 LIBBITCOIN_UTIL=libbitcoin_util.a
 LIBBITCOIN_CRYPTO_BASE=crypto/libbitcoin_crypto_base.la
 LIBBITCOINQT=qt/libbitcoinqt.a
@@ -60,6 +61,9 @@ LIBBITCOIN_ZMQ=libbitcoin_zmq.a
 endif
 if BUILD_BITCOIN_LIBS
 LIBBITCOINCONSENSUS=libdashconsensus.la
+endif
+if BUILD_BITCOIN_KERNEL_LIB
+LIBBITCOINKERNEL=libbitcoinkernel.la
 endif
 if ENABLE_WALLET
 LIBBITCOIN_WALLET=libbitcoin_wallet.a
@@ -1117,8 +1121,48 @@ endif
 #
 
 # dash-chainstate binary #
-dash_chainstate_SOURCES = \
-  dash-chainstate.cpp \
+dash_chainstate_SOURCES = dash-chainstate.cpp
+dash_chainstate_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+dash_chainstate_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+
+# $(LIBTOOL_APP_LDFLAGS) deliberately omitted here so that we can test linking
+# dash-chainstate against libbitcoinkernel as a shared or static library by
+# setting --{en,dis}able-shared.
+dash_chainstate_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(PTHREAD_FLAGS)
+dash_chainstate_LDADD = $(LIBBITCOINKERNEL)
+#
+
+# dashkernel library #
+if BUILD_BITCOIN_KERNEL_LIB
+lib_LTLIBRARIES += $(LIBBITCOINKERNEL)
+
+libbitcoinkernel_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(PTHREAD_FLAGS)
+libbitcoinkernel_la_LIBADD = $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) $(LIBSECP256K1)
+libbitcoinkernel_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) -I$(srcdir)/$(UNIVALUE_INCLUDE_DIR_INT)
+
+# libbitcoinkernel requires default symbol visibility, explicitly specify that
+# here so that things still work even when user configures with
+#   --enable-reduce-exports
+#
+# Note this is a quick hack that will be removed as we incrementally define what
+# to export from the library.
+libbitcoinkernel_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) -fvisibility=default
+
+# TODO: For now, Specify -static in both CXXFLAGS and LDFLAGS when building for
+#       windows targets so libtool will only build a static version of this
+#       library. There are unresolved problems when building dll's for mingw-w64
+#       and attempting to statically embed libstdc++, libpthread, etc.
+if TARGET_WINDOWS
+libbitcoinkernel_la_LDFLAGS += -static
+libbitcoinkernel_la_CXXFLAGS += -static
+endif
+
+# TODO: libbitcoinkernel is a work in progress consensus engine library, as more
+#       and more modules are decoupled from the consensus engine, this list will
+#       shrink to only those which are absolutely necessary. For example, things
+#       like index/*.cpp will be removed.
+libbitcoinkernel_la_SOURCES = \
+  kernel/bitcoinkernel.cpp \
   arith_uint256.cpp \
   blockfilter.cpp \
   chain.cpp \
@@ -1196,24 +1240,17 @@ dash_chainstate_SOURCES = \
   validationinterface.cpp \
   versionbits.cpp \
   warnings.cpp
-dash_chainstate_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-dash_chainstate_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-dash_chainstate_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
-dash_chainstate_LDADD = \
-  $(LIBBITCOIN_CRYPTO) \
-  $(LIBUNIVALUE) \
-  $(LIBSECP256K1) \
-  $(LIBLEVELDB) \
-  $(LIBLEVELDB_SSE42) \
-  $(LIBMEMENV)
 
 # Required for obj/build.h to be generated first.
 # More details: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
-dash_chainstate-clientversion.$(OBJEXT): obj/build.h
+libbitcoinkernel_la-clientversion.l$(OBJEXT): obj/build.h
+endif # BUILD_BITCOIN_KERNEL_LIB
 #
 
 # dashconsensus library #
 if BUILD_BITCOIN_LIBS
+lib_LTLIBRARIES += $(LIBBITCOINCONSENSUS)
+
 include_HEADERS = script/bitcoinconsensus.h
 libdashconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libbitcoin_crypto_base_la_SOURCES) $(crypto_libbitcoin_crypto_sph_la_SOURCES) $(libbitcoin_consensus_a_SOURCES)
 
