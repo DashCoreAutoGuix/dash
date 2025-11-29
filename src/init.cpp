@@ -19,7 +19,6 @@
 #include <context.h>
 #include <consensus/amount.h>
 #include <deploymentstatus.h>
-#include <node/coinstats.h>
 #include <fs.h>
 #include <hash.h>
 #include <httpserver.h>
@@ -32,6 +31,7 @@
 #include <interfaces/init.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
+#include <kernel/coinstats.h>
 #include <mapport.h>
 #include <node/miner.h>
 #include <net.h>
@@ -78,8 +78,8 @@
 
 #include <bls/bls.h>
 #include <coinjoin/coinjoin.h>
-#include <coinjoin/context.h>
 #include <coinjoin/server.h>
+#include <coinjoin/walletman.h>
 #include <dsnotificationinterface.h>
 #include <evo/deterministicmns.h>
 #include <evo/evodb.h>
@@ -87,6 +87,7 @@
 #include <flat-database.h>
 #include <governance/governance.h>
 #include <instantsend/instantsend.h>
+#include <instantsend/net_instantsend.h>
 #include <llmq/context.h>
 #include <llmq/dkgsessionmgr.h>
 #include <llmq/options.h>
@@ -121,7 +122,6 @@
 #include <vector>
 
 #ifndef WIN32
-#include <attributes.h>
 #include <cerrno>
 #include <signal.h>
 #include <sys/stat.h>
@@ -135,10 +135,10 @@
 #include <zmq/zmqrpc.h>
 #endif
 
+using kernel::CoinStatsHashType;
+
 using node::CacheSizes;
 using node::CalculateCacheSizes;
-using node::CCoinsStats;
-using node::CoinStatsHashType;
 using node::ChainstateLoadingError;
 using node::ChainstateLoadVerifyError;
 using node::DashChainstateSetupClose;
@@ -225,13 +225,35 @@ static fs::path GetPidFile(const ArgsManager& args)
 // shutdown thing.
 //
 
+#if HAVE_SYSTEM
+static void ShutdownNotify(const ArgsManager& args)
+{
+    std::vector<std::thread> threads;
+    for (const auto& cmd : args.GetArgs("-shutdownnotify")) {
+        threads.emplace_back(runCommand, cmd);
+    }
+    for (auto& t : threads) {
+        t.join();
+    }
+}
+#endif
+
 void Interrupt(NodeContext& node)
 {
+#if HAVE_SYSTEM
+    ShutdownNotify(*node.args);
+#endif
     InterruptHTTPServer();
     InterruptHTTPRPC();
     InterruptRPC();
     InterruptREST();
     InterruptTorControl();
+    if (node.active_ctx) {
+        node.active_ctx->Interrupt();
+    }
+    if (node.peerman) {
+        node.peerman->InterruptHandlers();
+    }
     if (node.llmq_ctx) {
         node.llmq_ctx->Interrupt();
     }
@@ -267,6 +289,9 @@ void PrepareShutdown(NodeContext& node)
     StopREST();
     StopRPC();
     StopHTTPServer();
+
+    if (node.active_ctx) node.active_ctx->Stop();
+    if (node.peerman) node.peerman->StopHandlers();
     if (node.llmq_ctx) node.llmq_ctx->Stop();
 
     for (const auto& client : node.chain_clients) {
@@ -326,6 +351,15 @@ void PrepareShutdown(NodeContext& node)
         g_active_notification_interface.reset();
     }
 
+    if (node.cj_walletman) {
+        UnregisterValidationInterface(node.cj_walletman.get());
+    }
+
+    if (g_ds_notification_interface) {
+        UnregisterValidationInterface(g_ds_notification_interface.get());
+        g_ds_notification_interface.reset();
+    }
+
     // After all scheduled tasks have been flushed, destroy pointers
     // and reset all to nullptr.
     node.active_ctx.reset();
@@ -377,18 +411,14 @@ void PrepareShutdown(NodeContext& node)
     }
 #endif
 
-    if (g_ds_notification_interface) {
-        UnregisterValidationInterface(g_ds_notification_interface.get());
-        g_ds_notification_interface.reset();
-    }
-
     node.mn_activeman.reset();
 
     node.chain_clients.clear();
 
     // After all wallets are removed, destroy all CoinJoin objects
     // and reset them to nullptr
-    node.cj_ctx.reset();
+    node.cj_walletman.reset();
+    node.dstxman.reset();
 
     UnregisterAllValidationInterfaces();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
@@ -431,7 +461,6 @@ void Shutdown(NodeContext& node)
         LogPrintf("%s: Unable to remove PID file: %s\n", __func__, fsbridge::get_filesystem_error_message(e));
     }
 
-    node.args = nullptr;
     LogPrintf("%s: done\n", __func__);
 }
 
@@ -512,6 +541,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-assumevalid=<hex>", strprintf("If this block is in the chain assume that it and its ancestors are valid and potentially skip their script verification (0 to verify all, default: %s, testnet: %s)", defaultChainParams->GetConsensus().defaultAssumeValid.GetHex(), testnetChainParams->GetConsensus().defaultAssumeValid.GetHex()), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-blocksdir=<dir>", "Specify directory to hold blocks subdirectory for *.dat files (default: <datadir>)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-fastprune", "Use smaller block files and lower minimum prune height for testing purposes", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-tinyblk", "Use smaller block files for testing purposes", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
 #if HAVE_SYSTEM
     argsman.AddArg("-blocknotify=<cmd>", "Execute command when the best block changes (%s in cmd is replaced by block hash)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #endif
@@ -521,7 +551,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-chainlocknotify=<cmd>", "Execute command when the best chainlock changes (%s in cmd is replaced by chainlocked block hash)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #endif
     argsman.AddArg("-coinstatsindex", strprintf("Maintain coinstats index used by the gettxoutsetinfo RPC (default: %u)", DEFAULT_COINSTATSINDEX), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-    argsman.AddArg("-conf=<file>", strprintf("Specify path to read-only configuration file. Relative paths will be prefixed by datadir location. (default: %s)", BITCOIN_CONF_FILENAME), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-conf=<file>", strprintf("Specify path to read-only configuration file. Relative paths will be prefixed by datadir location (only useable from command line, not configuration file) (default: %s)", BITCOIN_CONF_FILENAME), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-datadir=<dir>", "Specify data directory", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-dbbatchsize", strprintf("Maximum database write batch size in bytes (default: %u)", nDefaultDbBatchSize), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     argsman.AddArg("-dbcache=<n>", strprintf("Maximum database cache size <n> MiB (%d to %d, default: %d). In addition, unused mempool memory is shared for this cache (see -maxmempool).", nMinDbCache, nMaxDbCache, nDefaultDbCache), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -545,6 +575,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-syncmempool", strprintf("Sync mempool from other nodes on start (default: %u)", DEFAULT_SYNC_MEMPOOL), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #if HAVE_SYSTEM
     argsman.AddArg("-startupnotify=<cmd>", "Execute command on startup.", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-shutdownnotify=<cmd>", "Execute command immediately before beginning shutdown. The need for shutdown may be urgent, so be careful not to delay it long (if the command doesn't require interaction with the server, consider having it fork into the background).", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #endif
 #ifndef WIN32
     argsman.AddArg("-sysperms", "Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -748,7 +779,7 @@ void SetupServerArgs(ArgsManager& argsman)
 
     argsman.AddArg("-acceptnonstdtxn", strprintf("Relay and mine \"non-standard\" transactions (%sdefault: %u)", "testnet/regtest only; ", !testnetChainParams->RequireStandard()), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
     argsman.AddArg("-dustrelayfee=<amt>", strprintf("Fee rate (in %s/kB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it. (default: %s)", CURRENCY_UNIT, FormatMoney(DUST_RELAY_TX_FEE)), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
-    argsman.AddArg("-incrementalrelayfee=<amt>", strprintf("Fee rate (in %s/kB) used to define cost of relay, used for mempool limiting and BIP 125 replacement. (default: %s)", CURRENCY_UNIT, FormatMoney(DEFAULT_INCREMENTAL_RELAY_FEE)), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
+    argsman.AddArg("-incrementalrelayfee=<amt>", strprintf("Fee rate (in %s/kB) used to define cost of relay, used for mempool limiting. (default: %s)", CURRENCY_UNIT, FormatMoney(DEFAULT_INCREMENTAL_RELAY_FEE)), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
     argsman.AddArg("-bytespersigop", strprintf("Equivalent bytes per sigop in transactions for relay and mining (default: %u)", DEFAULT_BYTES_PER_SIGOP), ArgsManager::ALLOW_ANY, OptionsCategory::NODE_RELAY);
     argsman.AddArg("-datacarrier", strprintf("Relay and mine data carrier transactions (default: %u)", DEFAULT_ACCEPT_DATACARRIER), ArgsManager::ALLOW_ANY, OptionsCategory::NODE_RELAY);
     argsman.AddArg("-datacarriersize", strprintf("Maximum size of data in data carrier transactions we relay and mine (default: %u)", MAX_OP_RETURN_RELAY), ArgsManager::ALLOW_ANY, OptionsCategory::NODE_RELAY);
@@ -767,6 +798,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-rpcallowip=<ip>", "Allow JSON-RPC connections from specified source. Valid values for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0), a network/CIDR (e.g. 1.2.3.4/24), all ipv4 (0.0.0.0/0), or all ipv6 (::/0). This option can be specified multiple times", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg("-rpcauth=<userpw>", "Username and HMAC-SHA-256 hashed password for JSON-RPC connections. The field <userpw> comes in the format: <USERNAME>:<SALT>$<HASH>. A canonical python script is included in share/rpcuser. The client then connects normally using the rpcuser=<USERNAME>/rpcpassword=<PASSWORD> pair of arguments. This option can be specified multiple times", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::RPC);
     argsman.AddArg("-rpcbind=<addr>[:port]", "Bind to given address to listen for JSON-RPC connections. Do not expose the RPC server to untrusted networks such as the public internet! This option is ignored unless -rpcallowip is also passed. Port is optional and overrides -rpcport. Use [host]:port notation for IPv6. This option can be specified multiple times (default: 127.0.0.1 and ::1 i.e., localhost, or if -rpcallowip has been specified, 0.0.0.0 and :: i.e., all addresses)", ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::RPC);
+    argsman.AddArg("-rpcdoccheck", strprintf("Throw a non-fatal error at runtime if the documentation for an RPC is incorrect (default: %u)", DEFAULT_RPC_DOC_CHECK), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::RPC);
     argsman.AddArg("-rpccookiefile=<loc>", "Location of the auth cookie. Relative paths will be prefixed by a net-specific datadir location. (default: data dir)", ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg("-rpcexternaluser=<users>", "List of comma-separated usernames for JSON-RPC external connections", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::RPC);
     argsman.AddArg("-rpcexternalworkqueue=<n>", strprintf("Set the depth of the work queue to service external RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::RPC);
@@ -783,7 +815,7 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-statsbatchsize=<bytes>", strprintf("Specify the size of each batch of stats messages (default: %d)", DEFAULT_STATSD_BATCH_SIZE), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
     argsman.AddArg("-statsduration=<ms>", strprintf("Specify the number of milliseconds between stats messages (default: %d)", DEFAULT_STATSD_DURATION), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
     argsman.AddArg("-statshost=<ip>", strprintf("Specify statsd host (default: %s)", DEFAULT_STATSD_HOST), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
-    argsman.AddArg("-statsport=<port>", strprintf("Specify statsd port (default: %u)", DEFAULT_STATSD_PORT), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
+    hidden_args.emplace_back("-statsport");
     argsman.AddArg("-statsperiod=<seconds>", strprintf("Specify the number of seconds between periodic measurements (default: %d)", DEFAULT_STATSD_PERIOD), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
     argsman.AddArg("-statsprefix=<string>", strprintf("Specify an optional string prepended to every stats key (default: %s)", DEFAULT_STATSD_PREFIX), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
     argsman.AddArg("-statssuffix=<string>", strprintf("Specify an optional string appended to every stats key (default: %s)", DEFAULT_STATSD_SUFFIX), ArgsManager::ALLOW_ANY, OptionsCategory::STATSD);
@@ -800,7 +832,7 @@ void SetupServerArgs(ArgsManager& argsman)
 }
 
 static bool fHaveGenesis = false;
-static Mutex g_genesis_wait_mutex;
+static GlobalMutex g_genesis_wait_mutex;
 static std::condition_variable g_genesis_wait_cv;
 
 static void BlockNotifyGenesisWait(const CBlockIndex* pBlockIndex)
@@ -832,15 +864,15 @@ static void PeriodicStats(NodeContext& node)
     ChainstateManager& chainman = *Assert(node.chainman);
     const CTxMemPool& mempool = *Assert(node.mempool);
     const llmq::CInstantSendManager& isman = *Assert(node.llmq_ctx->isman);
-    CCoinsStats stats{CoinStatsHashType::NONE};
     chainman.ActiveChainstate().ForceFlushStateToDisk();
-    if (WITH_LOCK(cs_main, return GetUTXOStats(&chainman.ActiveChainstate().CoinsDB(), chainman.m_blockman, stats, node.rpc_interruption_point, chainman.ActiveChain().Tip()))) {
-        ::g_stats_client->gauge("utxoset.tx", stats.nTransactions, 1.0f);
-        ::g_stats_client->gauge("utxoset.txOutputs", stats.nTransactionOutputs, 1.0f);
-        ::g_stats_client->gauge("utxoset.dbSizeBytes", stats.nDiskSize, 1.0f);
-        ::g_stats_client->gauge("utxoset.blockHeight", stats.nHeight, 1.0f);
-        if (stats.total_amount.has_value()) {
-            ::g_stats_client->gauge("utxoset.totalAmount", (double)stats.total_amount.value() / (double)COIN, 1.0f);
+    const auto maybe_stats = WITH_LOCK(::cs_main, return GetUTXOStats(&chainman.ActiveChainstate().CoinsDB(), chainman.m_blockman, /*hash_type=*/CoinStatsHashType::NONE, node.rpc_interruption_point, chainman.ActiveChain().Tip(), /*index_requested=*/true));
+    if (maybe_stats.has_value()) {
+        ::g_stats_client->gauge("utxoset.tx", maybe_stats->nTransactions, 1.0f);
+        ::g_stats_client->gauge("utxoset.txOutputs", maybe_stats->nTransactionOutputs, 1.0f);
+        ::g_stats_client->gauge("utxoset.dbSizeBytes", maybe_stats->nDiskSize, 1.0f);
+        ::g_stats_client->gauge("utxoset.blockHeight", maybe_stats->nHeight, 1.0f);
+        if (maybe_stats->total_amount.has_value()) {
+            ::g_stats_client->gauge("utxoset.totalAmount", (double)maybe_stats->total_amount.value() / (double)COIN, 1.0f);
         }
     } else {
         // something went wrong
@@ -1256,8 +1288,7 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     int64_t nMempoolSizeMin = args.GetIntArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000 * 40;
     if (nMempoolSizeMax < 0 || nMempoolSizeMax < nMempoolSizeMin)
         return InitError(strprintf(_("-maxmempool must be at least %d MB"), std::ceil(nMempoolSizeMin / 1000000.0)));
-    // incremental relay fee sets the minimum feerate increase necessary for BIP 125 replacement in the mempool
-    // and the amount the mempool min fee increases above the feerate of txs evicted due to mempool limiting.
+    // incremental relay fee sets the amount the mempool min fee increases above the feerate of txs evicted due to mempool limiting.
     if (args.IsArgSet("-incrementalrelayfee")) {
         if (std::optional<CAmount> inc_relay_fee = ParseMoney(args.GetArg("-incrementalrelayfee", ""))) {
             ::incrementalRelayFee = CFeeRate{inc_relay_fee.value()};
@@ -1409,7 +1440,7 @@ bool AppInitParameterInteraction(const ArgsManager& args)
 static bool LockDataDirectory(bool probeOnly)
 {
     // Make sure only a single Dash Core process is using the data directory.
-    fs::path datadir = gArgs.GetDataDirNet();
+    const fs::path& datadir = gArgs.GetDataDirNet();
     if (!DirIsWritable(datadir)) {
         return InitError(strprintf(_("Cannot write to data directory '%s'; check permissions."), fs::PathToString(datadir)));
     }
@@ -1584,11 +1615,6 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     fDiscover = args.GetBoolArg("-discover", true);
     const bool ignores_incoming_txs{args.GetBoolArg("-blocksonly", DEFAULT_BLOCKSONLY)};
 
-    // We need to initialize g_stats_client early as currently, g_stats_client is called
-    // regardless of whether transmitting stats are desirable or not and if
-    // g_stats_client isn't present when that attempt is made, the client will crash.
-    ::g_stats_client = InitStatsClient(args);
-
     {
 
         // Read asmap file if configured
@@ -1629,6 +1655,17 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     ::g_socket_events_mode = SEMFromString(sem_str);
     if (::g_socket_events_mode == SocketEventsMode::Unknown) {
         return InitError(strprintf(_("Invalid -socketevents ('%s') specified. Only these modes are supported: %s"), sem_str, GetSupportedSocketEventsStr()));
+    }
+
+    // We need to initialize g_stats_client early as currently, g_stats_client is called
+    // regardless of whether transmitting stats are desirable or not and if
+    // g_stats_client isn't present when that attempt is made, the client will crash.
+    {
+        auto stats_client = StatsdClient::make(args);
+        if (!stats_client) {
+            return InitError(_("Cannot init Statsd client") + Untranslated(" (") + util::ErrorString(stats_client) + Untranslated(")"));
+        }
+        ::g_stats_client = std::move(*stats_client);
     }
 
     assert(!node.banman);
@@ -1968,6 +2005,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                                               node.mnhf_manager,
                                               node.llmq_ctx,
                                               Assert(node.mempool.get()),
+                                              args.GetDataDirNet(),
                                               fPruneMode,
                                               args.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX),
                                               is_governance_enabled,
@@ -1982,6 +2020,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                                               cache_sizes.coins,
                                               /*block_tree_db_in_memory=*/false,
                                               /*coins_db_in_memory=*/false,
+                                              /*dash_dbs_in_memory=*/false,
                                               /*shutdown_requested=*/ShutdownRequested,
                                               /*coins_error_cb=*/[]() {
                                                   uiInterface.ThreadSafeMessageBox(
@@ -2126,36 +2165,43 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     ChainstateManager& chainman = *Assert(node.chainman);
 
+    assert(!node.dstxman);
+    node.dstxman = std::make_unique<CDSTXManager>();
+
+    assert(!node.cj_walletman);
+    if (!node.mn_activeman) {
+        node.cj_walletman = CJWalletManager::make(chainman, *node.dmnman, *node.mn_metaman, *node.mempool, *node.mn_sync,
+                                                  *node.llmq_ctx->isman, !ignores_incoming_txs);
+    }
+    if (node.cj_walletman) {
+        RegisterValidationInterface(node.cj_walletman.get());
+    }
+
     assert(!node.peerman);
-    node.peerman = PeerManager::make(chainparams, *node.connman, *node.addrman, node.banman.get(),
+    node.peerman = PeerManager::make(chainparams, *node.connman, *node.addrman, node.banman.get(), *node.dstxman,
                                      chainman, *node.mempool, *node.mn_metaman, *node.mn_sync,
                                      *node.govman, *node.sporkman, node.mn_activeman.get(), node.dmnman,
-                                     node.active_ctx, node.cj_ctx, node.llmq_ctx, ignores_incoming_txs);
+                                     node.active_ctx, node.cj_walletman.get(), node.llmq_ctx, ignores_incoming_txs);
     RegisterValidationInterface(node.peerman.get());
 
     g_ds_notification_interface = std::make_unique<CDSNotificationInterface>(
-        *node.connman, *node.mn_sync, *node.govman, *node.peerman, chainman, node.mn_activeman.get(), node.dmnman, node.llmq_ctx, node.cj_ctx
+        *node.connman, *node.dstxman, *node.mn_sync, *node.govman, chainman, node.dmnman, node.llmq_ctx
     );
     RegisterValidationInterface(g_ds_notification_interface.get());
 
-    // ********************************************************* Step 7c: Setup CoinJoin
-
-    node.cj_ctx = std::make_unique<CJContext>(chainman, *node.dmnman, *node.mn_metaman, *node.mempool,
-                                              node.mn_activeman.get(), *node.mn_sync, *node.llmq_ctx->isman,
-                                              !ignores_incoming_txs);
-
-    // ********************************************************* Step 7d: Setup masternode mode
+    // ********************************************************* Step 7c: Setup masternode mode
     assert(!node.active_ctx);
     assert(!g_active_notification_interface);
     if (node.mn_activeman) {
-        node.active_ctx = std::make_unique<ActiveContext>(chainman, *node.connman, *node.dmnman, *node.cj_ctx->dstxman, *node.mn_metaman, *node.mnhf_manager,
-                                                          *node.llmq_ctx, *node.sporkman, *node.mempool, *node.peerman, *node.mn_activeman,
-                                                          *node.mn_sync);
+        node.active_ctx = std::make_unique<ActiveContext>(chainman, *node.connman, *node.dmnman, *node.dstxman, *node.govman, *node.mn_metaman,
+                                                          *node.mnhf_manager, *node.sporkman, *node.mempool, *node.llmq_ctx, *node.peerman,
+                                                          *node.mn_activeman, *node.mn_sync);
         g_active_notification_interface = std::make_unique<ActiveNotificationInterface>(*node.active_ctx, *node.mn_activeman);
         RegisterValidationInterface(g_active_notification_interface.get());
     }
+    node.peerman->AddExtraHandler(std::make_unique<NetInstantSend>(node.peerman.get(), *node.llmq_ctx->isman, *node.llmq_ctx->qman, chainman.ActiveChainstate()));
 
-    // ********************************************************* Step 7e: Setup other Dash services
+    // ********************************************************* Step 7d: Setup other Dash services
 
     bool fLoadCacheFiles = !(fReindex || fReindexChainState) && (chainman.ActiveChain().Tip() != nullptr);
 
@@ -2187,10 +2233,6 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     // ********************************************************* Step 8: start indexers
     if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
-        if (const auto error{WITH_LOCK(cs_main, return CheckLegacyTxindex(*Assert(chainman.m_blockman.m_block_tree_db)))}) {
-            return InitError(*error);
-        }
-
         g_txindex = std::make_unique<TxIndex>(cache_sizes.tx_index, false, fReindex);
         if (!g_txindex->Start(chainman.ActiveChainstate())) {
             return false;
@@ -2252,25 +2294,26 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     // ********************************************************* Step 10a: schedule Dash-specific tasks
 
-    node.llmq_ctx->Start(*node.connman, *node.peerman);
+    node.llmq_ctx->Start(*node.peerman);
+    node.peerman->StartHandlers();
+    if (node.active_ctx) node.active_ctx->Start(*node.connman, *node.peerman);
 
     node.scheduler->scheduleEvery(std::bind(&CNetFulfilledRequestManager::DoMaintenance, std::ref(*node.netfulfilledman)), std::chrono::minutes{1});
     node.scheduler->scheduleEvery(std::bind(&CMasternodeSync::DoMaintenance, std::ref(*node.mn_sync), std::cref(*node.peerman), std::cref(*node.govman)), std::chrono::seconds{1});
-    node.scheduler->scheduleEvery(std::bind(&CMasternodeUtils::DoMaintenance, std::ref(*node.connman), std::ref(*node.dmnman), std::ref(*node.mn_sync), std::ref(*node.cj_ctx)), std::chrono::minutes{1});
+    node.scheduler->scheduleEvery(std::bind(&CMasternodeUtils::DoMaintenance, std::ref(*node.connman), std::ref(*node.dmnman), std::ref(*node.mn_sync), node.cj_walletman.get()), std::chrono::minutes{1});
     node.scheduler->scheduleEvery(std::bind(&CDeterministicMNManager::DoMaintenance, std::ref(*node.dmnman)), std::chrono::seconds{10});
 
     if (node.govman->IsValid()) {
-        node.scheduler->scheduleEvery(std::bind(&CGovernanceManager::DoMaintenance, std::ref(*node.govman), std::ref(*node.connman)), std::chrono::minutes{5});
+        node.govman->Schedule(*node.scheduler, *node.connman, *node.peerman);
     }
 
     if (node.mn_activeman) {
         node.scheduler->scheduleEvery(std::bind(&CCoinJoinServer::DoMaintenance, std::ref(*node.active_ctx->cj_server)), std::chrono::seconds{1});
         node.scheduler->scheduleEvery(std::bind(&llmq::CDKGSessionManager::CleanupOldContributions, std::ref(*node.llmq_ctx->qdkgsman)), std::chrono::hours{1});
-#ifdef ENABLE_WALLET
-    } else if (!ignores_incoming_txs) {
-        node.scheduler->scheduleEvery(std::bind(&CCoinJoinClientQueueManager::DoMaintenance, std::ref(*node.cj_ctx->queueman)), std::chrono::seconds{1});
-        node.scheduler->scheduleEvery(std::bind(&CoinJoinWalletManager::DoMaintenance, std::ref(*node.cj_ctx->walletman), std::ref(*node.connman)), std::chrono::seconds{1});
-#endif // ENABLE_WALLET
+    }
+
+    if (node.cj_walletman) {
+        node.cj_walletman->Schedule(*node.connman, *node.scheduler);
     }
 
     if (::g_stats_client->active()) {
@@ -2287,6 +2330,24 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     if (!CheckDiskSpace(gArgs.GetBlocksDirPath())) {
         InitError(strprintf(_("Error: Disk space is low for %s"), fs::quoted(fs::PathToString(gArgs.GetBlocksDirPath()))));
         return false;
+    }
+
+    int chain_active_height = WITH_LOCK(cs_main, return chainman.ActiveChain().Height());
+
+    // On first startup, warn on low block storage space
+    if (!fReindex && !fReindexChainState && chain_active_height <= 1) {
+        uint64_t additional_bytes_needed = fPruneMode ? nPruneTarget
+            : chainparams.AssumedBlockchainSize() * 1024 * 1024 * 1024;
+
+        if (!CheckDiskSpace(args.GetBlocksDirPath(), additional_bytes_needed)) {
+            InitWarning(strprintf(_(
+                    "Disk space for %s may not accommodate the block files. " \
+                    "Approximately %u GB of data will be stored in this directory."
+                ),
+                fs::quoted(fs::PathToString(args.GetBlocksDirPath())),
+                chainparams.AssumedBlockchainSize()
+            ));
+        }
     }
 
     // Either install a handler to notify us when genesis activates, or set fHaveGenesis directly.
@@ -2378,8 +2439,6 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     }
 
     // ********************************************************* Step 12: start node
-
-    int chain_active_height;
 
     //// debug print
     {

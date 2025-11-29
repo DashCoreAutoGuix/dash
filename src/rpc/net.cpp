@@ -90,7 +90,7 @@ static RPCHelpMan ping()
 
     // Request that each node send a ping during next message processing pass
     peerman.SendPings();
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -99,7 +99,7 @@ static RPCHelpMan getpeerinfo()
 {
     return RPCHelpMan{
         "getpeerinfo",
-        "\nReturns data about each connected network node as a json array of objects.\n",
+        "Returns data about each connected network peer as a json array of objects.",
         {},
         RPCResult{
             RPCResult::Type::ARR, "", "",
@@ -124,7 +124,7 @@ static RPCHelpMan getpeerinfo()
                     {RPCResult::Type::STR_HEX, "verified_pubkey_hash", "Only present when the peer is a masternode and successfully "
                                                                         "authenticated via MNAUTH. In this case, this field contains the "
                                                                         "hash of the masternode's operator public key"},
-                    {RPCResult::Type::BOOL, "relaytxes", "Whether peer has asked us to relay transactions to it"},
+                    {RPCResult::Type::BOOL, "relaytxes", /*optional=*/true, "Whether peer has asked us to relay transactions to it"},
                     {RPCResult::Type::NUM_TIME, "lastsend", "The " + UNIX_EPOCH_TIME + " of the last send"},
                     {RPCResult::Type::NUM_TIME, "lastrecv", "The " + UNIX_EPOCH_TIME + " of the last receive"},
                     {RPCResult::Type::NUM_TIME, "last_transaction", "The " + UNIX_EPOCH_TIME + " of the last valid transaction received from this peer"},
@@ -340,7 +340,7 @@ static RPCHelpMan addnode()
     {
         CAddress addr;
         connman.OpenNetworkConnection(addr, /*fCountFailure=*/false, /*grant_outbound=*/{}, node_arg.c_str(), ConnectionType::MANUAL, use_v2transport);
-        return NullUniValue;
+        return UniValue::VNULL;
     }
 
     if (command == "add")
@@ -356,7 +356,7 @@ static RPCHelpMan addnode()
         }
     }
 
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -466,7 +466,7 @@ static RPCHelpMan disconnectnode()
         throw JSONRPCError(RPC_CLIENT_NODE_NOT_CONNECTED, "Node not found in connected nodes");
     }
 
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -804,7 +804,7 @@ static RPCHelpMan setban()
             throw JSONRPCError(RPC_CLIENT_INVALID_IP_OR_SUBNET, "Error: Unban failed. Requested address/subnet was not previously manually banned.");
         }
     }
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -872,7 +872,7 @@ static RPCHelpMan clearbanned()
 
     banman.ClearBanned();
 
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -893,7 +893,7 @@ static RPCHelpMan cleardiscouraged()
 
     banman.ClearDiscouraged();
 
-    return NullUniValue;
+    return UniValue::VNULL;
 },
     };
 }
@@ -1079,7 +1079,7 @@ static RPCHelpMan sendmsgtopeer()
                 throw JSONRPCError(RPC_MISC_ERROR, "Error: Could not send message to peer");
             }
 
-            return NullUniValue;
+            return UniValue::VNULL;
         },
     };
 }
@@ -1112,31 +1112,26 @@ static RPCHelpMan setmnthreadactive()
 
 void RegisterNetRPCCommands(CRPCTable &t)
 {
-// clang-format off
-static const CRPCCommand commands[] =
-{ //  category              actor
-  //  --------------------- -----------------------
-    { "network",             &getconnectioncount,      },
-    { "network",             &ping,                    },
-    { "network",             &getpeerinfo,             },
-    { "network",             &addnode,                 },
-    { "network",             &disconnectnode,          },
-    { "network",             &getaddednodeinfo,        },
-    { "network",             &getnettotals,            },
-    { "network",             &getnetworkinfo,          },
-    { "network",             &setban,                  },
-    { "network",             &listbanned,              },
-    { "network",             &clearbanned,             },
-    { "network",             &setnetworkactive,        },
-    { "network",             &getnodeaddresses,        },
-
-    { "hidden",              &cleardiscouraged,        },
-    { "hidden",              &addconnection,           },
-    { "hidden",              &addpeeraddress,          },
-    { "hidden",              &sendmsgtopeer            },
-    { "hidden",              &setmnthreadactive        },
-};
-// clang-format on
+    static const CRPCCommand commands[]{
+        {"network", &getconnectioncount},
+        {"network", &ping},
+        {"network", &getpeerinfo},
+        {"network", &addnode},
+        {"network", &disconnectnode},
+        {"network", &getaddednodeinfo},
+        {"network", &getnettotals},
+        {"network", &getnetworkinfo},
+        {"network", &setban},
+        {"network", &listbanned},
+        {"network", &clearbanned},
+        {"network", &setnetworkactive},
+        {"network", &getnodeaddresses},
+        {"hidden", &cleardiscouraged},
+        {"hidden", &addconnection},
+        {"hidden", &addpeeraddress},
+        {"hidden", &sendmsgtopeer},
+        {"hidden", &setmnthreadactive},
+    };
     for (const auto& c : commands) {
         t.appendCommand(c.name, &c);
     }

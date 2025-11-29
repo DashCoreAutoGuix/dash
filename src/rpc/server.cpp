@@ -23,14 +23,14 @@
 #include <mutex>
 #include <unordered_map>
 
-static Mutex g_rpc_warmup_mutex;
+static GlobalMutex g_rpc_warmup_mutex;
 static std::atomic<bool> g_rpc_running{false};
 static bool fRPCInWarmup GUARDED_BY(g_rpc_warmup_mutex) = true;
 static std::string rpcWarmupStatus GUARDED_BY(g_rpc_warmup_mutex) = "RPC server started";
 /* Timer-creating functions */
 static RPCTimerInterface* timerInterface = nullptr;
 /* Map of name to timer. */
-static Mutex g_deadline_timers_mutex;
+static GlobalMutex g_deadline_timers_mutex;
 static std::map<std::string, std::unique_ptr<RPCTimerBase> > deadlineTimers GUARDED_BY(g_deadline_timers_mutex);
 static bool ExecuteCommand(const CRPCCommand& command, const JSONRPCRequest& request, UniValue& result, bool last_handler);
 
@@ -266,17 +266,14 @@ static RPCHelpMan getrpcinfo()
 }
     };
 }
-// clang-format off
-static const CRPCCommand vRPCCommands[] =
-{ //  category               actor (function)
-  //  ---------------------  -----------------------
+
+static const CRPCCommand vRPCCommands[]{
     /* Overall control/query calls */
-    { "control",             &getrpcinfo,             },
-    { "control",             &help,                   },
-    { "control",             &stop,                   },
-    { "control",             &uptime,                 },
+    {"control", &getrpcinfo},
+    {"control", &help},
+    {"control", &stop},
+    {"control", &uptime},
 };
-// clang-format on
 
 CRPCTable::CRPCTable()
 {

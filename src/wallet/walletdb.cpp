@@ -340,8 +340,7 @@ public:
     std::map<std::pair<uint256, CKeyID>, std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> crypted_mnemonics;
     bool tx_corrupt{false};
 
-    CWalletScanState() {
-    }
+    CWalletScanState() = default;
 };
 
 static bool
@@ -820,6 +819,13 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
             }
         }
 
+#ifndef ENABLE_EXTERNAL_SIGNER
+        if (pwallet->IsWalletFlagSet(WALLET_FLAG_EXTERNAL_SIGNER)) {
+            pwallet->WalletLogPrintf("Error: External signer wallet being loaded without external signer support compiled\n");
+            return DBErrors::EXTERNAL_SIGNER_SUPPORT_REQUIRED;
+        }
+#endif
+
         // Get cursor
         if (!m_batch->StartCursor())
         {
@@ -885,14 +891,14 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
     }
 
     // Set the descriptor caches
-    for (auto desc_cache_pair : wss.m_descriptor_caches) {
+    for (const auto& desc_cache_pair : wss.m_descriptor_caches) {
         auto spk_man = pwallet->GetScriptPubKeyMan(desc_cache_pair.first);
         assert(spk_man);
         ((DescriptorScriptPubKeyMan*)spk_man)->SetCache(desc_cache_pair.second);
     }
 
     // Set the descriptor keys
-    for (auto desc_key_pair : wss.m_descriptor_keys) {
+    for (const auto& desc_key_pair : wss.m_descriptor_keys) {
         auto spk_man = pwallet->GetScriptPubKeyMan(desc_key_pair.first.first);
         auto it = wss.mnemonics.find(desc_key_pair.first);
         if (it == wss.mnemonics.end()) {
@@ -902,7 +908,7 @@ DBErrors WalletBatch::LoadWallet(CWallet* pwallet)
         }
     }
 
-    for (auto desc_key_pair : wss.m_descriptor_crypt_keys) {
+    for (const auto& desc_key_pair : wss.m_descriptor_crypt_keys) {
         auto spk_man = pwallet->GetScriptPubKeyMan(desc_key_pair.first.first);
         auto it = wss.crypted_mnemonics.find(desc_key_pair.first);
         if (it == wss.crypted_mnemonics.end()) {

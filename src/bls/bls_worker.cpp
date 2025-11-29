@@ -15,7 +15,7 @@ template <typename T>
 bool VerifyVectorHelper(Span<T> vec)
 {
     std::set<uint256> set;
-    for (auto item : vec) {
+    for (const auto& item : vec) {
         if (!item.IsValid())
             return false;
         // check duplicates
@@ -59,7 +59,7 @@ CBLSWorker::~CBLSWorker()
 void CBLSWorker::Start()
 {
     int workerCount = std::thread::hardware_concurrency() / 2;
-    workerCount = std::max(std::min(1, workerCount), 4);
+    workerCount = std::clamp(workerCount, 1, 4);
     workerPool.resize(workerCount);
     RenameThreadPool(workerPool, "bls-work");
 }

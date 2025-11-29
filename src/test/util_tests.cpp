@@ -1272,9 +1272,9 @@ struct Tracker
     //! Points to the original object (possibly itself) we moved/copied from
     const Tracker* origin;
     //! How many copies where involved between the original object and this one (moves are not counted)
-    int copies;
+    int copies{0};
 
-    Tracker() noexcept : origin(this), copies(0) {}
+    Tracker() noexcept : origin(this) {}
     Tracker(const Tracker& t) noexcept : origin(t.origin), copies(t.copies + 1) {}
     Tracker(Tracker&& t) noexcept : origin(t.origin), copies(t.copies) {}
     Tracker& operator=(const Tracker& t) noexcept
@@ -1304,13 +1304,13 @@ BOOST_AUTO_TEST_CASE(test_tracked_vector)
 
     auto v2 = Vector(std::move(t2));
     BOOST_CHECK_EQUAL(v2.size(), 1U);
-    BOOST_CHECK(v2[0].origin == &t2);
+    BOOST_CHECK(v2[0].origin == &t2); // NOLINT(*-use-after-move)
     BOOST_CHECK_EQUAL(v2[0].copies, 0);
 
     auto v3 = Vector(t1, std::move(t2));
     BOOST_CHECK_EQUAL(v3.size(), 2U);
     BOOST_CHECK(v3[0].origin == &t1);
-    BOOST_CHECK(v3[1].origin == &t2);
+    BOOST_CHECK(v3[1].origin == &t2); // NOLINT(*-use-after-move)
     BOOST_CHECK_EQUAL(v3[0].copies, 1);
     BOOST_CHECK_EQUAL(v3[1].copies, 0);
 
@@ -1318,7 +1318,7 @@ BOOST_AUTO_TEST_CASE(test_tracked_vector)
     BOOST_CHECK_EQUAL(v4.size(), 3U);
     BOOST_CHECK(v4[0].origin == &t1);
     BOOST_CHECK(v4[1].origin == &t2);
-    BOOST_CHECK(v4[2].origin == &t3);
+    BOOST_CHECK(v4[2].origin == &t3); // NOLINT(*-use-after-move)
     BOOST_CHECK_EQUAL(v4[0].copies, 1);
     BOOST_CHECK_EQUAL(v4[1].copies, 1);
     BOOST_CHECK_EQUAL(v4[2].copies, 0);
