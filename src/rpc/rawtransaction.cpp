@@ -358,7 +358,7 @@ static RPCHelpMan getrawtransaction()
     }
 
     if (verbosity <= 0) {
-        return EncodeHexTx(*tx, RPCSerializationFlags());
+        return EncodeHexTx(*tx);
     }
 
     const LLMQContext& llmq_ctx = EnsureLLMQContext(node);
