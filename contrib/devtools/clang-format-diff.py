@@ -146,12 +146,8 @@ def main():
         command.extend(lines)
         if args.style:
             command.extend(["-style", args.style])
-        else:
-            command.extend(["-style", "file"])
         if args.fallback_style:
             command.extend(["-fallback-style", args.fallback_style])
-        else:
-            command.extend(["-fallback-style", "none"])
 
         try:
             p = subprocess.Popen(
