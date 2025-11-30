@@ -165,7 +165,7 @@ def main():
             # Give the user more context when clang-format isn't
             # found/isn't executable, etc.
             raise RuntimeError(
-                'Failed to run "%s" - %s' % (" ".join(command), e.strerror)
+                'Failed to run "%s" - %s"' % (" ".join(command), e.strerror)
             )
 
         stdout, stderr = p.communicate()
