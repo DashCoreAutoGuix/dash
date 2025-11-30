@@ -19,7 +19,6 @@ from test_framework.governance import (
     EXPECTED_STDERR_NO_GOV,
     EXPECTED_STDERR_NO_GOV_PRUNE,
 )
-from test_framework.messages import CBlock
 from test_framework.script import (
     CScript,
     OP_NOP,
