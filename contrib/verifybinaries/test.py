@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# NOTE: This test file is kept as-is from the Bitcoin Core backport for reference.
+# It contains Bitcoin-specific version numbers and binary names that won't work
+# with Dash releases. Adapt for Dash testing as needed.
 
 import json
 import sys
