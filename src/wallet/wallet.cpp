@@ -40,6 +40,7 @@
 #include <wallet/coincontrol.h>
 #include <wallet/context.h>
 #include <wallet/external_signer_scriptpubkeyman.h>
+#include <wallet/scriptpubkeyman.h>
 #include <warnings.h>
 
 #include <coinjoin/options.h>
