@@ -367,6 +367,7 @@ BASE_SCRIPTS = [
     'p2p_message_capture.py',
     'feature_addrman.py',
     'feature_asmap.py',
+    'feature_fastprune.py',
     'feature_includeconf.py',
     'mempool_unbroadcast.py',
     'mempool_compatibility.py',
