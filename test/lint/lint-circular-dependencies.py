@@ -20,6 +20,7 @@ EXPECTED_CIRCULAR_DEPENDENCIES = (
     "qt/transactiontablemodel -> qt/walletmodel -> qt/transactiontablemodel",
     "wallet/wallet -> wallet/walletdb -> wallet/wallet",
     "kernel/coinstats -> validation -> kernel/coinstats",
+    "kernel/mempool_persist -> validation -> kernel/mempool_persist",
     # Dash
     "banman -> common/bloom -> evo/assetlocktx -> llmq/quorums -> net -> banman",
     "chainlock/chainlock -> instantsend/instantsend -> chainlock/chainlock",

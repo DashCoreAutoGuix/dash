@@ -257,6 +257,7 @@ BITCOIN_CORE_H = \
   instantsend/net_instantsend.h \
   instantsend/signing.h \
   kernel/coinstats.h \
+  kernel/mempool_persist.h \
   key.h \
   key_io.h \
   limitedmap.h \
@@ -307,6 +308,7 @@ BITCOIN_CORE_H = \
   node/connection_types.h \
   node/context.h \
   node/eviction.h \
+  node/mempool_persist_args.h \
   node/miner.h \
   node/minisketchwrapper.h \
   node/psbt.h \
@@ -531,6 +533,7 @@ libbitcoin_node_a_SOURCES = \
   instantsend/net_instantsend.cpp \
   instantsend/signing.cpp \
   kernel/coinstats.cpp \
+  kernel/mempool_persist.cpp \
   llmq/blockprocessor.cpp \
   llmq/commitment.cpp \
   llmq/context.cpp \
@@ -566,6 +569,7 @@ libbitcoin_node_a_SOURCES = \
   node/context.cpp \
   node/eviction.cpp \
   node/interfaces.cpp \
+  node/mempool_persist_args.cpp \
   node/miner.cpp \
   node/minisketchwrapper.cpp \
   node/psbt.cpp \
