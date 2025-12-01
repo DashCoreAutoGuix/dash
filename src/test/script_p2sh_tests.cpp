@@ -18,15 +18,13 @@
 #include <boost/test/unit_test.hpp>
 
 // Helpers:
-static std::vector<unsigned char>
-Serialize(const CScript& s)
+static std::vector<unsigned char> Serialize(const CScript& s)
 {
     std::vector<unsigned char> sSerialized(s.begin(), s.end());
     return sSerialized;
 }
 
-static bool
-Verify(const CScript& scriptSig, const CScript& scriptPubKey, bool fStrict, ScriptError& err)
+static bool Verify(const CScript& scriptSig, const CScript& scriptPubKey, bool fStrict, ScriptError& err)
 {
     // Create dummy to/from transactions:
     CMutableTransaction txFrom;
