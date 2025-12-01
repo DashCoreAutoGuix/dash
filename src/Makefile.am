@@ -257,6 +257,7 @@ BITCOIN_CORE_H = \
   instantsend/net_instantsend.h \
   instantsend/signing.h \
   kernel/coinstats.h \
+  kernel/validation_cache_sizes.h \
   key.h \
   key_io.h \
   limitedmap.h \
@@ -314,6 +315,7 @@ BITCOIN_CORE_H = \
   node/txreconciliation.h \
   node/interface_ui.h \
   node/utxo_snapshot.h \
+  node/validation_cache_args.h \
   noui.h \
   outputtype.h \
   policy/feerate.h \
@@ -572,6 +574,7 @@ libbitcoin_node_a_SOURCES = \
   node/transaction.cpp \
   node/txreconciliation.cpp \
   node/interface_ui.cpp \
+  node/validation_cache_args.cpp \
   noui.cpp \
   policy/fees.cpp \
   policy/packages.cpp \
