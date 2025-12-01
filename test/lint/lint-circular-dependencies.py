@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 EXPECTED_CIRCULAR_DEPENDENCIES = (
-    "chainparamsbase -> common/args -> chainparamsbase",
+    "chainparamsbase -> common/args -> util/system -> chainparamsbase",
     "node/blockstorage -> validation -> node/blockstorage",
     "policy/fees -> txmempool -> policy/fees",
     "qt/addresstablemodel -> qt/walletmodel -> qt/addresstablemodel",
