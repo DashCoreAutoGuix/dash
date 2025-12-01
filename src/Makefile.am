@@ -1170,7 +1170,6 @@ libbitcoinkernel_la_SOURCES = \
   chainparams.cpp \
   clientversion.cpp \
   coins.cpp \
-  compat/glibcxx_sanity.cpp \
   compressor.cpp \
   consensus/merkle.cpp \
   consensus/tx_check.cpp \
@@ -1223,6 +1222,7 @@ libbitcoinkernel_la_SOURCES = \
   uint256.cpp \
   util/asmap.cpp \
   util/bytevectorhash.cpp \
+  util/check.cpp \
   util/getuniquepath.cpp \
   util/hasher.cpp \
   util/moneystr.cpp \
