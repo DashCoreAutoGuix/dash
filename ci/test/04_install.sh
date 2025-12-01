@@ -87,6 +87,14 @@ if [[ $DOCKER_NAME_TAG == *centos* ]]; then
   CI_EXEC_ROOT yum -y install epel-release
   CI_EXEC_ROOT yum -y install "$DOCKER_PACKAGES" "$PACKAGES"
 elif [ "$CI_USE_APT_INSTALL" != "no" ]; then
+  if [[ "${ADD_UNTRUSTED_BPFCC_PPA}" == "true" ]]; then
+    # Ubuntu 22.04 LTS and Debian 11 both have an outdated bpfcc-tools packages.
+    # The iovisor PPA is outdated as well. The next Ubuntu and Debian releases will contain updated
+    # packages. Meanwhile, use an untrusted PPA to install an up-to-date version of the bpfcc-tools
+    # package.
+    # TODO: drop this once we can use newer images in GCE
+    CI_EXEC_ROOT add-apt-repository ppa:hadret/bpfcc
+  fi
   ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get update
   ${CI_RETRY_EXE} CI_EXEC_ROOT apt-get install --no-install-recommends --no-upgrade -y "$PACKAGES" "$DOCKER_PACKAGES"
   if [ -n "$PIP_PACKAGES" ]; then
