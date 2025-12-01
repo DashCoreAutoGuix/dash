@@ -396,6 +396,93 @@ static std::vector<RPCArg> FundTxDoc(bool solving_data = true)
     return args;
 }
 
+static void InterpretFeeEstimationInstructions(const UniValue& conf_target, const UniValue& estimate_mode, const UniValue& fee_rate, UniValue& options)
+{
+    if (options.exists("conf_target") || options.exists("estimate_mode")) {
+        if (!conf_target.isNull() || !estimate_mode.isNull()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Pass conf_target and estimate_mode either as arguments or in the options object, but not both");
+        }
+    } else {
+        options.pushKV("conf_target", conf_target);
+        options.pushKV("estimate_mode", estimate_mode);
+    }
+    if (options.exists("fee_rate")) {
+        if (!fee_rate.isNull()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Pass the fee_rate either as an argument, or in the options object, but not both");
+        }
+    } else {
+        options.pushKV("fee_rate", fee_rate);
+    }
+    if (!options["conf_target"].isNull() && (options["estimate_mode"].isNull() || (options["estimate_mode"].get_str() == "unset"))) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Specify estimate_mode");
+    }
+}
+
+static UniValue FinishTransaction(const std::shared_ptr<CWallet> pwallet, const UniValue& options, const CMutableTransaction& rawTx)
+{
+    // Make a blank psbt
+    PartiallySignedTransaction psbtx(rawTx);
+
+    // First fill transaction with our data without signing,
+    // so external signers are not asked sign more than once.
+    bool complete;
+    (void)pwallet->FillPSBT(psbtx, complete, SIGHASH_ALL, false, true);
+    const TransactionError err{pwallet->FillPSBT(psbtx, complete, SIGHASH_ALL, true, false)};
+    if (err != TransactionError::OK) {
+        throw JSONRPCTransactionError(err);
+    }
+
+    CMutableTransaction mtx;
+    complete = FinalizeAndExtractPSBT(psbtx, mtx);
+
+    UniValue result(UniValue::VOBJ);
+
+    const bool psbt_opt_in{options.exists("psbt") && options["psbt"].get_bool()};
+    bool add_to_wallet{options.exists("add_to_wallet") ? options["add_to_wallet"].get_bool() : true};
+    if (psbt_opt_in || !complete || !add_to_wallet) {
+        // Serialize the PSBT
+        CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+        ssTx << psbtx;
+        result.pushKV("psbt", EncodeBase64(ssTx.str()));
+    }
+
+    if (complete) {
+        std::string hex{EncodeHexTx(CTransaction(mtx))};
+        CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+        result.pushKV("txid", tx->GetHash().GetHex());
+        if (add_to_wallet && !psbt_opt_in) {
+            pwallet->CommitTransaction(tx, {}, {} /* orderForm */);
+        } else {
+            result.pushKV("hex", hex);
+        }
+    }
+    result.pushKV("complete", complete);
+
+    return result;
+}
+
+static void PreventOutdatedOptions(const UniValue& options)
+{
+    if (options.exists("feeRate")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use fee_rate (" + CURRENCY_ATOM + "/vB) instead of feeRate");
+    }
+    if (options.exists("changeAddress")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use change_address instead of changeAddress");
+    }
+    if (options.exists("changePosition")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use change_position instead of changePosition");
+    }
+    if (options.exists("includeWatching")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use include_watching instead of includeWatching");
+    }
+    if (options.exists("lockUnspents")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use lock_unspents instead of lockUnspents");
+    }
+    if (options.exists("subtractFeeFromOutputs")) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Use subtract_fee_from_outputs instead of subtractFeeFromOutputs");
+    }
+}
+
 void FundTransaction(CWallet& wallet, CMutableTransaction& tx, CAmount& fee_out, int& change_position, const UniValue& options, CCoinControl& coinControl, bool override_min_fee)
 {
     // Make sure the results are valid at least up to the most recent block
@@ -1101,21 +1188,21 @@ RPCHelpMan sendall()
 
             coin_control.fAllowWatchOnly = ParseIncludeWatchonly(options["include_watching"], *pwallet);
 
-            const bool rbf{options.exists("replaceable") ? options["replaceable"].get_bool() : pwallet->m_signal_rbf};
+            const bool rbf{options.exists("replaceable") ? options["replaceable"].get_bool() : false};
 
             FeeCalculation fee_calc_out;
             CFeeRate fee_rate{GetMinimumFeeRate(*pwallet, coin_control, &fee_calc_out)};
             // Do not, ever, assume that it's fine to change the fee rate if the user has explicitly
             // provided one
             if (coin_control.m_feerate && fee_rate > *coin_control.m_feerate) {
-               throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Fee rate (%s) is lower than the minimum fee rate setting (%s)", coin_control.m_feerate->ToString(FeeEstimateMode::SAT_VB), fee_rate.ToString(FeeEstimateMode::SAT_VB)));
+               throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Fee rate (%s) is lower than the minimum fee rate setting (%s)", coin_control.m_feerate->ToString(), fee_rate.ToString()));
             }
             if (fee_calc_out.reason == FeeReason::FALLBACK && !pwallet->m_allow_fallback_fee) {
                 // eventually allow a fallback fee
                 throw JSONRPCError(RPC_WALLET_ERROR, "Fee estimation failed. Fallbackfee is disabled. Wait a few blocks or enable -fallbackfee.");
             }
 
-            CMutableTransaction rawTx{ConstructTransaction(options["inputs"], recipient_key_value_pairs, options["locktime"], rbf)};
+            CMutableTransaction rawTx{ConstructTransaction(options["inputs"], recipient_key_value_pairs, options["locktime"])};
             LOCK(pwallet->cs_wallet);
             std::vector<COutput> all_the_utxos;
 
@@ -1125,7 +1212,7 @@ RPCHelpMan sendall()
                 throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot combine send_max with specific inputs.");
             } else if (options.exists("inputs")) {
                 for (const CTxIn& input : rawTx.vin) {
-                    if (pwallet->IsSpent(input.prevout.hash, input.prevout.n)) {
+                    if (pwallet->IsSpent(input.prevout)) {
                         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Input not available. UTXO (%s:%d) was already spent.", input.prevout.hash.ToString(), input.prevout.n));
                     }
                     const CWalletTx* tx{pwallet->GetWalletTx(input.prevout.hash)};
@@ -1135,21 +1222,21 @@ RPCHelpMan sendall()
                     total_input_value += tx->tx->vout[input.prevout.n].nValue;
                 }
             } else {
-                AvailableCoins(*pwallet, all_the_utxos, &coin_control, /*nMinimumAmount=*/0);
+                all_the_utxos = AvailableCoinsListUnspent(*pwallet, &coin_control, /*nMinimumAmount=*/0).all();
                 for (const COutput& output : all_the_utxos) {
                     CHECK_NONFATAL(output.input_bytes > 0);
                     if (send_max && fee_rate.GetFee(output.input_bytes) > output.txout.nValue) {
                         continue;
                     }
-                    CTxIn input(output.outpoint.hash, output.outpoint.n, CScript(), rbf ? MAX_BIP125_RBF_SEQUENCE : CTxIn::SEQUENCE_FINAL);
+                    CTxIn input(output.outpoint.hash, output.outpoint.n, CScript(), rbf ? CTxIn::SEQUENCE_FINAL - 1 : CTxIn::SEQUENCE_FINAL);
                     rawTx.vin.push_back(input);
                     total_input_value += output.txout.nValue;
                 }
             }
 
             // estimate final size of tx
-            const TxSize tx_size{CalculateMaximumSignedTxSize(CTransaction(rawTx), pwallet.get())};
-            const CAmount fee_from_size{fee_rate.GetFee(tx_size.vsize)};
+            const int64_t tx_vsize{CalculateMaximumSignedTxSize(CTransaction(rawTx), pwallet.get())};
+            const CAmount fee_from_size{fee_rate.GetFee(tx_vsize)};
             const CAmount effective_value{total_input_value - fee_from_size};
 
             if (effective_value <= 0) {
