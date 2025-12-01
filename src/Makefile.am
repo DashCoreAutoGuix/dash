@@ -1190,7 +1190,7 @@ libbitcoinkernel_la_SOURCES = \
   netaddress.cpp \
   node/blockstorage.cpp \
   node/chainstate.cpp \
-  node/coinstats.cpp \
+  kernel/coinstats.cpp \
   node/interface_ui.cpp \
   policy/feerate.cpp \
   policy/fees.cpp \
