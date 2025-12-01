@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparams.h>
+#include <common/args.h>
 #include <init.h>
 #include <interfaces/chain.h>
 #include <interfaces/coinjoin.h>
@@ -15,8 +16,8 @@
 #include <univalue.h>
 #include <util/check.h>
 #include <util/error.h>
-#include <util/system.h>
 #include <util/moneystr.h>
+#include <util/system.h>
 #include <util/translation.h>
 #include <validation.h>
 #ifdef USE_BDB

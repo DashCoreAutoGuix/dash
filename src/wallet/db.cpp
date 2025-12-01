@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparams.h>
+#include <common/args.h>
 #include <fs.h>
 #include <logging.h>
 #include <util/system.h>

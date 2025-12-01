@@ -7,6 +7,7 @@
 #include <chainparams.h>
 
 #include <chainparamsseeds.h>
+#include <common/args.h>
 #include <consensus/merkle.h>
 #include <deploymentinfo.h>
 #include <llmq/params.h>

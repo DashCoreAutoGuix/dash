@@ -13,6 +13,7 @@
 #include <qt/guiconstants.h>
 #include <qt/guiutil.h>
 
+#include <common/args.h>
 #include <interfaces/node.h>
 #include <mapport.h>
 #include <net.h>

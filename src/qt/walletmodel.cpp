@@ -18,13 +18,13 @@
 #include <qt/recentrequeststablemodel.h>
 #include <qt/transactiontablemodel.h>
 
+#include <common/args.h>
 #include <interfaces/coinjoin.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <key_io.h>
 #include <node/interface_ui.h>
 #include <psbt.h>
-#include <util/system.h> // for GetBoolArg
 #include <util/translation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/wallet.h> // for CRecipient

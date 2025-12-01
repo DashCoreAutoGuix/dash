@@ -7,6 +7,7 @@
 #define BITCOIN_TEST_UTIL_SETUP_COMMON_H
 
 #include <chainparamsbase.h>
+#include <common/args.h>
 #include <fs.h>
 #include <key.h>
 #include <util/system.h>

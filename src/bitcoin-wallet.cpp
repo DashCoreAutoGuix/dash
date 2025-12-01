@@ -8,6 +8,7 @@
 
 #include <chainparams.h>
 #include <chainparamsbase.h>
+#include <common/args.h>
 #include <compat/compat.h>
 #include <logging.h>
 #include <util/strencodings.h>
@@ -92,7 +93,7 @@ MAIN_FUNCTION
 {
     ArgsManager& args = gArgs;
 #ifdef WIN32
-    util::WinCmdLineArgs winArgs;
+    common::WinCmdLineArgs winArgs;
     std::tie(argc, argv) = winArgs.get();
 #endif
     SetupEnvironment();
