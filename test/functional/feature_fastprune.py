@@ -11,7 +11,8 @@ from test_framework.blocktools import (
     create_block,
     create_coinbase,
 )
-from test_framework.messages import tx_from_hex
+from test_framework.messages import CTxOut, tx_from_hex
+from test_framework.script import CScript, OP_RETURN
 from test_framework.wallet import MiniWallet
 
 
@@ -24,16 +25,13 @@ class FeatureFastpruneTest(BitcoinTestFramework):
         self.log.info("ensure that large blocks don't crash or freeze in -fastprune")
         wallet = MiniWallet(self.nodes[0])
 
-        # Generate blocks to fund the wallet with UTXOs
-        # We need at least 500 UTXOs for 500 transactions
-        self.generate(wallet, 500)
-
-        # Create many transactions to make a large block (>64kb)
-        # Since Dash doesn't have witness data, we need to create many regular transactions
-        txs = []
-        for _ in range(500):  # Create enough transactions to exceed 64kb
-            tx = wallet.create_self_transfer()['tx']
-            txs.append(tx)
+        # Create a single transaction with large OP_RETURN to make block >64kb
+        # We need to create a transaction that's large enough to exceed the fastprune limit
+        tx = wallet.create_self_transfer()['tx']
+        # Add a large OP_RETURN output (65kb of data to exceed 64kb fastprune limit)
+        large_data = b'\x00' * 65536
+        tx.vout.append(CTxOut(0, CScript([OP_RETURN, large_data])))
+        tx.rehash()
 
         tip = int(self.nodes[0].getbestblockhash(), 16)
         time = self.nodes[0].getblock(self.nodes[0].getbestblockhash())['time'] + 1
@@ -45,7 +43,7 @@ class FeatureFastpruneTest(BitcoinTestFramework):
         cbb.vExtraPayload = bytes.fromhex(gbt["coinbase_payload"])
         cbb.rehash()
 
-        block = create_block(hashprev=tip, ntime=time, txlist=txs, coinbase=cbb, version=4)
+        block = create_block(hashprev=tip, ntime=time, txlist=[tx], coinbase=cbb, version=4)
 
         # Add quorum commitments from block template
         for tx_obj in gbt["transactions"]:
@@ -55,7 +53,10 @@ class FeatureFastpruneTest(BitcoinTestFramework):
 
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
-        self.nodes[0].submitblock(block.serialize().hex())
+        result = self.nodes[0].submitblock(block.serialize().hex())
+        # submitblock returns None on success, error string on failure
+        if result is not None:
+            raise AssertionError(f"submitblock failed: {result}")
         assert_equal(int(self.nodes[0].getbestblockhash(), 16), block.sha256)
 
 
