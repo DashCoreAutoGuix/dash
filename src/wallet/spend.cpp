@@ -48,9 +48,7 @@ int CalculateMaximumSignedInputSize(const CTxOut& txout, const CWallet* wallet, 
 int64_t CalculateMaximumSignedTxSize(const CTransaction &tx, const CWallet *wallet, const std::vector<CTxOut>& txouts, const CCoinControl* coin_control)
 {
     CMutableTransaction txNew(tx);
-    if (!wallet->DummySignTx(txNew, txouts, coin_control)) {
-        return -1;
-    }
+    if (!wallet->DummySignTx(txNew, txouts, coin_control)) return -1;
     return ::GetSerializeSize(txNew, PROTOCOL_VERSION);
 }
 
