@@ -11,6 +11,7 @@ from test_framework.blocktools import (
     create_block,
     create_coinbase,
 )
+from test_framework.messages import tx_from_hex
 from test_framework.wallet import MiniWallet
 
 
@@ -37,7 +38,22 @@ class FeatureFastpruneTest(BitcoinTestFramework):
         tip = int(self.nodes[0].getbestblockhash(), 16)
         time = self.nodes[0].getblock(self.nodes[0].getbestblockhash())['time'] + 1
         height = self.nodes[0].getblockcount() + 1
-        block = create_block(hashprev=tip, ntime=time, txlist=txs, coinbase=create_coinbase(height=height))
+
+        # Create proper CbTx for Dash (DIP4/v20 activated)
+        cbb = create_coinbase(height, dip4_activated=True, v20_activated=True)
+        gbt = self.nodes[0].getblocktemplate()
+        cbb.vExtraPayload = bytes.fromhex(gbt["coinbase_payload"])
+        cbb.rehash()
+
+        block = create_block(hashprev=tip, ntime=time, txlist=txs, coinbase=cbb, version=4)
+
+        # Add quorum commitments from block template
+        for tx_obj in gbt["transactions"]:
+            tx = tx_from_hex(tx_obj["data"])
+            if tx.nType == 6:  # TRANSACTION_QUORUM_COMMITMENT
+                block.vtx.append(tx)
+
+        block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
         self.nodes[0].submitblock(block.serialize().hex())
         assert_equal(int(self.nodes[0].getbestblockhash(), 16), block.sha256)
