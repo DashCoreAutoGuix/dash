@@ -16,6 +16,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
     count_bytes,
     find_vout_for_address,
+    satoshi_round,
 )
 from test_framework.wallet_util import test_address
 
@@ -275,6 +276,27 @@ class WalletTest(BitcoinTestFramework):
         node_2_bal -= Decimal('100')
         assert_equal(self.nodes[2].getbalance(), node_2_bal)
         node_0_bal = self.check_fee_amount(self.nodes[0].getbalance(), node_0_bal + Decimal('100'), fee_per_byte, count_bytes(self.nodes[2].gettransaction(txid)['hex']))
+
+        # Sendmany 5 DASH to two addresses with subtracting fee from both addresses
+        a0 = self.nodes[0].getnewaddress()
+        a1 = self.nodes[0].getnewaddress()
+        txid = self.nodes[2].sendmany(dummy='', amounts={a0: 5, a1: 5}, subtractfeefrom=[a0, a1])
+        self.generate(self.nodes[2], 1, sync_fun=lambda: self.sync_all(self.nodes[0:3]))
+        node_2_bal -= Decimal('10')
+        assert_equal(self.nodes[2].getbalance(), node_2_bal)
+        tx = self.nodes[2].gettransaction(txid)
+        node_0_bal = self.check_fee_amount(self.nodes[0].getbalance(), node_0_bal + Decimal('10'), fee_per_byte, self.get_vsize(tx['hex']))
+        assert_equal(self.nodes[0].getbalance(), node_0_bal)
+        # When fee is subtracted from multiple addresses, each address receives the requested amount minus its share of the fee.
+        # The fee might not divide evenly, so we check that the sum of received amounts equals the total minus fee,
+        # and each address received approximately the expected amount (within 1 satoshi).
+        a0_bal = self.nodes[0].getreceivedbyaddress(a0)
+        a1_bal = self.nodes[0].getreceivedbyaddress(a1)
+        assert_equal(a0_bal + a1_bal, Decimal('10') + tx['fee'])
+        expected_bal = satoshi_round(Decimal('5') + (tx['fee'] / 2))
+        # Allow for 1 satoshi difference due to rounding in fee distribution
+        assert abs(a0_bal - expected_bal) <= Decimal('0.00000001')
+        assert abs(a1_bal - expected_bal) <= Decimal('0.00000001')
 
         self.log.info("Test sendmany with fee_rate param (explicit fee rate in duff/B)")
         fee_rate_sat_vb = 2
