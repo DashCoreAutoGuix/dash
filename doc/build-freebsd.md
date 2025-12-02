@@ -123,12 +123,6 @@ This enables support for both wallet types and disables the GUI, assuming
     MAKE=gmake
 ```
 
-##### Wallet (only SQlite) and GUI Support:
-This explicitly enables the GUI and disables legacy wallet support. If `qt5` is not installed, this will throw an error. If `sqlite3` is installed then descriptor wallet functionality will be built. If `sqlite3` is not installed, then wallet functionality will be disabled.
-```bash
-./autogen.sh
-./configure --without-bdb --with-gui=yes MAKE=gmake
-```
 ##### No Wallet or GUI
 ``` bash
 ./autogen.sh
