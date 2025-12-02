@@ -625,13 +625,11 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         createAndProcessEmptyBlock();
     }
 
-
-    {
     LOCK(cs_main);
 
     TestBasicMining(scriptPubKey, txFirst, baseheight);
-    }
 
+    m_node.chainman->ActiveChain().Tip()->nHeight--;
     SetMockTime(0);
 
     TestPackageSelection(scriptPubKey, txFirst);
