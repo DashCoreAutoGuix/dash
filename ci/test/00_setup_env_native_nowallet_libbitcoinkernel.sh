@@ -11,4 +11,8 @@ export HOST=x86_64-pc-linux-gnu
 export PACKAGES="python3-zmq"
 export DEP_OPTS="NO_WALLET=1 CC=gcc-14 CXX=g++-14"
 export GOAL="install"
-export BITCOIN_CONFIG="--enable-reduce-exports CC=gcc-14 CXX=g++-14 --enable-experimental-util-chainstate"
+export BITCOIN_CONFIG="--enable-reduce-exports CC=gcc-14 CXX=g++-14"
+# NOTE: --enable-experimental-util-chainstate disabled for Dash
+# dash-chainstate cannot build yet due to API differences (requires Dash-specific
+# masternode/governance parameters not in Bitcoin's LoadChainstate API).
+# See src/dash-chainstate.cpp lines 13-18 for details.
