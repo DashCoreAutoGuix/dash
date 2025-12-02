@@ -287,9 +287,16 @@ class WalletTest(BitcoinTestFramework):
         tx = self.nodes[2].gettransaction(txid)
         node_0_bal = self.check_fee_amount(self.nodes[0].getbalance(), node_0_bal + Decimal('10'), fee_per_byte, self.get_vsize(tx['hex']))
         assert_equal(self.nodes[0].getbalance(), node_0_bal)
+        # When subtracting fee from multiple outputs, if the fee doesn't divide evenly,
+        # one output may receive up to 1 satoshi more than the other.
+        # Check that each amount is close to the expected value (within 1 satoshi).
         expected_bal = satoshi_round(Decimal('5') + (tx['fee'] / 2))
-        assert_equal(self.nodes[0].getreceivedbyaddress(a0), expected_bal)
-        assert_equal(self.nodes[0].getreceivedbyaddress(a1), expected_bal)
+        amount0 = self.nodes[0].getreceivedbyaddress(a0)
+        amount1 = self.nodes[0].getreceivedbyaddress(a1)
+        assert abs(amount0 - expected_bal) <= Decimal('0.00000001'), f"a0 amount {amount0} differs from expected {expected_bal} by more than 1 satoshi"
+        assert abs(amount1 - expected_bal) <= Decimal('0.00000001'), f"a1 amount {amount1} differs from expected {expected_bal} by more than 1 satoshi"
+        # Also verify the total is correct
+        assert_equal(amount0 + amount1, Decimal('10') + tx['fee'])
 
         self.log.info("Test sendmany with fee_rate param (explicit fee rate in duff/B)")
         fee_rate_sat_vb = 2
