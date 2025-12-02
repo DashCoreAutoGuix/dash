@@ -1196,7 +1196,6 @@ libbitcoinkernel_la_SOURCES = \
   policy/fees.cpp \
   policy/packages.cpp \
   policy/policy.cpp \
-  policy/rbf.cpp \
   policy/settings.cpp \
   pow.cpp \
   primitives/block.cpp \
