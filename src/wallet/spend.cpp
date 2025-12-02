@@ -535,6 +535,7 @@ std::optional<SelectionResult> SelectCoins(const CWallet& wallet, CoinsResult& a
             if (!out) {
                 return std::nullopt;
             }
+
             txout = *out;
             input_bytes = CalculateMaximumSignedInputSize(txout, outpoint, &coin_control.m_external_provider, &coin_control);
         }
