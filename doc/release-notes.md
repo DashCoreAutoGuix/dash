@@ -36,13 +36,6 @@ RPC and Logging Improvements
 
 - Fixed misleading error logs that were triggered by legitimate RPC queries for non-existent transaction data, reducing log noise and preventing false alarms (dash#6744).
 
-- The `deprecatedrpc=fees` configuration option has been removed. The top-level
-  fee fields `fee`, `modifiedfee`, `ancestorfees` and `descendantfees` are no
-  longer returned by RPCs `getmempoolentry`, `getrawmempool(verbose=true)`,
-  `getmempoolancestors(verbose=true)` and `getmempooldescendants(verbose=true)`.
-  The same fee fields can be accessed through the `fees` object in the result.
-  The top-level fee fields were previously deprecated in 23.0. (bitcoin/bitcoin#25204)
-
 Performance Improvements
 ------------------------
 
