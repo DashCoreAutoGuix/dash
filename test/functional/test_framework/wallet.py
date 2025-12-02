@@ -99,12 +99,12 @@ class MiniWallet:
         returns the tx
         """
         tx.vout.append(CTxOut(nValue=0, scriptPubKey=CScript([OP_RETURN, b'a'])))
-        # In Dash, get_weight() returns vsize directly (no witness scaling)
-        # We need to account for compact size encoding overhead
-        current_weight = tx.get_weight()
-        # Estimate bytes needed, accounting for potential compact size encoding changes
-        # The +3 accounts for worst-case rounding in compact size encoding
-        dummy_vbytes = max(0, target_weight - current_weight + 3)
+        # In Dash, get_weight() returns vsize directly (no witness scaling factor like Bitcoin's 4)
+        # Bitcoin's formula: (target_weight - tx.get_weight() + 3) // 4
+        # - The +3 ensures rounding up when dividing by 4
+        # - After division, this adds 0-3 vbytes depending on remainder
+        # For Dash (no division by 4), we calculate bytes needed directly
+        dummy_vbytes = target_weight - tx.get_weight()
         tx.vout[-1].scriptPubKey = CScript([OP_RETURN, b'a' * dummy_vbytes])
         # Lower bound should always be off by at most 3
         assert_greater_than_or_equal(tx.get_weight(), target_weight)
