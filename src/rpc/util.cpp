@@ -109,7 +109,7 @@ uint256 ParseHashV(const UniValue& v, std::string_view name)
 }
 uint256 ParseHashO(const UniValue& o, std::string_view strKey)
 {
-    return ParseHashV(o.find_value(std::string(strKey)), strKey);
+    return ParseHashV(o.find_value(strKey), strKey);
 }
 std::vector<unsigned char> ParseHexV(const UniValue& v, std::string_view name)
 {
@@ -122,7 +122,7 @@ std::vector<unsigned char> ParseHexV(const UniValue& v, std::string_view name)
 }
 std::vector<unsigned char> ParseHexO(const UniValue& o, std::string_view strKey)
 {
-    return ParseHexV(o.find_value(std::string(strKey)), strKey);
+    return ParseHexV(o.find_value(strKey), strKey);
 }
 
 int32_t ParseInt32V(const UniValue& v, const std::string &strName)
