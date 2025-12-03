@@ -34,7 +34,7 @@ if [ -z "${SKIP_PYTHON_INSTALL}" ]; then
 fi
 
 ${CI_RETRY_EXE} pip3 install codespell==2.0.0
-${CI_RETRY_EXE} pip3 install flake8==3.8.3
+${CI_RETRY_EXE} pip3 install flake8==6.1.0
 ${CI_RETRY_EXE} pip3 install mypy==0.910
 ${CI_RETRY_EXE} pip3 install pyzmq==22.3.0
 ${CI_RETRY_EXE} pip3 install vulture==2.3
