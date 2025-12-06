@@ -227,6 +227,8 @@ public:
 
     virtual uint256 GetID() const { return uint256(); }
 
+    virtual const std::unordered_set<CScript, SaltedSipHasher> GetScriptPubKeys() const { return {}; };
+
     /** Prepends the wallet name in logging output to ease debugging in multi-wallet use cases */
     template<typename... Params>
     void WalletLogPrintf(std::string fmt, Params... parameters) const {
@@ -623,8 +625,10 @@ public:
     void AddDescriptorKey(const CKey& key, const CPubKey &pubkey);
     void WriteDescriptor();
 
-    WalletDescriptor GetWalletDescriptor() const EXCLUSIVE_LOCKS_REQUIRED(cs_desc_man);
-    std::vector<CScript> GetScriptPubKeys() const;
+    const WalletDescriptor GetWalletDescriptor() const EXCLUSIVE_LOCKS_REQUIRED(cs_desc_man);
+    const std::unordered_set<CScript, SaltedSipHasher> GetScriptPubKeys() const override;
+    const std::unordered_set<CScript, SaltedSipHasher> GetScriptPubKeys(int32_t minimum_index) const;
+    int32_t GetEndRange() const;
 
     bool GetDescriptorString(std::string& out, const bool priv) const;
     bool GetMnemonicString(SecureString& mnemonic_out, SecureString& mnemonic_passphrase_out) const;
