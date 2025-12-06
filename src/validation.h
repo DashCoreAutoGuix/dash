@@ -952,8 +952,7 @@ public:
     //! coins databases. This will be split somehow across chainstates.
     int64_t m_total_coinsdb_cache{0};
 
-    //! Instantiate a new chainstate and assign it based upon whether it is
-    //! from a snapshot.
+    //! Instantiate a new chainstate.
     //!
     //! @param[in] mempool              The mempool to pass to the chainstate
     //                                  constructor
@@ -1062,6 +1061,22 @@ public:
     //! Check to see if caches are out of balance and if so, call
     //! ResizeCoinsCaches() as needed.
     void MaybeRebalanceCaches() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! When starting up, search the datadir for a chainstate based on a UTXO
+    //! snapshot that is in the process of being validated.
+    bool DetectSnapshotChainstate(CTxMemPool* mempool,
+                                  CEvoDB& evoDb,
+                                  const std::unique_ptr<CChainstateHelper>& chain_helper) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    void ResetChainstates() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+    //! Switch the active chainstate to one based on a UTXO snapshot that was loaded
+    //! previously.
+    CChainState& ActivateExistingSnapshot(CTxMemPool* mempool,
+                                          CEvoDB& evoDb,
+                                          const std::unique_ptr<CChainstateHelper>& chain_helper,
+                                          uint256 base_blockhash)
+        EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
     ~ChainstateManager();
 };

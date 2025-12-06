@@ -120,7 +120,16 @@ struct ChainTestingSetup : public BasicTestingSetup {
 /** Testing setup that configures a complete environment.
  */
 struct TestingSetup : public ChainTestingSetup {
-    explicit TestingSetup(const std::string& chainName = CBaseChainParams::MAIN, const std::vector<const char*>& extra_args = {});
+    bool m_coins_db_in_memory{true};
+    bool m_block_tree_db_in_memory{true};
+
+    void LoadVerifyActivateChainstate();
+
+    explicit TestingSetup(
+        const std::string& chainName = CBaseChainParams::MAIN,
+        const std::vector<const char*>& extra_args = {},
+        const bool coins_db_in_memory = true,
+        const bool block_tree_db_in_memory = true);
     ~TestingSetup();
 };
 
@@ -138,7 +147,9 @@ struct TestChainSetup : public TestingSetup
 {
     TestChainSetup(int num_blocks,
                    const std::string& chain_name = CBaseChainParams::REGTEST,
-                   const std::vector<const char*>& extra_args = {});
+                   const std::vector<const char*>& extra_args = {},
+                   const bool coins_db_in_memory = true,
+                   const bool block_tree_db_in_memory = true);
     ~TestChainSetup();
 
     /**
@@ -202,7 +213,9 @@ struct TestChainSetup : public TestingSetup
  */
 struct TestChain100Setup : public TestChainSetup {
     TestChain100Setup(const std::string& chain_name = CBaseChainParams::REGTEST,
-                      const std::vector<const char*>& extra_args = {});
+                      const std::vector<const char*>& extra_args = {},
+                      const bool coins_db_in_memory = true,
+                      const bool block_tree_db_in_memory = true);
 };
 
 /**
