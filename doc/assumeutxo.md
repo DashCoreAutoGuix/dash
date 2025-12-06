@@ -172,4 +172,3 @@ process, and will be initialized as such.
 | ---------- | ----------- |
 | number of chainstates | 1 |
 | active chainstate | ibd |
-EOF < /dev/null
