@@ -569,6 +569,7 @@ libbitcoin_node_a_SOURCES = \
   node/psbt.cpp \
   node/transaction.cpp \
   node/txreconciliation.cpp \
+  node/utxo_snapshot.cpp \
   node/interface_ui.cpp \
   noui.cpp \
   policy/fees.cpp \
