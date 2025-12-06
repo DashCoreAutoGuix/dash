@@ -284,9 +284,9 @@ private:
 
 public:
     /** The target the algorithm selected for. Note that this may not be equal to the recipient amount as it can include non-input fees */
-    const CAmount m_target;
+    CAmount m_target;
     /** The algorithm used to produce this result */
-    const SelectionAlgorithm m_algo;
+    SelectionAlgorithm m_algo;
 
     explicit SelectionResult(const CAmount target, SelectionAlgorithm algo)
         : m_target(target), m_algo(algo) {}
@@ -299,6 +299,10 @@ public:
     void Clear();
 
     void AddInput(const OutputGroup& group);
+    void AddInputs(const std::set<COutput>& inputs, bool subtract_fee_outputs);
+
+    /** Combine another SelectionResult into this one */
+    void Merge(const SelectionResult& other);
 
     /** Calculates and stores the waste for this selection via GetSelectionWaste */
     void ComputeAndSetWaste(CAmount change_cost);

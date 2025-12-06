@@ -25,7 +25,13 @@ const std::string ADDRESS_BCRT1_UNSPENDABLE = "bcrt1qqqqqqqqqqqqqqqqqqqqqqqqqqqq
 #ifdef ENABLE_WALLET
 std::string getnewaddress(CWallet& w)
 {
-    return EncodeDestination(*Assert(w.GetNewDestination("")));
+    return EncodeDestination(getNewDestination(w, OutputType::LEGACY));
+}
+
+CTxDestination getNewDestination(CWallet& w, OutputType /* output_type */)
+{
+    // Dash only supports LEGACY output type (no SegWit)
+    return *Assert(w.GetNewDestination(""));
 }
 
 // void importaddress(CWallet& wallet, const std::string& address)
