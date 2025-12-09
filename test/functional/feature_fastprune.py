@@ -24,6 +24,8 @@ class FeatureFastpruneTest(BitcoinTestFramework):
     def run_test(self):
         self.log.info("ensure that large blocks don't crash or freeze in -fastprune")
         wallet = MiniWallet(self.nodes[0])
+        # Generate a block to fund the wallet with a UTXO
+        self.generate(wallet, 1)
 
         # Create a single transaction with large OP_RETURN to make block >64kb
         # We need to create a transaction that's large enough to exceed the fastprune limit
