@@ -8,7 +8,7 @@ has become a maintenance burden.
 
 The underlying functionality does not change between versions, so any users of
 the library can continue to use the final release indefinitely, with the
-understanding that its final consensus update.
+understanding that this is its final consensus update.
 
 In the future, libdashkernel will provide a much more useful API that is
 aware of the UTXO set, and therefore be able to fully validate transactions and
