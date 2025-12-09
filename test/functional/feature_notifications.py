@@ -26,6 +26,8 @@ def notify_outputname(walletname, txid):
 
 
 class NotificationsTest(DashTestFramework):
+    def add_options(self, parser):
+        self.add_wallet_options(parser)
     def set_test_params(self):
         self.set_dash_test_params(6, 4)
 
