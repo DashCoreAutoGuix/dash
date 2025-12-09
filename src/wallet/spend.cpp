@@ -100,11 +100,7 @@ void CoinsResult::clear()
 CoinsResult AvailableCoins(const CWallet& wallet,
                            const CCoinControl* coinControl,
                            std::optional<CFeeRate> feerate,
-                           const CAmount& nMinimumAmount,
-                           const CAmount& nMaximumAmount,
-                           const CAmount& nMinimumSumAmount,
-                           const uint64_t nMaximumCount,
-                           bool only_spendable)
+                           const CoinFilterParams& params)
 {
     AssertLockHeld(wallet.cs_wallet);
 
@@ -123,7 +119,7 @@ CoinsResult AvailableCoins(const CWallet& wallet,
         const uint256& wtxid = pwtx->GetHash();
         const CWalletTx& wtx = *pwtx;
 
-        if (wallet.IsTxImmatureCoinBase(wtx))
+        if (wallet.IsTxImmatureCoinBase(wtx) && !params.include_immature_coinbase)
             continue;
 
         int nDepth = wallet.GetTxDepthInMainChain(wtx);
@@ -182,7 +178,7 @@ CoinsResult AvailableCoins(const CWallet& wallet,
             } // no default case, so the compiler can warn about missing cases
             if (!found) continue;
 
-            if (output.nValue < nMinimumAmount || output.nValue > nMaximumAmount)
+            if (output.nValue < params.min_amount || output.nValue > params.max_amount)
                 continue;
 
             if (coinControl && coinControl->HasSelected() && !coinControl->m_allow_other_inputs && !coinControl->IsSelected(outpoint))
@@ -213,7 +209,7 @@ CoinsResult AvailableCoins(const CWallet& wallet,
             bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && (coinControl && coinControl->fAllowWatchOnly && solvable));
 
             // Filter by spendable outputs only
-            if (!spendable && only_spendable) continue;
+            if (!spendable && params.only_spendable) continue;
 
             // When parsing a scriptPubKey, Solver returns the parsed pubkeys or hashes (depending on the script)
             // We don't need those here, so we are leaving them in return_values_unused
@@ -250,14 +246,14 @@ CoinsResult AvailableCoins(const CWallet& wallet,
             // Cache total amount as we go
             result.total_amount += output.nValue;
             // Checks the sum amount of all UTXO's.
-            if (nMinimumSumAmount != MAX_MONEY) {
-                if (result.total_amount >= nMinimumSumAmount) {
+            if (params.min_sum_amount != MAX_MONEY) {
+                if (result.total_amount >= params.min_sum_amount) {
                     return result;
                 }
             }
 
             // Checks the maximum number of UTXO's.
-            if (nMaximumCount > 0 && result.size() >= nMaximumCount) {
+            if (params.max_count > 0 && result.size() >= params.max_count) {
                 return result;
             }
         }
@@ -266,21 +262,16 @@ CoinsResult AvailableCoins(const CWallet& wallet,
     return result;
 }
 
-CoinsResult AvailableCoinsListUnspent(const CWallet& wallet, const CCoinControl* coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t nMaximumCount)
+CoinsResult AvailableCoinsListUnspent(const CWallet& wallet, const CCoinControl* coinControl, CoinFilterParams params)
 {
-    return AvailableCoins(wallet, coinControl, /*feerate=*/ std::nullopt, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, /*only_spendable=*/false);
+    params.only_spendable = false;
+    return AvailableCoins(wallet, coinControl, /*feerate=*/ std::nullopt, params);
 }
 
 CAmount GetAvailableBalance(const CWallet& wallet, const CCoinControl* coinControl)
 {
     LOCK(wallet.cs_wallet);
-    return AvailableCoins(wallet, coinControl,
-            /*feerate=*/ std::nullopt,
-            /*nMinimumAmount=*/ 1,
-            /*nMaximumAmount=*/ MAX_MONEY,
-            /*nMinimumSumAmount=*/ MAX_MONEY,
-            /*nMaximumCount=*/ 0
-    ).total_amount;
+    return AvailableCoins(wallet, coinControl).total_amount;
 }
 
 const CTxOut& FindNonChangeParentOutput(const CWallet& wallet, const CTransaction& tx, int output)
@@ -894,13 +885,7 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     }
 
     // Get available coins
-    auto available_coins = AvailableCoins(wallet,
-                                              &coin_control,
-                                              coin_selection_params.m_effective_feerate,
-                                              1,            /*nMinimumAmount*/
-                                              MAX_MONEY,    /*nMaximumAmount*/
-                                              MAX_MONEY,    /*nMinimumSumAmount*/
-                                              0);           /*nMaximumCount*/
+    auto available_coins = AvailableCoins(wallet, &coin_control, coin_selection_params.m_effective_feerate);
 
     // Choose coins to use
     std::optional<SelectionResult> result = SelectCoins(wallet, available_coins, /*nTargetValue=*/selection_target, coin_control, coin_selection_params);
